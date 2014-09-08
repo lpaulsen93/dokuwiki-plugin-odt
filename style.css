@@ -1,0 +1,23 @@
+/**
+ * dw2odt export_odt pagetool icon
+ */
+
+/* export icon */
+#dokuwiki__pagetools ul li a.export_odt {
+    background-position: right 0;
+}
+#dokuwiki__pagetools ul li a.export_odt:before {
+    content: url(pagetools-odtexport-sprite.png);
+    margin-top: 0;
+}
+#dokuwiki__pagetools:hover ul li a.export_odt,
+#dokuwiki__pagetools ul li a.export_odt:focus,
+#dokuwiki__pagetools ul li a.export_odt:active {
+    background-image: url(pagetools-odtexport-sprite.png);
+}
+#dokuwiki__pagetools ul li a.export_odt:hover,
+#dokuwiki__pagetools ul li a.export_odt:active,
+#dokuwiki__pagetools ul li a.export_odt:focus {
+    background-position: right -45px;
+}
+

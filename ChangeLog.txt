@@ -1,0 +1,78 @@
+﻿2014-02-10  Florian Lamml (info@florian-lamml.de)
+	* Create pagetools-odtexport-sprite.png (adapt from dw2pdf plugin)
+	* add pagetools-button support in action.php (adapt from dw2pdf plugin)
+
+2010-10-30  Aurélien Bompard <aurelien@bompard.org>
+
+	* action.php: Add getInfo() method, fixes bug #8
+	* renderer.php: Convert tabs in preformatted text (closes: #9)
+	* renderer.php: Add table rowspan support (closes: #4)
+	* lang/uk/: Add Ukrainian translation (by Oleksiy Zagorskyi)
+	* renderer.php: Remove empty paragraphs from output
+	* renderer.php: Fix zh translation PHP syntax
+	* renderer.php: Add manifest entries when using template
+	* renderer.php: Download external images
+
+2010-08-12  Aurélien Bompard <aurelien@bompard.org>
+
+	* renderer.php, styles.xml: Syntax highlighting support
+
+2010-07-24  Aurélien Bompard <aurelien@bompard.org>
+
+	* action.php, syntax.php: Better handling of the cache system
+	* lang/ru/: Add translation by Yuri Timofeev
+	* lang/zh/: Add Chinese translation by lainme
+
+2010-04-04  Aurélien Bompard <aurelien@bompard.org>
+
+	* renderer.php: Fix a small syntax error
+	* renderer.php: Add options to cut off a part of the ODT template
+	* renderer.php: Better tag replacement in the template ODT file
+	* renderer.php: replace with unicode entities instead of HTML (not
+	always defined)
+	* syntax.php: Fix button link to export old revisions
+
+2009-07-02  Aurélien Bompard <aurelien@bompard.org>
+
+	* renderer.php: Fixes from Andy Webber (thanks !)
+
+2009-06-07  Aurélien Bompard <aurelien@bompard.org>
+
+	* renderer.php: Make the renderer class a singleton  Only make a single
+	instance of the renderer. This is needed for Dokuwiki >= rc2009-02-06. For
+	details, see: http://bugs.splitbrain.org/index.php?do=details&task_id=1598
+	* renderer.php: typo
+	* renderer.php: add patch by Korsani
+	* renderer.php: use $['savedir'] as suggested on the wiki page
+
+2009-01-15  Aurélien Bompard <aurelien@bompard.org>
+
+	* lang/ja: Add Japanese translation from Ikuo Obataya. Thanks !
+	* renderer.php: more safeguards. wiki:syntax now passes validators
+	* renderer.php: don't compress mimetype declaration
+
+2008-05-07  Aurélien Bompard <aurelien@bompard.org>
+
+	* lang/es/: spanish translation
+
+2008-05-05  Aurélien Bompard <aurelien@bompard.org>
+
+	* admin.php: administation interface
+	* lang/: translations
+	* README.txt: documentation
+	* renderer.php: fix <code> tag in list items
+	* renderer.php: extract template before checking for the styles
+	* renderer.php: fix quotes
+	* renderer.php: dokuwiki's future temp dir is data/tmp, not
+	data/temp
+	* renderer.php: choose appropriate ZipLib file
+	* renderer.php: use new headers/caching system if available
+
+2008-04-08  Aurélien Bompard <aurelien@bompard.org>
+
+	* global: bugfixes
+
+2008-03-04  Aurélien Bompard <aurelien@bompard.org>
+
+	* global: initial release
+

@@ -4,6 +4,7 @@
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Aurelien Bompard <aurelien@bompard.org>
+ * @author	   Florian Lamml <info@florian-lamml.de>
  */
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
@@ -28,7 +29,7 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
 		$controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton', array());
     }
 	
-	    /**
+	 /**
      * Add 'export odt'-button to pagetools
      *
      * @param Doku_Event $event

@@ -37,117 +37,23 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $in_list_item = false;
     var $in_paragraph = false;
     var $highlight_style_num = 1;
-    // Automatic styles. Will always be added to content.xml and styles.xml
-    var $autostyles = array(
-        "pm1"=>'
-            <style:page-layout style:name="pm1">
-                <style:page-layout-properties fo:page-width="21cm" fo:page-height="29.7cm" style:num-format="1" style:print-orientation="portrait" fo:margin-top="2cm" fo:margin-bottom="2cm" fo:margin-left="2cm" fo:margin-right="2cm" style:writing-mode="lr-tb" style:footnote-max-height="0cm">
-                    <style:footnote-sep style:width="0.018cm" style:distance-before-sep="0.1cm" style:distance-after-sep="0.1cm" style:adjustment="left" style:rel-width="25%" style:color="#000000"/>
-                </style:page-layout-properties>
-                <style:header-style/>
-                <style:footer-style/>
-            </style:page-layout>',
-        "sub"=>'
-            <style:style style:name="sub" style:family="text">
-                <style:text-properties style:text-position="-33% 80%"/>
-            </style:style>',
-        "sup"=>'
-            <style:style style:name="sup" style:family="text">
-                <style:text-properties style:text-position="33% 80%"/>
-            </style:style>',
-        "del"=>'
-            <style:style style:name="del" style:family="text">
-                <style:text-properties style:text-line-through-style="solid"/>
-            </style:style>',
-        "underline"=>'
-            <style:style style:name="underline" style:family="text">
-              <style:text-properties style:text-underline-style="solid"
-                 style:text-underline-width="auto" style:text-underline-color="font-color"/>
-            </style:style>',
-        "media"=>'
-            <style:style style:name="media" style:family="graphic" style:parent-style-name="Graphics">
-                <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
-                   style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="baseline" style:horizontal-pos="left"
-                   style:horizontal-rel="paragraph"/>
-            </style:style>',
-        "medialeft"=>'
-            <style:style style:name="medialeft" style:family="graphic" style:parent-style-name="Graphics">
-              <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
-                 style:wrap-contour="false" style:horizontal-pos="left" style:horizontal-rel="paragraph"/>
-            </style:style>',
-        "mediaright"=>'
-            <style:style style:name="mediaright" style:family="graphic" style:parent-style-name="Graphics">
-              <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
-                 style:wrap-contour="false" style:horizontal-pos="right" style:horizontal-rel="paragraph"/>
-            </style:style>',
-        "mediacenter"=>'
-            <style:style style:name="mediacenter" style:family="graphic" style:parent-style-name="Graphics">
-               <style:graphic-properties style:run-through="foreground" style:wrap="none" style:horizontal-pos="center"
-                  style:horizontal-rel="paragraph"/>
-            </style:style>',
-        "tablealigncenter"=>'
-            <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="Table_20_Contents">
-                <style:paragraph-properties fo:text-align="center"/>
-            </style:style>',
-        "tablealignright"=>'
-            <style:style style:name="tablealignright" style:family="paragraph" style:parent-style-name="Table_20_Contents">
-                <style:paragraph-properties fo:text-align="end"/>
-            </style:style>',
-        "tablealignleft"=>'
-            <style:style style:name="tablealignleft" style:family="paragraph" style:parent-style-name="Table_20_Contents">
-                <style:paragraph-properties fo:text-align="left"/>
-            </style:style>',
-        "tableheader"=>'
-            <style:style style:name="tableheader" style:family="table-cell">
-                <style:table-cell-properties fo:padding="0.05cm" fo:border-left="0.002cm solid #000000" fo:border-right="0.002cm solid #000000" fo:border-top="0.002cm solid #000000" fo:border-bottom="0.002cm solid #000000"/>
-            </style:style>',
-        "tablecell"=>'
-            <style:style style:name="tablecell" style:family="table-cell">
-                <style:table-cell-properties fo:padding="0.05cm" fo:border-left="0.002cm solid #000000" fo:border-right="0.002cm solid #000000" fo:border-top="0.002cm solid #000000" fo:border-bottom="0.002cm solid #000000"/>
-            </style:style>',
-        "legendcenter"=>'
-            <style:style style:name="legendcenter" style:family="paragraph" style:parent-style-name="Illustration">
-                <style:paragraph-properties fo:text-align="center"/>
-            </style:style>',
-    );
+
+    // Page parameters. These are used by function initStyles.
+    // All values are assumed to be in 'cm' units.
+    var $page_width = 21;
+    var $page_heigth = 29.7;
+    var $margin_top = 2;
+    var $margin_bottom = 2;
+    var $margin_left = 2;
+    var $margin_right = 2;
+
+    // Automatic styles. Will always be added to content.xml and styles.xml.
+    // Initalized by function initStyles.
+    var $autostyles;
     // Regular styles. May not be present if in template mode, in which case they will be added to styles.xml
-    var $styles = array(
-        "Source_20_Text"=>'
-            <style:style style:name="Source_20_Text" style:display-name="Source Text" style:family="text">
-                <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
-            </style:style>',
-        "Preformatted_20_Text"=>'
-            <style:style style:name="Preformatted_20_Text" style:display-name="Preformatted Text" style:family="paragraph" style:parent-style-name="Standard" style:class="html">
-                <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.2cm"/>
-                <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
-            </style:style>',
-        "Source_20_Code"=>'
-            <style:style style:name="Source_20_Code" style:display-name="Source Code" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
-                <style:paragraph-properties fo:padding="0.05cm" style:shadow="none" fo:border="0.002cm solid #8cacbb" fo:background-color="#f7f9fa"/>
-            </style:style>',
-        "Source_20_File"=>'
-            <style:style style:name="Source_20_File" style:display-name="Source File" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
-                <style:paragraph-properties fo:padding="0.05cm" style:shadow="none" fo:border="0.002cm solid #8cacbb" fo:background-color="#f1f4f5"/>
-            </style:style>',
-        "Horizontal_20_Line"=>'
-            <style:style style:name="Horizontal_20_Line" style:display-name="Horizontal Line" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
-                <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.5cm" style:border-line-width-bottom="0.002cm 0.035cm 0.002cm" fo:padding="0cm" fo:border-left="none" fo:border-right="none" fo:border-top="none" fo:border-bottom="0.04cm double #808080" text:number-lines="false" text:line-number="0" style:join-border="false"/>
-                <style:text-properties fo:font-size="6pt" style:font-size-asian="6pt" style:font-size-complex="6pt"/>
-            </style:style>',
-        "Footnote"=>'
-            <style:style style:name="Footnote" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
-                <style:paragraph-properties fo:margin-left="0.5cm" fo:margin-right="0cm" fo:text-indent="-0.5cm" style:auto-text-indent="false" text:number-lines="false" text:line-number="0"/>
-                <style:text-properties fo:font-size="10pt" style:font-size-asian="10pt" style:font-size-complex="10pt"/>
-            </style:style>',
-        "Emphasis"=>'
-            <style:style style:name="Emphasis" style:family="text">
-                <style:text-properties fo:font-style="italic" style:font-style-asian="italic" style:font-style-complex="italic"/>
-            </style:style>',
-        "Strong_20_Emphasis"=>'
-            <style:style style:name="Strong_20_Emphasis" style:display-name="Strong Emphasis" style:family="text">
-                <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
-            </style:style>',
-    );
+    // Initalized by function initStyles.
+    var $styles;
+
     // Font definitions. May not be present if in template mode, in which case they will be added to styles.xml
     var $fonts = array(
         "StarSymbol"=>'<style:font-face style:name="StarSymbol" svg:font-family="StarSymbol"/>', // for bullets
@@ -181,6 +87,9 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function document_start() {
         global $ID;
+
+        $this->autostyles = $this->_getInitAutoStyles();
+        $this->styles = $this->_getInitStyles();
 
         // If older or equal to 2007-06-26, we need to disable caching
         $dw_version = preg_replace('/[^\d]/', '', getversion());
@@ -468,6 +377,240 @@ class renderer_plugin_odt extends Doku_Renderer {
     function render_TOC() { return ''; }
 
     function toc_additem($id, $text, $level) {}
+
+    /**
+     * Return autostyles initial content.
+     * Uses page parameters defined in the class.
+     *
+     * @author LarsDW223
+     */
+    function _getInitAutoStyles (){
+        $autostyles = array(
+        "pm1"=>'
+            <style:page-layout style:name="pm1">
+                <style:page-layout-properties fo:page-width="'.$this->page_width.'cm" fo:page-height="'.$this->page_heigth.'cm" style:num-format="1" style:print-orientation="portrait" fo:margin-top="'.$this->margin_top.'cm" fo:margin-bottom="'.$this->margin_bottom.'cm" fo:margin-left="'.$this->margin_left.'cm" fo:margin-right="'.$this->margin_right.'cm" style:writing-mode="lr-tb" style:footnote-max-height="0cm">
+                    <style:footnote-sep style:width="0.018cm" style:distance-before-sep="0.1cm" style:distance-after-sep="0.1cm" style:adjustment="left" style:rel-width="25%" style:color="#000000"/>
+                </style:page-layout-properties>
+                <style:header-style/>
+                <style:footer-style/>
+            </style:page-layout>',
+        "sub"=>'
+            <style:style style:name="sub" style:family="text">
+                <style:text-properties style:text-position="-33% 80%"/>
+            </style:style>',
+        "sup"=>'
+            <style:style style:name="sup" style:family="text">
+                <style:text-properties style:text-position="33% 80%"/>
+            </style:style>',
+        "del"=>'
+            <style:style style:name="del" style:family="text">
+                <style:text-properties style:text-line-through-style="solid"/>
+            </style:style>',
+        "underline"=>'
+            <style:style style:name="underline" style:family="text">
+              <style:text-properties style:text-underline-style="solid"
+                 style:text-underline-width="auto" style:text-underline-color="font-color"/>
+            </style:style>',
+        "media"=>'
+            <style:style style:name="media" style:family="graphic" style:parent-style-name="Graphics">
+                <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
+                   style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="baseline" style:horizontal-pos="left"
+                   style:horizontal-rel="paragraph"/>
+            </style:style>',
+        "medialeft"=>'
+            <style:style style:name="medialeft" style:family="graphic" style:parent-style-name="Graphics">
+              <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
+                 style:wrap-contour="false" style:horizontal-pos="left" style:horizontal-rel="paragraph"/>
+            </style:style>',
+        "mediaright"=>'
+            <style:style style:name="mediaright" style:family="graphic" style:parent-style-name="Graphics">
+              <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
+                 style:wrap-contour="false" style:horizontal-pos="right" style:horizontal-rel="paragraph"/>
+            </style:style>',
+        "mediacenter"=>'
+            <style:style style:name="mediacenter" style:family="graphic" style:parent-style-name="Graphics">
+               <style:graphic-properties style:run-through="foreground" style:wrap="none" style:horizontal-pos="center"
+                  style:horizontal-rel="paragraph"/>
+            </style:style>',
+        "tablealigncenter"=>'
+            <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="Table_20_Contents">
+                <style:paragraph-properties fo:text-align="center"/>
+            </style:style>',
+        "tablealignright"=>'
+            <style:style style:name="tablealignright" style:family="paragraph" style:parent-style-name="Table_20_Contents">
+                <style:paragraph-properties fo:text-align="end"/>
+            </style:style>',
+        "tablealignleft"=>'
+            <style:style style:name="tablealignleft" style:family="paragraph" style:parent-style-name="Table_20_Contents">
+                <style:paragraph-properties fo:text-align="left"/>
+            </style:style>',
+        "tableheader"=>'
+            <style:style style:name="tableheader" style:family="table-cell">
+                <style:table-cell-properties fo:padding="0.05cm" fo:border-left="0.002cm solid #000000" fo:border-right="0.002cm solid #000000" fo:border-top="0.002cm solid #000000" fo:border-bottom="0.002cm solid #000000"/>
+            </style:style>',
+        "tablecell"=>'
+            <style:style style:name="tablecell" style:family="table-cell">
+                <style:table-cell-properties fo:padding="0.05cm" fo:border-left="0.002cm solid #000000" fo:border-right="0.002cm solid #000000" fo:border-top="0.002cm solid #000000" fo:border-bottom="0.002cm solid #000000"/>
+            </style:style>',
+        "legendcenter"=>'
+            <style:style style:name="legendcenter" style:family="paragraph" style:parent-style-name="Illustration">
+                <style:paragraph-properties fo:text-align="center"/>
+            </style:style>', );
+        return $autostyles;
+    }
+
+    /**
+     * Return styles initial content.
+     *
+     * @author LarsDW223
+     */
+    function _getInitStyles (){
+        $styles = array(
+        "Source_20_Text"=>'
+            <style:style style:name="Source_20_Text" style:display-name="Source Text" style:family="text">
+                <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
+            </style:style>',
+        "Preformatted_20_Text"=>'
+            <style:style style:name="Preformatted_20_Text" style:display-name="Preformatted Text" style:family="paragraph" style:parent-style-name="Standard" style:class="html">
+                <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.2cm"/>
+                <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
+            </style:style>',
+        "Source_20_Code"=>'
+            <style:style style:name="Source_20_Code" style:display-name="Source Code" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
+                <style:paragraph-properties fo:padding="0.05cm" style:shadow="none" fo:border="0.002cm solid #8cacbb" fo:background-color="#f7f9fa"/>
+            </style:style>',
+        "Source_20_File"=>'
+            <style:style style:name="Source_20_File" style:display-name="Source File" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
+                <style:paragraph-properties fo:padding="0.05cm" style:shadow="none" fo:border="0.002cm solid #8cacbb" fo:background-color="#f1f4f5"/>
+            </style:style>',
+        "Horizontal_20_Line"=>'
+            <style:style style:name="Horizontal_20_Line" style:display-name="Horizontal Line" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
+                <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.5cm" style:border-line-width-bottom="0.002cm 0.035cm 0.002cm" fo:padding="0cm" fo:border-left="none" fo:border-right="none" fo:border-top="none" fo:border-bottom="0.04cm double #808080" text:number-lines="false" text:line-number="0" style:join-border="false"/>
+                <style:text-properties fo:font-size="6pt" style:font-size-asian="6pt" style:font-size-complex="6pt"/>
+            </style:style>',
+        "Footnote"=>'
+            <style:style style:name="Footnote" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
+                <style:paragraph-properties fo:margin-left="0.5cm" fo:margin-right="0cm" fo:text-indent="-0.5cm" style:auto-text-indent="false" text:number-lines="false" text:line-number="0"/>
+                <style:text-properties fo:font-size="10pt" style:font-size-asian="10pt" style:font-size-complex="10pt"/>
+            </style:style>',
+        "Emphasis"=>'
+            <style:style style:name="Emphasis" style:family="text">
+                <style:text-properties fo:font-style="italic" style:font-style-asian="italic" style:font-style-complex="italic"/>
+            </style:style>',
+        "Strong_20_Emphasis"=>'
+            <style:style style:name="Strong_20_Emphasis" style:display-name="Strong Emphasis" style:family="text">
+                <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
+            </style:style>', );
+        return $styles;
+    }
+
+    /**
+     * Return total page width in centimeters
+     * (margins are included)
+     *
+     * @author LarsDW223
+     */
+    function _getPageWidth(){
+        return $this->page_width;
+    }
+
+    /**
+     * Return total page heigth in centimeters
+     * (margins are included)
+     *
+     * @author LarsDW223
+     */
+    function _getPageHeigth(){
+        return $this->page_heigth;
+    }
+
+    /**
+     * Return left margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function _getLeftMargin(){
+        return $this->margin_left;
+    }
+
+    /**
+     * Return right margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function _getRightMargin(){
+        return $this->margin_right;
+    }
+
+    /**
+     * Return top margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function _getTopMargin(){
+        return $this->margin_top;
+    }
+
+    /**
+     * Return bottom margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function _getBottomMargin(){
+        return $this->margin_bottom;
+    }
+
+    /**
+     * Return width percentage value if margins are taken into account.
+     * Usually "100%" means 21cm in case of A4 format.
+     * But usually you like to take care of margins. This function
+     * adjusts the percentage to the value which should be used for margins.
+     * So 100% == 21cm e.g. becomes 80.9% == 17cm (assuming a margin of 2 cm on both sides).
+     *
+     * @author LarsDW223
+     */
+    function _getRelWidthMindMargins ($percentage = '100'){
+        $percentage *= $this->page_width - $this->margin_left - $this->margin_right;
+        $percentage /= $this->page_width;
+        return $percentage;
+    }
+
+    /**
+     * Like _getRelWidthMindMargins but returns the absulute width
+     * in centimeters.
+     *
+     * @author LarsDW223
+     */
+    function _getAbsWidthMindMargins ($percentage = '100'){
+        $percentage *= $this->page_width - $this->margin_left - $this->margin_right;
+        return ($percentage/100);
+    }
+
+    /**
+     * Return heigth percentage value if margins are taken into account.
+     * Usually "100%" means 29.7cm in case of A4 format.
+     * But usually you like to take care of margins. This function
+     * adjusts the percentage to the value which should be used for margins.
+     * So 100% == 29.7cm e.g. becomes 86.5% == 25.7cm (assuming a margin of 2 cm on top and bottom).
+     *
+     * @author LarsDW223
+     */
+    function _getRelHeigthMindMargins ($percentage = '100'){
+        $percentage *= $this->page_heigth - $this->margin_top - $this->margin_bottom;
+        $percentage /= $this->page_heigth;
+        return $percentage;
+    }
+
+    /**
+     * Like _getRelHeigthMindMargins but returns the absulute width
+     * in centimeters.
+     *
+     * @author LarsDW223
+     */
+    function _getAbsHeigthMindMargins ($percentage = '100'){
+        $percentage *= $this->page_heigth - $this->margin_left - $this->margin_right;
+        return ($percentage/100);
+    }
 
     function _odtAutoStyles() {
         $value = '<office:automatic-styles>';

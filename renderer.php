@@ -1396,6 +1396,76 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->listu_close();
     }
 
+    /**
+     * Adds the content of $string as a SVG picture to the document.
+     * The other parameters behave in the same way as in _odtAddImage.
+     *
+     * @author LarsDW223
+     */
+    function _addStringAsSVGImage($string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
+
+        if ( empty($string) ) { return; }
+
+        $ext  = '.svg';
+        $mime = '.image/svg+xml';
+        $name = 'Pictures/'.md5($string).'.'.$ext;
+        if(!$this->manifest[$name]){
+            $this->manifest[$name] = $mime;
+            $this->ZIP->add_File($string, $name, 0);
+        }
+
+        // make sure width and height are available
+        if (!$width || !$height) {
+            list($width, $height) = $this->_odtGetImageSize($src, $width, $height);
+        }
+
+        if($align){
+            $anchor = 'paragraph';
+        }else{
+            $anchor = 'as-char';
+        }
+
+        if (!$style or !array_key_exists($style, $this->autostyles)) {
+            $style = 'media'.$align;
+        }
+
+        if ($title) {
+            $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).' Legend"
+                            text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
+            $this->doc .= '<draw:text-box>';
+            $this->doc .= '<text:p text:style-name="legendcenter">';
+        }
+        $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
+                        text:anchor-type="'.$anchor.'" draw:z-index="0"
+                        svg:width="'.$width.'" svg:height="'.$height.'" >';
+        $this->doc .= '<draw:image xlink:href="'.$this->_xmlEntities($name).'"
+                        xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
+        $this->doc .= '</draw:frame>';
+        if ($title) {
+            $this->doc .= $this->_xmlEntities($title).'</text:p></draw:text-box></draw:frame>';
+        }
+    }
+
+    /**
+     * Adds the image $src as a picture file without adding it to the content
+     * of the document. The link name which can be used for the ODT draw:image xlink:href
+     * is returned. The caller is responsible for creating the frame and image tag
+     * but therefore has full control over it. This means he can also set parameters
+     * in the odt frame and image tag which can not be changed using the function _odtAddImage.
+     *
+     * @author LarsDW223
+     */
+    function _odtAddImageAsFileOnly($src){
+        if (file_exists($src)) {
+            list($ext,$mime) = mimetype($src);
+            $name = 'Pictures/'.md5($src).'.'.$ext;
+            if(!$this->manifest[$name]){
+                $this->manifest[$name] = $mime;
+                $this->ZIP->add_File(io_readfile($src,false),$name,0);
+            }
+        }
+        return $name;
+    }
 
     function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL){
         if (file_exists($src)) {

@@ -1,3 +1,9 @@
+2014-10-12 LarsDW223
+
+    * Added new file 'csscolors.php'. It is a helper class to convert CSS color names
+      into their corresponding color values. This might be needed by other plugins for ODT
+      rendering because ODT does not know CSS color names.
+
 2014-10-04 LarsDW223
 
     * Added a function to insert svg code as an svg image.

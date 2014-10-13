@@ -6,7 +6,14 @@
  * @author     LarsDW223
  */
 
-class CSSColors {
+// must be run within Dokuwiki
+if (!defined('DOKU_INC')) die();
+
+if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
+if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
+if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
+
+class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
     protected static $values = array(
                             'aliceblue'            => '#F0F8FF',
                             'antiquewhite'         => '#FAEBD7',
@@ -291,6 +298,23 @@ class CSSColors {
                             '#FFFF00' => 'Yellow',
                             '#9ACD32' => 'YellowGreen',
                         );
+
+    function getMethods() {
+        $result = array();
+        $result[] = array(
+                'name'   => 'getColorValue',
+                'desc'   => 'returns the color value for a given CSS color name. Returns "#000000" if the name is unknown',
+                'params' => array('name' => 'string'),
+                'return' => array('color value' => 'string'),                
+                );
+        $result[] = array(
+                'name'   => 'getValueName',
+                'desc'   => 'returns the CSS color name for a given color value. Returns "Black" if the value is unknown',
+                'params' => array('value' => 'string'),
+                'return' => array('name' => 'string'),                
+                );
+        return $result;
+    }
 
     public static function getColorValue ($name=NULL) {
         $value = '#000000';

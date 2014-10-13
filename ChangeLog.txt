@@ -1,3 +1,7 @@
+2014-10-13 LarsDW223
+
+    * Moved 'csscolors.php' to subdirectory helper and converted it into a DokuWiki helper plugin.
+
 2014-10-12 LarsDW223
 
     * Added new file 'csscolors.php'. It is a helper class to convert CSS color names

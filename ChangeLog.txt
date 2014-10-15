@@ -1,3 +1,7 @@
+2014-10-14 Florian Lamml (info@florian-lamml.de)
+
+    * Change info.txt to plugin.info.txt - fix install error
+
 2014-10-13 LarsDW223
 
     * Moved 'csscolors.php' to subdirectory helper and converted it into a DokuWiki helper plugin.

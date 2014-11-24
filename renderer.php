@@ -1113,7 +1113,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         return '<text:span text:style-name="'.$style_name.'">';
     }
 
-    function internalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
+   function internalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
                             $height=NULL, $cache=NULL, $linking=NULL) {
         global $conf;
         global $ID;
@@ -1124,11 +1124,16 @@ class renderer_plugin_odt extends Doku_Renderer {
             $file = mediaFN($src);
             $this->_odtAddImage($file, $width, $height, $align, $title);
         }else{
+/*
             // FIXME build absolute medialink and call externallink()
             $this->code('FIXME internalmedia: '.$src);
+*/
+            //FIX by EPO/Intersel - create a link to the dokuwiki internal resource
+            if (empty($title)) {$title=explode(':',$src); $title=end($title);}
+            $this->externalmedia(str_replace('doku.php?id=','lib/exe/fetch.php?media=',wl($src,'',true)),$title);
+            //End of FIX
         }
     }
-
     function externalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
                             $height=NULL, $cache=NULL, $linking=NULL) {
         global $conf;

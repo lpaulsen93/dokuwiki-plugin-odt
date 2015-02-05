@@ -47,7 +47,7 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
                 case 'arago':
                     $event->data['items']['export_odt'] =
                         '<li>'
-                        .'<a href='.wl($ID, $params).'  class="action export_odt" rel="nofollow" title="'.$this->getLang('export_odt_button').'">'
+                        .'<a href="'.wl($ID, $params).'"  class="action export_odt" rel="nofollow" title="'.$this->getLang('export_odt_button').'">'
                         .'<span>'.$this->getLang('export_odt_button').'</span>'
                         .'</a>'
                         .'</li>';

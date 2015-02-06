@@ -1,3 +1,7 @@
+2015-02-06 jaller94
+
+    * Valid Button for HTML5
+
 2014-11-24 intersel 
 
     * Fix the "FIXME internalmedia:xxxx" problem for PDF

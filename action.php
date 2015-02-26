@@ -35,24 +35,24 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      * @param mixed      $param not defined
      */
-    public function addbutton(&$event, $param) {
-        global $ID, $REV, $conf;
+    public function addbutton(Doku_Event $event, $param) {
+        global $ID, $REV;
 
         if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
             $params = array('do' => 'export_odt');
-            if($REV) $params['rev'] = $REV;
-
-            switch($conf['template']) {
-                case 'dokuwiki':
-                case 'arago':
-                    $event->data['items']['export_odt'] =
-                        '<li>'
-                        .'<a href="'.wl($ID, $params).'"  class="action export_odt" rel="nofollow" title="'.$this->getLang('export_odt_button').'">'
-                        .'<span>'.$this->getLang('export_odt_button').'</span>'
-                        .'</a>'
-                        .'</li>';
-                    break;
+            if($REV) {
+                $params['rev'] = $REV;
             }
+
+            $event->data['items'] = array_slice($event->data['items'], 0, -1, true) +
+                array('export_odt' =>
+                          '<li>'
+                          . '<a href="' . wl($ID, $params) . '"  class="action export_odt" rel="nofollow" title="' . $this->getLang('export_odt_button') . '">'
+                          . '<span>' . $this->getLang('export_odt_button') . '</span>'
+                          . '</a>'
+                          . '</li>'
+                ) +
+                array_slice($event->data['items'], -1, 1, true);
         }
     }
 

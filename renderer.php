@@ -1555,6 +1555,254 @@ class renderer_plugin_odt extends Doku_Renderer {
         return array($width, $height);
     }
 
+    /**
+     * This function opens a new span using the style as set in the imported CSS $import.
+     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
+     * The CSS style is selected by the element type 'span' and the specified classes in $classes.
+     * The property 'background-image' is not supported by an ODT span. This will be emulated
+     * by inserting an image manually in the span. If the url from the CSS should be converted to
+     * a local path, then the caller can specify a $baseURL. The full path will then be $baseURL/background-image.
+     *
+     * The currently supported CSS properties are:
+     * background-color, color, font-weight, font-size, border, background-image (emulated)
+     *
+     * The span should be closed by calling '_odtSpanClose'.
+     *
+     * @author LarsDW223
+     */
+    function _odtSpanOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL){
+        $properties = array();
+
+        $this->style_count++;
+
+        $import->getPropertiesForElement($properties, 'span', $classes);
+        foreach ($properties as $property => $value) {
+            $properties [$property] = $import->adjustValueForODT ($value);
+        }
+        $odt_bg = $properties ['background-color'];
+        $odt_fo = $properties ['color'];
+        $odt_fo_weight = $properties ['font-weight'];
+        $odt_fo_size = $properties ['font-size'];
+        $odt_fo_border = $properties ['border'];
+        $picture = $properties ['background-image'];
+
+        if ( empty ($picture) === false ) {
+            // If a picture/background-image is set in the CSS, than we insert it manually here.
+            // This is a workaround because ODT does not support the background-image attribute in a span.
+
+            if ( empty ($baseURL) === false) {
+                // Replace 'url(...)' with $baseURL
+                $picture = $import->replaceURLPrefix ($picture, $baseURL);
+            }
+
+            // Define graphic style for picture
+            $style_name = 'odt_auto_style_span_graphic_'.$this->style_count;
+            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Graphics"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+
+            // Add style and image to our document
+            $this->autostyles[$style_name] = $image_style;
+            $this->_odtAddImage ($picture,NULL,NULL,NULL,NULL,$style_name);
+        }
+
+        $style_name = 'odt_auto_style_span_'.$this->style_count;
+        $style  = '<style:style style:name="'.$style_name.'" style:family="text">';
+        $style .= '<style:text-properties fo:color="'.$odt_fo.'" fo:background-color="'.$odt_bg.'" ';
+        if ( empty ($odt_fo_weight) === false ) {
+            $style .= 'fo:font-weight="'.$odt_fo_weight.'" ';
+            $style .= 'style:font-weight-asian="'.$odt_fo_weight.'" ';
+            $style .= 'style:font-weight-complex="'.$odt_fo_weight.'" ';
+        }
+        if ( empty ($odt_fo_size) === false ) {
+            $style .= 'fo:font-size="'.$odt_fo_size.'" ';
+            $style .= 'style:font-size-asian="'.$odt_fo_size.'" ';
+            $style .= 'style:font-size-complex="'.$odt_fo_size.'" ';
+        }
+        if ( empty ($odt_fo_border) === false ) {
+            $style .= 'fo:border="'.$odt_fo_border.'" ';
+        }
+        $style .= '/>';
+        $style .= '</style:style>';
+
+        $this->autostyles[$style_name] = $style;
+        $this->doc .= '<text:span text:style-name="'.$style_name.'">';
+    }
+
+    /**
+     * This function closes a span (previously opened with _odtSpanOpenUseCSS).
+     *
+     * @author LarsDW223
+     */
+    function _odtSpanClose(){
+        $this->doc .= '</text:span>';
+    }
+
+    /**
+     * This function opens a div. As divs are not supported by ODT, it will be exported as a frame.
+     * To be more precise, to frames will be created. One including a picture nad the other including the text.
+     * A picture frame will only be created if a 'background-image' is set in the CSS style.
+     *
+     * The currently supported CSS properties are:
+     * background-color, color, padding, margin, display, border-radius, min-height.
+     * The background-image is simulated using a picture frame.
+     * FIXME: Find a way to successfuly use the background-image in the graphic style (see comments).
+     *
+     * The div should be closed by calling '_odtDivCloseAsFrame'.
+     *
+     * @author LarsDW223
+     */
+    function _odtDivOpenAsFrameUseCSS (helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL) {
+        $properties = array();
+
+        $this->style_count++;
+
+        $import->getPropertiesForElement($properties, 'div', $classes);
+        foreach ($properties as $property => $value) {
+            $properties [$property] = $import->adjustValueForODT ($value, 14);
+        }
+        $odt_bg = $properties ['background-color'];
+        $odt_fo = $properties ['color'];
+        $padding_left = $properties ['padding-left'];
+        $padding_right = $properties ['padding-right'];
+        $padding_top = $properties ['padding-top'];
+        $padding_bottom = $properties ['padding-bottom'];
+        $margin_left = $properties ['margin-left'];
+        $margin_right = $properties ['margin-right'];
+        $margin_top = $properties ['margin-top'];
+        $margin_bottom = $properties ['margin-bottom'];
+        $display = $properties ['display'];
+        $radius = $properties ['border-radius'];
+        $picture = $properties ['background-image'];
+        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
+
+        $min_height = $properties ['min-height'];
+
+        if ( empty ($picture) === false ) {
+            // If a picture/background-image is set in the CSS, than we insert it manually here.
+            // This is a workaround because ODT does not support the background-image attribute in a span.
+
+            if ( empty ($baseURL) === false) {
+                // Replace 'url(...)' with $baseURL
+                $picture = $import->replaceURLPrefix ($picture, $baseURL);
+            }
+            $pic_link=$this->_odtAddImageAsFileOnly($picture);
+            list($pic_width, $pic_height) = $this->_odtGetImageSize($picture);
+        }
+
+        $horiz_pos = 'center';
+        $width = 100;
+        $width_abs = $this->_getAbsWidthMindMargins ($width);
+
+        // Add our styles.
+        $style_name = 'odt_auto_style_div_'.$this->style_count;
+
+        $style =
+         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
+             <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
+                 draw:fill="solid" draw:fill-color="'.$odt_bg.'"
+                 draw:textarea-horizontal-align="left"
+                 draw:textarea-vertical-align="center"
+                 style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
+        if ( empty($padding_left) === false ) {
+            $style .= 'fo:padding-left="'.$padding_left.'" ';
+        }
+        if ( empty($padding_right) === false ) {
+            $style .= 'fo:padding-right="'.$padding_right.'" ';
+        }
+        if ( empty($padding_top) === false ) {
+            $style .= 'fo:padding-top="'.$padding_top.'" ';
+        }
+        if ( empty($padding_bottom) === false ) {
+            $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
+        }
+        if ( empty($margin_left) === false ) {
+            $style .= 'fo:margin-left="'.$margin_left.'" ';
+        }
+        if ( empty($margin_right) === false ) {
+            $style .= 'fo:margin-right="'.$margin_right.'" ';
+        }
+        if ( empty($margin_top) === false ) {
+            $style .= 'fo:margin-top="'.$margin_top.'" ';
+        }
+        if ( empty($margin_bottom) === false ) {
+            $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
+        }
+        $style .= 'fo:min-height="'.$min_height.'"
+                 style:rel-width="'.$width.'%"
+                 style:wrap="none"';
+        $style .= '>';
+
+        // FIXME: Delete the part below 'if ( $picture != NULL ) {...}'
+        // and use this background-image definition. For some reason the background-image is not displayed.
+        // Help is welcome.
+        /*$style .= '<style:background-image ';
+        $style .= 'xlink:href="'.$pic_link.'" xlink:type="simple" xlink:actuate="onLoad"
+                   style:position="center center" style:repeat="no-repeat" draw:opacity="100%"/>';*/
+        $style .= '</style:graphic-properties>';
+        $style .= '</style:style>';
+        $style .= '<style:style style:name="'.$style_name.'_image_frame" style:family="graphic">
+             <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
+                 draw:fill="none" draw:fill-color="'.$odt_bg.'"
+                 draw:textarea-horizontal-align="left"
+                 draw:textarea-vertical-align="center"
+                 style:wrap="none"/>
+         </style:style>
+         <style:style style:name="'.$style_name.'_text_box" style:family="paragraph">
+             <style:text-properties fo:color="'.$odt_fo.'"/>
+             <style:paragraph-properties
+              fo:margin-left="'.$padding_left.'pt" fo:margin-right="10pt" fo:text-indent="0cm"/>
+         </style:style>';
+        $this->autostyles[$style_name] = $style;
+
+        // Group the frame so that they are stacked one on each other.
+        $this->doc .= '<text:p>';
+        if ( $display == NULL ) {
+            $this->doc .= '<draw:g>';
+        } else {
+            $this->doc .= '<draw:g draw:display="' . $display . '">';
+        }
+
+        // Draw a frame with the image in it, if required.
+        // FIXME: delete this part if 'background-image' in graphic style is working.
+        if ( $picture != NULL )
+        {
+            $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
+                                text:anchor-type="paragraph"
+                                svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
+                                svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
+                                draw:z-index="1">
+                               <draw:image xlink:href="'.$pic_link.'"
+                                xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
+                                </draw:frame>';
+        }
+
+        // Draw a frame with a text box in it. the text box will be left opened
+        // to grow with the content (requires fo:min-height in $style_name).
+        $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_text_frame" draw:name="Bild1"
+                            text:anchor-type="paragraph"
+                            svg:x="0cm" svg:y="0cm"
+                            svg:width="'.$width_abs.'cm" svg:height="10cm" ';
+        $this->doc .= 'draw:z-index="0">';
+        $this->doc .= '<draw:text-box ';
+
+        // If required use round corners.
+        if ( empty($radius) === false )
+            $this->doc .= 'draw:corner-radius="'.$radius.'" ';
+
+        $this->doc .= '>';
+        $this->p_open($style_name.'_text_box');
+    }
+
+    /**
+     * This function closes a div/frame (previously opened with _odtDivOpenAsFrameUseCSS).
+     *
+     * @author LarsDW223
+     */
+    function _odtDivCloseAsFrame () {
+        $this->p_close();
+        $this->doc .= '</draw:text-box></draw:frame>';
+        $this->doc .= '</draw:g>';
+        $this->doc .= '</text:p>';
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

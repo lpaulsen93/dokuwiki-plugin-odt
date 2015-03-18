@@ -1,3 +1,11 @@
+2015-03-18 LarsDW223
+
+    * Added new helper class 'cssimport' for rudimentary CSS import (incomplete!).
+      The class support reading of CSS and DokuWiki replacement files. The CSS properties
+      can be queried by the ODT renderer to use it as parameters for ODT style definitions.
+    * Added new functions to renderer for CSS based span and div export:
+      _odtSpanOpenUseCSS/_odtSpanClose, _odtDivOpenAsFrameUseCSS/_odtDivCloseAsFrame
+
 2015-02-26 Florian Lamml (info@florian-lamml.de)
 
 	* changes to the pagetools-button

@@ -64,7 +64,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * Return version info
      */
     function getInfo(){
-        return confToHash(dirname(__FILE__).'/info.txt');
+        return confToHash(dirname(__FILE__).'/plugin.info.txt');
     }
 
     /**

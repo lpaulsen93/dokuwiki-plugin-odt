@@ -1,3 +1,17 @@
+2015-03-31 LarsDW223
+
+    Improved CSS based functions:
+    * Divided CSS based functions into 3 parts/functions:
+      + A function importing CSS from a file
+      + A function which directly imports a CSS style (similar to HTML code like 'style="color:red;"')
+      + A function which takes the properties from an assoziative array (this is called by the other two)
+    * Added CSS based functions for opening a paragraph
+    * Added support for font-family, font-variant, letter-spacing and vertical-align
+      in CSS functions for opening a span and paragraph
+    * Added support for line-height in CSS based paragraph open functions
+    * Added support for font-size in percent (e.g. 'font-size:200%;') in CSS based span and paragraph
+      functions. This requires to save the common styles in ODT documents not using templates.
+
 2015-03-18 LarsDW223
 
     * Added new helper class 'cssimport' for rudimentary CSS import (incomplete!).

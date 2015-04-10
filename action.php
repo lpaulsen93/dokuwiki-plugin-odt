@@ -73,5 +73,3 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
     }
 
 }
-
-//Setup VIM: ex: et ts=4 enc=utf-8 :

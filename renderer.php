@@ -2118,5 +2118,3 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '</text:p>';
     }
 }
-
-//Setup VIM: ex: et ts=4 enc=utf-8 :

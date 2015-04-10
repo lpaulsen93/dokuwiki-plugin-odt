@@ -1,4 +1,9 @@
-﻿2015-03-31 LarsDW223
+﻿2015-04-10 Florian Lamml (info@florian-lamml.de)
+
+    * new odt.png (up-to-date style)
+    * some cleanups
+
+2015-03-31 LarsDW223
 
     Improved CSS based functions:
     * Divided CSS based functions into 3 parts/functions:
@@ -22,7 +27,7 @@
 
 2015-02-26 Florian Lamml (info@florian-lamml.de)
 
-	* changes to the pagetools-button
+    * changes to the pagetools-button
 
 2015-02-06 jaller94
 

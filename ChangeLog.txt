@@ -1,3 +1,9 @@
+2015-05-02 LarsDW223
+
+    * Output paragraphs with style "Quotation 1" up to "Quotation 5" for quotes.
+      The styles are defined in styles.xml. Each style increases the indentation by 1cm
+      and has it's own border color. Fixes issue "quote conversion #31".
+
 ﻿2015-04-10 Florian Lamml (info@florian-lamml.de)
 
     * new odt.png (up-to-date style)

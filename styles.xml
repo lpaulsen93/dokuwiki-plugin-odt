@@ -113,6 +113,21 @@
         <style:style style:name="Graphics" style:family="graphic">
             <style:graphic-properties text:anchor-type="paragraph" svg:x="0cm" svg:y="0cm" style:wrap="dynamic" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="paragraph" style:horizontal-pos="center" style:horizontal-rel="paragraph"/>
         </style:style>
+        <style:style style:name="Quotation 1" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:margin-left="1cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"  fo:text-indent="0cm" style:auto-text-indent="false" fo:padding="0.049cm" fo:border-left="5pt solid #c0c0c0" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+</style:style>
+        <style:style style:name="Quotation 2" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:margin-left="2cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"  fo:text-indent="0cm" style:auto-text-indent="false" fo:padding="0.049cm" fo:border-left="5pt solid #9966cc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+</style:style>
+        <style:style style:name="Quotation 3" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:margin-left="3cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"  fo:text-indent="0cm" style:auto-text-indent="false" fo:padding="0.049cm" fo:border-left="5pt solid #c5000b" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+</style:style>
+        <style:style style:name="Quotation 4" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:margin-left="4cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"  fo:text-indent="0cm" style:auto-text-indent="false" fo:padding="0.049cm" fo:border-left="5pt solid #579d1c" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+</style:style>
+        <style:style style:name="Quotation 5" style:family="paragraph" style:parent-style-name="Standard">
+            <style:paragraph-properties fo:margin-left="5cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"  fo:text-indent="0cm" style:auto-text-indent="false" fo:padding="0.049cm" fo:border-left="5pt solid #ff9966" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+</style:style>
         <text:outline-style>
             <text:outline-level-style text:level="1" style:num-format="">
                 <style:list-level-properties text:min-label-distance="0.381cm"/>
@@ -161,3 +176,4 @@
         <style:master-page style:name="Standard" style:page-layout-name="pm1"/>
     </office:master-styles>
 </office:document-styles>
+

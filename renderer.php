@@ -39,6 +39,8 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $in_list_item = false;
     var $in_paragraph = false;
     var $highlight_style_num = 1;
+    var $quote_depth = 0;
+    var $quote_pos = 0;
 
     // Page parameters. These are used by function initStyles.
     // All values are assumed to be in 'cm' units.
@@ -1030,14 +1032,29 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function quote_open() {
-        if (!$this->in_paragraph) { // only start a new par if we're not already in one
-            $this->p_open();
+        // Do not go higher than 5 because only 5 quotation styles are defined.
+        if ( $this->quote_depth < 5 ) {
+            $this->quote_depth++;
         }
-        $this->doc .= "&gt;";
+        if ($this->quote_depth == 1) {
+            // On quote level 1 open a new paragraph with 'Quotation 1' style
+            $this->p_close();
+            $this->quote_pos = strlen ($this->doc);
+            $this->p_open('Quotation 1');
+            $this->quote_pos = strpos ($this->doc, 'Quotation 1', $this->quote_pos);
+            $this->quote_pos += strlen('Quotation 1') - 1;
+        } else {
+            // Quote level is greater than 1. Set new style by just changing the number.
+            // This is possible because the styles in style.xml are named 'Quotation 1', 'Quotation 2'...
+            $this->doc [$this->quote_pos] = $this->quote_depth;
+        }
     }
 
     function quote_close() {
-        if ($this->in_paragraph) { // only close the paragraph if we're actually in one
+        if ( $this->quote_depth > 0 ) {
+            $this->quote_depth--;
+        }
+        if ($this->quote_depth == 0 && $this->in_paragraph) { // only close the paragraph if we're actually in one
             $this->p_close();
         }
     }

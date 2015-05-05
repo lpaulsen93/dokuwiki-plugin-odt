@@ -639,7 +639,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                 // If it is a CSS color name, get it's real color value
                 $odt_colors = plugin_load('helper', 'odt_csscolors');
                 $color = $odt_colors->getColorValue ($part);
-                if ( $color != '#000000' ) {
+                if ( $part == 'black' || $color != '#000000' ) {
                     $part = $color;
                 }
             }

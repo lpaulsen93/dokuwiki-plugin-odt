@@ -1,6 +1,13 @@
 2015-05-05 LarsDW223
 
     * Bugfix: The function 'adjustValueForODT' did not convert the color name 'black' to '#000000'. This is fixed now.
+    * Refactored style functions:
+      Every function that only builds the ODT style from given properties has been moved to the new helper class 'stylefactory'.
+    * Added CSS based functions for tables:
+      + _odtTableOpenUseCSS, _odtTableOpenUseCSSStyle, _odtTableOpenUseProperties
+      + _odtTableHeaderOpenUseCSS, _odtTableHeaderOpenUseCSSStyle, _odtTableHeaderOpenUseProperties
+      + _odtTableRowOpenUseCSS, _odtTableRowOpenUseCSSStyle, _odtTableRowOpenUseProperties
+      + _odtTableCellOpenUseCSS, _odtTableCellOpenUseCSSStyle, _odtTableCellOpenUseProperties
 
 2015-05-02 LarsDW223
 

@@ -27,6 +27,7 @@ if (version_compare($dw_version, "20070626") and
  * The Renderer
  */
 class renderer_plugin_odt extends Doku_Renderer {
+    var $factory = null;
     var $import = null;
     var $ZIP = null;
     var $meta;
@@ -39,8 +40,16 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $in_list_item = false;
     var $in_paragraph = false;
     var $highlight_style_num = 1;
+    var $temp_table_column_styles = array ();
+    var $temp_in_header = false;
+    var $temp_autocols = false;
+    var $temp_maxcols = 0;
+    var $temp_column = 0;
+    var $temp_content = NULL;
+    var $temp_cols = NULL;
     var $quote_depth = 0;
     var $quote_pos = 0;
+    var $div_z_index = 0;
 
     // Page parameters. These are used by function initStyles.
     // All values are assumed to be in 'cm' units.
@@ -91,6 +100,10 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function document_start() {
         global $ID;
+
+        if ( empty($this->factory) === true ) {
+            $this->factory = plugin_load('helper', 'odt_stylefactory');
+        }
 
         $this->autostyles = $this->_getInitAutoStyles();
         $this->styles = $this->_getInitStyles();
@@ -807,6 +820,9 @@ class renderer_plugin_odt extends Doku_Renderer {
 
     function tablerow_close(){
         $this->doc .= '</table:table-row>';
+
+        // Reset temporary column counter
+        $this->temp_column = 0;
     }
 
     function tableheader_open($colspan = 1, $align = "left", $rowspan = 1){
@@ -1606,20 +1622,12 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @author LarsDW223
      */
-    function _odtSpanOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL){
+    function _odtSpanOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-
-        $import->getPropertiesForElement($properties, 'span', $classes);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $import->adjustValueForODT ($value);
+        if ( empty($element) === true ) {
+            $element = 'span';
         }
-
-        if ( empty ($properties ['background-image']) === false ) {
-            if ( empty ($baseURL) === false) {
-                // Replace 'url(...)' with $baseURL
-                $properties ['background-image'] = $import->replaceURLPrefix ($properties ['background-image'], $baseURL);
-            }
-        }
+        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         $this->_odtSpanOpenUseProperties($properties);
     }
 
@@ -1637,28 +1645,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtSpanOpenUseCSSStyle($style, $baseURL = NULL){
         $properties = array();
-
-        if ( $this->import == NULL ) {
-            $this->import = new helper_plugin_odt_cssimport ();
-            if ( $this->import == NULL ) {
-                // Failed to create helper. Can't proceed.
-                return;
-            }
-        }
-
-        // Create rule with selector '*' (doesn't matter) and declarations as set in $style
-        $rule = new css_rule ('*', $style);
-        $rule->getProperties ($properties);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $this->import->adjustValueForODT ($value);
-        }
-
-        if ( empty ($properties ['background-image']) === false ) {
-            if ( empty ($baseURL) === false) {
-                // Replace 'url(...)' with $baseURL
-                $properties ['background-image'] = $this->import->replaceURLPrefix ($properties ['background-image'], $baseURL);
-            }
-        }
+        $this->_processCSSStyle ($properties, $style, $baseURL);
         $this->_odtSpanOpenUseProperties($properties);
     }
 
@@ -1668,7 +1655,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The property 'background-image' is not supported by an ODT span. This will be emulated
      * by inserting an image manually in the span.
      *
-     * background-color, color, font-weight, font-size, border, font-family, font-variant, letter-spacing,
+     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
      * vertical-align, background-image (emulated)
      *
      * The span should be closed by calling '_odtSpanClose'.
@@ -1676,41 +1663,14 @@ class renderer_plugin_odt extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtSpanOpenUseProperties($properties){
-        $this->style_count++;
+        $disabled = array ();
 
         $odt_bg = $properties ['background-color'];
-        $odt_fo = $properties ['color'];
-        $odt_fo_weight = $properties ['font-weight'];
-        $odt_fo_size = $properties ['font-size'];
-        $odt_fo_border = $properties ['border'];
-        $odt_fo_family = $properties ['font-family'];
-        $odt_fo_variant = $properties ['font-variant'];
-        $odt_fo_lspacing = $properties ['letter-spacing'];
-        $odt_valign = $properties ['vertical-align'];
         $picture = $properties ['background-image'];
 
-        // Replace sub and super with text-position.
-        unset($odt_text_pos);
-        if ( $odt_valign == 'sub' ) {
-            $odt_text_pos = '-33% 100%';
-            unset($odt_valign);
-        }
-        if ( $odt_valign == 'super' ) {
-            $odt_text_pos = '33% 100%';
-            unset($odt_valign);
-        }
-        unset ($odt_parent);
-        $length = strlen ($odt_fo_size);
-        if ( $odt_fo_size [$length-1] == '%' ) {
-            // A font-size in percent is only supported in common style definitions, not in automatic
-            // styles. Create a common style and set it as parent for this automatic style.
-            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
-            $this->styles [$name] = $this->_odtBuildSizeStyle ($name, $odt_fo_size);
-            $odt_parent = $name;
-            unset($odt_fo_size);
-        }
-
         if ( empty ($picture) === false ) {
+            $this->style_count++;
+
             // If a picture/background-image is set, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
 
@@ -1723,45 +1683,11 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->_odtAddImage ($picture,NULL,NULL,NULL,NULL,$style_name);
         }
 
-        $style_name = 'odt_auto_style_span_'.$this->style_count;
-        $style  = '<style:style style:name="'.$style_name.'" style:family="text"';
-        if ( empty ($odt_parent) === false ) {
-            $style .= ' style:parent-style-name="'.$odt_parent.'" ';
-        }
-        $style .= '>';
-        $style .= '<style:text-properties fo:color="'.$odt_fo.'" fo:background-color="'.$odt_bg.'" ';
-        if ( empty ($odt_fo_weight) === false ) {
-            $style .= 'fo:font-weight="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-asian="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-complex="'.$odt_fo_weight.'" ';
-        }
-        if ( empty ($odt_fo_size) === false ) {
-            $style .= 'fo:font-size="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-asian="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-complex="'.$odt_fo_size.'" ';
-        }
-        if ( empty ($odt_fo_border) === false ) {
-            $style .= 'fo:border="'.$odt_fo_border.'" ';
-        }
-        if ( empty ($odt_fo_family) === false ) {
-            $style .= 'fo:font-family="'.$odt_fo_family.'" ';
-        }
-        if ( empty ($odt_fo_variant) === false ) {
-            $style .= 'fo:font-variant="'.$odt_fo_variant.'" ';
-        }
-        if ( empty ($odt_fo_lspacing) === false ) {
-            $style .= 'fo:letter-spacing="'.$odt_fo_lspacing.'" ';
-        }
-        if ( empty ($odt_valign) === false ) {
-            $style .= 'style:vertical-align="'.$odt_valign.'" ';
-        }
-        if ( empty ($odt_text_pos) === false ) {
-            $style .= 'style:text-position="'.$odt_text_pos.'" ';
-        }
-        $style .= '/>';
-        $style .= '</style:style>';
+        // Create a text style for our span
+        $disabled ['background-image'] = 1;
+        $style_name = $this->_createTextStyle ($properties, $disabled);
 
-        $this->autostyles[$style_name] = $style;
+        // Open span
         $this->doc .= '<text:span text:style-name="'.$style_name.'">';
     }
 
@@ -1788,20 +1714,12 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @author LarsDW223
      */
-    function _odtParagraphOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL){
+    function _odtParagraphOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-
-        $import->getPropertiesForElement($properties, 'span', $classes);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $import->adjustValueForODT ($value);
+        if ( empty($element) === true ) {
+            $element = 'p';
         }
-
-        if ( empty ($properties ['background-image']) === false ) {
-            if ( empty ($baseURL) === false) {
-                // Replace 'url(...)' with $baseURL
-                $properties ['background-image'] = $import->replaceURLPrefix ($properties ['background-image'], $baseURL);
-            }
-        }
+        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         $this->_odtParagraphOpenUseProperties($properties);
     }
 
@@ -1819,28 +1737,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtParagraphOpenUseCSSStyle($style, $baseURL = NULL){
         $properties = array();
-
-        if ( $this->import == NULL ) {
-            $this->import = new helper_plugin_odt_cssimport ();
-            if ( $this->import == NULL ) {
-                // Failed to create helper. Can't proceed.
-                return;
-            }
-        }
-
-        // Create rule with selector '*' (doesn't matter) and declarations as set in $style
-        $rule = new css_rule ('*', $style);
-        $rule->getProperties ($properties);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $this->import->adjustValueForODT ($value);
-        }
-
-        if ( empty ($properties ['background-image']) === false ) {
-            if ( empty ($baseURL) === false) {
-                // Replace 'url(...)' with $baseURL
-                $properties ['background-image'] = $this->import->replaceURLPrefix ($properties ['background-image'], $baseURL);
-            }
-        }
+        $this->_processCSSStyle ($properties, $style, $baseURL);
         $this->_odtParagraphOpenUseProperties($properties);
     }
 
@@ -1850,7 +1747,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The property 'background-image' is emulated by inserting an image manually in the paragraph.
      *
      * The currently supported properties are:
-     * background-color, color, font-weight, font-size, border, font-family, font-variant, letter-spacing,
+     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
      * vertical-align, line-height, background-image (emulated)
      *
      * The paragraph must be closed by calling 'p_close'.
@@ -1858,52 +1755,23 @@ class renderer_plugin_odt extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtParagraphOpenUseProperties($properties){
+        $disabled = array ();
+
         if ($this->in_paragraph) {
             // opening a paragraph inside another paragraph is illegal
             return;
         }
         $this->in_paragraph = true;
 
-        $this->style_count++;
-
         $odt_bg = $properties ['background-color'];
-        $odt_fo = $properties ['color'];
-        $odt_fo_weight = $properties ['font-weight'];
-        $odt_fo_size = $properties ['font-size'];
-        $odt_fo_border = $properties ['border'];
-        $odt_fo_family = $properties ['font-family'];
-        $odt_fo_variant = $properties ['font-variant'];
-        $odt_fo_lspacing = $properties ['letter-spacing'];
-        $odt_valign = $properties ['vertical-align'];
-        $odt_fo_line_height = $properties ['line-height'];
         $picture = $properties ['background-image'];
-
-        // Replace sub and super with text-position.
-        unset($odt_text_pos);
-        if ( $odt_valign == 'sub' ) {
-            $odt_text_pos = '-33% 100%';
-            unset($odt_valign);
-        }
-        if ( $odt_valign == 'super' ) {
-            $odt_text_pos = '33% 100%';
-            unset($odt_valign);
-        }
-        unset ($odt_parent);
-        $length = strlen ($odt_fo_size);
-        if ( $odt_fo_size [$length-1] == '%' ) {
-            // A font-size in percent is only supported in common style definitions, not in automatic
-            // styles. Create a common style and set it as parent for this automatic style.
-            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
-            $this->styles [$name] = $this->_odtBuildSizeStyle ($name, $odt_fo_size);
-            $odt_parent = $name;
-            unset($odt_fo_size);
-        }
 
         if ( empty ($picture) === false ) {
             // If a picture/background-image is set, than we insert it manually here.
-            // This is a workaround because ODT does not support the background-image attribute in a span.
+            // This is a workaround because ODT background-image works different than in CSS.
 
             // Define graphic style for picture
+            $this->style_count++;
             $style_name = 'odt_auto_style_span_graphic_'.$this->style_count;
             $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Graphics"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
 
@@ -1912,48 +1780,11 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->_odtAddImage ($picture,NULL,NULL,NULL,NULL,$style_name);
         }
 
-        $style_name = 'odt_auto_style_span_'.$this->style_count;
-        $style  = '<style:style style:name="'.$style_name.'" style:family="paragraph"';
-        if ( empty ($odt_parent) === false ) {
-            $style .= ' style:parent-style-name="'.$odt_parent.'" ';
-        }
-        $style .= '>';
-        $style .= '<style:paragraph-properties fo:color="'.$odt_fo.'" fo:background-color="'.$odt_bg.'" ';
-        if ( empty ($odt_fo_weight) === false ) {
-            $style .= 'fo:font-weight="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-asian="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-complex="'.$odt_fo_weight.'" ';
-        }
-        if ( empty ($odt_fo_size) === false ) {
-            $style .= 'fo:font-size="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-asian="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-complex="'.$odt_fo_size.'" ';
-        }
-        if ( empty ($odt_fo_border) === false ) {
-            $style .= 'fo:border="'.$odt_fo_border.'" ';
-        }
-        if ( empty ($odt_fo_family) === false ) {
-            $style .= 'fo:font-family="'.$odt_fo_family.'" ';
-        }
-        if ( empty ($odt_fo_variant) === false ) {
-            $style .= 'fo:font-variant="'.$odt_fo_variant.'" ';
-        }
-        if ( empty ($odt_fo_lspacing) === false ) {
-            $style .= 'fo:letter-spacing="'.$odt_fo_lspacing.'" ';
-        }
-        if ( empty ($odt_fo_line_height) === false ) {
-            $style .= 'fo:line-height="'.$odt_fo_line_height.'" ';
-        }
-        if ( empty ($odt_valign) === false ) {
-            $style .= 'style:vertical-align="'.$odt_valign.'" ';
-        }
-        if ( empty ($odt_text_pos) === false ) {
-            $style .= 'style:text-position="'.$odt_text_pos.'" ';
-        }
-        $style .= '/>';
-        $style .= '</style:style>';
+        // Create the style for the paragraph.
+        $disabled ['background-image'] = 1;
+        $style_name = $this->_createParagraphStyle ($properties, $disabled);
 
-        $this->autostyles[$style_name] = $style;
+        // Open a paragraph
         $this->doc .= '<text:p text:style-name="'.$style_name.'">';
     }
 
@@ -1971,12 +1802,17 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @author LarsDW223
      */
-    function _odtDivOpenAsFrameUseCSS (helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL) {
+    function _odtDivOpenAsFrameUseCSS (helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL) {
         $properties = array();
 
+        $this->div_z_index += 5;
         $this->style_count++;
 
-        $import->getPropertiesForElement($properties, 'div', $classes);
+        if ( empty($element) === true ) {
+            $element = 'div';
+        }
+
+        $import->getPropertiesForElement($properties, $element, $classes);
         foreach ($properties as $property => $value) {
             $properties [$property] = $import->adjustValueForODT ($value, 14);
         }
@@ -1991,6 +1827,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $margin_top = $properties ['margin-top'];
         $margin_bottom = $properties ['margin-bottom'];
         $display = $properties ['display'];
+        $fo_border = $properties ['border'];
         $radius = $properties ['border-radius'];
         $picture = $properties ['background-image'];
         $pic_positions = preg_split ('/\s/', $properties ['background-position']);
@@ -2047,6 +1884,9 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty($margin_bottom) === false ) {
             $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
         }
+        if ( empty ($fo_border) === false ) {
+            $style .= 'fo:border="'.$fo_border.'" ';
+        }
         $style .= 'fo:min-height="'.$min_height.'"
                  style:rel-width="'.$width.'%"
                  style:wrap="none"';
@@ -2075,6 +1915,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->autostyles[$style_name] = $style;
 
         // Group the frame so that they are stacked one on each other.
+        $this->p_close();
         $this->doc .= '<text:p>';
         if ( $display == NULL ) {
             $this->doc .= '<draw:g>';
@@ -2090,7 +1931,7 @@ class renderer_plugin_odt extends Doku_Renderer {
                                 text:anchor-type="paragraph"
                                 svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
                                 svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                draw:z-index="1">
+                                draw:z-index="'.($this->div_z_index + 1).'">
                                <draw:image xlink:href="'.$pic_link.'"
                                 xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
                                 </draw:frame>';
@@ -2102,7 +1943,7 @@ class renderer_plugin_odt extends Doku_Renderer {
                             text:anchor-type="paragraph"
                             svg:x="0cm" svg:y="0cm"
                             svg:width="'.$width_abs.'cm" svg:height="10cm" ';
-        $this->doc .= 'draw:z-index="0">';
+        $this->doc .= 'draw:z-index="'.($this->div_z_index + 0).'">';
         $this->doc .= '<draw:text-box ';
 
         // If required use round corners.
@@ -2110,7 +1951,302 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
-        $this->p_open($style_name.'_text_box');
+        //$this->p_open($style_name.'_text_box');
+    }
+
+    /**
+     * This function closes a div/frame (previously opened with _odtDivOpenAsFrameUseCSS).
+     *
+     * @author LarsDW223
+     */
+    function _odtDivCloseAsFrame () {
+        //$this->p_close();
+        $this->doc .= '</draw:text-box></draw:frame>';
+        $this->doc .= '</draw:g>';
+        $this->doc .= '</text:p>';
+
+        $this->div_z_index -= 5;
+    }
+
+    /**
+     * This function opens a new table using the style as set in the imported CSS $import.
+     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
+     * The CSS style is selected by the element type 'td' and the specified classes in $classes.
+     *
+     * This function calls _odtTableOpenUseProperties. See the function description for supported properties.
+     *
+     * The table should be closed by calling 'table_close()'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $maxcols = NULL, $numrows = NULL){
+        $properties = array();
+        if ( empty($element) === true ) {
+            $element = 'table';
+        }
+        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
+        $this->_odtTableOpenUseProperties($properties, $maxcols, $numrows);
+    }
+
+    /**
+     * This function opens a new table using the style as specified in $style.
+     *
+     * This function calls _odtTableOpenUseProperties. See the function description for supported properties.
+     *
+     * The table should be closed by calling 'table_close()'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableOpenUseCSSStyle($style, $baseURL = NULL, $maxcols = NULL, $numrows = NULL){
+        $properties = array();
+        $this->_processCSSStyle ($properties, $style, $baseURL);
+        $this->_odtTableOpenUseProperties($properties, $maxcols, $numrows);
+    }
+
+    /**
+     * This function opens a new table using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'width'.
+     *
+     * The currently supported properties are:
+     * width, border-collapse, background-color
+     *
+     * The table must be closed by calling 'table_close'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableOpenUseProperties ($properties, $maxcols = NULL, $numrows = NULL){
+        unset ($this->temp_content);
+
+        // We are starting a new table header declaration.
+        // The flag will be set to false on opening the first table cell of the body.
+        $this->temp_in_header = true;
+
+        // Create style.
+        $style_name = $this->factory->createTableTableStyle ($style, $properties);
+        $this->autostyles[$style_name] = $style;
+
+        // Open the table referencing our style.
+        $this->doc .= '<table:table table:style-name="'.$style_name.'">';
+
+        // Delete any old values in the temporary column styles array.
+        for ( $column = 0 ; $column < count($this->temp_table_column_styles) ; $column++ ) {
+            unset($this->$temp_table_column_styles [$column]);
+        }
+
+        // Create columns with predefined and temporarily remembered style names.
+        if ( empty ($maxcols) === true ) {
+            // Try to automatically detect the number of columns.
+            $this->temp_autocols = true;
+            $this->doc .= '<ColumnsPlaceholder>';
+            unset ($this->temp_cols);
+        } else {
+            $this->temp_autocols = false;
+
+            for ( $column = 0 ; $column < $maxcols ; $column++ ) {
+                $this->style_count++;
+                $style_name = 'odt_auto_style_table_column_'.$this->style_count;
+                $this->temp_table_column_styles [$column] = $style_name;
+
+                $this->doc .= '<table:table-column table:style-name="'.$style_name.'"/>';
+            }
+        }
+
+        // Reset temporary column counter
+        $this->temp_column = 0;
+        $this->temp_maxcols = 0;
+    }
+
+    function _odtTableHeaderOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $colspan = 1, $rowspan = 1){
+        $properties = array();
+        if ( empty($element) === true ) {
+            $element = 'th';
+        }
+        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
+        $this->_odtTableHeaderOpenUseProperties($properties, $colspan, $rowspan);
+    }
+
+    function _odtTableHeaderOpenUseCSSStyle($style, $baseURL = NULL, $colspan = 1, $rowspan = 1){
+        $properties = array();
+        $this->_processCSSStyle ($properties, $style, $baseURL);
+        $this->_odtTableHeaderOpenUseProperties($properties, $colspan, $rowspan);
+    }
+
+    function _odtTableHeaderOpenUseProperties ($properties = NULL, $colspan = 1, $rowspan = 1){
+        // Open cell, second parameter MUST BE true to indicate we are in the header.
+        $this->_odtTableCellOpenUsePropertiesInternal ($properties, true, $colspan, $rowspan);
+
+        /*$this->doc .= '<table:table-cell office:value-type="string" table:style-name="tableheader" ';
+        if ( $colspan > 1 ) {
+            $this->doc .= ' table:number-columns-spanned="'.$colspan.'"';
+        }
+        if ( $rowspan > 1 ) {
+            $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';
+        }
+        $this->doc .= '>';
+        $this->p_open('Standard');*/
+
+        // Overwrite/Create column style for actual column if $properties has any
+        // meaningful params for a column-style (e.g. width).
+        $style_name = $this->temp_table_column_styles [$this->temp_column];
+        //$style_name = $this->_createTableColumnStyle ($properties, NULL, $style_name);
+        $style_name = $this->factory->createTableColumnStyle ($style, $properties, NULL, $style_name);
+        $this->autostyles[$style_name] = $style;
+        $this->temp_column++;
+
+        // Eventually add a new temp column if in auto mode
+        if ( $this->temp_autocols === true ) {
+            if ( $this->temp_column > $this->temp_maxcols ) {
+                // Add temp column.
+                $this->temp_cols .= '<table:table-column table:style-name="'.$style_name.'"/>';
+                $this->temp_maxcols++;
+            }
+        }
+    }
+
+    /**
+     * This function opens a new table row using the style as set in the imported CSS $import.
+     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
+     * The CSS style is selected by the element type 'td' and the specified classes in $classes.
+     *
+     * This function calls _odtTableRowOpenUseProperties. See the function description for supported properties.
+     *
+     * The row should be closed by calling 'tablerow_close()'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableRowOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
+        $properties = array();
+        if ( empty($element) === true ) {
+            $element = 'tr';
+        }
+        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
+        $this->_odtTableRowOpenUseProperties($properties);
+
+        // Reset temporary column counter
+        $this->temp_column = 0;
+    }
+
+    /**
+     * This function opens a new table row using the style as specified in $style.
+     *
+     * This function calls _odtTableRowOpenUseProperties. See the function description for supported properties.
+     *
+     * The row should be closed by calling 'tablerow_close()'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableRowOpenUseCSSStyle($style, $baseURL = NULL){
+        $properties = array();
+        $this->_processCSSStyle ($properties, $style, $baseURL);
+        $this->_odtTableRowOpenUseProperties($properties);
+    }
+
+    function _odtTableRowOpenUseProperties ($properties){
+        // Create style.
+        $style_name = $this->factory->createTableRowStyle ($style, $properties);
+        $this->autostyles[$style_name] = $style;
+
+        // Open table row.
+        $this->doc .= '<table:table-row table:style-name="'.$style_name.'">';
+    }
+
+    /**
+     * This function opens a new table cell using the style as set in the imported CSS $import.
+     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
+     * The CSS style is selected by the element type 'td' and the specified classes in $classes.
+     *
+     * This function calls _odtTableCellOpenUseProperties. See the function description for supported properties.
+     *
+     * The cell should be closed by calling 'tablecell_close()'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableCellOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
+        $properties = array();
+        if ( empty($element) === true ) {
+            $element = 'td';
+        }
+        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
+        $this->_odtTableCellOpenUseProperties($properties);
+    }
+
+    /**
+     * This function opens a new table cell using the style as specified in $style.
+     *
+     * This function calls _odtTableCellOpenUseProperties. See the function description for supported properties.
+     *
+     * The cell should be closed by calling 'tablecell_close()'.
+     *
+     * @author LarsDW223
+     */
+    function _odtTableCellOpenUseCSSStyle($style, $baseURL = NULL){
+        $properties = array();
+        $this->_processCSSStyle ($properties, $style, $baseURL);
+        $this->_odtTableCellOpenUseProperties($properties);
+    }
+
+    function _odtTableCellOpenUseProperties ($properties){
+        $this->_odtTableCellOpenUsePropertiesInternal ($properties);
+    }
+
+    protected function _odtTableCellOpenUsePropertiesInternal ($properties, $inHeader = false, $colspan = 1, $rowspan = 1){
+        $disabled = array ();
+
+        if ( $inHeader === false ) {
+            // Table header definition is finished.
+            $this->temp_in_header = false;
+        }
+
+        // Writeback temporary table content if this is the first cell in the table body.
+        if ( $inHeader === false && empty($this->temp_cols) === false) {                
+            // First replace columns placeholder with created columns, if in auto mode.
+            if ( $this->temp_autocols === true ) {
+                $this->doc =
+                    str_replace ('<ColumnsPlaceholder>', $this->temp_cols, $this->doc);
+
+                $this->doc =
+                    str_replace ('<MaxColsPlaceholder>', $this->temp_maxcols, $this->doc);
+
+                unset ($this->temp_content);
+                unset ($this->temp_cols);
+                $this->temp_autocols = false;
+            }
+        }
+
+        // Create style name. (Re-enable background-color!)
+        $style_name = $this->factory->createTableCellStyle ($style, $properties);
+        $this->autostyles[$style_name] = $style;
+
+        // Create a paragraph style for the paragraph within the cell.
+        // Disable properties that belong to the table cell style.
+        $disabled ['border'] = 1;
+        $disabled ['background-color'] = 1;
+        $disabled ['background-image'] = 1;
+        $disabled ['vertical-align'] = 1;
+        $style_name_paragraph = $this->_createParagraphStyle ($properties, $disabled);
+
+        // Open cell.
+        //$this->doc .= '<table:table-cell table:style-name="'.$style_name.'">';
+
+        $this->doc .= '<table:table-cell office:value-type="string" table:style-name="'.$style_name.'" ';
+        if ( $colspan > 1 ) {
+            $this->doc .= ' table:number-columns-spanned="'.$colspan.'"';
+        }
+        if ( $inHeader === true && $this->temp_autocols === true && $colspan == 0 ) {
+            $this->doc .= ' table:number-columns-spanned="<MaxColsPlaceholder>"';
+        }
+        if ( $rowspan > 1 ) {
+            $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';
+        }
+        $this->doc .= '>';
+
+        // If a paragraph style was created, means text properties were set,
+        // then we open a paragraph with our own style. Otherwise we use the standard style.
+        if ( $style_name_paragraph != NULL ) {
+            $this->p_open($style_name_paragraph);
+        } else {
+            $this->p_open();
+        }
     }
 
     /**
@@ -2124,14 +2260,133 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     /**
-     * This function closes a div/frame (previously opened with _odtDivOpenAsFrameUseCSS).
+     * This function creates a text style using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
+     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
+     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
+     *
+     * The currently supported properties are:
+     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
+     * vertical-align, background-image
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
      */
-    function _odtDivCloseAsFrame () {
-        $this->p_close();
-        $this->doc .= '</draw:text-box></draw:frame>';
-        $this->doc .= '</draw:g>';
-        $this->doc .= '</text:p>';
+    protected function _createTextStyle($properties, $disabled_props = NULL){
+        $save = $disabled_props ['font-size'];
+
+        if ( empty ($disabled_props ['font-size']) === true ) {
+            $odt_fo_size = $properties ['font-size'];
+        }
+        unset ($parent);
+        $length = strlen ($odt_fo_size);
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
+            // A font-size in percent is only supported in common style definitions, not in automatic
+            // styles. Create a common style and set it as parent for this automatic style.
+            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
+            $this->styles [$name] = $this->_odtBuildSizeStyle ($name, $odt_fo_size);
+            $parent = $name;
+        }
+
+        $style_name = $this->factory->createTextStyle($style, $properties, $disabled_props, $parent);
+        if ( $style_name == NULL ) {
+            return NULL;
+        }
+        $this->autostyles[$style_name] = $style;
+
+        $disabled_props ['font-size'] = $save;
+
+        return $style_name;
+    }
+
+    /**
+     * This function creates a paragraph style using. It uses the createParagraphStyle function
+     * from the stylefactory helper class but takes care of the extra handling required for the
+     * font-size attribute.
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     */
+    protected function _createParagraphStyle($properties, $disabled_props = NULL){
+        $save = $disabled_props ['font-size'];
+
+        if ( empty ($disabled_props ['font-size']) === true ) {
+            $odt_fo_size = $properties ['font-size'];
+        }
+        unset ($parent);
+        $length = strlen ($odt_fo_size);
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
+            // A font-size in percent is only supported in common style definitions, not in automatic
+            // styles. Create a common style and set it as parent for this automatic style.
+            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
+            $this->styles [$name] = $this->_odtBuildSizeStyle ($name, $odt_fo_size);
+            $parent = $name;
+        }
+
+        $style_name = $this->factory->createParagraphStyle($style, $properties, $disabled_props, $parent);
+        if ( $style_name == NULL ) {
+            return NULL;
+        }
+        $this->autostyles[$style_name] = $style;
+
+        $disabled_props ['font-size'] = $save;
+
+        return $style_name;
+    }
+
+    /**
+     * This function processes the CSS declarations in $style and saves them in $properties
+     * as key - value pairs, e.g. $properties ['color'] = 'red'. It also adjusts the values
+     * for the ODT format and changes URLs to local paths if required, using $baseURL).
+     *
+     * @author LarsDW223
+     */
+    protected function _processCSSStyle(&$properties, $style, $baseURL = NULL){
+        if ( $this->import == NULL ) {
+            $this->import = new helper_plugin_odt_cssimport ();
+            if ( $this->import == NULL ) {
+                // Failed to create helper. Can't proceed.
+                return;
+            }
+        }
+
+        // Create rule with selector '*' (doesn't matter) and declarations as set in $style
+        $rule = new css_rule ('*', $style);
+        $rule->getProperties ($properties);
+        foreach ($properties as $property => $value) {
+            $properties [$property] = $this->import->adjustValueForODT ($value, 14);
+        }
+
+        if ( empty ($properties ['background-image']) === false ) {
+            if ( empty ($baseURL) === false) {
+                // Replace 'url(...)' with $baseURL
+                $properties ['background-image'] = $this->import->replaceURLPrefix ($properties ['background-image'], $baseURL);
+            }
+        }
+    }
+
+    /**
+     * This function examines the CSS properties for $classes and $element based on the data
+     * in $import and saves them in $properties as key - value pairs, e.g. $properties ['color'] = 'red'.
+     * It also adjusts the values for the ODT format and changes URLs to local paths if required, using $baseURL).
+     *
+     * @author LarsDW223
+     */
+    protected function _processCSSClass(&$properties, helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
+        $import->getPropertiesForElement($properties, $element, $classes);
+        foreach ($properties as $property => $value) {
+            $properties [$property] = $import->adjustValueForODT ($value, 14);
+        }
+
+        if ( empty ($properties ['background-image']) === false ) {
+            if ( empty ($baseURL) === false) {
+                // Replace 'url(...)' with $baseURL
+                $properties ['background-image'] = $import->replaceURLPrefix ($properties ['background-image'], $baseURL);
+            }
+        }
     }
 }
+
+//Setup VIM: ex: et ts=4 enc=utf-8 :

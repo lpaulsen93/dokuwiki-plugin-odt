@@ -8,6 +8,13 @@
       + _odtTableHeaderOpenUseCSS, _odtTableHeaderOpenUseCSSStyle, _odtTableHeaderOpenUseProperties
       + _odtTableRowOpenUseCSS, _odtTableRowOpenUseCSSStyle, _odtTableRowOpenUseProperties
       + _odtTableCellOpenUseCSS, _odtTableCellOpenUseCSSStyle, _odtTableCellOpenUseProperties
+    * Adjustment for Wrap plugin:
+      New function _odtDivOpenAsFrameUseProperties, _processCSSClass and _processCSSStyle are now public
+    * Bugfix: close paragraph (if open) before opening a header. Otherwise headers would disappear if opened
+      inbetween a paragraph.
+    * Bugfix: do not open nested frames in nested calls to _odtDivOpenAsFrameUseCSS/_odtDivOpenAsFrameUseProperties.
+      Reason: a nested frame will not be displayed, only the first, outer one.
+      Nested calls will be ignored and do not open frames and DO NOT lead to errors.
 
 2015-05-02 LarsDW223
 

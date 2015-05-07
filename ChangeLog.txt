@@ -1,3 +1,9 @@
+2015-05-07 LarsDW223
+
+    * Added support for multi column frames (to provide it to the wrap plugin).
+      New functions are: createMultiColumnFrameStyle (stylefactory), _odtOpenMultiColumnFrame,
+      _odtCloseMultiColumnFrame.
+
 2015-05-05 LarsDW223
 
     * Bugfix: The function 'adjustValueForODT' did not convert the color name 'black' to '#000000'. This is fixed now.

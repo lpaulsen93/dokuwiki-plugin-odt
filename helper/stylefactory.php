@@ -637,5 +637,60 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         return $style_name;
     }
+
+    /**
+     * This function creates a frame style for multiple columns, using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
+     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
+     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
+     *
+     * The currently supported properties are:
+     * column-count, column-rule, column-gap
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     */
+    public static function createMultiColumnFrameStyle(&$style, $properties, $disabled_props = NULL) {
+        $attrs = 0;
+
+        if ( empty ($disabled_props ['column-count']) === true ) {
+            $columns = $properties ['column-count'];
+            $attrs++;
+        }
+
+        if ( empty ($disabled_props ['column-rule']) === true ) {
+            $rule_parts = explode (' ', $properties ['column-rule']);
+            $attrs++;
+        }
+
+        if ( empty ($disabled_props ['column-gap']) === true ) {
+            $gap = $properties ['column-gap'];
+            $attrs++;
+        }
+
+        // If all relevant properties are empty or disabled, then there
+        // are no attributes for our style. Return NULL to indicate 'no style required'.
+        if ( $attrs == 0 ) {
+            return NULL;
+        }
+
+        // Create style name.
+        $style_name = self::getNewStylename ('Frame');
+
+        $width = '1000*';
+
+        $style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Frame">
+                    <style:graphic-properties fo:border="none" style:vertical-pos="top" style:vertical-rel="paragraph-content" style:horizontal-pos="center" style:horizontal-rel="paragraph">
+<style:columns fo:column-count="'.$columns.'" fo:column-gap="'.$gap.'">
+<style:column-sep style:style="'.$rule_parts [1].'" style:color="'.$rule_parts [2].'" style:width="'.$rule_parts [0].'"/>
+<style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
+<style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
+<style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
+</style:columns>
+</style:graphic-properties></style:style>';
+
+        return $style_name;
+    }
 }
 ?>

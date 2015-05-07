@@ -2572,6 +2572,43 @@ class renderer_plugin_odt extends Doku_Renderer {
             }
         }
     }
+
+    /**
+     * This function opens a multi column frame according to the parameters in $properties.
+     * See function createMultiColumnFrameStyle of helper class stylefactory.php for more
+     * information about the supported properties/CSS styles.
+     *
+     * @author LarsDW223
+     */
+    function _odtOpenMultiColumnFrame ($properties) {
+        // Create style name.
+        $style_name = $this->factory->createMultiColumnFrameStyle ($style, $properties);
+        $this->autostyles[$style_name] = $style;
+
+        $width_abs = $this->_getAbsWidthMindMargins (100);
+        
+        // Group the frame so that they are stacked one on each other.
+        $this->p_close();
+        $this->doc .= '<text:p>';
+
+        // Draw a frame with a text box in it. the text box will be left opened
+        // to grow with the content (requires fo:min-height in $style_name).
+        $this->doc .= '<draw:frame draw:style-name="'.$style_name.'" draw:name="Frame1"
+                        text:anchor-type="paragraph" svg:width="'.$width_abs.'cm" draw:z-index="0">';
+        $this->doc .= '<draw:text-box fo:min-height="5cm">';
+    }
+
+    /**
+     * This function closes a multi column frame (previously opened with _odtOpenMultiColumnFrame).
+     *
+     * @author LarsDW223
+     */
+    function _odtCloseMultiColumnFrame () {
+        $this->doc .= '</draw:text-box></draw:frame>';
+        $this->doc .= '</text:p>';
+
+        $this->div_z_index -= 5;
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

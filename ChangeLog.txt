@@ -1,3 +1,8 @@
+2015-05-09 LarsDW223
+
+    * Bugfix: Re-Sized images were only displayed in a very small size.
+      Fixes issue "exported images are just sized of some little pixels #11".
+
 2015-05-07 LarsDW223
 
     * Added support for multi column frames (to provide it to the wrap plugin).

@@ -1541,6 +1541,10 @@ class renderer_plugin_odt extends Doku_Renderer {
         // make sure width and height are available
         if (!$width || !$height) {
             list($width, $height) = $this->_odtGetImageSize($src, $width, $height);
+        } else {
+            // Adjust values for ODT
+            $width = $this->adjustLengthValueForODT ($width);
+            $height = $this->adjustLengthValueForODT ($height);
         }
 
         if($align){
@@ -2608,6 +2612,29 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '</text:p>';
 
         $this->div_z_index -= 5;
+    }
+
+    /**
+     * This function adjust the length string $value for ODT and returns the adjusted string:
+     * - If there are only digits in the string, the unit 'pt' is appended
+     * - If the unit is 'px' it is replaced by 'pt'
+     *   (the OpenDocument specification only optionally supports 'px' and it seems that at
+     *   least LibreOffice is not supporting it)
+     *
+     * @author LarsDW223
+     */
+    function adjustLengthValueForODT ($value) {
+        // If there are only digits, append 'pt' to it
+        if ( ctype_digit($value) === true ) {
+            $value = $value.'pt';
+        } else {
+            // Replace px with pt (px does not seem to be supported by ODT)
+            $length = strlen ($value);
+            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+                $value [$length-1] = 't';
+            }
+        }
+        return $value;
     }
 }
 

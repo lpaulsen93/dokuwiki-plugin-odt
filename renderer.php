@@ -1859,8 +1859,24 @@ class renderer_plugin_odt extends Doku_Renderer {
         }
 
         $horiz_pos = 'center';
-        $width = 100;
-        $width_abs = $this->_getAbsWidthMindMargins ($width);
+
+        if ( empty ($width) === true ) {
+            $width = '100%';
+        }
+
+        // For safety, init width_abs with value for 100%
+        $width_abs = $this->_getAbsWidthMindMargins (100);
+
+        // Different handling for relative and absolute size...
+        if ( $width [strlen($width)-1] == '%' ) {
+            // Convert percentage values to absolute size, respecting page margins
+            $width = trim($width, '%');
+            $width_abs = $this->_getAbsWidthMindMargins ($width).'cm';
+        } else {
+            // Absolute values may include not supported units.
+            // Adjust.
+            $width_abs = $this->adjustLengthValueForODT($width);
+        }
 
         // Add our styles.
         $style_name = 'odt_auto_style_div_'.$this->style_count;
@@ -1900,7 +1916,6 @@ class renderer_plugin_odt extends Doku_Renderer {
             $style .= 'fo:border="'.$fo_border.'" ';
         }
         $style .= 'fo:min-height="'.$min_height.'"
-                 style:rel-width="'.$width.'%"
                  style:wrap="none"';
         $style .= '>';
 
@@ -1954,7 +1969,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_text_frame" draw:name="Bild1"
                             text:anchor-type="paragraph"
                             svg:x="0cm" svg:y="0cm"
-                            svg:width="'.$width_abs.'cm" svg:height="10cm" ';
+                            svg:width="'.$width_abs.'cm" svg:height="'.$min_height.'" ';
         $this->doc .= 'draw:z-index="'.($this->div_z_index + 0).'">';
         $this->doc .= '<draw:text-box ';
 
@@ -2021,15 +2036,23 @@ class renderer_plugin_odt extends Doku_Renderer {
             $horiz_pos = 'center';
         }
         if ( empty ($width) === true ) {
-            $width = 100;
-        } else {
-            if ( $width [strlen($width)-1] == '%' ) {
-                $width = trim($width, '%');
-            } else {
-                $width = 100;
-            }
+            $width = '100%';
         }
-        $width_abs = $this->_getAbsWidthMindMargins ($width);
+
+        // For safety, init width_abs with value for 100%
+        $width_abs = $this->_getAbsWidthMindMargins (100);
+
+        // Different handling for relative and absolute size...
+        if ( $width [strlen($width)-1] == '%' ) {
+            // Convert percentage values to absolute size, respecting page margins
+            $width = trim($width, '%');
+            $width_abs = $this->_getAbsWidthMindMargins ($width).'cm';
+        } else {
+            // Absolute values may include not supported units.
+            // Adjust.
+            $width_abs = $this->adjustLengthValueForODT($width);
+        }
+
 
         // Add our styles.
         $style_name = 'odt_auto_style_div_'.$this->style_count;
@@ -2069,7 +2092,6 @@ class renderer_plugin_odt extends Doku_Renderer {
             $style .= 'fo:border="'.$fo_border.'" ';
         }
         $style .= 'fo:min-height="'.$min_height.'"
-                 style:rel-width="'.$width.'%"
                  style:wrap="none"';
         $style .= '>';
 
@@ -2129,7 +2151,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_text_frame" draw:name="Bild1"
                             text:anchor-type="'.$anchor_type.'"
                             svg:x="0cm" svg:y="0cm"
-                            svg:width="'.$width_abs.'cm" svg:height="10cm" ';
+                            svg:width="'.$width_abs.'" svg:height="'.$min_height.'" ';
         $this->doc .= 'draw:z-index="'.($this->div_z_index + 0).'">';
         $this->doc .= '<draw:text-box ';
 

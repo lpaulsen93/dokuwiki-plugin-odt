@@ -153,6 +153,10 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             $picture = $properties ['background-image'];
             $attrs++;
         }
+        if ( empty ($disabled_props ['display']) === true ) {
+            $display = $properties ['display'];
+            $attrs++;
+        }
         if ( empty ($parent) === false ) {
             $attrs++;
         }
@@ -221,6 +225,9 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
         if ( empty ($odt_text_pos) === false ) {
             $style .= 'style:text-position="'.$odt_text_pos.'" ';
+        }
+        if ( empty($display) === false ) {
+            $style .= 'text:display="'.$display.'" ';
         }
         $style .= '/>';
         $style .= '</style:style>';
@@ -295,6 +302,10 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
         if ( empty ($disabled_props ['background-image']) === true ) {
             $picture = $properties ['background-image'];
+            $attrs++;
+        }
+        if ( empty ($disabled_props ['display']) === true ) {
+            $display = $properties ['display'];
             $attrs++;
         }
         if ( empty ($parent) === false ) {
@@ -373,6 +384,9 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
         if ( empty ($odt_text_pos) === false ) {
             $style .= 'style:text-position="'.$odt_text_pos.'" ';
+        }
+        if ( empty($display) === false ) {
+            $style .= 'text:display="'.$display.'" ';
         }
         $style .= '/>';
         $style .= '</style:style>';

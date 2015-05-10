@@ -2,6 +2,7 @@
 
     * Bugfix: Fixed issue 'Multi column frame with 2 columns does not span across all columns #33'.
     * Bugfix: Fixed issue 'Frames have wrong size #34'.
+    * Support for 'display' attribute in text spans and paragraphs
 
 2015-05-09 LarsDW223
 

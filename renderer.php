@@ -2035,7 +2035,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $style_name = 'odt_auto_style_div_'.$this->style_count;
 
         $style =
-         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
+         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic" style:parent-style-name="Frame">
              <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
                  draw:fill="solid" draw:fill-color="'.$odt_bg.'"
                  draw:textarea-horizontal-align="left"
@@ -2104,6 +2104,12 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->doc .= '<draw:g draw:display="' . $display . '">';
         }
 
+        $anchor_type = 'paragraph';
+        // FIXME: Later try to get nested frames working - probably with anchor = as-char
+        //if ( $this->in_div_as_frame > 1 ) {
+        //    $anchor_type = 'as-char';
+        //}
+
         // Draw a frame with the image in it, if required.
         // FIXME: delete this part if 'background-image' in graphic style is working.
         if ( $picture != NULL )
@@ -2121,7 +2127,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
         $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_text_frame" draw:name="Bild1"
-                            text:anchor-type="paragraph"
+                            text:anchor-type="'.$anchor_type.'"
                             svg:x="0cm" svg:y="0cm"
                             svg:width="'.$width_abs.'cm" svg:height="10cm" ';
         $this->doc .= 'draw:z-index="'.($this->div_z_index + 0).'">';
@@ -2599,7 +2605,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // to grow with the content (requires fo:min-height in $style_name).
         $this->doc .= '<draw:frame draw:style-name="'.$style_name.'" draw:name="Frame1"
                         text:anchor-type="paragraph" svg:width="'.$width_abs.'cm" draw:z-index="0">';
-        $this->doc .= '<draw:text-box fo:min-height="5cm">';
+        $this->doc .= '<draw:text-box fo:min-height="1pt">';
     }
 
     /**

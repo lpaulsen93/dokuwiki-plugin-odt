@@ -1,3 +1,7 @@
+2015-05-11 LarsDW223
+
+    * Added function to insert a pagebreak.
+
 2015-05-10 LarsDW223
 
     * Bugfix: Fixed issue 'Multi column frame with 2 columns does not span across all columns #33'.

@@ -746,6 +746,14 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<text:line-break/>';
     }
 
+    function pagebreak() {
+        if ( empty ($this->autostyles['pagebreak']) === true ) {
+            $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
+        }
+        $this->p_close();
+        $this->doc .= '<text:p text:style-name="pagebreak"/>';
+    }
+
     function strong_open() {
         $this->doc .= '<text:span text:style-name="Strong_20_Emphasis">';
     }
@@ -1999,7 +2007,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->in_div_as_frame++;
         if ( $this->in_div_as_frame > 1 ) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
-            return;
+            //return;
         }
 
         $this->div_z_index += 5;
@@ -2058,7 +2066,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $style_name = 'odt_auto_style_div_'.$this->style_count;
 
         $style =
-         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic" style:parent-style-name="Frame">
+         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
              <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
                  draw:fill="solid" draw:fill-color="'.$odt_bg.'"
                  draw:textarea-horizontal-align="left"
@@ -2128,9 +2136,9 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $anchor_type = 'paragraph';
         // FIXME: Later try to get nested frames working - probably with anchor = as-char
-        //if ( $this->in_div_as_frame > 1 ) {
-        //    $anchor_type = 'as-char';
-        //}
+        if ( $this->in_div_as_frame > 1 ) {
+            $anchor_type = 'as-char';
+        }
 
         // Draw a frame with the image in it, if required.
         // FIXME: delete this part if 'background-image' in graphic style is working.
@@ -2160,7 +2168,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
-        $this->p_open($style_name.'_text_box');
+        //$this->p_open($style_name.'_text_box');
     }
 
     /**
@@ -2174,10 +2182,10 @@ class renderer_plugin_odt extends Doku_Renderer {
         }
         if ( $this->in_div_as_frame > 0 ) {
             // Do not close the frame if this is a close for a nested frame.
-            return;
+            //return;
         }
 
-        $this->p_close();
+        //$this->p_close();
         $this->doc .= '</draw:text-box></draw:frame>';
         $this->doc .= '</draw:g>';
         $this->doc .= '</text:p>';

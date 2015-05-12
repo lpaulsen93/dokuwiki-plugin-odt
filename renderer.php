@@ -2550,6 +2550,15 @@ class renderer_plugin_odt extends Doku_Renderer {
             $parent = $name;
         }
 
+        $length = strlen ($properties ['text-indent']);
+        if ( $length > 0 && $properties ['text-indent'] [$length-1] == '%' ) {
+            // Percentage value needs to be converted to absolute value.
+            // ODT standard says that percentage value should work if used in a common style.
+            // This did not work with LibreOffice 4.4.3.2.
+            $value = trim ($properties ['text-indent'], '%');
+            $properties ['text-indent'] = $this->_getAbsWidthMindMargins ($value).'cm';
+        } 
+
         $style_name = $this->factory->createParagraphStyle($style, $properties, $disabled_props, $parent);
         if ( $style_name == NULL ) {
             return NULL;

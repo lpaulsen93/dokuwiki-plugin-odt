@@ -308,6 +308,10 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             $display = $properties ['display'];
             $attrs++;
         }
+        if ( empty ($disabled_props ['text-indent']) === true ) {
+            $text_indent = $properties ['text-indent'];
+            $attrs++;
+        }
         if ( empty ($parent) === false ) {
             $attrs++;
         }
@@ -340,6 +344,10 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         $style .= '<style:paragraph-properties ';
         if ( empty ($odt_fo_text_align) === false ) {
             $style .= 'fo:text-align="'.$odt_fo_text_align.'" ';
+        }
+        if ( empty ($text_indent) === false ) {
+            $style .= 'fo:text-indent="'.$text_indent.'" style:auto-text-indent="false" ';
+            //$style .= 'fo:margin-left="0cm" fo:margin-right="0cm" fo:text-indent="'.$text_indent.'" style:auto-text-indent="false" ';
         }
         $style .= '/>';
         $style .= '<style:text-properties ';

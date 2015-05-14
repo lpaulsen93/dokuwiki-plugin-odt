@@ -157,6 +157,14 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             $display = $properties ['display'];
             $attrs++;
         }
+        if ( empty ($disabled_props ['display']) === true ) {
+            $display = $properties ['display'];
+            $attrs++;
+        }
+        if ( empty ($disabled_props ['lang']) === true ) {
+            $lang = $properties ['lang'];
+            $attrs++;
+        }
         if ( empty ($parent) === false ) {
             $attrs++;
         }
@@ -176,6 +184,13 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         if ( $odt_valign == 'super' ) {
             $odt_text_pos = '33% 100%';
             unset($odt_valign);
+        }
+
+        // Separate country from language
+        if ( empty($lang) === false ) {
+            $parts = preg_split ('/-/', $lang);
+            $lang = $parts [0];
+            $country = $parts [1];
         }
 
         // Create style name.
@@ -228,6 +243,16 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
         if ( empty($display) === false ) {
             $style .= 'text:display="'.$display.'" ';
+        }
+        if ( empty($lang) === false ) {
+            $style .= 'fo:language="'.$lang.'" ';
+            $style .= 'style:language-asian="'.$lang.'" ';
+            $style .= 'style:language-complex="'.$lang.'" ';
+        }
+        if ( empty($country) === false ) {
+            $style .= 'fo:country="'.$country.'" ';
+            $style .= 'style:country-asian="'.$country.'" ';
+            $style .= 'style:country-complex="'.$country.'" ';
         }
         $style .= '/>';
         $style .= '</style:style>';
@@ -308,6 +333,10 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             $display = $properties ['display'];
             $attrs++;
         }
+        if ( empty ($disabled_props ['lang']) === true ) {
+            $lang = $properties ['lang'];
+            $attrs++;
+        }
         if ( empty ($disabled_props ['text-indent']) === true ) {
             $text_indent = $properties ['text-indent'];
             $attrs++;
@@ -331,6 +360,13 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         if ( $odt_valign == 'super' ) {
             $odt_text_pos = '33% 100%';
             unset($odt_valign);
+        }
+
+        // Separate country from language
+        if ( empty($lang) === false ) {
+            $parts = preg_split ('/-/', $lang);
+            $lang = $parts [0];
+            $country = $parts [1];
         }
 
         // Create style name.
@@ -395,6 +431,16 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
         if ( empty($display) === false ) {
             $style .= 'text:display="'.$display.'" ';
+        }
+        if ( empty($lang) === false ) {
+            $style .= 'fo:language="'.$lang.'" ';
+            $style .= 'style:language-asian="'.$lang.'" ';
+            $style .= 'style:language-complex="'.$lang.'" ';
+        }
+        if ( empty($country) === false ) {
+            $style .= 'fo:country="'.$country.'" ';
+            $style .= 'style:country-asian="'.$country.'" ';
+            $style .= 'style:country-complex="'.$country.'" ';
         }
         $style .= '/>';
         $style .= '</style:style>';

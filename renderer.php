@@ -739,6 +739,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function hr() {
+        $this->p_close();
         $this->doc .= '<text:p text:style-name="Horizontal_20_Line"/>';
     }
 
@@ -913,6 +914,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->doc .= '<text:note text:id="ftn'.$i.'" text:note-class="footnote">';
             $this->doc .= '<text:note-citation>'.($i+1).'</text:note-citation>';
             $this->doc .= '<text:note-body>';
+            //FIXME: Can break document if paragraphs have been opened inside of $footnote!!!
             $this->doc .= '<text:p text:style-name="Footnote">';
             $this->doc .= $footnote;
             $this->doc .= '</text:p>';

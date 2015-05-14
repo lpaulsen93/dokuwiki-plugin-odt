@@ -1,3 +1,9 @@
+2015-05-14 LarsDW223
+
+    * Added support for language and country settings. These are both taken from the property
+      'lang', e.g. 'de-de' sets the language to german and country to germany. If there is no '-'
+      it is assumed that only the language shall be set.
+
 2015-05-12 LarsDW223
 
     * Added support for text indentation for the first line of a paragraph.

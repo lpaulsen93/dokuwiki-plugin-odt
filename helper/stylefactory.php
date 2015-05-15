@@ -636,6 +636,22 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             $table_border = $properties ['border'];
             $attrs++;
         }
+        if ( empty ($disabled_props ['padding-left']) === true ) {
+            $pad_left = $properties ['padding-left'];
+            $attrs++;
+        }
+        if ( empty ($disabled_props ['padding-right']) === true ) {
+            $pad_right = $properties ['padding-right'];
+            $attrs++;
+        }
+        if ( empty ($disabled_props ['padding-top']) === true ) {
+            $pad_top = $properties ['padding-top'];
+            $attrs++;
+        }
+        if ( empty ($disabled_props ['padding-bottom']) === true ) {
+            $pad_bottom = $properties ['padding-bottom'];
+            $attrs++;
+        }
 
         // If all relevant properties are empty or disabled, then there
         // are no attributes for our style. Return NULL to indicate 'no style required'.
@@ -656,6 +672,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
         if ( empty ($table_border) === false ) {
             $style .= 'fo:border="'.$table_border.'" ';
+        }
+        if ( empty ($pad_left) === false ) {
+            $style .= 'fo:padding-left="'.$pad_left.'" ';
+        }
+        if ( empty ($pad_right) === false ) {
+            $style .= 'fo:padding-right="'.$pad_right.'" ';
+        }
+        if ( empty ($pad_top) === false ) {
+            $style .= 'fo:padding-top="'.$pad_top.'" ';
+        }
+        if ( empty ($pad_bottom) === false ) {
+            $style .= 'fo:padding-bottom="'.$pad_bottom.'" ';
         }
         $style .= '/>';
         $style .= '</style:style>';
@@ -698,7 +726,16 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         $style  = '<style:style style:name="'.$style_name.'" style:family="table-column">';
         $style .= '<style:table-column-properties ';
         if ( empty ($table_co_width) === false ) {
-            $style .= 'style:column-width="'.$table_co_width.'" ';
+            $length = strlen ($table_co_width);
+            if ( $table_co_width [$length-1] != '%' ) {
+                $style .= 'style:column-width="'.$table_co_width.'" ';
+            } else {
+                // Columns have a specific syntax for relative width in %!
+                // Change % to *.
+                //$table_co_width [$length-1] = '*';
+                $table_co_width = trim ($table_co_width, '%');
+                $style .= 'style:rel-column-width="'.$table_co_width.'" ';
+            }
         }
         $style .= '/>';
         $style .= '</style:style>';

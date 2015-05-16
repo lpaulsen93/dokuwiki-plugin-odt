@@ -14,12 +14,14 @@ if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
 
 class css_declaration {
+    protected static $css_units = array ('em', 'ex', '%', 'px', 'cm', 'mm', 'in', 'pt',
+                                         'pc', 'ch', 'rem', 'vh', 'vw', 'vmin', 'vmax');
     protected $property;
     protected $value;
 
     public function __construct($property, $value) {
         $this->property = $property;
-        $this->value = $value;
+        $this->value = trim($value, ';');
     }
 
     public function getProperty () {
@@ -51,6 +53,27 @@ class css_declaration {
             case 'border':
                 $this->explodeBorderShorthand ($decls);
             break;
+            case 'list-style':
+                $this->explodeListStyleShorthand ($decls);
+            break;
+            case 'flex':
+                $this->explodeFlexShorthand ($decls);
+            break;
+            case 'transition':
+                $this->explodeTransitionShorthand ($decls);
+            break;
+            case 'outline':
+                $this->explodeOutlineShorthand ($decls);
+            break;
+            case 'animation':
+                $this->explodeAnimationShorthand ($decls);
+            break;
+            case 'border-bottom':
+                $this->explodeBorderBottomShorthand ($decls);
+            break;
+            case 'columns':
+                $this->explodeColumnsShorthand ($decls);
+            break;
 
             //FIXME: Implement all the shorthands missing
             //case ...
@@ -64,6 +87,13 @@ class css_declaration {
             case 'padding':
             case 'margin':
             case 'border':
+            case 'list-style':
+            case 'flex':
+            case 'transition':
+            case 'outline':
+            case 'animation':
+            case 'border-bottom':
+            case 'columns':
                 return true;
             break;
 
@@ -72,6 +102,7 @@ class css_declaration {
         }
         return false;
     }
+
     protected function explodeBackgroundShorthand (&$decls) {
         if ( $this->property == 'background' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -100,8 +131,11 @@ class css_declaration {
             $font_style_set = false;
             $font_variant_set = false;
             $font_weight_set = false;
+            $font_size_set = false;
+            unset ($font_family);
             foreach ($values as $value) {
                 if ( $font_style_set === false ) {
+                    $default = false;
                     switch ($value) {
                         case 'normal':
                         case 'italic':
@@ -111,13 +145,17 @@ class css_declaration {
                             $decls [] = new css_declaration ('font-style', $value);
                         break;
                         default:
+                            $default = true;
                             $decls [] = new css_declaration ('font-style', 'normal');
                         break;
                     }
                     $font_style_set = true;
-                    continue;
+                    if ( $default === false ) {
+                        continue;
+                    }
                 }
                 if ( $font_variant_set === false ) {
+                    $default = false;
                     switch ($value) {
                         case 'normal':
                         case 'small-caps':
@@ -126,18 +164,22 @@ class css_declaration {
                             $decls [] = new css_declaration ('font-variant', $value);
                         break;
                         default:
+                            $default = true;
                             $decls [] = new css_declaration ('font-variant', 'normal');
                         break;
                     }
                     $font_variant_set = true;
-                    continue;
+                    if ( $default === false ) {
+                        continue;
+                    }
                 }
                 if ( $font_weight_set === false ) {
+                    $default = false;
                     switch ($value) {
                         case 'normal':
                         case 'bold':
                         case 'bolder':
-                        case 'lighter:':
+                        case 'lighter':
                         case '100':
                         case '200':
                         case '300':
@@ -152,13 +194,67 @@ class css_declaration {
                             $decls [] = new css_declaration ('font-weight', $value);
                         break;
                         default:
+                            $default = true;
                             $decls [] = new css_declaration ('font-weight', 'normal');
                         break;
                     }
                     $font_weight_set = true;
-                    continue;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+                if ( $font_size_set === false ) {
+                    $default = false;
+                    $params = preg_split ('/\//', $value);
+                    switch ($params [0]) {
+                        case 'medium':
+                        case 'xx-small':
+                        case 'x-small':
+                        case 'small':
+                        case 'large':
+                        case 'x-large':
+                        case 'xx-large':
+                        case 'smaller':
+                        case 'larger':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('font-size', $params [0]);
+                        break;
+                        default:
+                            $found = false;
+                            foreach (self::$css_units as $css_unit) {
+                                if ( strpos ($value, $css_unit) !== false ) {
+                                    $decls [] = new css_declaration ('font-size', $params [0]);
+                                    $found = true;
+                                    break;
+                                }
+                            }
+                            if ( $found === false ) {
+                                $default = true;
+                                $decls [] = new css_declaration ('font-size', 'medium');
+                            }
+                        break;
+                    }
+                    if ( empty($params [1]) === false ) {
+                        $decls [] = new css_declaration ('line-height', $params [1]);
+                    } else {
+                        $decls [] = new css_declaration ('line-height', 'normal');
+                    }
+                    $font_size_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+
+                // All other properties are found.
+                // The rest is assumed to be a font-family.
+                if ( empty ($font_family) === true ) {
+                    $font_family .= $value;
+                } else {
+                    $font_family .= ' '.$value;
                 }
             }
+            $decls [] = new css_declaration ('font-family', $font_family);
         }
     }
 
@@ -282,6 +378,310 @@ class css_declaration {
                     // This is the last value.
                     break;
                 }
+            }
+        }
+    }
+
+    protected function explodeListStyleShorthand (&$decls) {
+        if ( $this->property == 'list-style' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            $index = 0;
+            $list_style_type_set = false;
+            $list_style_position_set = false;
+            $list_style_image_set = false;
+            foreach ($values as $value) {
+                if ( $list_style_type_set === false ) {
+                    $default = false;
+                    switch ($value) {
+                        case 'disc':
+                        case 'armenian':
+                        case 'circle':
+                        case 'cjk-ideographic':
+                        case 'decimal':
+                        case 'decimal-leading-zero':
+                        case 'georgian':
+                        case 'hebrew':
+                        case 'hiragana':
+                        case 'hiragana-iroha':
+                        case 'katakana':
+                        case 'katakana-iroha':
+                        case 'lower-alpha':
+                        case 'lower-greek':
+                        case 'lower-latin':
+                        case 'lower-roman':
+                        case 'none':
+                        case 'square':
+                        case 'upper-alpha':
+                        case 'upper-latin':
+                        case 'upper-roman':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('list-style-type', $value);
+                        break;
+                        default:
+                            $default = true;
+                            $decls [] = new css_declaration ('list-style-type', 'disc');
+                        break;
+                    }
+                    $list_style_type_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+                if ( $list_style_position_set === false ) {
+                    $default = false;
+                    switch ($value) {
+                        case 'inside':
+                        case 'outside':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('list-style-position', $value);
+                        break;
+                        default:
+                            $default = true;
+                            $decls [] = new css_declaration ('list-style-position', 'outside');
+                        break;
+                    }
+                    $list_style_position_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+                if ( $list_style_image_set === false ) {
+                    $decls [] = new css_declaration ('list-style-image', $value);
+                    $list_style_image_set = true;
+                }
+            }
+            if ( $list_style_image_set === false ) {
+                $decls [] = new css_declaration ('list-style-image', 'none');
+            }
+        }
+    }
+
+    protected function explodeFlexShorthand (&$decls) {
+        if ( $this->property == 'flex' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            if ( count($values) > 0 ) {
+                $decls [] = new css_declaration ('flex-grow', $values [0]);
+            }
+            if ( count($values) > 1 ) {
+                $decls [] = new css_declaration ('flex-shrink', $values [1]);
+            }
+            if ( count($values) > 2 ) {
+                $decls [] = new css_declaration ('flex-basis', $values [2]);
+            }
+        }
+    }
+
+    protected function explodeTransitionShorthand (&$decls) {
+        if ( $this->property == 'transition' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            if ( count($values) > 0 ) {
+                $decls [] = new css_declaration ('transition-property', $values [0]);
+            }
+            if ( count($values) > 1 ) {
+                $decls [] = new css_declaration ('transition-duration', $values [1]);
+            }
+            if ( count($values) > 2 ) {
+                $decls [] = new css_declaration ('transition-timing-function', $values [2]);
+            }
+            if ( count($values) > 3 ) {
+                $decls [] = new css_declaration ('transition-delay', $values [3]);
+            }
+        }
+    }
+
+    protected function explodeOutlineShorthand (&$decls) {
+        if ( $this->property == 'outline' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            $index = 0;
+            $outline_color_set = false;
+            $outline_style_set = false;
+            $outline_width_set = false;
+            foreach ($values as $value) {
+                if ( $outline_color_set === false ) {
+                    $decls [] = new css_declaration ('outline-color', $value);
+                    $outline_color_set = true;
+                    continue;
+                }
+                if ( $outline_style_set === false ) {
+                    $default = false;
+                    switch ($value) {
+                        case 'none':
+                        case 'hidden':
+                        case 'dotted':
+                        case 'dashed':
+                        case 'solid':
+                        case 'double':
+                        case 'groove':
+                        case 'ridge':
+                        case 'inset':
+                        case 'outset':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('outline-style', $value);
+                        break;
+                        default:
+                            $default = true;
+                            $decls [] = new css_declaration ('outline-style', 'none');
+                        break;
+                    }
+                    $outline_style_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+                if ( $outline_width_set === false ) {
+                    $default = false;
+                    switch ($value) {
+                        case 'medium':
+                        case 'thin':
+                        case 'thick':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('outline-width', $value);
+                        break;
+                        default:
+                            $found = false;
+                            foreach (self::$css_units as $css_unit) {
+                                if ( strpos ($value, $css_unit) !== false ) {
+                                    $decls [] = new css_declaration ('outline-width', $value);
+                                    $found = true;
+                                    break;
+                                }
+                            }
+                            if ( $found === false ) {
+                                $default = true;
+                                $decls [] = new css_declaration ('outline-width', 'medium');
+                            }
+                        break;
+                    }
+                    $outline_width_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+
+    protected function explodeAnimationShorthand (&$decls) {
+        if ( $this->property == 'animation' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            if ( count($values) > 0 ) {
+                $decls [] = new css_declaration ('animation-name', $values [0]);
+            }
+            if ( count($values) > 1 ) {
+                $decls [] = new css_declaration ('animation-duration', $values [1]);
+            }
+            if ( count($values) > 2 ) {
+                $decls [] = new css_declaration ('animation-timing-function', $values [2]);
+            }
+            if ( count($values) > 3 ) {
+                $decls [] = new css_declaration ('animation-delay', $values [3]);
+            }
+            if ( count($values) > 4 ) {
+                $decls [] = new css_declaration ('animation-iteration-count', $values [4]);
+            }
+            if ( count($values) > 5 ) {
+                $decls [] = new css_declaration ('animation-direction', $values [5]);
+            }
+            if ( count($values) > 6 ) {
+                $decls [] = new css_declaration ('animation-fill-mode', $values [6]);
+            }
+            if ( count($values) > 7 ) {
+                $decls [] = new css_declaration ('animation-play-state', $values [7]);
+            }
+        }
+    }
+
+    protected function explodeBorderBottomShorthand (&$decls) {
+        if ( $this->property == 'border-bottom' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            $index = 0;
+            $border_bottom_width_set = false;
+            $border_bottom_style_set = false;
+            $border_bottom_color_set = false;
+            foreach ($values as $value) {
+                if ( $border_bottom_width_set === false ) {
+                    $default = false;
+                    switch ($value) {
+                        case 'medium':
+                        case 'thin':
+                        case 'thick':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('border-bottom-width', $value);
+                        break;
+                        default:
+                            $found = false;
+                            foreach (self::$css_units as $css_unit) {
+                                if ( strpos ($value, $css_unit) !== false ) {
+                                    $decls [] = new css_declaration ('border-bottom-width', $value);
+                                    $found = true;
+                                    break;
+                                }
+                            }
+                            if ( $found === false ) {
+                                $default = true;
+                                $decls [] = new css_declaration ('border-bottom-width', 'medium');
+                            }
+                        break;
+                    }
+                    $border_bottom_width_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+                if ( $border_bottom_style_set === false ) {
+                    $default = false;
+                    switch ($value) {
+                        case 'none':
+                        case 'hidden':
+                        case 'dotted':
+                        case 'dashed':
+                        case 'solid':
+                        case 'double':
+                        case 'groove':
+                        case 'ridge':
+                        case 'inset':
+                        case 'outset':
+                        case 'initial':
+                        case 'inherit':
+                            $decls [] = new css_declaration ('border-bottom-style', $value);
+                        break;
+                        default:
+                            $default = true;
+                            $decls [] = new css_declaration ('border-bottom-style', 'none');
+                        break;
+                    }
+                    $border_bottom_style_set = true;
+                    if ( $default === false ) {
+                        continue;
+                    }
+                }
+                if ( $border_bottom_color_set === false ) {
+                    $decls [] = new css_declaration ('border-bottom-color', $value);
+                    $border_bottom_color_set = true;
+                    continue;
+                }
+            }
+        }
+    }
+
+    protected function explodeColumnsShorthand (&$decls) {
+        if ( $this->property == 'columns' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            if ( count($values) == 1 && $values [0] == 'auto' ) {
+                $decls [] = new css_declaration ('column-width', 'auto');
+                $decls [] = new css_declaration ('column-count', 'auto');
+                return;
+            }
+            if ( count($values) > 0 ) {
+                $decls [] = new css_declaration ('column-width', $values [0]);
+            }
+            if ( count($values) > 1 ) {
+                $decls [] = new css_declaration ('column-count', $values [1]);
             }
         }
     }

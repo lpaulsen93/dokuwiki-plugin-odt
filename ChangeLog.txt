@@ -1,6 +1,9 @@
 2015-05-16 LarsDW223
 
     * Fixed wrong protoyping of function 'register' in action.php
+    * Added missing shorthand handling in CSS import helper class for:
+      list-style, flex, transition, outline, animation, border-bottom, columns
+    * Added test code for CSS import helper class (incomplete)
 
 2015-05-15 LarsDW223
 

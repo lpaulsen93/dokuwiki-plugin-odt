@@ -14,6 +14,14 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         parent::setUp();
     }
 
+    public static function setUpBeforeClass(){
+        parent::setUpBeforeClass();
+
+        // copy CSS test file to test directory
+        TestUtils::rcopy(DOKU_INC.'_test/data/tmp', DOKU_INC.'lib/plugins/odt/_test/dw_css_with_wrap.css');
+        TestUtils::rcopy(DOKU_INC.'_test/data/tmp', DOKU_INC.'lib/plugins/odt/_test/dw_css_without_extra_wrap.css');
+    }
+
     /**
      * Ensure that the constructur sets the right properties and the getters
      * return them correctly.
@@ -436,5 +444,150 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $this->assertEquals($decls [0]->getValue(), '100px');
         $this->assertEquals($decls [1]->getProperty(), 'column-count');
         $this->assertEquals($decls [1]->getValue(), '3');
+    }
+
+    /**
+     * Ensure that @media queries are understood.
+     * Part 1.
+     */
+    public function test_media_queries_part1() {
+        $properties = array();
+        $css_code = 'p {
+                         background-color:blue;
+                     }
+
+                     @media print {
+                     p {
+                         background-color:white;
+                     }
+                     }';
+
+        $import = new helper_plugin_odt_cssimport ();
+        $import->importFromString ($css_code);
+        $import->getPropertiesForElement ($properties, 'p', NULL);
+
+        print ($import->rulesToString);
+
+        $this->assertEquals(count($properties), 1);
+        $this->assertEquals('blue', $properties ['background-color']);
+    }
+
+    /**
+     * Ensure that @media queries are understood.
+     * Part 2.
+     */
+    public function test_media_queries_part2() {
+        $properties = array();
+        $css_code = 'p {
+                         background-color:blue;
+                     }
+
+                     @media print {
+                     p {
+                         background-color:white;
+                     }
+                     }';
+
+        $import = new helper_plugin_odt_cssimport ();
+        $import->importFromString ($css_code);
+        $import->getPropertiesForElement ($properties, 'p', NULL, 'print');
+
+        $this->assertEquals(count($properties), 1);
+        $this->assertEquals('white', $properties ['background-color']);
+    }
+
+    /**
+     * Ensure that @media queries are understood.
+     * Part 3.
+     */
+    public function test_media_queries_part3() {
+        $properties = array();
+        $css_code = '@media only screen and (max-width: 500px) {
+                     p {
+                         background-color:blue;
+                     }
+                     }
+
+                     @media print {
+                     p {
+                         background-color:white;
+                     }
+                     }';
+
+        $import = new helper_plugin_odt_cssimport ();
+        $import->importFromString ($css_code);
+        $import->getPropertiesForElement ($properties, 'p', NULL);
+
+        // We shouldn't get any properties
+        $this->assertEquals(0, count($properties));
+    }
+
+    /**
+     * Test more complicated CSS parsing with dw and wrap CSS.
+     * Part 1.
+     */
+    public function test_dw_and_wrap_css_part1 () {
+        $properties = array();
+
+        $import = new helper_plugin_odt_cssimport ();
+        $import->importFromFile ('./data/tmp/dw_css_with_wrap.css');
+        $import->getPropertiesForElement ($properties, 'div', 'dokuwiki wrap_help', 'only screen and (max-width: 600px)');
+
+        // For debugging: this will write the parsed/imported CSS in the file
+        // _test/data/tmp/odt_parsed.css
+        //$handle = fopen ('./data/tmp/odt_parsed.css', 'w');
+        //fwrite ($handle, $import->rulesToString());
+        //fclose ($handle);
+
+        // We shouldn't get any properties
+        $this->assertEquals(17, count($properties));
+        $this->assertEquals('1em 1em .5em', $properties ['padding']);
+        $this->assertEquals('1em', $properties ['padding-top']);
+        $this->assertEquals('1em', $properties ['padding-right']);
+        $this->assertEquals('.5em', $properties ['padding-bottom']);
+        $this->assertEquals('1em', $properties ['padding-left']);
+        $this->assertEquals('1.5em', $properties ['margin-bottom']);
+        $this->assertEquals('68px', $properties ['min-height']);
+        $this->assertEquals('10px 50%', $properties ['background-position']);
+        $this->assertEquals('no-repeat', $properties ['background-repeat']);
+        $this->assertEquals('inherit', $properties ['color']);
+        $this->assertEquals('hidden', $properties ['overflow']);
+        $this->assertEquals('#dcc2ef', $properties ['background-color']);
+        $this->assertEquals('url(/lib/plugins/wrap/images/note/48/help.png)', $properties ['background-image']);
+        $this->assertEquals('2px solid #999', $properties ['border']);
+        $this->assertEquals('2px', $properties ['border-width']);
+        $this->assertEquals('solid', $properties ['border-style']);
+        $this->assertEquals('#999', $properties ['border-color']);
+    }
+
+    /**
+     * Test more complicated CSS parsing with dw and wrap CSS.
+     * Part 2.
+     */
+    public function test_dw_and_wrap_css_part2 () {
+        $properties = array();
+
+        $import = new helper_plugin_odt_cssimport ();
+        $import->importFromFile ('./data/tmp/dw_css_without_extra_wrap.css');
+        $import->getPropertiesForElement ($properties, 'div', 'dokuwiki wrap_help', 'print');
+
+        // For debugging: this will write the parsed/imported CSS in the file
+        // _test/data/tmp/odt_parsed.css
+        $handle = fopen ('./data/tmp/odt_parsed.css', 'w');
+        fwrite ($handle, $import->rulesToString());
+        fclose ($handle);
+
+        // We shouldn't get any properties
+        $this->assertEquals(10, count($properties));
+        $this->assertEquals('2px solid #999', $properties ['border']);
+        $this->assertEquals('2px', $properties ['border-width']);
+        $this->assertEquals('solid', $properties ['border-style']);
+        $this->assertEquals('#999', $properties ['border-color']);
+        $this->assertEquals('1em 1em .5em', $properties ['padding']);
+        $this->assertEquals('1em', $properties ['padding-top']);
+        $this->assertEquals('1em', $properties ['padding-right']);
+        $this->assertEquals('1em', $properties ['padding-left']);
+        $this->assertEquals('.5em', $properties ['padding-bottom']);
+        $this->assertEquals('1.5em', $properties ['margin-bottom']);
     }
 }

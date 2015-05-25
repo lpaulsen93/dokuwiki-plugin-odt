@@ -88,6 +88,22 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         return $style_name;
     }
 
+    protected static function writeExtensionNames ($first_name, $value) {
+        static $names_ext = array (
+              'fo:country'     => array ('style:country-asian', 'style:country-complex'),
+              'fo:language'    => array ('style:language-asian', 'style:language-complex'),
+              'fo:font-size'   => array ('style:font-size-asian', 'style:font-size-complex'),
+              'fo:font-weight' => array ('style:font-weight-asian', 'style:font-weight-complex'),
+              'fo:font-style'  => array ('style:font-style-asian', 'style:font-style-complex'),
+            );
+
+        unset ($text);
+        for ($index = 0 ; $index < count($names_ext [$first_name]) ; $index++) {
+            $text .= $names_ext [$first_name][$index].'="'.$value.'" ';
+        }
+        return $text;
+    }
+
     /**
      * This function creates a text style using the style as set in the assoziative array $properties.
      * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
@@ -103,70 +119,33 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * @author LarsDW223
      */
     public static function createTextStyle(&$style, $properties, $disabled_props = NULL, $parent = NULL){
+        static $params = array (
+              'style-name'         => array ('section' => 'header',    'name' => 'style:name',           'is_attr' => false),
+              'style-display-name' => array ('section' => 'header',    'name' => 'style:display-name',   'is_attr' => false),
+              'border'             => array ('section' => 'text',      'name' => 'fo:border',            'is_attr' => true),
+              'color'              => array ('section' => 'text',      'name' => 'fo:color',             'is_attr' => true),
+              'background-color'   => array ('section' => 'text',      'name' => 'fo:background-color',  'is_attr' => true),
+              'background-image'   => array ('section' => 'text',      'name' => 'fo:background-image',  'is_attr' => true),
+              'font-style'         => array ('section' => 'text',      'name' => 'fo:font-style',        'is_attr' => true),
+              'font-weight'        => array ('section' => 'text',      'name' => 'fo:font-weight',       'is_attr' => true),
+              'font-size'          => array ('section' => 'text',      'name' => 'fo:font-size',         'is_attr' => true),
+              'font-family'        => array ('section' => 'text',      'name' => 'fo:font-family',       'is_attr' => true),
+              'font-variant'       => array ('section' => 'text',      'name' => 'fo:font-variant',      'is_attr' => true),
+              'letter-spacing'     => array ('section' => 'text',      'name' => 'fo:letter-spacing',    'is_attr' => true),
+              'vertical-align'     => array ('section' => 'text',      'name' => 'style:vertical-align', 'is_attr' => true),
+              'display'            => array ('section' => 'text',      'name' => 'text:display',         'is_attr' => true),
+              'lang'               => array ('section' => 'text',      'name' => 'fo:language',          'is_attr' => true),
+              );
+
         $attrs = 0;
 
-        if ( empty ($disabled_props ['background-color']) === true ) {
-            $odt_bg = $properties ['background-color'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['color']) === true ) {
-            $odt_fo = $properties ['color'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['text-align']) === true ) {
-            $odt_fo_text_align = $properties ['text-align'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-style']) === true ) {
-            $odt_fo_style = $properties ['font-style'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-weight']) === true ) {
-            $odt_fo_weight = $properties ['font-weight'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-size']) === true ) {
-            $odt_fo_size = $properties ['font-size'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['border']) === true ) {
-            $odt_fo_border = $properties ['border'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-family']) === true ) {
-            $odt_fo_family = $properties ['font-family'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-variant']) === true ) {
-            $odt_fo_variant = $properties ['font-variant'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['letter-spacing']) === true ) {
-            $odt_fo_lspacing = $properties ['letter-spacing'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['vertical-align']) === true ) {
-            $odt_valign = $properties ['vertical-align'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['background-image']) === true ) {
-            $picture = $properties ['background-image'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['display']) === true ) {
-            $display = $properties ['display'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['display']) === true ) {
-            $display = $properties ['display'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['lang']) === true ) {
-            $lang = $properties ['lang'];
-            $attrs++;
-        }
-        if ( empty ($parent) === false ) {
-            $attrs++;
+        // First, count parameters that are an attribute, not empty and not disabled.
+        foreach ($properties as $property => $value) {
+            if ( empty ($disabled_props [$property]) === true &&
+                 empty ($properties [$property]) === false &&
+                 $params [$property]['is_attr'] === true ) {
+                $attrs++;
+            }
         }
 
         // If all relevant properties are empty or disabled, then there
@@ -176,6 +155,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Replace sub and super with text-position.
+        $odt_valign = $properties ['vertical-align'];
         unset($odt_text_pos);
         if ( $odt_valign == 'sub' ) {
             $odt_text_pos = '-33% 100%';
@@ -187,74 +167,71 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Separate country from language
+        $lang = $properties ['lang'];
+        $country = $properties ['country'];
         if ( empty($lang) === false ) {
             $parts = preg_split ('/-/', $lang);
             $lang = $parts [0];
             $country = $parts [1];
         }
 
-        // Create style name.
-        $style_name = self::getNewStylename ('Text');
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) === true ) {
+            $style_name = self::getNewStylename ('Text');
+            $properties ['style-name'] = $style_name;
+        }
 
-        $style  = '<style:style style:name="'.$style_name.'" style:family="text"';
+        // Build content for the different sections of the style
+        // (Except style-name, already inserted above)
+        unset ($header);
+        unset ($text);
+        unset ($paragraph);
+        foreach ($properties as $property => $value) {
+            if ( empty ($disabled_props [$property]) === true && empty ($properties [$property]) === false ) {
+                $name = $params [$property]['name'];
+                switch ($params [$property]['section']) {
+
+                    case 'header':
+                        if ( $property != 'style-name' ) {
+                            $value = trim($value, '"');
+                        } else {
+                            $value = $style_name;
+                        }
+                        $header .= $params [$property]['name'].'="'.$value.'" ';
+                        $header .= self::writeExtensionNames ($name, $value);
+                        break;
+
+                    case 'text':
+                        if ( $property != 'lang' ) {
+                            $value = trim($value, '"');
+                        } else {
+                            $value = trim($lang, '"');
+                        }
+                        $text .= $params [$property]['name'].'="'.$value.'" ';
+                        $text .= self::writeExtensionNames ($name, $value);
+                        break;
+                }
+            }
+        }
+
+        // Some extra handling for text-position and country.
+        if ( empty ($odt_text_pos) === false ) {
+            $text .= 'style:text-position="'.$odt_text_pos.'" ';
+            $text .= self::writeExtensionNames ('style:text-position', $odt_text_pos);
+        }
+        if ( empty($country) === false ) {
+            $text .= 'fo:country="'.$country.'" ';
+            $text .= self::writeExtensionNames ('fo:country', $country);
+        }
+
+        // Build style.
+        $style  = '<style:style '.$header.' style:family="text"';
         if ( empty ($parent) === false ) {
             $style .= ' style:parent-style-name="'.$parent.'" ';
         }
         $style .= '>';
-        $style .= '<style:text-properties ';
-        if ( empty ($odt_fo) === false ) {
-            $style .= 'fo:color="'.$odt_fo.'" ';
-        }
-        if ( empty ($odt_bg) === false ) {
-            $style .= 'fo:background-color="'.$odt_bg.'" ';
-        }
-        if ( empty ($odt_fo_style) === false ) {
-            $style .= 'fo:font-style="'.$odt_fo_style.'" ';
-            $style .= 'style:font-style-asian="'.$odt_fo_style.'" ';
-            $style .= 'style:font-style-complex="'.$odt_fo_style.'" ';
-        }
-        if ( empty ($odt_fo_weight) === false ) {
-            $style .= 'fo:font-weight="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-asian="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-complex="'.$odt_fo_weight.'" ';
-        }
-        if ( empty ($odt_fo_size) === false ) {
-            $style .= 'fo:font-size="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-asian="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-complex="'.$odt_fo_size.'" ';
-        }
-        if ( empty ($odt_fo_border) === false ) {
-            $style .= 'fo:border="'.$odt_fo_border.'" ';
-        }
-        if ( empty ($odt_fo_family) === false ) {
-            $style .= 'fo:font-family="'.$odt_fo_family.'" ';
-        }
-        if ( empty ($odt_fo_variant) === false ) {
-            $style .= 'fo:font-variant="'.$odt_fo_variant.'" ';
-        }
-        if ( empty ($odt_fo_lspacing) === false ) {
-            $style .= 'fo:letter-spacing="'.$odt_fo_lspacing.'" ';
-        }
-        if ( empty ($odt_valign) === false ) {
-            $style .= 'style:vertical-align="'.$odt_valign.'" ';
-        }
-        if ( empty ($odt_text_pos) === false ) {
-            $style .= 'style:text-position="'.$odt_text_pos.'" ';
-        }
-        if ( empty($display) === false ) {
-            $style .= 'text:display="'.$display.'" ';
-        }
-        if ( empty($lang) === false ) {
-            $style .= 'fo:language="'.$lang.'" ';
-            $style .= 'style:language-asian="'.$lang.'" ';
-            $style .= 'style:language-complex="'.$lang.'" ';
-        }
-        if ( empty($country) === false ) {
-            $style .= 'fo:country="'.$country.'" ';
-            $style .= 'style:country-asian="'.$country.'" ';
-            $style .= 'style:country-complex="'.$country.'" ';
-        }
-        $style .= '/>';
+        $style .= '<style:text-properties '.$text.'/>';
         $style .= '</style:style>';
 
         return $style_name;
@@ -275,74 +252,44 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * @author LarsDW223
      */
     public static function createParagraphStyle(&$style, $properties, $disabled_props = NULL, $parent = NULL){
+        static $params = array (
+              'style-name'         => array ('section' => 'header',    'name' => 'style:name',           'is_attr' => false),
+              'style-display-name' => array ('section' => 'header',    'name' => 'style:display-name',   'is_attr' => false),
+              'text-align'         => array ('section' => 'paragraph', 'name' => 'fo:text-align',        'is_attr' => true),
+              'text-indent'        => array ('section' => 'paragraph', 'name' => 'fo:text-indent',       'is_attr' => true),
+              'margin-top'         => array ('section' => 'paragraph', 'name' => 'fo:margin-top',        'is_attr' => true),
+              'margin-bottom'      => array ('section' => 'paragraph', 'name' => 'fo:margin-bottom',     'is_attr' => true),
+              'margin-left'        => array ('section' => 'paragraph', 'name' => 'fo:margin-left',       'is_attr' => true),
+              'margin-right'       => array ('section' => 'paragraph', 'name' => 'fo:margin-right',      'is_attr' => true),
+              'padding-top'        => array ('section' => 'paragraph', 'name' => 'fo:padding-top',       'is_attr' => true),
+              'padding-bottom'     => array ('section' => 'paragraph', 'name' => 'fo:padding-bottom',    'is_attr' => true),
+              'padding-left'       => array ('section' => 'paragraph', 'name' => 'fo:padding-left',      'is_attr' => true),
+              'padding-right'      => array ('section' => 'paragraph', 'name' => 'fo:padding-right',     'is_attr' => true),
+              'border'             => array ('section' => 'text',      'name' => 'fo:border',            'is_attr' => true),
+              'color'              => array ('section' => 'text',      'name' => 'fo:color',             'is_attr' => true),
+              'background-color'   => array ('section' => 'text',      'name' => 'fo:background-color',  'is_attr' => true),
+              'background-image'   => array ('section' => 'text',      'name' => 'fo:background-image',  'is_attr' => true),
+              'font-style'         => array ('section' => 'text',      'name' => 'fo:font-style',        'is_attr' => true),
+              'font-weight'        => array ('section' => 'text',      'name' => 'fo:font-weight',       'is_attr' => true),
+              'font-size'          => array ('section' => 'text',      'name' => 'fo:font-size',         'is_attr' => true),
+              'font-family'        => array ('section' => 'text',      'name' => 'fo:font-family',       'is_attr' => true),
+              'font-variant'       => array ('section' => 'text',      'name' => 'fo:font-variant',      'is_attr' => true),
+              'letter-spacing'     => array ('section' => 'text',      'name' => 'fo:letter-spacing',    'is_attr' => true),
+              'vertical-align'     => array ('section' => 'text',      'name' => 'style:vertical-align', 'is_attr' => true),
+              'line-height'        => array ('section' => 'text',      'name' => 'fo:line-height',       'is_attr' => true),
+              'display'            => array ('section' => 'text',      'name' => 'text:display',         'is_attr' => true),
+              'lang'               => array ('section' => 'text',      'name' => 'fo:language',          'is_attr' => true),
+              );
+
         $attrs = 0;
 
-        if ( empty ($disabled_props ['background-color']) === true ) {
-            $odt_bg = $properties ['background-color'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['color']) === true ) {
-            $odt_fo = $properties ['color'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['text-align']) === true ) {
-            $odt_fo_text_align = $properties ['text-align'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-style']) === true ) {
-            $odt_fo_style = $properties ['font-style'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-weight']) === true ) {
-            $odt_fo_weight = $properties ['font-weight'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-size']) === true ) {
-            $odt_fo_size = $properties ['font-size'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['border']) === true ) {
-            $odt_fo_border = $properties ['border'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-family']) === true ) {
-            $odt_fo_family = $properties ['font-family'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['font-variant']) === true ) {
-            $odt_fo_variant = $properties ['font-variant'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['letter-spacing']) === true ) {
-            $odt_fo_lspacing = $properties ['letter-spacing'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['vertical-align']) === true ) {
-            $odt_valign = $properties ['vertical-align'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['line-height']) === true ) {
-            $odt_fo_line_height = $properties ['line-height'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['background-image']) === true ) {
-            $picture = $properties ['background-image'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['display']) === true ) {
-            $display = $properties ['display'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['lang']) === true ) {
-            $lang = $properties ['lang'];
-            $attrs++;
-        }
-        if ( empty ($disabled_props ['text-indent']) === true ) {
-            $text_indent = $properties ['text-indent'];
-            $attrs++;
-        }
-        if ( empty ($parent) === false ) {
-            $attrs++;
+        // First, count parameters that are an attribute, not empty and not disabled.
+        foreach ($properties as $property => $value) {
+            if ( empty ($disabled_props [$property]) === true &&
+                 empty ($properties [$property]) === false &&
+                 $params [$property]['is_attr'] === true ) {
+                $attrs++;
+            }
         }
 
         // If all relevant properties are empty or disabled, then there
@@ -352,6 +299,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Replace sub and super with text-position.
+        $odt_valign = $properties ['vertical-align'];
         unset($odt_text_pos);
         if ( $odt_valign == 'sub' ) {
             $odt_text_pos = '-33% 100%';
@@ -363,86 +311,80 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Separate country from language
+        $lang = $properties ['lang'];
+        $country = $properties ['country'];
         if ( empty($lang) === false ) {
             $parts = preg_split ('/-/', $lang);
             $lang = $parts [0];
             $country = $parts [1];
         }
 
-        // Create style name.
-        $style_name = self::getNewStylename ('Paragraph');
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) === true ) {
+            $style_name = self::getNewStylename ('Paragraph');
+            $properties ['style-name'] = $style_name;
+        }
 
-        $style  = '<style:style style:name="'.$style_name.'" style:family="paragraph"';
+        // Build content for the different sections of the style
+        // (Except style-name, already inserted above)
+        unset ($header);
+        unset ($text);
+        unset ($paragraph);
+        foreach ($properties as $property => $value) {
+            if ( empty ($disabled_props [$property]) === true && empty ($properties [$property]) === false ) {
+                switch ($params [$property]['section']) {
+
+                    case 'header':
+                        if ( $property != 'style-name' ) {
+                            $value = trim($value, '"');
+                        } else {
+                            $value = $style_name;
+                        }
+                        $header .= $params [$property]['name'].'="'.$value.'" ';
+                        $header .= self::writeExtensionNames ($params [$property]['name'], $value);
+                        break;
+
+                    case 'text':
+                        if ( $property != 'lang' ) {
+                            $value = trim($value, '"');
+                        } else {
+                            $value = trim($lang, '"');
+                        }
+                        $text .= $params [$property]['name'].'="'.$value.'" ';
+                        $text .= self::writeExtensionNames ($params [$property]['name'], $value);
+                        break;
+
+                    case 'paragraph':
+                        $value = trim($value, '"');
+                        $paragraph .= $params [$property]['name'].'="'.$value.'" ';
+                        $paragraph .= self::writeExtensionNames ($params [$property]['name'], $value);
+                        if ( $property == 'text-indent' ) {
+                            $paragraph .= ' style:auto-text-indent="false" ';
+                        }
+                        break;
+                }
+            }
+        }
+
+        // Some extra handling for text-position and country.
+        if ( empty ($odt_text_pos) === false ) {
+            $text .= 'style:text-position="'.$odt_text_pos.'" ';
+            $text .= self::writeExtensionNames ('style:text-position', $odt_text_pos);
+        }
+        if ( empty($country) === false ) {
+            $text .= 'fo:country="'.$country.'" ';
+            $text .= self::writeExtensionNames ('fo:country', $country);
+        }
+
+        // Build style.
+        $style  = '<style:style '.$header.' style:family="paragraph"';
         if ( empty ($parent) === false ) {
             $style .= ' style:parent-style-name="'.$parent.'" ';
         }
         $style .= '>';
-        $style .= '<style:paragraph-properties ';
-        if ( empty ($odt_fo_text_align) === false ) {
-            $style .= 'fo:text-align="'.$odt_fo_text_align.'" ';
-        }
-        if ( empty ($text_indent) === false ) {
-            $style .= 'fo:text-indent="'.$text_indent.'" style:auto-text-indent="false" ';
-            //$style .= 'fo:margin-left="0cm" fo:margin-right="0cm" fo:text-indent="'.$text_indent.'" style:auto-text-indent="false" ';
-        }
-        $style .= '/>';
-        $style .= '<style:text-properties ';
-        if ( empty ($odt_fo) === false ) {
-            $style .= 'fo:color="'.$odt_fo.'" ';
-        }
-        if ( empty ($odt_bg) === false ) {
-            $style .= 'fo:background-color="'.$odt_bg.'" ';
-        }
-        if ( empty ($odt_fo_style) === false ) {
-            $style .= 'fo:font-style="'.$odt_fo_style.'" ';
-            $style .= 'style:font-style-asian="'.$odt_fo_style.'" ';
-            $style .= 'style:font-style-complex="'.$odt_fo_style.'" ';
-        }
-        if ( empty ($odt_fo_weight) === false ) {
-            $style .= 'fo:font-weight="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-asian="'.$odt_fo_weight.'" ';
-            $style .= 'style:font-weight-complex="'.$odt_fo_weight.'" ';
-        }
-        if ( empty ($odt_fo_size) === false ) {
-            $style .= 'fo:font-size="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-asian="'.$odt_fo_size.'" ';
-            $style .= 'style:font-size-complex="'.$odt_fo_size.'" ';
-        }
-        if ( empty ($odt_fo_border) === false ) {
-            $style .= 'fo:border="'.$odt_fo_border.'" ';
-        }
-        if ( empty ($odt_fo_family) === false ) {
-            $style .= 'fo:font-family="'.$odt_fo_family.'" ';
-        }
-        if ( empty ($odt_fo_variant) === false ) {
-            $style .= 'fo:font-variant="'.$odt_fo_variant.'" ';
-        }
-        if ( empty ($odt_fo_lspacing) === false ) {
-            $style .= 'fo:letter-spacing="'.$odt_fo_lspacing.'" ';
-        }
-        if ( empty ($odt_fo_line_height) === false ) {
-            $style .= 'fo:line-height="'.$odt_fo_line_height.'" ';
-        }
-        if ( empty ($odt_valign) === false ) {
-            $style .= 'style:vertical-align="'.$odt_valign.'" ';
-        }
-        if ( empty ($odt_text_pos) === false ) {
-            $style .= 'style:text-position="'.$odt_text_pos.'" ';
-        }
-        if ( empty($display) === false ) {
-            $style .= 'text:display="'.$display.'" ';
-        }
-        if ( empty($lang) === false ) {
-            $style .= 'fo:language="'.$lang.'" ';
-            $style .= 'style:language-asian="'.$lang.'" ';
-            $style .= 'style:language-complex="'.$lang.'" ';
-        }
-        if ( empty($country) === false ) {
-            $style .= 'fo:country="'.$country.'" ';
-            $style .= 'style:country-asian="'.$country.'" ';
-            $style .= 'style:country-complex="'.$country.'" ';
-        }
-        $style .= '/>';
+        $style .= '<style:paragraph-properties '.$paragraph.'/>';
+        $style .= '<style:text-properties '.$text.'/>';
         $style .= '</style:style>';
 
         return $style_name;
@@ -519,10 +461,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             }
         }
 
-        // Create style name.
-        $style_name = self::getNewStylename ('Table');
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) === true ) {
+            $style_name = self::getNewStylename ('Table');
+            $properties ['style-name'] = $style_name;
+        }
 
-        $style  = '<style:style style:name="'.$style_name.'" style:family="table">';
+        $style  = '<style:style style:name="'.$style_name.'" ';
+        if ( empty ($properties ['style-display-name']) === false ) {
+            $style .= 'style:display-name="'.$properties ['style-display-name'].'" ';
+        }
+        $style .= 'style:family="table">';
         $style .= '<style:table-properties ';
         if ( empty ($table_width) === false ) {
             $style .= 'style:width="'.$table_width.'" ';

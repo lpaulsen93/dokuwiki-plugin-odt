@@ -205,7 +205,7 @@ class css_declaration {
                 }
                 if ( $font_size_set === false ) {
                     $default = false;
-                    $params = preg_split ('/\//', $value);
+                    $params = explode ('/', $value);
                     switch ($params [0]) {
                         case 'medium':
                         case 'xx-small':
@@ -687,11 +687,15 @@ class css_declaration {
     }
 }
 class css_rule {
+    protected $media = NULL;
     protected $selectors = array ();
     protected $declarations = array ();
 
-    public function __construct($selector, $decls) {
+    public function __construct($selector, $decls, $media = NULL) {
         $exploded_decls = array ();
+
+        $this->media = trim ($media);
+        //print ("\nNew rule: ".$media."\n"); //Debuging
 
         $this->selectors = explode (' ', $selector);
 
@@ -739,6 +743,7 @@ class css_rule {
 
     public function toString () {
         $returnString = '';
+        $returnString .= "Media= \"".$this->media."\"\n";
         foreach ($this->selectors as $selector) {
             $returnString .= $selector.' ';
         }
@@ -750,8 +755,16 @@ class css_rule {
         return $returnString;
     }
 
-    public function matches ($element, $classString) {
+    public function matches ($element, $classString, $media = NULL) {
         $classes = array ();
+
+        $media = trim ($media);
+        if ( empty($this->media) === false && $media != $this->media ) {
+            // Wrong media
+            //print ("\nNo-Match ".$this->media."==".$media); //Debuging
+            return false;
+        }
+        //print ("\nMatch ".$this->media."==".$media); //Debuging
 
         $matches = 0;
         $classes = explode (' ', $classString);
@@ -804,23 +817,21 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     protected $raw;
     protected $rules = array ();
 
+    /**
+     * Imports CSS from a file.
+     * @deprecated since 3015-05-23, use importFromFile
+     */
     function importFrom($filename) {
-        // Try to read in the file content
-        if ( empty($filename) ) {
-            return false;
-        }
-        
-        $handle = fopen($filename, "rb");
-        if ( $handle === false ) {
-            return false;
-        }
+        dbg_deprecated('importFromFile');
+        $this->importFromFile($filename);
+    }
 
-        $contents = fread($handle, filesize($filename));
-        fclose($handle);
-        if ( $contents === false ) {
-            return false;
-        }
+    function importFromString($contents) {
+        $this->deleteComments ($contents);
+        $this->importFromStringInternal ($contents);
+    }
 
+    protected function deleteComments ($contents) {
         // Delete all comments first
         $pos = 0;
         $max = strlen ($contents);
@@ -852,9 +863,12 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             }
             $pos++;
         }
-        
+    }
+
+    protected function importFromStringInternal($contents, $media = NULL) {
         // Find all CSS rules
         $pos = 0;
+        $max = strlen ($contents);
         while ( $pos < $max ) {
             $bracket_open = strpos ($contents, '{', $pos);
             if ( $bracket_open === false ) {
@@ -865,22 +879,60 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                 break;
             }
 
-            // Our selectors area is all the part before the open bracket
-            // and the last closing bracket.
-            $selectors_area = substr ($contents, $pos, $bracket_open - $pos);
-            $selectors = split (',', $selectors_area);
+            // Get the part before the open bracket and the last closing bracket
+            // (or the start of the string).
+            $before_open_bracket = substr ($contents, $pos, $bracket_open - $pos);
 
-            $decls = substr ($contents, $bracket_open + 1, $bracket_close - $bracket_open);
+            // Is it a @media rule?
+            $before_open_bracket = trim ($before_open_bracket);
+            $mediapos = stripos($before_open_bracket, '@media');
+            if ( $mediapos !== false ) {
 
-            // Create a own, new rule for every selector
-            foreach ( $selectors as $selector ) {
-                $selector = trim ($selector);
-                $this->rules [] = new css_rule ($selector, $decls);
+                // Yes, decode content as normal rules with @media ... { ... }
+                $new_media = substr_replace ($before_open_bracket, NULL, $mediapos, strlen ('@media'));
+                $contents_in_media = substr ($contents, $bracket_open + 1, $bracket_close - $bracket_open);
+
+                $this->importFromStringInternal ($contents_in_media, $new_media);
+                unset ($new_media);
+
+            } else {
+
+                // No, decode rule the normal way selector { ... }
+                $selectors = explode (',', $before_open_bracket);
+
+                $decls = substr ($contents, $bracket_open + 1, $bracket_close - $bracket_open);
+
+                // Create a own, new rule for every selector
+                foreach ( $selectors as $selector ) {
+                    $selector = trim ($selector);
+                    $this->rules [] = new css_rule ($selector, $decls, $media);
+                }
+
             }
             
             $pos = $bracket_close + 1;
         }
         return true;
+    }
+
+    function importFromFile($filename) {
+        // Try to read in the file content
+        if ( empty($filename) ) {
+            return false;
+        }
+        
+        $handle = fopen($filename, "rb");
+        if ( $handle === false ) {
+            return false;
+        }
+
+        $contents = fread($handle, filesize($filename));
+        fclose($handle);
+        if ( $contents === false ) {
+            return false;
+        }
+
+        return $this->importFromString ($contents);
     }
 
     function loadReplacements($filename) {
@@ -978,14 +1030,14 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $this->replacements [$name];
     }
 
-    public function getPropertyForElement ($element, $classString, $name) {
+    public function getPropertyForElement ($element, $classString, $name, $media = NULL) {
         if ( empty ($name) === true ) {
             return NULL;
         }
 
         $value = NULL;
         foreach ($this->rules as $rule) {
-            $matched = $rule->matches ($element, $classString);
+            $matched = $rule->matches ($element, $classString, $media);
             if ( $matched !== false ) {
                 $current = $rule->getProperty ($name);
                 if ( empty ($current) === false ) {
@@ -1006,13 +1058,13 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $value;
     }
 
-    public function getPropertiesForElement (&$dest, $element, $classString) {
+    public function getPropertiesForElement (&$dest, $element, $classString, $media = NULL) {
         if ( empty ($element) === true && empty ($classString) === true ) {
             return;
         }
 
         foreach ($this->rules as $rule) {
-            $matched = $rule->matches ($element, $classString);
+            $matched = $rule->matches ($element, $classString, $media);
             if ( $matched !== false ) {
                 $rule->getProperties ($dest);
             }

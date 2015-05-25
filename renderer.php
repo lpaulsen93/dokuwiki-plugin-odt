@@ -2581,6 +2581,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         $margin_bottom = $properties ['margin-bottom'];
         $display = $properties ['display'];
         $fo_border = $properties ['border'];
+        $border_color = $properties ['border-color'];
+        $border_width = $properties ['border-width'];
         $radius = $properties ['border-radius'];
         $picture = $properties ['background-image'];
         $pic_positions = preg_split ('/\s/', $properties ['background-position']);
@@ -2601,6 +2603,9 @@ class renderer_plugin_odt extends Doku_Renderer {
         }
         if ( empty ($width) === true ) {
             $width = '100%';
+        }
+        if ( empty($border_color) === true ) {
+            $border_color = $odt_bg;
         }
 
         // For safety, init width_abs with value for 100%
@@ -2623,11 +2628,21 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $style =
          '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-             <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
-                 draw:fill="solid" draw:fill-color="'.$odt_bg.'"
+             <style:graphic-properties 
                  draw:textarea-horizontal-align="left"
                  draw:textarea-vertical-align="center"
                  style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
+        if ( empty($odt_bg) === false ) {
+            $style .= 'draw:fill="solid" draw:fill-color="'.$odt_bg.'" ';
+        } else {
+            $style .= 'draw:fill="none" ';
+        }
+        if ( empty($border_color) === false ) {
+            $style .= 'svg:stroke-color="'.$border_color.'" ';
+        }
+        if ( empty($border_width) === false ) {
+            $style .= 'svg:stroke-width="'.$border_width.'" ';
+        }
         if ( empty($padding_left) === false ) {
             $style .= 'fo:padding-left="'.$padding_left.'" ';
         }

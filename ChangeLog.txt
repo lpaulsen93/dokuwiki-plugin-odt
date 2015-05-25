@@ -1,3 +1,13 @@
+2015-05-25 LarsDW223
+
+    * Refactored CSS import
+    * Added support for @media rules (with simplified comparison method)
+    * Refactored stylefactory.php
+    * Fixed wrong handling of border-color, border-width and background-color
+      in function _odtOpenTextBoxUseProperties()
+    * Import all DokuWiki CSS. Plugins can use the functions getCSSProperties() and getODTProperties()
+      instead of importing their CSS files on their own
+
 2015-05-16 LarsDW223
 
     * Fixed wrong protoyping of function 'register' in action.php

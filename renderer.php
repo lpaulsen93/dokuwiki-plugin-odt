@@ -2006,6 +2006,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtDivOpenAsFrameUseProperties ($properties) {
+        dbg_deprecated(_odtOpenTextBoxUseProperties);
         $this->_odtOpenTextBoxUseProperties ($properties);
     }
 

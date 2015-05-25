@@ -10,3 +10,9 @@ $conf['tpl_dir'] = 'odt';
 $conf['tpl_default'] = '';
 
 $conf['showexportbutton'] = 1;
+
+// Parameters for CSS import
+$conf['media_sel'] = 'print';
+$conf['template']  = 'default';
+$conf['usestyles'] = '';
+

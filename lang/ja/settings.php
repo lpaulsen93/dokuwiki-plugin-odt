@@ -7,3 +7,7 @@
  */
 $lang['tpl_dir']               = 'メディアマネージャー内のテンプレート用サブディレクトリ';
 $lang['showexportbutton']      = 'ODT 出力ボタンを表示';
+
+$lang['template']                = 'ODT の整形に使用するテンプレート';
+$lang['usestyles']               = 'ODT 作成で使用する <code>style.css</code> や <code>screen.css</code> のカンマ区切り一覧。デフォルトでは <code>print.css</code> と <code>odt.css</code> だけを使用します。';
+

@@ -74,6 +74,23 @@ class renderer_plugin_odt extends Doku_Renderer {
         "Bitstream Vera Sans Mono"=>'<style:font-face style:name="Bitstream Vera Sans Mono" svg:font-family="\'Bitstream Vera Sans Mono\'" style:font-family-generic="modern" style:font-pitch="fixed"/>', // for source code
     );
 
+    var $css;
+
+    /**
+     * Constructor. Loads and imports CSS and helper plugins.
+     */
+    public function __construct() {
+        $loader = plugin_load('helper', 'odt_dwcssloader');
+        if ( $loader != NULL ) {
+            $this->css = $loader->load('odt', 'odt', $this->getConf('template'));
+        }
+
+        $this->import = plugin_load('helper', 'odt_cssimport');
+        if ( $this->import != NULL ) {
+            $this->import->importFromString ($this->css);
+        }
+    }
+
     /**
      * Return version info
      */
@@ -209,6 +226,10 @@ class renderer_plugin_odt extends Doku_Renderer {
     function document_end(){
         global $conf;
         //$this->doc .= $this->_odtAutoStyles(); return; // DEBUG
+        // DEBUG: The following puts out the loaded raw CSS code
+        //$this->p_open();
+        //$this->doc .= 'CSS: '.$this->css;
+        //$this->p_close();
 
         $this->doc = preg_replace('#<text:p[^>]*>\s*</text:p>#', '', $this->doc);
 
@@ -2762,6 +2783,31 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '</text:p>';
 
         $this->div_z_index -= 5;
+    }
+
+    public function getCSSProperties (&$dest, $element, $classString, $inlineStyle) {
+        // Get properties for our class/element from imported CSS
+        $this->import->getPropertiesForElement($dest, $element, $classString);
+
+        // Interpret and add values from style to our properties
+        $this->_processCSSStyle($dest, $inlineStyle);
+    }
+
+    public function getODTProperties (&$dest, $element, $classString, $inlineStyle) {
+        // Get properties for our class/element from imported CSS
+        $this->import->getPropertiesForElement($dest, $element, $classString, $this->getConf('media_sel'));
+
+        // Interpret and add values from style to our properties
+        $this->_processCSSStyle($dest, $inlineStyle);
+
+        // Adjust values for ODT
+        foreach ($dest as $property => $value) {
+            $dest [$property] = $this->import->adjustValueForODT ($value, 14);
+        }
+    }
+
+    public function replaceURLPrefix ($URL, $replacement) {
+        return $this->import->replaceURLPrefix ($URL, $replacement);
     }
 }
 

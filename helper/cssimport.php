@@ -13,6 +13,19 @@ if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
 
+/**
+ * Abstract class to define kind of enum for the CSS value types.
+ * Actually only used by adjustLengthValues().
+ */
+abstract class CSSValueType
+{
+    const Other               = 0;
+    const LengthValueXAxis    = 1;
+    const LengthValueYAxis    = 2;
+    const StrokeOrBorderWidth = 3;
+    // etc.
+}
+
 class css_declaration {
     protected static $css_units = array ('em', 'ex', '%', 'px', 'cm', 'mm', 'in', 'pt',
                                          'pc', 'ch', 'rem', 'vh', 'vw', 'vmin', 'vmax');
@@ -704,6 +717,43 @@ class css_declaration {
             }
         }
     }
+
+    public function adjustLengthValues ($callback) {
+        switch ($this->property) {
+            case 'border-width':
+            case 'outline-width':
+            case 'border-bottom-width':
+            case 'column-rule-width':
+                $this->value =
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::StrokeOrBorderWidth);
+            break;
+
+            case 'margin-left':
+            case 'margin-right':
+            case 'padding-left':
+            case 'padding-right':
+            case 'width':
+            case 'column-width':
+                $this->value =
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueXAxis);
+            break;
+
+            case 'margin-top':
+            case 'margin-bottom':
+            case 'padding-top':
+            case 'padding-bottom':
+            case 'min-height':
+            case 'height':
+            case 'line-height':
+                $this->value =
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueYAxis);
+            break;
+
+            // FIXME: Shorthands are currently not processed.
+            // Every Shorthand would need an extra function which knows if it has any length values.
+            // Just like the explode...Shorthand functions.
+        }
+    }
 }
 class css_rule {
     protected $media = NULL;
@@ -828,6 +878,12 @@ class css_rule {
             $values [$property] = $value;
         }
         return NULL;
+    }
+
+    public function adjustLengthValues ($callback) {
+        foreach ($this->declarations as $declaration) {
+            $declaration->adjustLengthValues ($callback);
+        }
     }
 }
 
@@ -1091,6 +1147,10 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     }
 
     public function adjustValueForODT ($value, $emValue = 0) {
+        // ODT specific function. Shouldn't be used anymore.
+        // Call the ODT renderer's function instead.
+        dbg_deprecated('renderer_plugin_odt::adjustValueForODT');
+
         $values = preg_split ('/\s+/', $value);
         $value = '';
         foreach ($values as $part) {
@@ -1150,6 +1210,12 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             $URL = $replacement.$URL;
         }
         return $URL;
+    }
+
+    public function adjustLengthValues ($callback) {
+        foreach ($this->rules as $rule) {
+            $rule->adjustLengthValues ($callback);
+        }        
     }
 }
 ?>

@@ -74,6 +74,9 @@ class css_declaration {
             case 'columns':
                 $this->explodeColumnsShorthand ($decls);
             break;
+            case 'column-rule':
+                $this->explodeColumnRuleShorthand ($decls);
+            break;
 
             //FIXME: Implement all the shorthands missing
             //case ...
@@ -94,6 +97,7 @@ class css_declaration {
             case 'animation':
             case 'border-bottom':
             case 'columns':
+            case 'column-rule':
                 return true;
             break;
 
@@ -682,6 +686,21 @@ class css_declaration {
             }
             if ( count($values) > 1 ) {
                 $decls [] = new css_declaration ('column-count', $values [1]);
+            }
+        }
+    }
+
+    protected function explodeColumnRuleShorthand (&$decls) {
+        if ( $this->property == 'column-rule' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            if ( count($values) > 0 ) {
+                $decls [] = new css_declaration ('column-rule-width', $values [0]);
+            }
+            if ( count($values) > 1 ) {
+                $decls [] = new css_declaration ('column-rule-style', $values [1]);
+            }
+            if ( count($values) > 2 ) {
+                $decls [] = new css_declaration ('column-rule-color', $values [2]);
             }
         }
     }

@@ -16,3 +16,7 @@ $conf['media_sel'] = 'print';
 $conf['template']  = 'default';
 $conf['usestyles'] = '';
 
+// Parameters for converting pixel to points
+$conf['twips_per_pixel_x'] = '16';
+$conf['twips_per_pixel_y'] = '20';
+

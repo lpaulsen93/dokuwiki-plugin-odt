@@ -75,6 +75,8 @@ class renderer_plugin_odt extends Doku_Renderer {
     );
 
     var $css;
+    // Only for debugging
+    //var $trace_dump;
 
     /**
      * Constructor. Loads and imports CSS and helper plugins.
@@ -89,6 +91,11 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( $this->import != NULL ) {
             $this->import->importFromString ($this->css);
         }
+
+        // Call adjustLengthValues to make our callback function being called for every
+        // length value imported. This gives us the chance to convert it once from
+        // pixel to points.
+        $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
     }
 
     /**
@@ -229,6 +236,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         // DEBUG: The following puts out the loaded raw CSS code
         //$this->p_open();
         //$this->doc .= 'CSS: '.$this->css;
+        //$this->linebreak();
+        //$this->doc .= 'Tracedump: '.$this->trace_dump;
         //$this->p_close();
 
         $this->doc = preg_replace('#<text:p[^>]*>\s*</text:p>#', '', $this->doc);
@@ -1574,8 +1583,8 @@ class renderer_plugin_odt extends Doku_Renderer {
             list($width, $height) = $this->_odtGetImageSize($src, $width, $height);
         } else {
             // Adjust values for ODT
-            $width = $this->adjustLengthValueForODT ($width);
-            $height = $this->adjustLengthValueForODT ($height);
+            $width = $this->adjustXLengthValueForODT ($width);
+            $height = $this->adjustYLengthValueForODT ($height);
         }
 
         if($align){
@@ -1857,7 +1866,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $import->getPropertiesForElement($properties, $element, $classes);
         foreach ($properties as $property => $value) {
-            $properties [$property] = $import->adjustValueForODT ($value, 14);
+            $properties [$property] = $this->adjustValueForODT ($value, 14);
         }
         $odt_bg = $properties ['background-color'];
         $odt_fo = $properties ['color'];
@@ -1906,7 +1915,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         } else {
             // Absolute values may include not supported units.
             // Adjust.
-            $width_abs = $this->adjustLengthValueForODT($width);
+            $width_abs = $this->adjustXLengthValueForODT($width);
         }
 
         // Add our styles.
@@ -2027,7 +2036,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtDivOpenAsFrameUseProperties ($properties) {
-        dbg_deprecated(_odtOpenTextBoxUseProperties);
+        dbg_deprecated('_odtOpenTextBoxUseProperties');
         $this->_odtOpenTextBoxUseProperties ($properties);
     }
 
@@ -2184,16 +2193,6 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Open cell, second parameter MUST BE true to indicate we are in the header.
         $this->_odtTableCellOpenUsePropertiesInternal ($properties, true, $colspan, $rowspan);
 
-        /*$this->doc .= '<table:table-cell office:value-type="string" table:style-name="tableheader" ';
-        if ( $colspan > 1 ) {
-            $this->doc .= ' table:number-columns-spanned="'.$colspan.'"';
-        }
-        if ( $rowspan > 1 ) {
-            $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';
-        }
-        $this->doc .= '>';
-        $this->p_open('Standard');*/
-
         // Overwrite/Create column style for actual column if $properties has any
         // meaningful params for a column-style (e.g. width).
         $style_name = $this->temp_table_column_styles [$this->temp_column];
@@ -2305,24 +2304,6 @@ class renderer_plugin_odt extends Doku_Renderer {
             // Table header definition is finished.
             $this->temp_in_header = false;
         }
-
-/* --> Moved to function _odtTableClose()
-        // Writeback temporary table content if this is the first cell in the table body.
-        if ( $inHeader === false && empty($this->temp_cols) === false) {                
-            // First replace columns placeholder with created columns, if in auto mode.
-            if ( $this->temp_autocols === true ) {
-                $this->doc =
-                    str_replace ('<ColumnsPlaceholder>', $this->temp_cols, $this->doc);
-
-                $this->doc =
-                    str_replace ('<MaxColsPlaceholder>', $this->temp_maxcols, $this->doc);
-
-                unset ($this->temp_content);
-                unset ($this->temp_cols);
-                $this->temp_autocols = false;
-            }
-        }
-*/
 
         // Create style name. (Re-enable background-color!)
         $style_name = $this->factory->createTableCellStyle ($style, $properties);
@@ -2476,7 +2457,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $rule = new css_rule ('*', $style);
         $rule->getProperties ($properties);
         foreach ($properties as $property => $value) {
-            $properties [$property] = $this->import->adjustValueForODT ($value, 14);
+            $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
 
         if ( empty ($properties ['background-image']) === false ) {
@@ -2497,7 +2478,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     public function _processCSSClass(&$properties, helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $import->getPropertiesForElement($properties, $element, $classes);
         foreach ($properties as $property => $value) {
-            $properties [$property] = $import->adjustValueForODT ($value, 14);
+            $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
 
         if ( empty ($properties ['background-image']) === false ) {
@@ -2543,29 +2524,6 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '</text:p>';
 
         $this->div_z_index -= 5;
-    }
-
-    /**
-     * This function adjust the length string $value for ODT and returns the adjusted string:
-     * - If there are only digits in the string, the unit 'pt' is appended
-     * - If the unit is 'px' it is replaced by 'pt'
-     *   (the OpenDocument specification only optionally supports 'px' and it seems that at
-     *   least LibreOffice is not supporting it)
-     *
-     * @author LarsDW223
-     */
-    function adjustLengthValueForODT ($value) {
-        // If there are only digits, append 'pt' to it
-        if ( ctype_digit($value) === true ) {
-            $value = $value.'pt';
-        } else {
-            // Replace px with pt (px does not seem to be supported by ODT)
-            $length = strlen ($value);
-            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
-                $value [$length-1] = 't';
-            }
-        }
-        return $value;
     }
 
     /**
@@ -2628,6 +2586,9 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty($border_color) === true ) {
             $border_color = $odt_bg;
         }
+        if ( empty($pic_positions [0]) === false ) {
+            $pic_positions [0] = $this->adjustXLengthValueForODT ($pic_positions [0]);
+        }
 
         // For safety, init width_abs with value for 100%
         $width_abs = $this->_getAbsWidthMindMargins (100);
@@ -2640,7 +2601,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         } else {
             // Absolute values may include not supported units.
             // Adjust.
-            $width_abs = $this->adjustLengthValueForODT($width);
+            $width_abs = $this->adjustXLengthValueForODT($width);
         }
 
 
@@ -2713,7 +2674,7 @@ class renderer_plugin_odt extends Doku_Renderer {
          <style:style style:name="'.$style_name.'_text_box" style:family="paragraph">
              <style:text-properties fo:color="'.$odt_fo.'"/>
              <style:paragraph-properties
-              fo:margin-left="'.$padding_left.'pt" fo:margin-right="10pt" fo:text-indent="0cm"/>
+              fo:margin-left="'.$padding_left.'" fo:margin-right="10pt" fo:text-indent="0cm"/>
          </style:style>';
         $this->autostyles[$style_name] = $style;
 
@@ -2802,12 +2763,150 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         // Adjust values for ODT
         foreach ($dest as $property => $value) {
-            $dest [$property] = $this->import->adjustValueForODT ($value, 14);
+            $dest [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
     }
 
     public function replaceURLPrefix ($URL, $replacement) {
         return $this->import->replaceURLPrefix ($URL, $replacement);
+    }
+
+    public function pixelToPointsX ($pixel) {
+        return ($pixel * $this->getConf('twips_per_pixel_x')) / 20;
+    }
+
+    public function pixelToPointsY ($pixel) {
+        return ($pixel * $this->getConf('twips_per_pixel_y')) / 20;
+    }
+
+    public function adjustValueForODT ($property, $value, $emValue = 0) {
+        $values = preg_split ('/\s+/', $value);
+        $value = '';
+        foreach ($values as $part) {
+            $length = strlen ($part);
+
+            // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
+            // (ODT does not support the short form)
+            if ( $part [0] == '#' && $length == 4 ) {
+                $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
+            } else {
+                // If it is a CSS color name, get it's real color value
+                $odt_colors = plugin_load('helper', 'odt_csscolors');
+                $color = $odt_colors->getColorValue ($part);
+                if ( $part == 'black' || $color != '#000000' ) {
+                    $part = $color;
+                }
+            }
+
+            if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
+                $number = substr ($part, 0, $length-2);
+                if ( is_numeric ($number) === true && empty ($emValue) === false ) {
+                    $part = ($number * $emValue).'pt';
+                }
+            }
+
+            $value .= ' '.$part;
+        }
+        $value = trim($value);
+
+        return $value;
+    }
+
+    /**
+     * This function adjust the length string $value for ODT and returns the adjusted string:
+     * - If there are only digits in the string, the unit 'pt' is appended
+     * - If the unit is 'px' it is replaced by 'pt'
+     *   (the OpenDocument specification only optionally supports 'px' and it seems that at
+     *   least LibreOffice is not supporting it)
+     *
+     * @author LarsDW223
+     */
+    function adjustLengthValueForODT ($value) {
+        dbg_deprecated('_odtOpenTextBoxUseProperties');
+
+        // If there are only digits, append 'pt' to it
+        if ( ctype_digit($value) === true ) {
+            $value = $value.'pt';
+        } else {
+            // Replace px with pt (px does not seem to be supported by ODT)
+            $length = strlen ($value);
+            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+                $value [$length-1] = 't';
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * This function adjust the length string $value for ODT and returns the adjusted string:
+     * If no unit or pixel are specified, then pixel are converted to points using the
+     * configured twips per point (X axis).
+     *
+     * @author LarsDW223
+     */
+    function adjustXLengthValueForODT ($value) {
+        // If there are only digits or if the unit is pixel,
+        // convert from pixel to point.
+        if ( ctype_digit($value) === true ) {
+            $value = $this->pixelToPointsX($value).'pt';
+        } else {
+            $length = strlen ($value);
+            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+                $number = trim($value, 'px');
+                $value = $this->pixelToPointsX($number).'pt';
+            }
+        }
+        return $value;
+    }
+
+    /**
+     * This function adjust the length string $value for ODT and returns the adjusted string:
+     * If no unit or pixel are specified, then pixel are converted to points using the
+     * configured twips per point (Y axis).
+     *
+     * @author LarsDW223
+     */
+    function adjustYLengthValueForODT ($value) {
+        // If there are only digits or if the unit is pixel,
+        // convert from pixel to point.
+        if ( ctype_digit($value) === true ) {
+            $value = $this->pixelToPointsY($value).'pt';
+        } else {
+            $length = strlen ($value);
+            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+                $number = trim($value, 'px');
+                $value = $this->pixelToPointsY($number).'pt';
+            }
+        }
+        return $value;
+    }
+
+    public function adjustLengthCallback ($property, $value, $type) {
+        // Replace px with pt (px does not seem to be supported by ODT)
+        $length = strlen ($value);
+        if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+            $number = trim($value, 'px');
+            switch ($type) {
+                case CSSValueType::LengthValueXAxis:
+                    $adjusted = $this->pixelToPointsX($number).'pt';
+                break;
+
+                case CSSValueType::StrokeOrBorderWidth:
+                    $adjusted = $value;
+                break;
+
+                case CSSValueType::LengthValueYAxis:
+                default:
+                    $adjusted = $this->pixelToPointsY($number).'pt';
+                break;
+            }
+            // Only for debugging.
+            //$this->trace_dump .= 'adjustLengthCallback: '.$property.':'.$value.'==>'.$adjusted.'<text:line-break/>';
+            return $adjusted;
+        }
+        // Only for debugging.
+        //$this->trace_dump .= 'adjustLengthCallback: '.$property.':'.$value.'<text:line-break/>';
+        return $value;
     }
 }
 

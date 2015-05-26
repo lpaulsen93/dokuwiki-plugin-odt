@@ -714,8 +714,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             $attrs++;
         }
 
-        if ( empty ($disabled_props ['column-rule']) === true ) {
-            $rule_parts = explode (' ', $properties ['column-rule']);
+        if ( empty ($disabled_props ['column-rule-width']) === true ) {
+            $rule_width = $properties ['column-rule-width'];
+            $attrs++;
+        }
+
+        if ( empty ($disabled_props ['column-rule-style']) === true ) {
+            $rule_style = $properties ['column-rule-style'];
+            $attrs++;
+        }
+
+        if ( empty ($disabled_props ['column-rule-color']) === true ) {
+            $rule_color = $properties ['column-rule-color'];
             $attrs++;
         }
 
@@ -738,7 +748,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         $style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Frame">
                     <style:graphic-properties fo:border="none" style:vertical-pos="top" style:vertical-rel="paragraph-content" style:horizontal-pos="center" style:horizontal-rel="paragraph">
 <style:columns fo:column-count="'.$columns.'" fo:column-gap="'.$gap.'">
-<style:column-sep style:style="'.$rule_parts [1].'" style:color="'.$rule_parts [2].'" style:width="'.$rule_parts [0].'"/>
+<style:column-sep style:style="'.$rule_style.'" style:color="'.$rule_color.'" style:width="'.$rule_width.'"/>
 <style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
 <style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
 <style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>

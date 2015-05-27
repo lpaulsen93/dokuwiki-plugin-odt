@@ -2589,6 +2589,9 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty($pic_positions [0]) === false ) {
             $pic_positions [0] = $this->adjustXLengthValueForODT ($pic_positions [0]);
         }
+        if ( empty($min_height) === true ) {
+            $min_height = '1pt';
+        }
 
         // For safety, init width_abs with value for 100%
         $width_abs = $this->_getAbsWidthMindMargins (100);
@@ -2612,7 +2615,6 @@ class renderer_plugin_odt extends Doku_Renderer {
          '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
              <style:graphic-properties 
                  draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
                  style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
         if ( empty($odt_bg) === false ) {
             $style .= 'draw:fill="solid" draw:fill-color="'.$odt_bg.'" ';
@@ -2681,6 +2683,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Group the frame so that they are stacked one on each other.
         $this->p_close();
         $this->doc .= '<text:p>';
+        $this->linebreak();
         if ( $display == NULL ) {
             $this->doc .= '<draw:g>';
         } else {

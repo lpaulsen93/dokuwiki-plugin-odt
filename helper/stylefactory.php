@@ -684,7 +684,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
                 // Change % to *.
                 //$table_co_width [$length-1] = '*';
                 $table_co_width = trim ($table_co_width, '%');
-                $style .= 'style:rel-column-width="'.$table_co_width.'" ';
+                $style .= 'style:rel-column-width="'.$table_co_width.'*" ';
             }
         }
         $style .= '/>';

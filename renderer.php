@@ -29,6 +29,7 @@ if (version_compare($dw_version, "20070626") and
 class renderer_plugin_odt extends Doku_Renderer {
     var $factory = null;
     var $import = null;
+    var $units = null;
     var $ZIP = null;
     var $meta;
     var $store = '';
@@ -42,6 +43,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $in_div_as_frame = 0;
     var $highlight_style_num = 1;
     var $temp_table_column_styles = array ();
+    var $temp_table_style = NULL;
     var $temp_in_header = false;
     var $temp_autocols = false;
     var $temp_maxcols = 0;
@@ -96,6 +98,12 @@ class renderer_plugin_odt extends Doku_Renderer {
         // length value imported. This gives us the chance to convert it once from
         // pixel to points.
         $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
+
+        // Load helper class for unit conversion.
+        $this->units = plugin_load('helper', 'odt_units');
+        $this->units->setPixelPerEm(14);
+        $this->units->setTwipsPerPixelX($this->getConf('twips_per_pixel_x'));
+        $this->units->setTwipsPerPixelY($this->getConf('twips_per_pixel_y'));
     }
 
     /**
@@ -2105,6 +2113,12 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Create style.
         $style_name = $this->factory->createTableTableStyle ($style, $properties);
         $this->autostyles[$style_name] = $style;
+        if ( empty ($properties [$width]) === true ) {
+            // If the caller did not specify a table width, save the style name
+            // to eventually later replace the table width set in createTableTableStyle()
+            // with the sum of all column width (in _odtTableClose).
+            $this->temp_table_style = $style_name;
+        }
 
         // Open the table referencing our style.
         $this->doc .= '<table:table table:style-name="'.$style_name.'">';
@@ -2137,7 +2151,41 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->temp_maxcols = 0;
     }
 
+    protected function _replaceTableWidth () {
+        $matches = array ();
+
+        if ( empty($this->temp_table_style) || empty($this->temp_cols) === true ) {
+            return;
+        }
+
+        // Search through all column styles for the column width ('style:width="..."').
+        // If every column has a absolute width set, add them all and replace the table
+        // with with the result.
+        // Abort if a column has a percentage width or no width.
+        $sum = 0;
+        for ($index = 0 ; $index < $this->temp_maxcols ; $index++ ) {
+            $style_name = $this->temp_table_column_styles [$index];
+            $found = preg_match ('/style:column-width="[^"]*"/', $this->autostyles[$style_name], $matches);
+            if ( $found != 1 ) {
+                return;
+            }
+            $width = substr ($matches [0], strlen ('style:column-width='));
+            $width = trim ($width, '"');
+            $length = strlen ($width);
+            if ( $width [$length-1] == '%' ) {
+                return;
+            }
+            $width = $this->units->toPoints($width, 'x');
+            $sum += trim ($width, 'pt');
+        }
+        $this->autostyles[$this->temp_table_style] =
+            preg_replace ('/style:width="[^"]*"/', 'style:width="'.$sum.'pt"', $this->autostyles[$this->temp_table_style]);
+    }
+
     function _odtTableClose () {
+        // Eventually replace table width.
+        $this->_replaceTableWidth ();
+
         // Writeback temporary table content if this is the first cell in the table body.
         if ( empty($this->temp_cols) === false) {                
             // First replace columns placeholder with created columns, if in auto mode.
@@ -2171,11 +2219,12 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->_odtTableHeaderOpenUseProperties($properties, $colspan, $rowspan);
     }
 
-    function _odtTableAddColumnUseProperties ($properties = NULL){
+    function _odtTableAddColumnUseProperties (array $properties = NULL){
         // Overwrite/Create column style for actual column if $properties has any
         // meaningful params for a column-style (e.g. width).
         $style_name = $this->temp_table_column_styles [$this->temp_column];
         $style_name = $this->factory->createTableColumnStyle ($style, $properties, NULL, $style_name);
+        $this->temp_table_column_styles [$this->temp_column] = $style_name;
         $this->autostyles[$style_name] = $style;
         $this->temp_column++;
 
@@ -2192,23 +2241,6 @@ class renderer_plugin_odt extends Doku_Renderer {
     function _odtTableHeaderOpenUseProperties ($properties = NULL, $colspan = 1, $rowspan = 1){
         // Open cell, second parameter MUST BE true to indicate we are in the header.
         $this->_odtTableCellOpenUsePropertiesInternal ($properties, true, $colspan, $rowspan);
-
-        // Overwrite/Create column style for actual column if $properties has any
-        // meaningful params for a column-style (e.g. width).
-        $style_name = $this->temp_table_column_styles [$this->temp_column];
-        //$style_name = $this->_createTableColumnStyle ($properties, NULL, $style_name);
-        $style_name = $this->factory->createTableColumnStyle ($style, $properties, NULL, $style_name);
-        $this->autostyles[$style_name] = $style;
-        $this->temp_column++;
-
-        // Eventually add a new temp column if in auto mode
-        if ( $this->temp_autocols === true ) {
-            if ( $this->temp_column > $this->temp_maxcols ) {
-                // Add temp column.
-                $this->temp_cols .= '<table:table-column table:style-name="'.$style_name.'"/>';
-                $this->temp_maxcols++;
-            }
-        }
     }
 
     /**

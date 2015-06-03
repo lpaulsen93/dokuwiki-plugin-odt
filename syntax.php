@@ -89,6 +89,7 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
 
         if(!$data) { // Export button
             if($format != 'xhtml') return false;
+
             $renderer->doc .= '<a href="' . exportlink($ID, 'odt', ($REV != '' ? 'rev=' . $REV : '')) . '" title="' . $this->getLang('view') . '">';
             $renderer->doc .= '<img src="' . DOKU_BASE . 'lib/plugins/odt/odt.png" align="right" alt="' . $this->getLang('view') . '" width="48" height="48" />';
             $renderer->doc .= '</a>';
@@ -97,9 +98,15 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         } else { // Extended info
 
             list($info_type, $info_value) = $data;
-            if ($info_type == "template") { // Template-based export
-                $renderer->template = $info_value;
-                p_set_metadata($ID, array("relation"=> array("odt"=>array("template"=>$info_value))));
+            if($info_type == "template") { // Template-based export
+                 if($format == 'odt') {
+                     /** @var renderer_plugin_odt $renderer */
+                     $renderer->template = $info_value;
+
+                 } elseif($format == 'metadata') {
+                     /** @var Doku_Renderer_metadata $renderer */
+                     $renderer->meta['relation']['odt']['template'] = $info_value;
+                 }
             }
         }
         return false;

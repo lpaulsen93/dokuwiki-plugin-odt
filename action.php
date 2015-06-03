@@ -14,14 +14,7 @@ if(!defined('DOKU_INC')) die();
  */
 class action_plugin_odt extends DokuWiki_Action_Plugin {
 
-    /**
-     * return some info
-     */
-    public function getInfo() {
-        return confToHash(dirname(__FILE__) . '/info.txt');
-    }
-
-    /**
+     /**
      * Registers a callback function for a given event
      *
      * @param Doku_Event_Handler $controller

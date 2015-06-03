@@ -22,25 +22,41 @@ abstract class CSSValueType
     // etc.
 }
 
+/**
+ * Class css_declaration
+ */
 class css_declaration {
     protected static $css_units = array ('em', 'ex', '%', 'px', 'cm', 'mm', 'in', 'pt',
                                          'pc', 'ch', 'rem', 'vh', 'vw', 'vmin', 'vmax');
     protected $property;
     protected $value;
 
+    /**
+     * @param $property
+     * @param $value
+     */
     public function __construct($property, $value) {
         $this->property = $property;
         $this->value = trim($value, ';');
     }
 
+    /**
+     * @return mixed
+     */
     public function getProperty () {
         return $this->property;
     }
 
+    /**
+     * @return string
+     */
     public function getValue () {
         return $this->value;
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     public function explode (&$decls) {
         if ( empty ($this->property) ) {
             return;
@@ -92,6 +108,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @return bool
+     */
     public function isShorthand () {
         switch ($this->property) {
             case 'background':
@@ -116,6 +135,9 @@ class css_declaration {
         return false;
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeBackgroundShorthand (&$decls) {
         if ( $this->property == 'background' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -137,15 +159,19 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeFontShorthand (&$decls) {
         if ( $this->property == 'font' ) {
             $values = preg_split ('/\s+/', $this->value);
-            $index = 0;
+
             $font_style_set = false;
             $font_variant_set = false;
             $font_weight_set = false;
             $font_size_set = false;
-            unset ($font_family);
+
+            $font_family = '';
             foreach ($values as $value) {
                 if ( $font_style_set === false ) {
                     $default = false;
@@ -271,6 +297,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodePaddingShorthand (&$decls) {
         if ( $this->property == 'padding' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -303,6 +332,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeMarginShorthand (&$decls) {
         if ( $this->property == 'margin' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -335,6 +367,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeBorderShorthand (&$decls) {
         if ( $this->property == 'border' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -395,10 +430,13 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeListStyleShorthand (&$decls) {
         if ( $this->property == 'list-style' ) {
             $values = preg_split ('/\s+/', $this->value);
-            $index = 0;
+
             $list_style_type_set = false;
             $list_style_position_set = false;
             $list_style_image_set = false;
@@ -471,6 +509,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeFlexShorthand (&$decls) {
         if ( $this->property == 'flex' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -486,6 +527,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeTransitionShorthand (&$decls) {
         if ( $this->property == 'transition' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -504,10 +548,13 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeOutlineShorthand (&$decls) {
         if ( $this->property == 'outline' ) {
             $values = preg_split ('/\s+/', $this->value);
-            $index = 0;
+
             $outline_color_set = false;
             $outline_style_set = false;
             $outline_width_set = false;
@@ -578,6 +625,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeAnimationShorthand (&$decls) {
         if ( $this->property == 'animation' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -608,10 +658,13 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeBorderBottomShorthand (&$decls) {
         if ( $this->property == 'border-bottom' ) {
             $values = preg_split ('/\s+/', $this->value);
-            $index = 0;
+
             $border_bottom_width_set = false;
             $border_bottom_style_set = false;
             $border_bottom_color_set = false;
@@ -682,6 +735,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeColumnsShorthand (&$decls) {
         if ( $this->property == 'columns' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -699,6 +755,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param css_declaration[] $decls
+     */
     protected function explodeColumnRuleShorthand (&$decls) {
         if ( $this->property == 'column-rule' ) {
             $values = preg_split ('/\s+/', $this->value);
@@ -714,6 +773,9 @@ class css_declaration {
         }
     }
 
+    /**
+     * @param $callback
+     */
     public function adjustLengthValues ($callback) {
         switch ($this->property) {
             case 'border-width':
@@ -751,13 +813,22 @@ class css_declaration {
         }
     }
 }
+
+/**
+ * Class css_rule
+ */
 class css_rule {
     protected $media = NULL;
     protected $selectors = array ();
+    /** @var css_declaration[]  */
     protected $declarations = array ();
 
+    /**
+     * @param $selector
+     * @param $decls
+     * @param null $media
+     */
     public function __construct($selector, $decls, $media = NULL) {
-        $exploded_decls = array ();
 
         $this->media = trim ($media);
         //print ("\nNew rule: ".$media."\n"); //Debuging
@@ -806,6 +877,9 @@ class css_rule {
         }
     }
 
+    /**
+     * @return string
+     */
     public function toString () {
         $returnString = '';
         $returnString .= "Media= \"".$this->media."\"\n";
@@ -820,8 +894,13 @@ class css_rule {
         return $returnString;
     }
 
+    /**
+     * @param $element
+     * @param $classString
+     * @param null $media
+     * @return bool|int
+     */
     public function matches ($element, $classString, $media = NULL) {
-        $classes = array ();
 
         $media = trim ($media);
         if ( empty($this->media) === false && $media != $this->media ) {
@@ -858,6 +937,10 @@ class css_rule {
         return false;
     }
 
+    /**
+     * @param $name
+     * @return null
+     */
     public function getProperty ($name) {
         foreach ($this->declarations as $declaration) {
             if ( $name == $declaration->getProperty () ) {
@@ -867,6 +950,10 @@ class css_rule {
         return NULL;
     }
 
+    /**
+     * @param $values
+     * @return null
+     */
     public function getProperties (&$values) {
         foreach ($this->declarations as $declaration) {
             $property = $declaration->getProperty ();
@@ -876,6 +963,9 @@ class css_rule {
         return NULL;
     }
 
+    /**
+     * @param $callback
+     */
     public function adjustLengthValues ($callback) {
         foreach ($this->declarations as $declaration) {
             $declaration->adjustLengthValues ($callback);
@@ -883,25 +973,38 @@ class css_rule {
     }
 }
 
+/**
+ * Class helper_plugin_odt_cssimport
+ */
 class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     protected $replacements = array();
     protected $raw;
+    /** @var css_rule[]  */
     protected $rules = array ();
 
     /**
      * Imports CSS from a file.
      * @deprecated since 3015-05-23, use importFromFile
+     *
+     * @param $filename
      */
     function importFrom($filename) {
         dbg_deprecated('importFromFile');
         $this->importFromFile($filename);
     }
 
+    /**
+     * @param $contents
+     * @return bool
+     */
     function importFromString($contents) {
         $this->deleteComments ($contents);
-        $this->importFromStringInternal ($contents);
+        return $this->importFromStringInternal ($contents);
     }
 
+    /**
+     * @param $contents
+     */
     protected function deleteComments ($contents) {
         // Delete all comments first
         $pos = 0;
@@ -936,6 +1039,11 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         }
     }
 
+    /**
+     * @param $contents
+     * @param null $media
+     * @return bool
+     */
     protected function importFromStringInternal($contents, $media = NULL) {
         // Find all CSS rules
         $pos = 0;
@@ -986,6 +1094,10 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return true;
     }
 
+    /**
+     * @param $filename
+     * @return bool|void
+     */
     function importFromFile($filename) {
         // Try to read in the file content
         if ( empty($filename) ) {
@@ -1006,6 +1118,10 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $this->importFromString ($contents);
     }
 
+    /**
+     * @param $filename
+     * @return bool
+     */
     function loadReplacements($filename) {
         // Try to read in the file content
         if ( empty($filename) ) {
@@ -1097,10 +1213,21 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $this->raw;
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function getReplacement ($name) {
         return $this->replacements [$name];
     }
 
+    /**
+     * @param $element
+     * @param $classString
+     * @param $name
+     * @param null $media
+     * @return null
+     */
     public function getPropertyForElement ($element, $classString, $name, $media = NULL) {
         if ( empty ($name) === true ) {
             return NULL;
@@ -1120,6 +1247,11 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $value;
     }
 
+    /**
+     * @param $classString
+     * @param $name
+     * @return null
+     */
     public function getProperty ($classString, $name) {
         if ( empty ($classString) === true || empty ($name) === true ) {
             return NULL;
@@ -1129,6 +1261,12 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $value;
     }
 
+    /**
+     * @param $dest
+     * @param $element
+     * @param $classString
+     * @param null $media
+     */
     public function getPropertiesForElement (&$dest, $element, $classString, $media = NULL) {
         if ( empty ($element) === true && empty ($classString) === true ) {
             return;
@@ -1142,6 +1280,11 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         }
     }
 
+    /**
+     * @param $value
+     * @param int $emValue
+     * @return string
+     */
     public function adjustValueForODT ($value, $emValue = 0) {
         // ODT specific function. Shouldn't be used anymore.
         // Call the ODT renderer's function instead.
@@ -1164,6 +1307,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                 $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
             } else {
                 // If it is a CSS color name, get it's real color value
+                /** @var helper_plugin_odt_csscolors $odt_colors */
                 $odt_colors = plugin_load('helper', 'odt_csscolors');
                 $color = $odt_colors->getColorValue ($part);
                 if ( $part == 'black' || $color != '#000000' ) {
@@ -1190,6 +1334,9 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $value;
     }
 
+    /**
+     * @return string
+     */
     public function rulesToString () {
         $returnString = '';
         foreach ($this->rules as $rule) {
@@ -1198,6 +1345,11 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $returnString;
     }
 
+    /**
+     * @param $URL
+     * @param $replacement
+     * @return string
+     */
     public function replaceURLPrefix ($URL, $replacement) {
         if ( empty ($URL) === false && empty ($replacement) === false ) {
             // Replace 'url(...)' with $replacement
@@ -1208,10 +1360,13 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return $URL;
     }
 
+    /**
+     * @param $callback
+     */
     public function adjustLengthValues ($callback) {
         foreach ($this->rules as $rule) {
             $rule->adjustLengthValues ($callback);
         }
     }
 }
-?>
+

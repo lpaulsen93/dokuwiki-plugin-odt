@@ -1,17 +1,13 @@
 <?php
 /**
  * Helper class to read in a CSS style
- * 
+ *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     LarsDW223
  */
 
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
-
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
 
 /**
  * Abstract class to define kind of enum for the CSS value types.
@@ -782,13 +778,13 @@ class css_rule {
             if ( $semi === false ) {
                 break;
             }
-            
+
             $property = substr ($decls, $pos, $colon - $pos);
             $property = trim($property);
 
             $value = substr ($decls, $colon + 1, $semi - ($colon + 1));
             $value = trim ($value);
-            $values = preg_split ('/\s+/', $value);       
+            $values = preg_split ('/\s+/', $value);
             $value = '';
             foreach ($values as $part) {
                 if ( $part != '!important' ) {
@@ -984,7 +980,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                 }
 
             }
-            
+
             $pos = $bracket_close + 1;
         }
         return true;
@@ -995,7 +991,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         if ( empty($filename) ) {
             return false;
         }
-        
+
         $handle = fopen($filename, "rb");
         if ( $handle === false ) {
             return false;
@@ -1083,7 +1079,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                 $def_pos = $linestart;
                 continue;
             }
-                
+
             $replacement = substr ($defs, $linestart, $equal_sign - $linestart);
             $value = substr ($defs, $quote_start + 1, $quote_end - ($quote_start + 1));
             $replacement = trim($replacement);
@@ -1215,7 +1211,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     public function adjustLengthValues ($callback) {
         foreach ($this->rules as $rule) {
             $rule->adjustLengthValues ($callback);
-        }        
+        }
     }
 }
 ?>

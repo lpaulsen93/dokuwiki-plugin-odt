@@ -9,57 +9,63 @@
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
-if(!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
-require_once(DOKU_PLUGIN.'syntax.php');
-
+/**
+ * Class syntax_plugin_odt
+ */
 class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
-
-    /**
-     * return some info
-     */
-    function getInfo(){
-        return confToHash(dirname(__FILE__).'/info.txt');
-    }
 
     /**
      * What kind of syntax are we?
      */
-    function getType(){
+    public function getType(){
         return 'substition';
     }
 
     /**
      * What about paragraphs?
      */
-    function getPType(){
+    public function getPType(){
         return 'normal';
     }
 
     /**
      * Where to sort in?
      */
-    function getSort(){
+    public function getSort(){
         return 319; // Before image detection, which uses {{...}} and is 320
     }
 
     /**
      * Connect pattern to lexer
+     *
+     * @param string $mode
      */
-    function connectTo($mode) {
+    public function connectTo($mode) {
         $this->Lexer->addSpecialPattern('~~ODT~~',$mode,'plugin_odt');
         $this->Lexer->addSpecialPattern('{{odt>.+?}}',$mode,'plugin_odt');
     }
 
     /**
-     * Handle the match
+     * Handler to prepare matched data for the rendering process
+     *
+     * @param   string       $match   The text matched by the patterns
+     * @param   int          $state   The lexer state for the match
+     * @param   int          $pos     The character position of the matched text
+     * @param   Doku_Handler $handler The Doku_Handler object
+     * @return  bool|array Return an array with all data you want to use in render, false don't add an instruction
      */
-    function handle($match, $state, $pos, &$handler){
+    public function handle($match, $state, $pos, Doku_Handler $handler){
         // Export button
-        if ($match == '~~ODT~~') { return array(); }
+        if ($match == '~~ODT~~') {
+            return array();
+        }
+
         // Extended info
         $match = substr($match,6,-2); //strip markup
         $extinfo = explode(':',$match);
+
         $info_type = $extinfo[0];
+
         if (count($extinfo) < 2) { // no value
             $info_value = '';
         } elseif (count($extinfo) == 2) {
@@ -71,10 +77,16 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
     }
 
     /**
-     * Create output
+     * Handles the actual output creation.
+     *
+     * @param string          $format   output format being rendered
+     * @param Doku_Renderer   $renderer the current renderer object
+     * @param array           $data     data created by handler()
+     * @return  boolean                 rendered correctly? (however, returned value is not used at the moment)
      */
-    function render($format, &$renderer, $data) {
+    public function render($format, Doku_Renderer $renderer, $data) {
         global $ID, $REV;
+
         if (!$data) { // Export button
             if($format != 'xhtml') return false;
             $renderer->doc .= '<a href="'.exportlink($ID, 'odt', ($REV != '' ? 'rev='.$REV : '')).'" title="'.$this->getLang('view').'">';

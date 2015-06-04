@@ -12,6 +12,7 @@ if(!defined('DOKU_INC')) die();
 require_once DOKU_INC.'inc/parser/renderer.php';
 require_once DOKU_INC.'lib/plugins/odt/helper/cssimport.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
+require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmeta.php';
 
 // ZipLib.class.php
 $dw_version = preg_replace('/[^\d]/', '', getversion());
@@ -107,6 +108,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->units->setTwipsPerPixelY($this->getConf('twips_per_pixel_y'));
 
         $this->manifest = new ODTManifest();
+        $this->meta = new ODTMeta();
     }
 
     /**
@@ -141,6 +143,9 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->factory = plugin_load('helper', 'odt_stylefactory');
         }
 
+        // Set title in meta info.
+        $this->meta->setTitle($ID);
+
         $this->autostyles = $this->_getInitAutoStyles();
         $this->styles = $this->_getInitStyles();
 
@@ -152,18 +157,6 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         // prepare the zipper
         $this->ZIP = new ZipLib();
-
-        // prepare meta data
-        $this->meta             = array(
-                'meta:generator'            => 'DokuWiki '.getversion(),
-                'meta:initial-creator'      => 'Generated',
-                'meta:creation-date'        => date('Y-m-d\\TH::i:s', null), //FIXME
-                'dc:creator'                => 'Generated',
-                'dc:date'                   => date('Y-m-d\\TH::i:s', null),
-                'dc:language'               => 'en-US',
-                'meta:editing-cycles'       => '1',
-                'meta:editing-duration'     => 'PT0S',
-            );
 
         //$headers = array('Content-Type'=>'text/plain'); p_set_metadata($ID,array('format' => array('odt' => $headers) )); return ; // DEBUG
         // send the content type header, new method after 2007-06-26 (handles caching)
@@ -179,26 +172,6 @@ class renderer_plugin_odt extends Doku_Renderer {
             header('Content-Type: application/vnd.oasis.opendocument.text');
             header('Content-Disposition: attachment; filename="'.$output_filename.'";');
         }
-    }
-
-    /**
-     * Prepare meta.xml
-     */
-    function _odtMeta(){
-        $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
-        $value .=   '<office:document-meta ';
-        $value .=       'xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" ';
-        $value .=       'xmlns:xlink="http://www.w3.org/1999/xlink" ';
-        $value .=       'xmlns:dc="http://purl.org/dc/elements/1.1/" ';
-        $value .=       'xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" ';
-        $value .=   'office:version="1.0">';
-        $value .=       '<office:meta>';
-    # FIXME
-    #    foreach($meta as $meta_key => $meta_value)
-    #        $value .=       '<' . $meta_key . '>' . ODUtils::encode($meta_value) . '</' . $meta_key . '>';
-        $value .=       '</office:meta>';
-        $value .=   '</office:document-meta>';
-        $this->ZIP->add_File($value,'meta.xml');
     }
 
     /**
@@ -264,7 +237,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // add defaults
         $this->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
 
-        $this->_odtMeta();
+        $this->ZIP->add_File($this->meta->getContent(),'meta.xml');
         $this->_odtSettings();
 
         $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";

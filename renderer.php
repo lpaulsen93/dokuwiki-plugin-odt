@@ -13,6 +13,7 @@ require_once DOKU_INC.'inc/parser/renderer.php';
 require_once DOKU_INC.'lib/plugins/odt/helper/cssimport.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmeta.php';
+require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
 
 // ZipLib.class.php
 $dw_version = preg_replace('/[^\d]/', '', getversion());
@@ -34,6 +35,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $units = null;
     var $ZIP = null;
     var $meta;
+    var $settings;
     var $store = '';
     var $footnotes = array();
     var $manifest  = null;
@@ -109,6 +111,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $this->manifest = new ODTManifest();
         $this->meta = new ODTMeta();
+        $this->settings = new ODTSettings();
     }
 
     /**
@@ -175,18 +178,6 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     /**
-     * Prepare settings.xml
-     */
-    function _odtSettings(){
-        $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
-        $value .=   '<office:document-settings xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0" office:version="1.0"><office:settings><config:config-item-set config:name="dummy-settings"><config:config-item config:name="MakeValidatorHappy" config:type="boolean">true</config:config-item></config:config-item-set></office:settings></office:document-settings>';
-        $this->ZIP->add_File($value,'settings.xml');
-    }
-
-
-
-
-    /**
      * Closes the document
      */
     function document_end(){
@@ -238,7 +229,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
 
         $this->ZIP->add_File($this->meta->getContent(),'meta.xml');
-        $this->_odtSettings();
+        $this->ZIP->add_File($this->settings->getContent(),'settings.xml');
 
         $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
         $value .=   '<office:document-content ';

@@ -2284,6 +2284,10 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Create a paragraph style for the paragraph within the cell.
         // Disable properties that belong to the table cell style.
         $disabled ['border'] = 1;
+        $disabled ['border-left'] = 1;
+        $disabled ['border-right'] = 1;
+        $disabled ['border-top'] = 1;
+        $disabled ['border-bottom'] = 1;
         $disabled ['background-color'] = 1;
         $disabled ['background-image'] = 1;
         $disabled ['vertical-align'] = 1;

@@ -11,6 +11,7 @@ if(!defined('DOKU_INC')) die();
 
 require_once DOKU_INC.'inc/parser/renderer.php';
 require_once DOKU_INC.'lib/plugins/odt/helper/cssimport.php';
+require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
 
 // ZipLib.class.php
 $dw_version = preg_replace('/[^\d]/', '', getversion());
@@ -34,7 +35,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $meta;
     var $store = '';
     var $footnotes = array();
-    var $manifest  = array();
+    var $manifest  = null;
     var $headers = array();
     var $template = "";
     var $fields = array();
@@ -104,6 +105,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->units->setPixelPerEm(14);
         $this->units->setTwipsPerPixelX($this->getConf('twips_per_pixel_x'));
         $this->units->setTwipsPerPixelY($this->getConf('twips_per_pixel_y'));
+
+        $this->manifest = new ODTManifest();
     }
 
     /**
@@ -196,31 +199,6 @@ class renderer_plugin_odt extends Doku_Renderer {
         $value .=       '</office:meta>';
         $value .=   '</office:document-meta>';
         $this->ZIP->add_File($value,'meta.xml');
-    }
-
-    /**
-     * Prepare manifest.xml
-     */
-    function _odtManifest(){
-        $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
-        $value .=   '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">';
-        $value .=   '<manifest:file-entry manifest:media-type="application/vnd.oasis.opendocument.text" manifest:full-path="/"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="settings.xml"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="meta.xml"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="content.xml"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="styles.xml"/>';
-        $value .= $this->_odtGetManifest();
-        $value .=   '</manifest:manifest>';
-        $this->ZIP->add_File($value,'META-INF/manifest.xml');
-    }
-
-    function _odtGetManifest() {
-        $value = '';
-        foreach($this->manifest as $path => $type){
-            $value .= '<manifest:file-entry manifest:media-type="'.$this->_xmlEntities($type).
-                      '" manifest:full-path="'.$this->_xmlEntities($path).'"/>';
-        }
-        return $value;
     }
 
     /**
@@ -350,7 +328,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->ZIP->add_File($value,'styles.xml');
 
         // build final manifest
-        $this->_odtManifest();
+        $this->ZIP->add_File($this->manifest->getContent(),'META-INF/manifest.xml');
     }
 
     /**
@@ -409,7 +387,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->_odtReplaceInFile('</office:font-face-decls>', $missingfonts.'</office:font-face-decls>', $this->temp_dir.'/styles.xml');
 
         // Add manifest data
-        $this->_odtReplaceInFile('</manifest:manifest>', $this->_odtGetManifest() . '</manifest:manifest>', $this->temp_dir . '/META-INF/manifest.xml');
+        $this->_odtReplaceInFile('</manifest:manifest>', $this->manifest->getExtraContent() . '</manifest:manifest>', $this->temp_dir . '/META-INF/manifest.xml');
 
         // Build the Zip
         $this->ZIP->Compress(null, $this->temp_dir, null);
@@ -1247,7 +1225,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             $tmp_dir = $conf['tmpdir']."/odt";
             $tmp_name = $tmp_dir."/".md5($src).'.'.$ext;
             $final_name = 'Pictures/'.md5($tmp_name).'.'.$ext;
-            if(!isset($this->manifest[$final_name])){
+            if(!$this->manifest->exists($final_name)){
                 $client = new DokuHTTPClient;
                 $img = $client->get($src);
                 if ($img === FALSE) {
@@ -1517,8 +1495,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         $ext  = '.svg';
         $mime = '.image/svg+xml';
         $name = 'Pictures/'.md5($string).'.'.$ext;
-        if(!$this->manifest[$name]){
-            $this->manifest[$name] = $mime;
+        if(!$this->manifest->exists($name)){
+            $this->manifest->add($name, $mime);
             $this->ZIP->add_File($string, $name, 0);
         }
 
@@ -1567,8 +1545,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
             $name = 'Pictures/'.md5($src).'.'.$ext;
-            if(!$this->manifest[$name]){
-                $this->manifest[$name] = $mime;
+            if(!$this->manifest->exists($name)){
+                $this->manifest->add($name, $mime);
                 $this->ZIP->add_File(io_readfile($src,false),$name,0);
             }
         }
@@ -1579,8 +1557,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
             $name = 'Pictures/'.md5($src).'.'.$ext;
-            if(!$this->manifest[$name]){
-                $this->manifest[$name] = $mime;
+            if(!$this->manifest->exists($name)){
+                $this->manifest->add($name, $mime);
                 $this->ZIP->add_File(io_readfile($src,false),$name,0);
             }
         } else {

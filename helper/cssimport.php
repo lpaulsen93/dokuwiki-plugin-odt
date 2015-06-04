@@ -340,6 +340,7 @@ class css_declaration {
     }
 
     protected function explodeBorderShorthand (&$decls) {
+        $border_sides = array ('border-left', 'border-right', 'border-top', 'border-bottom');
         if ( $this->property == 'border' ) {
             $values = preg_split ('/\s+/', $this->value);
             $index = 0;
@@ -353,10 +354,16 @@ class css_declaration {
                         case 'medium':
                         case 'thick':
                             $decls [] = new css_declaration ('border-width', $values [$index]);
+                            foreach ($border_sides as $border_side) {
+                                $decls [] = new css_declaration ($border_side.'-width', $values [$index]);
+                            }
                         break;
                         default:
                             if ( strpos ($values [$index], 'px') !== false ) {
                                 $decls [] = new css_declaration ('border-width', $values [$index]);
+                                foreach ($border_sides as $border_side) {
+                                    $decls [] = new css_declaration ($border_side.'-width', $values [$index]);
+                                }
                             } else {
                                 // There is no default value? So leave it unset.
                             }
@@ -378,9 +385,15 @@ class css_declaration {
                         case 'inset':
                         case 'outset':
                             $decls [] = new css_declaration ('border-style', $values [$index]);
+                            foreach ($border_sides as $border_side) {
+                                $decls [] = new css_declaration ($border_side.'-style', $values [$index]);
+                            }
                         break;
                         default:
                             $decls [] = new css_declaration ('border-style', 'none');
+                            foreach ($border_sides as $border_side) {
+                                $decls [] = new css_declaration ($border_side.'-style', 'none');
+                            }
                         break;
                     }
                     $border_style_set = true;
@@ -389,12 +402,18 @@ class css_declaration {
                 }
                 if ( $border_color_set === false ) {
                     $decls [] = new css_declaration ('border-color', $values [$index]);
+                    foreach ($border_sides as $border_side) {
+                        $decls [] = new css_declaration ($border_side.'-color', $values [$index]);
+                    }
                     $border_color_set = true;
                     $index++;
 
                     // This is the last value.
                     break;
                 }
+            }
+            foreach ($border_sides as $border_side) {
+                $decls [] = new css_declaration ($border_side, $values [0].' '.$values [1].' '.$values [2]);
             }
         }
     }

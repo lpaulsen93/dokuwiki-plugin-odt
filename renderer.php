@@ -11,6 +11,7 @@ if(!defined('DOKU_INC')) die();
 
 require_once DOKU_INC.'inc/parser/renderer.php';
 require_once DOKU_INC.'lib/plugins/odt/helper/cssimport.php';
+require_once DOKU_INC.'lib/plugins/odt/ODT/ODTtemplate.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmeta.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
@@ -33,12 +34,13 @@ class renderer_plugin_odt extends Doku_Renderer {
     var $factory = null;
     var $import = null;
     var $units = null;
+    var $styleset = null;
     var $ZIP = null;
     var $meta;
     var $settings;
     var $store = '';
     var $footnotes = array();
-    var $manifest  = null;
+    var $manifest = null;
     var $headers = array();
     var $template = "";
     var $fields = array();
@@ -147,6 +149,10 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Set title in meta info.
         $this->meta->setTitle($ID);
 
+        // Load Styleset.
+        $this->styleset = new ODTTemplate();
+        $this->styleset->import();
+
         $this->autostyles = $this->_getInitAutoStyles();
         $this->styles = $this->_getInitStyles();
 
@@ -173,6 +179,9 @@ class renderer_plugin_odt extends Doku_Renderer {
             header('Content-Type: application/vnd.oasis.opendocument.text');
             header('Content-Disposition: attachment; filename="'.$output_filename.'";');
         }
+
+        // TEST TEST TEST
+        $this->import_styles_test();
     }
 
     /**
@@ -204,7 +213,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template)) { //template found
                 $this->document_end_template();
             } else { // template chosen but not found : warn the user and use the default template
-                $this->doc = '<text:p text:style-name="Text_20_body"><text:span text:style-name="Strong_20_Emphasis">'
+                $this->doc = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
                              .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->template,$this->getConf("tpl_dir")) )
                              .'</text:span></text:p>'.$this->doc;
                 $this->document_end_scratch();
@@ -315,8 +324,8 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         // Prepare content
         $autostyles = $this->_odtAutoStyles();
-        $missingstyles = $this->_odtStyles();
-        $missingfonts = $this->_odtFonts();
+        $missingstyles = $this->styleset->getMissingStyles($this->temp_dir.'/styles.xml');
+        $missingfonts = $this->styleset->getMissingFonts($this->temp_dir.'/styles.xml');
         $userfields = $this->_odtUserFields();
 
         // Insert content
@@ -426,36 +435,36 @@ class renderer_plugin_odt extends Doku_Renderer {
                  style:text-underline-width="auto" style:text-underline-color="font-color"/>
             </style:style>',
         "media"=>'
-            <style:style style:name="media" style:family="graphic" style:parent-style-name="Graphics">
+            <style:style style:name="media" style:family="graphic" style:parent-style-name="'.$this->styleset->getStyleName('graphics').'">
                 <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
                    style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="baseline" style:horizontal-pos="left"
                    style:horizontal-rel="paragraph"/>
             </style:style>',
         "medialeft"=>'
-            <style:style style:name="medialeft" style:family="graphic" style:parent-style-name="Graphics">
+            <style:style style:name="medialeft" style:family="graphic" style:parent-style-name="'.$this->styleset->getStyleName('graphics').'">
               <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
                  style:wrap-contour="false" style:horizontal-pos="left" style:horizontal-rel="paragraph"/>
             </style:style>',
         "mediaright"=>'
-            <style:style style:name="mediaright" style:family="graphic" style:parent-style-name="Graphics">
+            <style:style style:name="mediaright" style:family="graphic" style:parent-style-name="'.$this->styleset->getStyleName('graphics').'">
               <style:graphic-properties style:run-through="foreground" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit"
                  style:wrap-contour="false" style:horizontal-pos="right" style:horizontal-rel="paragraph"/>
             </style:style>',
         "mediacenter"=>'
-            <style:style style:name="mediacenter" style:family="graphic" style:parent-style-name="Graphics">
+            <style:style style:name="mediacenter" style:family="graphic" style:parent-style-name="'.$this->styleset->getStyleName('graphics').'">
                <style:graphic-properties style:run-through="foreground" style:wrap="none" style:horizontal-pos="center"
                   style:horizontal-rel="paragraph"/>
             </style:style>',
         "tablealigncenter"=>'
-            <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="Table_20_Contents">
+            <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="'.$this->styleset->getStyleName('table content').'">
                 <style:paragraph-properties fo:text-align="center"/>
             </style:style>',
         "tablealignright"=>'
-            <style:style style:name="tablealignright" style:family="paragraph" style:parent-style-name="Table_20_Contents">
+            <style:style style:name="tablealignright" style:family="paragraph" style:parent-style-name="'.$this->styleset->getStyleName('table content').'">
                 <style:paragraph-properties fo:text-align="end"/>
             </style:style>',
         "tablealignleft"=>'
-            <style:style style:name="tablealignleft" style:family="paragraph" style:parent-style-name="Table_20_Contents">
+            <style:style style:name="tablealignleft" style:family="paragraph" style:parent-style-name="'.$this->styleset->getStyleName('table content').'">
                 <style:paragraph-properties fo:text-align="left"/>
             </style:style>',
         "tableheader"=>'
@@ -479,43 +488,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getInitStyles (){
-        $styles = array(
-        "Source_20_Text"=>'
-            <style:style style:name="Source_20_Text" style:display-name="Source Text" style:family="text">
-                <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
-            </style:style>',
-        "Preformatted_20_Text"=>'
-            <style:style style:name="Preformatted_20_Text" style:display-name="Preformatted Text" style:family="paragraph" style:parent-style-name="Standard" style:class="html">
-                <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.2cm"/>
-                <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
-            </style:style>',
-        "Source_20_Code"=>'
-            <style:style style:name="Source_20_Code" style:display-name="Source Code" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
-                <style:paragraph-properties fo:padding="0.05cm" style:shadow="none" fo:border="0.002cm solid #8cacbb" fo:background-color="#f7f9fa"/>
-            </style:style>',
-        "Source_20_File"=>'
-            <style:style style:name="Source_20_File" style:display-name="Source File" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">
-                <style:paragraph-properties fo:padding="0.05cm" style:shadow="none" fo:border="0.002cm solid #8cacbb" fo:background-color="#f1f4f5"/>
-            </style:style>',
-        "Horizontal_20_Line"=>'
-            <style:style style:name="Horizontal_20_Line" style:display-name="Horizontal Line" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
-                <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.5cm" style:border-line-width-bottom="0.002cm 0.035cm 0.002cm" fo:padding="0cm" fo:border-left="none" fo:border-right="none" fo:border-top="none" fo:border-bottom="0.04cm double #808080" text:number-lines="false" text:line-number="0" style:join-border="false"/>
-                <style:text-properties fo:font-size="6pt" style:font-size-asian="6pt" style:font-size-complex="6pt"/>
-            </style:style>',
-        "Footnote"=>'
-            <style:style style:name="Footnote" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
-                <style:paragraph-properties fo:margin-left="0.5cm" fo:margin-right="0cm" fo:text-indent="-0.5cm" style:auto-text-indent="false" text:number-lines="false" text:line-number="0"/>
-                <style:text-properties fo:font-size="10pt" style:font-size-asian="10pt" style:font-size-complex="10pt"/>
-            </style:style>',
-        "Emphasis"=>'
-            <style:style style:name="Emphasis" style:family="text">
-                <style:text-properties fo:font-style="italic" style:font-style-asian="italic" style:font-style-complex="italic"/>
-            </style:style>',
-        "Strong_20_Emphasis"=>'
-            <style:style style:name="Strong_20_Emphasis" style:display-name="Strong Emphasis" style:family="text">
-                <style:text-properties fo:font-weight="bold" style:font-weight-asian="bold" style:font-weight-complex="bold"/>
-            </style:style>',);
-        return $styles;
+        return $this->styleset->getStyles();
     }
 
     /**
@@ -644,55 +617,14 @@ class renderer_plugin_odt extends Doku_Renderer {
         return $value;
     }
 
-    /* Add missing styles in the template */
-    function _odtStyles() {
-        $value = '';
-        $existing_styles = io_readFile($this->temp_dir.'/styles.xml');
-        foreach ($this->styles as $stylename=>$stylexml) {
-            if (strpos($existing_styles, 'style:name="'.$stylename.'"') === FALSE) {
-                $value .= $stylexml;
-            }
-        }
-        // Loop on bullet/numerotation styles
-        if (strpos($existing_styles, 'style:name="List_20_1"') === FALSE) {
-            $value .= '<text:list-style style:name="List_20_1" style:display-name="List 1">';
-            for ($i=1;$i<=10;$i++) {
-                $value .= '<text:list-level-style-bullet text:level="'.$i.'" text:style-name="Numbering_20_Symbols" text:bullet-char="•">
-                               <style:list-level-properties text:space-before="'.(0.4*($i-1)).'cm" text:min-label-width="0.4cm"/>
-                               <style:text-properties style:font-name="StarSymbol"/>
-                           </text:list-level-style-bullet>';
-            }
-            $value .= '</text:list-style>';
-        }
-        if (strpos($existing_styles, 'style:name="Numbering_20_1"') === FALSE) {
-            $value .= '<text:list-style style:name="Numbering_20_1" style:display-name="Numbering 1">';
-            for ($i=1;$i<=10;$i++) {
-                $value .= '<text:list-level-style-number text:level="'.$i.'" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
-                               <style:list-level-properties text:space-before="'.(0.5*($i-1)).'cm" text:min-label-width="0.5cm"/>
-                           </text:list-level-style-number>';
-            }
-            $value .= '</text:list-style>';
-        }
-        return $value;
-    }
-
-    /* Add missing fonts in the template */
-    function _odtFonts() {
-        $value = '';
-        $existing_styles = io_readFile($this->temp_dir.'/styles.xml');
-        foreach ($this->fonts as $name=>$xml) {
-            if (strpos($existing_styles, 'style:name="'.$name.'"') === FALSE) {
-                $value .= $xml;
-            }
-        }
-        return $value;
-    }
-
     function cdata($text) {
         $this->doc .= $this->_xmlEntities($text);
     }
 
-    function p_open($style='Text_20_body'){
+    function p_open($style=NULL){
+        if ( empty($style) === true ) {
+            $style = $this->styleset->getStyleName('body');
+        }
         if (!$this->in_paragraph) { // opening a paragraph inside another paragraph is illegal
             $this->in_paragraph = true;
             $this->doc .= '<text:p text:style-name="'.$style.'">';
@@ -709,7 +641,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     function header($text, $level, $pos){
         $this->p_close();
         $hid = $this->_headerToLink($text,true);
-        $this->doc .= '<text:h text:style-name="Heading_20_'.$level.'" text:outline-level="'.$level.'">';
+        $this->doc .= '<text:h text:style-name="'.$this->styleset->getStyleName('heading'.$level).'" text:outline-level="'.$level.'">';
         $this->doc .= '<text:bookmark-start text:name="'.$hid.'"/>';
         $this->doc .= $this->_xmlEntities($text);
         $this->doc .= '<text:bookmark-end text:name="'.$hid.'"/>';
@@ -718,7 +650,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
     function hr() {
         $this->p_close();
-        $this->doc .= '<text:p text:style-name="Horizontal_20_Line"/>';
+        $this->doc .= '<text:p text:style-name="'.$this->styleset->getStyleName('horizontal line').'"/>';
     }
 
     function linebreak() {
@@ -734,7 +666,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function strong_open() {
-        $this->doc .= '<text:span text:style-name="Strong_20_Emphasis">';
+        $this->doc .= '<text:span text:style-name="'.$this->styleset->getStyleName('strong').'">';
     }
 
     function strong_close() {
@@ -742,7 +674,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function emphasis_open() {
-        $this->doc .= '<text:span text:style-name="Emphasis">';
+        $this->doc .= '<text:span text:style-name="'.$this->styleset->getStyleName('emphasis').'">';
     }
 
     function emphasis_close() {
@@ -758,7 +690,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function monospace_open() {
-        $this->doc .= '<text:span text:style-name="Source_20_Text">';
+        $this->doc .= '<text:span text:style-name="'.$this->styleset->getStyleName('monospace').'">';
     }
 
     function monospace_close() {
@@ -824,7 +756,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';
         }
         $this->doc .= '>';
-        $this->p_open('Table_20_Heading');
+        $this->p_open($this->styleset->getStyleName('table heading'));
     }
 
     function tableheader_close(){
@@ -893,7 +825,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             $this->doc .= '<text:note-citation>'.($i+1).'</text:note-citation>';
             $this->doc .= '<text:note-body>';
             //FIXME: Can break document if paragraphs have been opened inside of $footnote!!!
-            $this->doc .= '<text:p text:style-name="Footnote">';
+            $this->doc .= '<text:p text:style-name="'.$this->getStyleName('footnote').'">';
             $this->doc .= $footnote;
             $this->doc .= '</text:p>';
             $this->doc .= '</text:note-body>';
@@ -907,7 +839,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
     function listu_open() {
         $this->p_close();
-        $this->doc .= '<text:list text:style-name="List_20_1">';
+        $this->doc .= '<text:list text:style-name="'.$this->styleset->getStyleName('list').'">';
     }
 
     function listu_close() {
@@ -916,7 +848,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
     function listo_open() {
         $this->p_close();
-        $this->doc .= '<text:list text:style-name="Numbering_20_1">';
+        $this->doc .= '<text:list text:style-name="'.$this->styleset->getStyleName('numbering').'">';
     }
 
     function listo_close() {
@@ -934,7 +866,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function listcontent_open() {
-        $this->doc .= '<text:p text:style-name="Text_20_body">';
+        $this->doc .= '<text:p text:style-name="'.$this->styleset->getStyleName('body').'">';
     }
 
     function listcontent_close() {
@@ -1042,16 +974,18 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( $this->quote_depth < 5 ) {
             $this->quote_depth++;
         }
+        $quotation1 = $this->styleset->getStyleName('quotation1');
         if ($this->quote_depth == 1) {
-            // On quote level 1 open a new paragraph with 'Quotation 1' style
+            // On quote level 1 open a new paragraph with 'quotation1' style
             $this->p_close();
             $this->quote_pos = strlen ($this->doc);
-            $this->p_open('Quotation 1');
-            $this->quote_pos = strpos ($this->doc, 'Quotation 1', $this->quote_pos);
-            $this->quote_pos += strlen('Quotation 1') - 1;
+            $this->p_open($quotation1);
+            $this->quote_pos = strpos ($this->doc, $quotation1, $this->quote_pos);
+            $this->quote_pos += strlen($quotation1) - 1;
         } else {
             // Quote level is greater than 1. Set new style by just changing the number.
             // This is possible because the styles in style.xml are named 'Quotation 1', 'Quotation 2'...
+            // FIXME: Unsafe as we now use freely choosen names per template class
             $this->doc [$this->quote_pos] = $this->quote_depth;
         }
     }
@@ -1069,7 +1003,10 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->_highlight('code', $text, $language);
     }
 
-    function _preformatted($text, $style="Preformatted_20_Text", $notescaped=true) {
+    function _preformatted($text, $style=null, $notescaped=true) {
+        if (empty($style) === true) {
+            $style = $this->styleset->getStyleName('preformatted');
+        }
         if ($notescaped) {
             $text = $this->_xmlEntities($text);
         }
@@ -1096,8 +1033,8 @@ class renderer_plugin_odt extends Doku_Renderer {
 
     function _highlight($type, $text, $language=null) {
         global $conf;
-        $style_name = "Source_20_Code";
-        if ($type == "file") $style_name = "Source_20_File";
+        $style_name = $this->styleset->getStyleName('source code');
+        if ($type == "file") $style_name = $this->styleset->getStyleName('source file');
 
         if (is_null($language)) {
             $this->_preformatted($text, $style_name);
@@ -1670,7 +1607,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
             // Define graphic style for picture
             $style_name = 'odt_auto_style_span_graphic_'.$this->style_count;
-            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Graphics"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$this->styleset->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
 
             // Add style and image to our document
             $this->autostyles[$style_name] = $image_style;
@@ -1767,7 +1704,7 @@ class renderer_plugin_odt extends Doku_Renderer {
             // Define graphic style for picture
             $this->style_count++;
             $style_name = 'odt_auto_style_span_graphic_'.$this->style_count;
-            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Graphics"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$this->styleset->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
 
             // Add style and image to our document
             $this->autostyles[$style_name] = $image_style;
@@ -2723,6 +2660,191 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '</text:p>';
 
         $this->div_z_index -= 5;
+    }
+
+    protected function clearArray(array &$data) {
+        foreach ($data as $key => $value) {
+            unset($data [$key]);
+        }           
+    }
+
+    function import_styles_test () {
+        $heading_elements = array ('h1', 'h2', 'h3', 'h4', 'h5', 'h6');
+        $heading_names = array ('Heading 1', 'Heading 2', 'Heading 3', 'Heading 4', 'Heading 5', 'Heading 6');
+        $quotation_elements = array ('quotation1', 'quotation2', 'quotation3', 'quotation4', 'quotation5');
+        $quotation_names = array ('Quotation 1', 'Quotation 2', 'Quotation 3', 'Quotation 4', 'Quotation 5');
+        unset ($content);
+
+        // Create headings
+        for ($index = 0 ; $index < count ($heading_elements) ; $index++) {
+            $this->getODTProperties ($properties, $heading_elements [$index], NULL, NULL);
+
+            $properties ['style-name'] = $heading_names [$index];
+            $properties ['style-display-name'] = $heading_names [$index];
+            $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+            if ( $style_name !== NULL ) {
+                $content .= $style."\n";
+            }
+
+            unset ($style);
+            $this->clearArray($properties);
+        }
+
+        // Create text body style from paragraph settings
+        $this->getODTProperties ($properties, 'body', NULL, NULL);
+        $properties ['style-name'] = 'p';
+        $properties ['style-display-name'] = 'Text body';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create table style from paragraph settings
+        $this->getODTProperties ($properties, 'table', NULL, NULL);
+        $properties ['style-name'] = 'table';
+        $properties ['style-display-name'] = 'Table';
+        $style_name = $this->factory->createTableTableStyle($style, $properties, NULL, $this->_getAbsWidthMindMargins(100));
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for text within tables
+        $this->getODTProperties ($properties, 'th', NULL, NULL);
+        $properties ['style-name'] = 'Table h';
+        $properties ['style-display-name'] = 'Table Heading';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for table caption
+        $this->getODTProperties ($properties, 'caption', NULL, NULL);
+        $properties ['style-name'] = 'Table caption';
+        $properties ['style-display-name'] = 'Table Caption';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for preformatted text
+        $this->getODTProperties ($properties, 'pre', NULL, NULL);
+        $properties ['style-name'] = 'Preformatted Text';
+        $properties ['style-display-name'] = 'Preformatted Text';
+        $properties ['style-class'] = 'html';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for source code
+        $this->getODTProperties ($properties, 'code', NULL, NULL);
+        $properties ['style-name'] = 'Source Code';
+        $properties ['style-display-name'] = 'Source Code';
+        $properties ['style-parent'] = 'Preformatted Text';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for source file
+        $this->getODTProperties ($properties, 'file', NULL, NULL);
+        $properties ['style-name'] = 'Source File';
+        $properties ['style-display-name'] = 'Source File';
+        $properties ['style-parent'] = 'Preformatted Text';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for horizontal line
+        $this->getODTProperties ($properties, 'hr', NULL, NULL);
+        $properties ['style-name'] = 'Horizontal Line';
+        $properties ['style-display-name'] = 'Horizontal Line';
+        $properties ['style-class'] = 'html';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create paragraph style for footnote
+        $this->getODTProperties ($properties, 'footnote', NULL, NULL);
+        $properties ['style-name'] = 'Footnote';
+        $properties ['style-display-name'] = 'Footnote';
+        $properties ['style-class'] = 'extra';
+        $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create text style for emphasis
+        $this->getODTProperties ($properties, 'em', NULL, NULL);
+        $properties ['style-name'] = 'Emphasis';
+        $properties ['style-display-name'] = 'Emphasis';
+        $style_name = $this->factory->createTextStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create text style for strong
+        $this->getODTProperties ($properties, 'strong', NULL, NULL);
+        $properties ['style-name'] = 'Strong';
+        $properties ['style-display-name'] = 'Strong';
+        $style_name = $this->factory->createTextStyle($style, $properties, NULL, NULL);
+        if ( $style_name !== NULL ) {
+            $content .= $style."\n";
+        }
+
+        unset ($style);
+        $this->clearArray($properties);
+
+        // Create quotations
+        for ($index = 0 ; $index < count ($quotation_elements) ; $index++) {
+            $this->getODTProperties ($properties, $quotation_elements [$index], NULL, NULL);
+
+            $properties ['style-name'] = $quotation_names [$index];
+            $properties ['style-display-name'] = $quotation_names [$index];
+            $style_name = $this->factory->createParagraphStyle($style, $properties, NULL, NULL);
+            if ( $style_name !== NULL ) {
+                $content .= $style."\n";
+            }
+
+            unset ($style);
+            $this->clearArray($properties);
+        }
+
+        $file_h = fopen(DOKU_INC.'data/media/test_styles.xml', 'w');
+        fwrite($file_h, $content);
+        fclose($file_h);
     }
 
     public function getCSSProperties (&$dest, $element, $classString, $inlineStyle) {

@@ -88,6 +88,8 @@ class renderer_plugin_odt extends Doku_Renderer {
      * Constructor. Loads and imports CSS and helper plugins.
      */
     public function __construct() {
+        $this->factory = plugin_load('helper', 'odt_stylefactory');
+
         $loader = plugin_load('helper', 'odt_dwcssloader');
         if ( $loader != NULL ) {
             $this->css = $loader->load('odt', 'odt', $this->getConf('template'));
@@ -141,10 +143,6 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function document_start() {
         global $ID;
-
-        if ( empty($this->factory) === true ) {
-            $this->factory = plugin_load('helper', 'odt_stylefactory');
-        }
 
         // Set title in meta info.
         $this->meta->setTitle($ID);

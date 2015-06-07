@@ -1635,7 +1635,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         global $conf;
 
         $isImage = false;
-        if ( is_null($title) ) {
+        if (is_null($title) || trim($title) == '') {
             if ($conf['useheading'] && $id) {
                 $heading = p_get_first_heading($id);
                 if ($heading) {
@@ -1643,11 +1643,11 @@ class renderer_plugin_odt extends Doku_Renderer {
                 }
             }
             return $this->_xmlEntities($default);
-        } else if ( is_string($title) ) {
-            return $this->_xmlEntities($title);
         } else if ( is_array($title) ) {
             $isImage = true;
             return $title;
+        } else {
+            return $this->_xmlEntities($title);
         }
     }
 
@@ -2102,6 +2102,8 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The paragraph must be closed by calling 'p_close'.
      *
      * @author LarsDW223
+     *
+     * @param array $properties
      */
     function _odtParagraphOpenUseProperties($properties){
         $disabled = array ();
@@ -2150,6 +2152,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The div should be closed by calling '_odtDivCloseAsFrame'.
      *
      * @author LarsDW223
+     *
      * @param helper_plugin_odt_cssimport $import
      * @param $classes
      * @param null $baseURL

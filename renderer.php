@@ -26,6 +26,7 @@ if (version_compare($dw_version, "20070626") and
  * The Renderer
  */
 class renderer_plugin_odt extends Doku_Renderer {
+    /** @var helper_plugin_odt_stylefactory */
     var $factory = null;
     /** @var helper_plugin_odt_cssimport */
     var $import = null;
@@ -2220,9 +2221,6 @@ class renderer_plugin_odt extends Doku_Renderer {
             $width = '100%';
         }
 
-        // For safety, init width_abs with value for 100%
-        $width_abs = $this->_getAbsWidthMindMargins (100);
-
         // Different handling for relative and absolute size...
         if ( $width [strlen($width)-1] == '%' ) {
             // Convert percentage values to absolute size, respecting page margins
@@ -2439,7 +2437,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Create style.
         $style_name = $this->factory->createTableTableStyle ($style, $properties);
         $this->autostyles[$style_name] = $style;
-        if ( empty ($properties [$width])) {
+        if ( empty ($properties ['width'])) {
             // If the caller did not specify a table width, save the style name
             // to eventually later replace the table width set in createTableTableStyle()
             // with the sum of all column width (in _odtTableClose).
@@ -3029,9 +3027,6 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty($min_height)) {
             $min_height = '1pt';
         }
-
-        // For safety, init width_abs with value for 100%
-        $width_abs = $this->_getAbsWidthMindMargins (100);
 
         // Different handling for relative and absolute size...
         if ( $width [strlen($width)-1] == '%' ) {

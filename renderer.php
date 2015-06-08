@@ -2430,7 +2430,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Create style.
         $style_name = $this->factory->createTableTableStyle ($style, $properties);
         $this->autostyles[$style_name] = $style;
-        if ( empty ($properties [$width]) === true ) {
+        if ( empty ($properties ['width']) === true ) {
             // If the caller did not specify a table width, save the style name
             // to eventually later replace the table width set in createTableTableStyle()
             // with the sum of all column width (in _odtTableClose).

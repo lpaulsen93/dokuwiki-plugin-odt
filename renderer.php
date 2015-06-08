@@ -2211,9 +2211,6 @@ class renderer_plugin_odt extends Doku_Renderer {
             $width = '100%';
         }
 
-        // For safety, init width_abs with value for 100%
-        $width_abs = $this->_getAbsWidthMindMargins (100);
-
         // Different handling for relative and absolute size...
         if ( $width [strlen($width)-1] == '%' ) {
             // Convert percentage values to absolute size, respecting page margins

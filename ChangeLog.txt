@@ -2,6 +2,7 @@
 
     * Fixed issue 'Table does not span across 100% of the page #40'.
       Thanks to Klap-in.
+    * Fixed issue 'IntelliJ IDEA inspections doesn't like "empty ($picture) === true" lines #41'
 
 2015-05-25 LarsDW223
 

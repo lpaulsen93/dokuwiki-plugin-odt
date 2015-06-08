@@ -274,7 +274,7 @@ class css_declaration {
                             }
                         break;
                     }
-                    if ( empty($params [1]) === false ) {
+                    if ( !empty($params [1]) ) {
                         $decls [] = new css_declaration ('line-height', $params [1]);
                     } else {
                         $decls [] = new css_declaration ('line-height', 'normal');
@@ -287,7 +287,7 @@ class css_declaration {
 
                 // All other properties are found.
                 // The rest is assumed to be a font-family.
-                if ( empty ($font_family) === true ) {
+                if ( empty ($font_family) ) {
                     $font_family .= $value;
                 } else {
                     $font_family .= ' '.$value;
@@ -903,7 +903,7 @@ class css_rule {
     public function matches ($element, $classString, $media = NULL) {
 
         $media = trim ($media);
-        if ( empty($this->media) === false && $media != $this->media ) {
+        if ( !empty($this->media) && $media != $this->media ) {
             // Wrong media
             //print ("\nNo-Match ".$this->media."==".$media); //Debuging
             return false;
@@ -1229,7 +1229,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @return null
      */
     public function getPropertyForElement ($element, $classString, $name, $media = NULL) {
-        if ( empty ($name) === true ) {
+        if ( empty ($name) ) {
             return NULL;
         }
 
@@ -1238,7 +1238,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             $matched = $rule->matches ($element, $classString, $media);
             if ( $matched !== false ) {
                 $current = $rule->getProperty ($name);
-                if ( empty ($current) === false ) {
+                if ( !empty ($current) ) {
                     $value = $current;
                 }
             }
@@ -1253,7 +1253,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @return null
      */
     public function getProperty ($classString, $name) {
-        if ( empty ($classString) === true || empty ($name) === true ) {
+        if ( empty ($classString) || empty ($name) ) {
             return NULL;
         }
 
@@ -1268,7 +1268,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @param null $media
      */
     public function getPropertiesForElement (&$dest, $element, $classString, $media = NULL) {
-        if ( empty ($element) === true && empty ($classString) === true ) {
+        if ( empty ($element) && empty ($classString) ) {
             return;
         }
 
@@ -1296,7 +1296,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             // Replace it if necessary
             $part = trim($part);
             $rep = $this->getReplacement($part);
-            if ( empty ($rep) === false ) {
+            if ( !empty ($rep) ) {
                 $part = $rep;
             }
             $length = strlen ($part);
@@ -1317,7 +1317,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
 
             if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
                 $number = substr ($part, 0, $length-2);
-                if ( is_numeric ($number) === true && empty ($emValue) === false ) {
+                if ( is_numeric ($number) && !empty ($emValue) ) {
                     $part = ($number * $emValue).'pt';
                 }
             }
@@ -1351,7 +1351,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @return string
      */
     public function replaceURLPrefix ($URL, $replacement) {
-        if ( empty ($URL) === false && empty ($replacement) === false ) {
+        if ( !empty ($URL) && !empty ($replacement) ) {
             // Replace 'url(...)' with $replacement
             $URL = substr ($URL, 3);
             $URL = trim ($URL, '()');

@@ -142,7 +142,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     function document_start() {
         global $ID;
 
-        if ( empty($this->factory) === true ) {
+        if ( empty($this->factory) ) {
             $this->factory = plugin_load('helper', 'odt_stylefactory');
         }
 
@@ -859,7 +859,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function pagebreak() {
-        if ( empty ($this->autostyles['pagebreak']) === true ) {
+        if ( empty ($this->autostyles['pagebreak']) ) {
             $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
         }
         $this->p_close();
@@ -1960,7 +1960,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtSpanOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'span';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2009,7 +2009,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $odt_bg = $properties ['background-color'];
         $picture = $properties ['background-image'];
 
-        if ( empty ($picture) === false ) {
+        if ( !empty ($picture) ) {
             $this->style_count++;
 
             // If a picture/background-image is set, than we insert it manually here.
@@ -2062,7 +2062,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtParagraphOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'p';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2115,7 +2115,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $odt_bg = $properties ['background-color'];
         $picture = $properties ['background-image'];
 
-        if ( empty ($picture) === false ) {
+        if ( !empty ($picture) ) {
             // If a picture/background-image is set, than we insert it manually here.
             // This is a workaround because ODT background-image works different than in CSS.
 
@@ -2167,7 +2167,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->div_z_index += 5;
         $this->style_count++;
 
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'div';
         }
 
@@ -2193,11 +2193,11 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $min_height = $properties ['min-height'];
 
-        if ( empty ($picture) === false ) {
+        if ( !empty ($picture) ) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
 
-            if ( empty ($baseURL) === false) {
+            if ( !empty ($baseURL) ) {
                 // Replace 'url(...)' with $baseURL
                 $picture = $import->replaceURLPrefix ($picture, $baseURL);
             }
@@ -2207,7 +2207,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $horiz_pos = 'center';
 
-        if ( empty ($width) === true ) {
+        if ( empty ($width) ) {
             $width = '100%';
         }
 
@@ -2232,31 +2232,31 @@ class renderer_plugin_odt extends Doku_Renderer {
                  draw:textarea-horizontal-align="left"
                  draw:textarea-vertical-align="center"
                  style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
-        if ( empty($padding_left) === false ) {
+        if ( !empty($padding_left) ) {
             $style .= 'fo:padding-left="'.$padding_left.'" ';
         }
-        if ( empty($padding_right) === false ) {
+        if ( !empty($padding_right) ) {
             $style .= 'fo:padding-right="'.$padding_right.'" ';
         }
-        if ( empty($padding_top) === false ) {
+        if ( !empty($padding_top) ) {
             $style .= 'fo:padding-top="'.$padding_top.'" ';
         }
-        if ( empty($padding_bottom) === false ) {
+        if ( !empty($padding_bottom) ) {
             $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
         }
-        if ( empty($margin_left) === false ) {
+        if ( !empty($margin_left) ) {
             $style .= 'fo:margin-left="'.$margin_left.'" ';
         }
-        if ( empty($margin_right) === false ) {
+        if ( !empty($margin_right) ) {
             $style .= 'fo:margin-right="'.$margin_right.'" ';
         }
-        if ( empty($margin_top) === false ) {
+        if ( !empty($margin_top) ) {
             $style .= 'fo:margin-top="'.$margin_top.'" ';
         }
-        if ( empty($margin_bottom) === false ) {
+        if ( !empty($margin_bottom) ) {
             $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
         }
-        if ( empty ($fo_border) === false ) {
+        if ( !empty ($fo_border) ) {
             $style .= 'fo:border="'.$fo_border.'" ';
         }
         $style .= 'fo:min-height="'.$min_height.'"
@@ -2318,7 +2318,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<draw:text-box ';
 
         // If required use round corners.
-        if ( empty($radius) === false )
+        if ( !empty($radius) )
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
@@ -2375,7 +2375,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $maxcols = NULL, $numrows = NULL){
         $properties = array();
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'table';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2427,7 +2427,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Create style.
         $style_name = $this->factory->createTableTableStyle ($style, $properties);
         $this->autostyles[$style_name] = $style;
-        if ( empty ($properties ['width']) === true ) {
+        if ( empty ($properties ['width']) ) {
             // If the caller did not specify a table width, save the style name
             // to eventually later replace the table width set in createTableTableStyle()
             // with the sum of all column width (in _odtTableClose).
@@ -2443,7 +2443,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         }
 
         // Create columns with predefined and temporarily remembered style names.
-        if ( empty ($maxcols) === true ) {
+        if ( empty ($maxcols) ) {
             // Try to automatically detect the number of columns.
             $this->temp_autocols = true;
             $this->doc .= '<ColumnsPlaceholder>';
@@ -2468,7 +2468,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     protected function _replaceTableWidth () {
         $matches = array ();
 
-        if ( empty($this->temp_table_style) || empty($this->temp_cols) === true ) {
+        if ( empty($this->temp_table_style) || empty($this->temp_cols) ) {
             return;
         }
 
@@ -2501,7 +2501,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->_replaceTableWidth ();
 
         // Writeback temporary table content if this is the first cell in the table body.
-        if ( empty($this->temp_cols) === false) {
+        if ( !empty($this->temp_cols) ) {
             // First replace columns placeholder with created columns, if in auto mode.
             if ( $this->temp_autocols === true ) {
                 $this->doc =
@@ -2528,7 +2528,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableHeaderOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $colspan = 1, $rowspan = 1){
         $properties = array();
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'th';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2596,7 +2596,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableRowOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'tr';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2654,7 +2654,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableCellOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) === true ) {
+        if ( empty($element) ) {
             $element = 'td';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2768,7 +2768,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $save = $disabled_props ['font-size'];
 
         $odt_fo_size = '';
-        if ( empty ($disabled_props ['font-size']) === true ) {
+        if ( empty ($disabled_props ['font-size']) ) {
             $odt_fo_size = $properties ['font-size'];
         }
         unset ($parent);
@@ -2809,7 +2809,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $save = $disabled_props ['font-size'];
 
         $odt_fo_size = '';
-        if ( empty ($disabled_props ['font-size']) === true ) {
+        if ( empty ($disabled_props ['font-size']) ) {
             $odt_fo_size = $properties ['font-size'];
         }
         unset ($parent);
@@ -2868,8 +2868,8 @@ class renderer_plugin_odt extends Doku_Renderer {
             $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
 
-        if ( empty ($properties ['background-image']) === false ) {
-            if ( empty ($baseURL) === false) {
+        if ( !empty ($properties ['background-image']) ) {
+            if ( !empty ($baseURL) ) {
                 // Replace 'url(...)' with $baseURL
                 $properties ['background-image'] = $this->import->replaceURLPrefix ($properties ['background-image'], $baseURL);
             }
@@ -2895,8 +2895,8 @@ class renderer_plugin_odt extends Doku_Renderer {
             $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
 
-        if ( empty ($properties ['background-image']) === false ) {
-            if ( empty ($baseURL) === false) {
+        if ( !empty ($properties ['background-image']) ) {
+            if ( !empty ($baseURL) ) {
                 // Replace 'url(...)' with $baseURL
                 $properties ['background-image'] = $import->replaceURLPrefix ($properties ['background-image'], $baseURL);
             }
@@ -2986,26 +2986,26 @@ class renderer_plugin_odt extends Doku_Renderer {
         $width = $properties ['width'];
         $horiz_pos = $properties ['float'];
 
-        if ( empty ($picture) === false ) {
+        if ( !empty ($picture) ) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
             $pic_link=$this->_odtAddImageAsFileOnly($picture);
             list($pic_width, $pic_height) = $this->_odtGetImageSize($picture);
         }
 
-        if ( empty($horiz_pos) === true ) {
+        if ( empty($horiz_pos) ) {
             $horiz_pos = 'center';
         }
-        if ( empty ($width) === true ) {
+        if ( empty ($width) ) {
             $width = '100%';
         }
-        if ( empty($border_color) === true ) {
+        if ( empty($border_color) ) {
             $border_color = $odt_bg;
         }
-        if ( empty($pic_positions [0]) === false ) {
+        if ( !empty($pic_positions [0]) ) {
             $pic_positions [0] = $this->adjustXLengthValueForODT ($pic_positions [0]);
         }
-        if ( empty($min_height) === true ) {
+        if ( empty($min_height) ) {
             $min_height = '1pt';
         }
 
@@ -3032,42 +3032,42 @@ class renderer_plugin_odt extends Doku_Renderer {
              <style:graphic-properties
                  draw:textarea-horizontal-align="left"
                  style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
-        if ( empty($odt_bg) === false ) {
+        if ( !empty($odt_bg) ) {
             $style .= 'draw:fill="solid" draw:fill-color="'.$odt_bg.'" ';
         } else {
             $style .= 'draw:fill="none" ';
         }
-        if ( empty($border_color) === false ) {
+        if ( !empty($border_color) ) {
             $style .= 'svg:stroke-color="'.$border_color.'" ';
         }
-        if ( empty($border_width) === false ) {
+        if ( !empty($border_width) ) {
             $style .= 'svg:stroke-width="'.$border_width.'" ';
         }
-        if ( empty($padding_left) === false ) {
+        if ( !empty($padding_left) ) {
             $style .= 'fo:padding-left="'.$padding_left.'" ';
         }
-        if ( empty($padding_right) === false ) {
+        if ( !empty($padding_right) ) {
             $style .= 'fo:padding-right="'.$padding_right.'" ';
         }
-        if ( empty($padding_top) === false ) {
+        if ( !empty($padding_top) ) {
             $style .= 'fo:padding-top="'.$padding_top.'" ';
         }
-        if ( empty($padding_bottom) === false ) {
+        if ( !empty($padding_bottom) ) {
             $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
         }
-        if ( empty($margin_left) === false ) {
+        if ( !empty($margin_left) ) {
             $style .= 'fo:margin-left="'.$margin_left.'" ';
         }
-        if ( empty($margin_right) === false ) {
+        if ( !empty($margin_right) ) {
             $style .= 'fo:margin-right="'.$margin_right.'" ';
         }
-        if ( empty($margin_top) === false ) {
+        if ( !empty($margin_top) ) {
             $style .= 'fo:margin-top="'.$margin_top.'" ';
         }
-        if ( empty($margin_bottom) === false ) {
+        if ( !empty($margin_bottom) ) {
             $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
         }
-        if ( empty ($fo_border) === false ) {
+        if ( !empty ($fo_border) ) {
             $style .= 'fo:border="'.$fo_border.'" ';
         }
         $style .= 'fo:min-height="'.$min_height.'"
@@ -3136,7 +3136,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<draw:text-box ';
 
         // If required use round corners.
-        if ( empty($radius) === false )
+        if ( !empty($radius) )
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
@@ -3251,7 +3251,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
             if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
                 $number = substr ($part, 0, $length-2);
-                if ( is_numeric ($number) === true && empty ($emValue) === false ) {
+                if ( is_numeric ($number) && !empty ($emValue) ) {
                     $part = ($number * $emValue).'pt';
                 }
             }

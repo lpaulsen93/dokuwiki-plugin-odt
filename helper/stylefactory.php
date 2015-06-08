@@ -84,6 +84,9 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     *
+     * @param string $type
+     * @return string
      */
     protected static function getNewStylename ($type = '') {
         self::$style_count++;
@@ -169,12 +172,12 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Replace sub and super with text-position.
         $odt_valign = $properties ['vertical-align'];
-        unset($odt_text_pos);
+        $odt_text_pos = '';
         if ( $odt_valign == 'sub' ) {
             $odt_text_pos = '-33% 100%';
             unset($odt_valign);
-        }
-        if ( $odt_valign == 'super' ) {
+
+        } elseif ( $odt_valign == 'super' ) {
             $odt_text_pos = '33% 100%';
             unset($odt_valign);
         }
@@ -199,9 +202,8 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // (Except style-name, already inserted above)
         $header = '';
         $text = '';
-        $paragraph = '';
         foreach ($properties as $property => $value) {
-            if ( empty ($disabled_props [$property]) && !empty ($properties [$property]) ) {
+            if ( empty ($disabled_props [$property]) && !empty($properties [$property])) {
                 $name = $params [$property]['name'];
                 switch ($params [$property]['section']) {
 
@@ -229,18 +231,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Some extra handling for text-position and country.
-        if ( !empty ($odt_text_pos) ) {
+        if ( !empty ($odt_text_pos)) {
             $text .= 'style:text-position="'.$odt_text_pos.'" ';
             $text .= self::writeExtensionNames ('style:text-position', $odt_text_pos);
         }
-        if ( !empty($country) ) {
+        if ( !empty($country)) {
             $text .= 'fo:country="'.$country.'" ';
             $text .= self::writeExtensionNames ('fo:country', $country);
         }
 
         // Build style.
         $style  = '<style:style '.$header.' style:family="text"';
-        if ( !empty ($parent) ) {
+        if ( !empty ($parent)) {
             $style .= ' style:parent-style-name="'.$parent.'" ';
         }
         $style .= '>';
@@ -266,7 +268,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * @param $style
      * @param $properties
      * @param null $disabled_props
-     * @param null $parent
+     * @param string $parent
      * @return string
      */
     public static function createParagraphStyle(&$style, $properties, $disabled_props = NULL, $parent = NULL){
@@ -318,12 +320,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Replace sub and super with text-position.
         $odt_valign = $properties ['vertical-align'];
-        unset($odt_text_pos);
+        $odt_text_pos = '';
         if ( $odt_valign == 'sub' ) {
             $odt_text_pos = '-33% 100%';
             unset($odt_valign);
-        }
-        if ( $odt_valign == 'super' ) {
+        } elseif ( $odt_valign == 'super' ) {
             $odt_text_pos = '33% 100%';
             unset($odt_valign);
         }
@@ -339,7 +340,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Create style name (if not given).
         $style_name = $properties ['style-name'];
-        if ( empty($style_name) ) {
+        if ( empty($style_name)) {
             $style_name = self::getNewStylename ('Paragraph');
             $properties ['style-name'] = $style_name;
         }
@@ -386,18 +387,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Some extra handling for text-position and country.
-        if ( !empty ($odt_text_pos) ) {
+        if ( !empty ($odt_text_pos)) {
             $text .= 'style:text-position="'.$odt_text_pos.'" ';
             $text .= self::writeExtensionNames ('style:text-position', $odt_text_pos);
         }
-        if ( !empty($country) ) {
+        if ( !empty($country)) {
             $text .= 'fo:country="'.$country.'" ';
             $text .= self::writeExtensionNames ('fo:country', $country);
         }
 
         // Build style.
         $style  = '<style:style '.$header.' style:family="paragraph"';
-        if ( !empty ($parent) ) {
+        if ( !empty ($parent)) {
             $style .= ' style:parent-style-name="'.$parent.'" ';
         }
         $style .= '>';
@@ -420,6 +421,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     *
      * @param $style
      * @param $properties
      * @param null $disabled_props
@@ -429,15 +431,15 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
     public static function createTableTableStyle(&$style, $properties, $disabled_props = NULL, $max_width_cm = 17){
         $attrs = 0;
 
-        if ( empty ($disabled_props ['width']) ) {
+        if ( empty ($disabled_props ['width'])) {
             $width = $properties ['width'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['border-collapse']) ) {
+        if ( empty ($disabled_props ['border-collapse'])) {
             $table_border_model = $properties ['border-collapse'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['background-color']) ) {
+        if ( empty ($disabled_props ['background-color'])) {
             $table_bg_color = $properties ['background-color'];
             $attrs++;
         }
@@ -538,7 +540,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
     public static function createTableRowStyle(&$style, $properties, $disabled_props = NULL){
         $attrs = 0;
 
-        if ( empty ($disabled_props ['height']) ) {
+        if ( empty ($disabled_props ['height'])) {
             $height = $properties ['height'];
             $attrs++;
         }

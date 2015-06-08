@@ -26,6 +26,7 @@ if (version_compare($dw_version, "20070626") and
  * The Renderer
  */
 class renderer_plugin_odt extends Doku_Renderer {
+    /** @var helper_plugin_odt_stylefactory */
     var $factory = null;
     /** @var helper_plugin_odt_cssimport */
     var $import = null;
@@ -142,7 +143,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     function document_start() {
         global $ID;
 
-        if ( empty($this->factory) ) {
+        if ( empty($this->factory)) {
             $this->factory = plugin_load('helper', 'odt_stylefactory');
         }
 
@@ -859,7 +860,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     function pagebreak() {
-        if ( empty ($this->autostyles['pagebreak']) ) {
+        if ( empty ($this->autostyles['pagebreak'])) {
             $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
         }
         $this->p_close();
@@ -1191,7 +1192,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @param string $text The PHP code
      */
-    function php($text, $wrapper='dummy') {
+    function php($text) {
         $this->monospace_open();
         $this->doc .= $this->_xmlEntities($text);
         $this->monospace_close();
@@ -1211,7 +1212,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @param string $text The HTML
      */
-    function html($text, $wrapper='dummy') {
+    function html($text) {
         $this->monospace_open();
         $this->doc .= $this->_xmlEntities($text);
         $this->monospace_close();
@@ -1635,7 +1636,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         global $conf;
 
         $isImage = false;
-        if ( is_null($title) ) {
+        if (is_null($title) || trim($title) == '') {
             if ($conf['useheading'] && $id) {
                 $heading = p_get_first_heading($id);
                 if ($heading) {
@@ -1643,11 +1644,11 @@ class renderer_plugin_odt extends Doku_Renderer {
                 }
             }
             return $this->_xmlEntities($default);
-        } else if ( is_string($title) ) {
-            return $this->_xmlEntities($title);
         } else if ( is_array($title) ) {
             $isImage = true;
             return $title;
+        } else {
+            return $this->_xmlEntities($title);
         }
     }
 
@@ -1703,6 +1704,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $feed->feed_url($url);
 
         //disable warning while fetching
+        $elvl = null;
         if (!defined('DOKU_E_LEVEL')) { $elvl = error_reporting(E_ERROR); }
         $rc = $feed->init();
         if (!defined('DOKU_E_LEVEL')) { error_reporting($elvl); }
@@ -1823,10 +1825,12 @@ class renderer_plugin_odt extends Doku_Renderer {
      * in the odt frame and image tag which can not be changed using the function _odtAddImage.
      *
      * @author LarsDW223
+     *
      * @param string $src
      * @return string
      */
     function _odtAddImageAsFileOnly($src){
+        $name = '';
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
             $name = 'Pictures/'.md5($src).'.'.$ext;
@@ -1960,7 +1964,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtSpanOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'span';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2009,7 +2013,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $odt_bg = $properties ['background-color'];
         $picture = $properties ['background-image'];
 
-        if ( !empty ($picture) ) {
+        if ( !empty ($picture)) {
             $this->style_count++;
 
             // If a picture/background-image is set, than we insert it manually here.
@@ -2062,7 +2066,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtParagraphOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'p';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2102,6 +2106,8 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The paragraph must be closed by calling 'p_close'.
      *
      * @author LarsDW223
+     *
+     * @param array $properties
      */
     function _odtParagraphOpenUseProperties($properties){
         $disabled = array ();
@@ -2115,7 +2121,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $odt_bg = $properties ['background-color'];
         $picture = $properties ['background-image'];
 
-        if ( !empty ($picture) ) {
+        if ( !empty ($picture)) {
             // If a picture/background-image is set, than we insert it manually here.
             // This is a workaround because ODT background-image works different than in CSS.
 
@@ -2150,6 +2156,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The div should be closed by calling '_odtDivCloseAsFrame'.
      *
      * @author LarsDW223
+     *
      * @param helper_plugin_odt_cssimport $import
      * @param $classes
      * @param null $baseURL
@@ -2167,7 +2174,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->div_z_index += 5;
         $this->style_count++;
 
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'div';
         }
 
@@ -2193,11 +2200,14 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $min_height = $properties ['min-height'];
 
-        if ( !empty ($picture) ) {
+        $pic_link = '';
+        $pic_width = '';
+        $pic_height = '';
+        if ( !empty ($picture)) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
 
-            if ( !empty ($baseURL) ) {
+            if ( !empty ($baseURL)) {
                 // Replace 'url(...)' with $baseURL
                 $picture = $import->replaceURLPrefix ($picture, $baseURL);
             }
@@ -2207,7 +2217,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $horiz_pos = 'center';
 
-        if ( empty ($width) ) {
+        if (empty ($width)) {
             $width = '100%';
         }
 
@@ -2232,31 +2242,31 @@ class renderer_plugin_odt extends Doku_Renderer {
                  draw:textarea-horizontal-align="left"
                  draw:textarea-vertical-align="center"
                  style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
-        if ( !empty($padding_left) ) {
+        if ( !empty($padding_left)) {
             $style .= 'fo:padding-left="'.$padding_left.'" ';
         }
-        if ( !empty($padding_right) ) {
+        if ( !empty($padding_right)) {
             $style .= 'fo:padding-right="'.$padding_right.'" ';
         }
-        if ( !empty($padding_top) ) {
+        if ( !empty($padding_top)) {
             $style .= 'fo:padding-top="'.$padding_top.'" ';
         }
-        if ( !empty($padding_bottom) ) {
+        if ( !empty($padding_bottom)) {
             $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
         }
-        if ( !empty($margin_left) ) {
+        if ( !empty($margin_left)) {
             $style .= 'fo:margin-left="'.$margin_left.'" ';
         }
-        if ( !empty($margin_right) ) {
+        if ( !empty($margin_right)) {
             $style .= 'fo:margin-right="'.$margin_right.'" ';
         }
-        if ( !empty($margin_top) ) {
+        if ( !empty($margin_top)) {
             $style .= 'fo:margin-top="'.$margin_top.'" ';
         }
-        if ( !empty($margin_bottom) ) {
+        if ( !empty($margin_bottom)) {
             $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
         }
-        if ( !empty ($fo_border) ) {
+        if ( !empty ($fo_border)) {
             $style .= 'fo:border="'.$fo_border.'" ';
         }
         $style .= 'fo:min-height="'.$min_height.'"
@@ -2318,7 +2328,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<draw:text-box ';
 
         // If required use round corners.
-        if ( !empty($radius) )
+        if ( !empty($radius))
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
@@ -2375,7 +2385,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $maxcols = NULL, $numrows = NULL){
         $properties = array();
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'table';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2427,7 +2437,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Create style.
         $style_name = $this->factory->createTableTableStyle ($style, $properties);
         $this->autostyles[$style_name] = $style;
-        if ( empty ($properties ['width']) ) {
+        if ( empty ($properties ['width'])) {
             // If the caller did not specify a table width, save the style name
             // to eventually later replace the table width set in createTableTableStyle()
             // with the sum of all column width (in _odtTableClose).
@@ -2443,7 +2453,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         }
 
         // Create columns with predefined and temporarily remembered style names.
-        if ( empty ($maxcols) ) {
+        if ( empty ($maxcols)) {
             // Try to automatically detect the number of columns.
             $this->temp_autocols = true;
             $this->doc .= '<ColumnsPlaceholder>';
@@ -2468,7 +2478,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     protected function _replaceTableWidth () {
         $matches = array ();
 
-        if ( empty($this->temp_table_style) || empty($this->temp_cols) ) {
+        if ( empty($this->temp_table_style) || empty($this->temp_cols)) {
             return;
         }
 
@@ -2490,7 +2500,7 @@ class renderer_plugin_odt extends Doku_Renderer {
                 return;
             }
             $width = $this->units->toPoints($width, 'x');
-            $sum += trim ($width, 'pt');
+            $sum += (float) trim ($width, 'pt');
         }
         $this->autostyles[$this->temp_table_style] =
             preg_replace ('/style:width="[^"]*"/', 'style:width="'.$sum.'pt"', $this->autostyles[$this->temp_table_style]);
@@ -2501,7 +2511,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->_replaceTableWidth ();
 
         // Writeback temporary table content if this is the first cell in the table body.
-        if ( !empty($this->temp_cols) ) {
+        if ( !empty($this->temp_cols)) {
             // First replace columns placeholder with created columns, if in auto mode.
             if ( $this->temp_autocols === true ) {
                 $this->doc =
@@ -2528,7 +2538,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableHeaderOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $colspan = 1, $rowspan = 1){
         $properties = array();
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'th';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2596,7 +2606,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableRowOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'tr';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2654,7 +2664,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function _odtTableCellOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
         $properties = array();
-        if ( empty($element) ) {
+        if ( empty($element)) {
             $element = 'td';
         }
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
@@ -2740,6 +2750,10 @@ class renderer_plugin_odt extends Doku_Renderer {
      * Simple helper function for creating a style $name setting the specfied font size $size.
      *
      * @author LarsDW223
+     *
+     * @param string  $name
+     * @param string  $size
+     * @return string
      */
     protected function _odtBuildSizeStyle ($name, $size) {
         $style = '<style:style style:name="'.$name.'" style:display-name="'.$name.'" style:family="text"><style:text-properties fo:font-size="'.$size.'" style:font-size-asian="'.$size.'" style:font-size-complex="'.$size.'"/></style:style>';
@@ -2762,16 +2776,16 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @param array $properties
      * @param array $disabled_props
-     * @return null
+     * @return null|string
      */
     protected function _createTextStyle($properties, $disabled_props = NULL){
         $save = $disabled_props ['font-size'];
 
         $odt_fo_size = '';
-        if ( empty ($disabled_props ['font-size']) ) {
+        if ( empty ($disabled_props ['font-size'])) {
             $odt_fo_size = $properties ['font-size'];
         }
-        unset ($parent);
+        $parent = '';
         $length = strlen ($odt_fo_size);
         if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
             // A font-size in percent is only supported in common style definitions, not in automatic
@@ -2809,10 +2823,10 @@ class renderer_plugin_odt extends Doku_Renderer {
         $save = $disabled_props ['font-size'];
 
         $odt_fo_size = '';
-        if ( empty ($disabled_props ['font-size']) ) {
+        if ( empty ($disabled_props ['font-size'])) {
             $odt_fo_size = $properties ['font-size'];
         }
-        unset ($parent);
+        $parent = '';
         $length = strlen ($odt_fo_size);
         if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
             // A font-size in percent is only supported in common style definitions, not in automatic
@@ -2868,8 +2882,8 @@ class renderer_plugin_odt extends Doku_Renderer {
             $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
 
-        if ( !empty ($properties ['background-image']) ) {
-            if ( !empty ($baseURL) ) {
+        if ( !empty ($properties ['background-image'])) {
+            if ( !empty ($baseURL)) {
                 // Replace 'url(...)' with $baseURL
                 $properties ['background-image'] = $this->import->replaceURLPrefix ($properties ['background-image'], $baseURL);
             }
@@ -2895,8 +2909,8 @@ class renderer_plugin_odt extends Doku_Renderer {
             $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
         }
 
-        if ( !empty ($properties ['background-image']) ) {
-            if ( !empty ($baseURL) ) {
+        if ( !empty ($properties ['background-image'])) {
+            if ( !empty ($baseURL)) {
                 // Replace 'url(...)' with $baseURL
                 $properties ['background-image'] = $import->replaceURLPrefix ($properties ['background-image'], $baseURL);
             }
@@ -2953,6 +2967,8 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The div should be closed by calling '_odtDivCloseAsFrame'.
      *
      * @author LarsDW223
+     *
+     * @param array $properties
      */
     function _odtOpenTextBoxUseProperties ($properties) {
         $this->in_div_as_frame++;
@@ -2986,31 +3002,31 @@ class renderer_plugin_odt extends Doku_Renderer {
         $width = $properties ['width'];
         $horiz_pos = $properties ['float'];
 
-        if ( !empty ($picture) ) {
+        $pic_link = '';
+        $pic_width = '';
+        $pic_height = '';
+        if ( !empty ($picture)) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
             $pic_link=$this->_odtAddImageAsFileOnly($picture);
             list($pic_width, $pic_height) = $this->_odtGetImageSize($picture);
         }
 
-        if ( empty($horiz_pos) ) {
+        if ( empty($horiz_pos)) {
             $horiz_pos = 'center';
         }
-        if ( empty ($width) ) {
+        if ( empty ($width)) {
             $width = '100%';
         }
-        if ( empty($border_color) ) {
+        if ( empty($border_color)) {
             $border_color = $odt_bg;
         }
-        if ( !empty($pic_positions [0]) ) {
+        if ( !empty($pic_positions [0])) {
             $pic_positions [0] = $this->adjustXLengthValueForODT ($pic_positions [0]);
         }
-        if ( empty($min_height) ) {
+        if ( empty($min_height)) {
             $min_height = '1pt';
         }
-
-        // For safety, init width_abs with value for 100%
-        $width_abs = $this->_getAbsWidthMindMargins (100);
 
         // Different handling for relative and absolute size...
         if ( $width [strlen($width)-1] == '%' ) {
@@ -3032,42 +3048,42 @@ class renderer_plugin_odt extends Doku_Renderer {
              <style:graphic-properties
                  draw:textarea-horizontal-align="left"
                  style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
-        if ( !empty($odt_bg) ) {
+        if ( !empty($odt_bg)) {
             $style .= 'draw:fill="solid" draw:fill-color="'.$odt_bg.'" ';
         } else {
             $style .= 'draw:fill="none" ';
         }
-        if ( !empty($border_color) ) {
+        if ( !empty($border_color)) {
             $style .= 'svg:stroke-color="'.$border_color.'" ';
         }
-        if ( !empty($border_width) ) {
+        if ( !empty($border_width)) {
             $style .= 'svg:stroke-width="'.$border_width.'" ';
         }
-        if ( !empty($padding_left) ) {
+        if ( !empty($padding_left)) {
             $style .= 'fo:padding-left="'.$padding_left.'" ';
         }
-        if ( !empty($padding_right) ) {
+        if ( !empty($padding_right)) {
             $style .= 'fo:padding-right="'.$padding_right.'" ';
         }
-        if ( !empty($padding_top) ) {
+        if ( !empty($padding_top)) {
             $style .= 'fo:padding-top="'.$padding_top.'" ';
         }
-        if ( !empty($padding_bottom) ) {
+        if ( !empty($padding_bottom)) {
             $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
         }
-        if ( !empty($margin_left) ) {
+        if ( !empty($margin_left)) {
             $style .= 'fo:margin-left="'.$margin_left.'" ';
         }
-        if ( !empty($margin_right) ) {
+        if ( !empty($margin_right)) {
             $style .= 'fo:margin-right="'.$margin_right.'" ';
         }
-        if ( !empty($margin_top) ) {
+        if ( !empty($margin_top)) {
             $style .= 'fo:margin-top="'.$margin_top.'" ';
         }
-        if ( !empty($margin_bottom) ) {
+        if ( !empty($margin_bottom)) {
             $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
         }
-        if ( !empty ($fo_border) ) {
+        if ( !empty ($fo_border)) {
             $style .= 'fo:border="'.$fo_border.'" ';
         }
         $style .= 'fo:min-height="'.$min_height.'"
@@ -3136,7 +3152,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc .= '<draw:text-box ';
 
         // If required use round corners.
-        if ( !empty($radius) )
+        if ( !empty($radius))
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
@@ -3180,7 +3196,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     /**
-     * @param $dest
+     * @param array $dest
      * @param $element
      * @param $classString
      * @param $inlineStyle
@@ -3251,7 +3267,7 @@ class renderer_plugin_odt extends Doku_Renderer {
 
             if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
                 $number = substr ($part, 0, $length-2);
-                if ( is_numeric ($number) && !empty ($emValue) ) {
+                if ( is_numeric ($number) && !empty ($emValue)) {
                     $part = ($number * $emValue).'pt';
                 }
             }

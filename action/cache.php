@@ -12,7 +12,7 @@ if(!defined('DOKU_INC')) die();
 /**
  * Add the template as a page dependency for the caching system
  */
-class action_plugin_odt extends DokuWiki_Action_Plugin {
+class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
 
      /**
      * Registers a callback function for a given event
@@ -21,35 +21,35 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
      */
     public function register(Doku_Event_Handler $controller) {
         $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'handle_cache_prepare');
-        $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton', array());
+//        $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton', array());
     }
 
-    /**
-     * Add 'export odt'-button to pagetools
-     *
-     * @param Doku_Event $event
-     * @param mixed $param not defined
-     */
-    public function addbutton(Doku_Event $event, $param) {
-        global $ID, $REV;
-
-        if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
-            $params = array('do' => 'export_odt');
-            if($REV) {
-                $params['rev'] = $REV;
-            }
-
-            $event->data['items'] = array_slice($event->data['items'], 0, -1, true) +
-                array('export_odt' =>
-                        '<li>'
-                        . '<a href="' . wl($ID, $params) . '"  class="action export_odt" rel="nofollow" title="' . $this->getLang('export_odt_button') . '">'
-                        . '<span>' . $this->getLang('export_odt_button') . '</span>'
-                        . '</a>'
-                        . '</li>'
-                ) +
-                array_slice($event->data['items'], -1, 1, true);
-        }
-    }
+//    /**
+//     * Add 'export odt'-button to pagetools
+//     *
+//     * @param Doku_Event $event
+//     * @param mixed $param not defined
+//     */
+//    public function addbutton(Doku_Event $event, $param) {
+//        global $ID, $REV;
+//
+//        if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
+//            $params = array('do' => 'export_odt');
+//            if($REV) {
+//                $params['rev'] = $REV;
+//            }
+//
+//            $event->data['items'] = array_slice($event->data['items'], 0, -1, true) +
+//                array('export_odt' =>
+//                        '<li>'
+//                        . '<a href="' . wl($ID, $params) . '"  class="action export_odt" rel="nofollow" title="' . $this->getLang('export_odt_button') . '">'
+//                        . '<span>' . $this->getLang('export_odt_button') . '</span>'
+//                        . '</a>'
+//                        . '</li>'
+//                ) +
+//                array_slice($event->data['items'], -1, 1, true);
+//        }
+//    }
 
     /**
      * Add dependencies to cache

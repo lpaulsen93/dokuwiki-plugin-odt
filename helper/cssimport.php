@@ -274,7 +274,7 @@ class css_declaration {
                             }
                         break;
                     }
-                    if ( !empty($params [1]) ) {
+                    if ( !empty($params [1])) {
                         $decls [] = new css_declaration ('line-height', $params [1]);
                     } else {
                         $decls [] = new css_declaration ('line-height', 'normal');
@@ -287,7 +287,7 @@ class css_declaration {
 
                 // All other properties are found.
                 // The rest is assumed to be a font-family.
-                if ( empty ($font_family) ) {
+                if ( empty($font_family)) {
                     $font_family .= $value;
                 } else {
                     $font_family .= ' '.$value;
@@ -420,8 +420,6 @@ class css_declaration {
                 }
                 if ( $border_color_set === false ) {
                     $decls [] = new css_declaration ('border-color', $values [$index]);
-                    $border_color_set = true;
-                    $index++;
 
                     // This is the last value.
                     break;
@@ -1146,7 +1144,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         // Find the start of the replacements section
         $rep_start = strpos ($contents, '[replacements]');
         if ( $rep_start === false ) {
-            break;
+            return false;
         }
         $rep_start += strlen ('[replacements]');
 
@@ -1171,7 +1169,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
 
             $lineend = strpos ($defs, "\n", $linestart);
             if ( $lineend === false ) {
-                $lineend = $def_end;
+                $lineend = $defs_end;
             }
 
             $equal_sign = strpos ($defs, '=', $linestart);
@@ -1229,7 +1227,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @return null
      */
     public function getPropertyForElement ($element, $classString, $name, $media = NULL) {
-        if ( empty ($name) ) {
+        if ( empty ($name)) {
             return NULL;
         }
 
@@ -1238,7 +1236,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             $matched = $rule->matches ($element, $classString, $media);
             if ( $matched !== false ) {
                 $current = $rule->getProperty ($name);
-                if ( !empty ($current) ) {
+                if ( !empty($current)) {
                     $value = $current;
                 }
             }
@@ -1268,7 +1266,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @param null $media
      */
     public function getPropertiesForElement (&$dest, $element, $classString, $media = NULL) {
-        if ( empty ($element) && empty ($classString) ) {
+        if ( empty ($element) && empty ($classString)) {
             return;
         }
 
@@ -1296,7 +1294,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             // Replace it if necessary
             $part = trim($part);
             $rep = $this->getReplacement($part);
-            if ( !empty ($rep) ) {
+            if ( !empty($rep)) {
                 $part = $rep;
             }
             $length = strlen ($part);
@@ -1317,7 +1315,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
 
             if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
                 $number = substr ($part, 0, $length-2);
-                if ( is_numeric ($number) && !empty ($emValue) ) {
+                if ( is_numeric ($number) && !empty($emValue)) {
                     $part = ($number * $emValue).'pt';
                 }
             }
@@ -1351,7 +1349,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @return string
      */
     public function replaceURLPrefix ($URL, $replacement) {
-        if ( !empty ($URL) && !empty ($replacement) ) {
+        if ( !empty($URL) && !empty($replacement)) {
             // Replace 'url(...)' with $replacement
             $URL = substr ($URL, 3);
             $URL = trim ($URL, '()');

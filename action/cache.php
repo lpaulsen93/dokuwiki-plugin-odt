@@ -12,7 +12,7 @@ if(!defined('DOKU_INC')) die();
 /**
  * Add the template as a page dependency for the caching system
  */
-class action_plugin_odt extends DokuWiki_Action_Plugin {
+class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
 
      /**
      * Registers a callback function for a given event

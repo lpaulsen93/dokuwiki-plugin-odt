@@ -169,12 +169,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Replace sub and super with text-position.
         $odt_valign = $properties ['vertical-align'];
-        unset($odt_text_pos);
+        $odt_text_pos = '';
         if ( $odt_valign == 'sub' ) {
             $odt_text_pos = '-33% 100%';
             unset($odt_valign);
-        }
-        if ( $odt_valign == 'super' ) {
+        } elseif ( $odt_valign == 'super' ) {
             $odt_text_pos = '33% 100%';
             unset($odt_valign);
         }
@@ -199,7 +198,6 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // (Except style-name, already inserted above)
         $header = '';
         $text = '';
-        $paragraph = '';
         foreach ($properties as $property => $value) {
             if ( empty ($disabled_props [$property]) && !empty ($properties [$property]) ) {
                 $name = $params [$property]['name'];
@@ -318,12 +316,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Replace sub and super with text-position.
         $odt_valign = $properties ['vertical-align'];
-        unset($odt_text_pos);
+        $odt_text_pos = '';
         if ( $odt_valign == 'sub' ) {
             $odt_text_pos = '-33% 100%';
             unset($odt_valign);
-        }
-        if ( $odt_valign == 'super' ) {
+        } elseif ( $odt_valign == 'super' ) {
             $odt_text_pos = '33% 100%';
             unset($odt_valign);
         }

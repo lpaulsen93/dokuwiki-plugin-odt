@@ -26,6 +26,7 @@ if (version_compare($dw_version, "20070626") and
  * The Renderer
  */
 class renderer_plugin_odt extends Doku_Renderer {
+    /** @var helper_plugin_odt_stylefactory */
     var $factory = null;
     /** @var helper_plugin_odt_cssimport */
     var $import = null;
@@ -1191,7 +1192,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @param string $text The PHP code
      */
-    function php($text, $wrapper='dummy') {
+    function php($text) {
         $this->monospace_open();
         $this->doc .= $this->_xmlEntities($text);
         $this->monospace_close();
@@ -1211,7 +1212,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @param string $text The HTML
      */
-    function html($text, $wrapper='dummy') {
+    function html($text) {
         $this->monospace_open();
         $this->doc .= $this->_xmlEntities($text);
         $this->monospace_close();
@@ -1635,7 +1636,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         global $conf;
 
         $isImage = false;
-        if ( is_null($title) ) {
+        if (is_null($title) || trim($title) == '') {
             if ($conf['useheading'] && $id) {
                 $heading = p_get_first_heading($id);
                 if ($heading) {
@@ -1643,11 +1644,11 @@ class renderer_plugin_odt extends Doku_Renderer {
                 }
             }
             return $this->_xmlEntities($default);
-        } else if ( is_string($title) ) {
-            return $this->_xmlEntities($title);
         } else if ( is_array($title) ) {
             $isImage = true;
             return $title;
+        } else {
+            return $this->_xmlEntities($title);
         }
     }
 
@@ -1703,6 +1704,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         $feed->feed_url($url);
 
         //disable warning while fetching
+        $elvl = null;
         if (!defined('DOKU_E_LEVEL')) { $elvl = error_reporting(E_ERROR); }
         $rc = $feed->init();
         if (!defined('DOKU_E_LEVEL')) { error_reporting($elvl); }
@@ -1823,10 +1825,12 @@ class renderer_plugin_odt extends Doku_Renderer {
      * in the odt frame and image tag which can not be changed using the function _odtAddImage.
      *
      * @author LarsDW223
+     *
      * @param string $src
      * @return string
      */
     function _odtAddImageAsFileOnly($src){
+        $name = '';
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
             $name = 'Pictures/'.md5($src).'.'.$ext;
@@ -2102,6 +2106,8 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The paragraph must be closed by calling 'p_close'.
      *
      * @author LarsDW223
+     *
+     * @param array $properties
      */
     function _odtParagraphOpenUseProperties($properties){
         $disabled = array ();
@@ -2150,6 +2156,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The div should be closed by calling '_odtDivCloseAsFrame'.
      *
      * @author LarsDW223
+     *
      * @param helper_plugin_odt_cssimport $import
      * @param $classes
      * @param null $baseURL
@@ -2193,6 +2200,9 @@ class renderer_plugin_odt extends Doku_Renderer {
 
         $min_height = $properties ['min-height'];
 
+        $pic_link = '';
+        $pic_width = '';
+        $pic_height = '';
         if ( !empty ($picture) ) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
@@ -2740,6 +2750,10 @@ class renderer_plugin_odt extends Doku_Renderer {
      * Simple helper function for creating a style $name setting the specfied font size $size.
      *
      * @author LarsDW223
+     *
+     * @param string $name
+     * @param string $size
+     * @return string
      */
     protected function _odtBuildSizeStyle ($name, $size) {
         $style = '<style:style style:name="'.$name.'" style:display-name="'.$name.'" style:family="text"><style:text-properties fo:font-size="'.$size.'" style:font-size-asian="'.$size.'" style:font-size-complex="'.$size.'"/></style:style>';
@@ -2762,7 +2776,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      *
      * @param array $properties
      * @param array $disabled_props
-     * @return null
+     * @return null|string
      */
     protected function _createTextStyle($properties, $disabled_props = NULL){
         $save = $disabled_props ['font-size'];
@@ -2771,7 +2785,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty ($disabled_props ['font-size']) ) {
             $odt_fo_size = $properties ['font-size'];
         }
-        unset ($parent);
+        $parent = '';
         $length = strlen ($odt_fo_size);
         if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
             // A font-size in percent is only supported in common style definitions, not in automatic
@@ -2812,7 +2826,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty ($disabled_props ['font-size']) ) {
             $odt_fo_size = $properties ['font-size'];
         }
-        unset ($parent);
+        $parent = '';
         $length = strlen ($odt_fo_size);
         if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
             // A font-size in percent is only supported in common style definitions, not in automatic
@@ -2953,6 +2967,8 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The div should be closed by calling '_odtDivCloseAsFrame'.
      *
      * @author LarsDW223
+     *
+     * @param array $properties
      */
     function _odtOpenTextBoxUseProperties ($properties) {
         $this->in_div_as_frame++;
@@ -2986,6 +3002,9 @@ class renderer_plugin_odt extends Doku_Renderer {
         $width = $properties ['width'];
         $horiz_pos = $properties ['float'];
 
+        $pic_link = '';
+        $pic_width = '';
+        $pic_height = '';
         if ( !empty ($picture) ) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
@@ -3008,9 +3027,6 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty($min_height) ) {
             $min_height = '1pt';
         }
-
-        // For safety, init width_abs with value for 100%
-        $width_abs = $this->_getAbsWidthMindMargins (100);
 
         // Different handling for relative and absolute size...
         if ( $width [strlen($width)-1] == '%' ) {
@@ -3180,7 +3196,7 @@ class renderer_plugin_odt extends Doku_Renderer {
     }
 
     /**
-     * @param $dest
+     * @param array $dest
      * @param $element
      * @param $classString
      * @param $inlineStyle

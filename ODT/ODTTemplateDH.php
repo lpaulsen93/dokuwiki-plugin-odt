@@ -103,6 +103,12 @@ class ODTTemplateDH extends docHandler
         $this->io_rm_rf($temp_dir);
     }
 
+    /**
+     * @param string $from
+     * @param string $to
+     * @param string $file
+     * @param bool $regexp
+     */
     protected function _odtReplaceInFile($from, $to, $file, $regexp=FALSE) {
         $value = io_readFile($file);
         if ($regexp) {

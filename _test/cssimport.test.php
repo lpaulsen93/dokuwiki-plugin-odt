@@ -37,9 +37,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'border' is exploded correctly.
      */
     public function test_border_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('border', '5px solid red;');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'border-width');
@@ -55,9 +56,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 1.
      */
     public function test_font_shorthand_1() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('font', '15px arial, sans-serif;');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 6);
         $this->assertEquals($decls [0]->getProperty(), 'font-style');
@@ -79,9 +81,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 2.
      */
     public function test_font_shorthand_2() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('font', 'italic bold 12px/30px Georgia, serif;');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 6);
         $this->assertEquals($decls [0]->getProperty(), 'font-style');
@@ -102,9 +105,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'background' is exploded correctly.
      */
     public function test_background_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('background', '#ffffff url("img_tree.png") no-repeat right top');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 5);
         $this->assertEquals($decls [0]->getProperty(), 'background-color');
@@ -124,9 +128,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 1.
      */
     public function test_padding_shorthand_1() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('padding', '25px 50px 75px 100px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'padding-top');
@@ -144,9 +149,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 2.
      */
     public function test_padding_shorthand_2() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('padding', '25px 50px 75px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'padding-top');
@@ -164,9 +170,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 3.
      */
     public function test_padding_shorthand_3() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('padding', '25px 50px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'padding-top');
@@ -184,9 +191,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 4.
      */
     public function test_padding_shorthand_4() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('padding', '25px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'padding-top');
@@ -204,9 +212,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 1.
      */
     public function test_margin_shorthand_1() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('margin', '25px 50px 75px 100px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'margin-top');
@@ -224,9 +233,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 2.
      */
     public function test_margin_shorthand_2() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('margin', '25px 50px 75px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'margin-top');
@@ -244,9 +254,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 3.
      */
     public function test_margin_shorthand_3() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('margin', '25px 50px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'margin-top');
@@ -264,9 +275,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 4.
      */
     public function test_margin_shorthand_4() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('margin', '25px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'margin-top');
@@ -284,9 +296,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 1.
      */
     public function test_list_style_shorthand_1() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('list-style', 'square url("sqpurple.gif");');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'list-style-type');
@@ -302,9 +315,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 2.
      */
     public function test_list_style_shorthand_2() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('list-style', 'square inside url("sqpurple.gif");');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'list-style-type');
@@ -319,9 +333,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'flex' is exploded correctly.
      */
     public function test_flex_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('flex', '1 2 200px');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'flex-grow');
@@ -336,9 +351,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'transition' is exploded correctly.
      */
     public function test_transition_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('transition', 'width 2s linear 1s');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 4);
         $this->assertEquals($decls [0]->getProperty(), 'transition-property');
@@ -355,9 +371,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'outline' is exploded correctly.
      */
     public function test_outline_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('outline', '#00FF00 dotted thick');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'outline-color');
@@ -373,9 +390,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 1.
      */
     public function test_animation_shorthand_1() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('animation', 'mymove 5s infinite;');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'animation-name');
@@ -391,9 +409,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Part 2.
      */
     public function test_animation_shorthand_2() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('animation', 'mymove 5s infinite 2s 3 normal forwards paused;');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 8);
         $this->assertEquals($decls [0]->getProperty(), 'animation-name');
@@ -418,9 +437,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'border-bottom' is exploded correctly.
      */
     public function test_border_bottom_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('border-bottom', 'thick dotted #ff0000;');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 3);
         $this->assertEquals($decls [0]->getProperty(), 'border-bottom-width');
@@ -435,9 +455,10 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
      * Ensure that the shorthand 'columns' is exploded correctly.
      */
     public function test_columns_shorthand() {
+        /** @var css_declaration[] $decls */
         $decls = array();
         $decl = new css_declaration ('columns', '100px 3');
-        $decl->explode ($decls);        
+        $decl->explode ($decls);
 
         $this->assertEquals(count($decls), 2);
         $this->assertEquals($decls [0]->getProperty(), 'column-width');
@@ -466,7 +487,7 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $import->importFromString ($css_code);
         $import->getPropertiesForElement ($properties, 'p', NULL);
 
-        print ($import->rulesToString);
+        print ($import->rulesToString());
 
         $this->assertEquals(count($properties), 1);
         $this->assertEquals('blue', $properties ['background-color']);

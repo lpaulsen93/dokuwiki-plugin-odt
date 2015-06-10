@@ -1,7 +1,7 @@
 <?php
 /**
  * Helper class for creating ODT styles.
- * 
+ *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     LarsDW223
  */
@@ -9,65 +9,68 @@
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
 
+/**
+ * Class helper_plugin_odt_stylefactory
+ */
 class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
     protected static $style_base_name = 'PluginODTAutoStyle_';
     protected static $style_count = 0;
 
+    /**
+     * @return array
+     */
     function getMethods() {
         $result = array();
         $result[] = array(
                 'name'   => 'createTextStyle',
                 'desc'   => 'Returns ODT text style definition in $style with the wanted properties. Returns NULL, if no relevant properties were found, otherwise the new style name.',
-                'params' => array('$style' => 'string'),
-                'params' => array('$properties' => 'array'),
-                'params' => array('$disabled_props' => 'array'),
-                'params' => array('$parent' => 'string'),
+                'params' => array('$style' => 'string',
+                                  '$properties' => 'array',
+                                  '$disabled_props' => 'array',
+                                  '$parent' => 'string'),
                 'return' => array('ODT text style name' => 'string'),
                 );
         $result[] = array(
                 'name'   => 'createParagraphStyle',
                 'desc'   => 'Returns ODT paragrap style definition in $style with the wanted properties. Returns NULL, if no relevant properties were found, otherwise the new style name.',
-                'params' => array('$style' => 'string'),
-                'params' => array('$properties' => 'array'),
-                'params' => array('$disabled_props' => 'array'),
-                'params' => array('$parent' => 'string'),
+                'params' => array('$style' => 'string',
+                                  '$properties' => 'array',
+                                  '$disabled_props' => 'array',
+                                  '$parent' => 'string'),
                 'return' => array('ODT paragraph style name' => 'string'),
                 );
         $result[] = array(
                 'name'   => 'createTableTableStyle',
                 'desc'   => 'Returns ODT table style definition in $style with the wanted properties. Returns NULL, if no relevant properties were found, otherwise the new style name.',
-                'params' => array('$style' => 'string'),
-                'params' => array('$properties' => 'array'),
-                'params' => array('$disabled_props' => 'array'),
-                'params' => array('$max_width_cm' => 'integer'),
-                'return' => array('ODT table style name' => 'string'),            
+                'params' => array('$style' => 'string',
+                                  '$properties' => 'array',
+                                  '$disabled_props' => 'array',
+                                  '$max_width_cm' => 'integer'),
+                'return' => array('ODT table style name' => 'string'),
                 );
         $result[] = array(
                 'name'   => 'createTableRowStyle',
                 'desc'   => 'Returns ODT table row style definition in $style with the wanted properties. Returns NULL, if no relevant properties were found, otherwise the new style name.',
-                'params' => array('$style' => 'string'),
-                'params' => array('$properties' => 'array'),
-                'params' => array('$disabled_props' => 'array'),
+                'params' => array('$style' => 'string',
+                                  '$properties' => 'array',
+                                  '$disabled_props' => 'array'),
                 'return' => array('ODT table row style name' => 'string'),
                 );
         $result[] = array(
                 'name'   => 'createTableCellStyle',
                 'desc'   => 'Returns ODT table cell style definition in $style with the wanted properties. Returns NULL, if no relevant properties were found, otherwise the new style name.',
-                'params' => array('$style' => 'string'),
-                'params' => array('$properties' => 'array'),
-                'params' => array('$disabled_props' => 'array'),
+                'params' => array('$style' => 'string',
+                                  '$properties' => 'array',
+                                  '$disabled_props' => 'array'),
                 'return' => array('ODT table cell style name' => 'string'),
                 );
         $result[] = array(
                 'name'   => 'createTableColumnStyle',
                 'desc'   => 'Returns ODT table column style definition in $style with the wanted properties. Returns NULL, if no relevant properties were found, otherwise the new style name.',
-                'params' => array('$style' => 'string'),
-                'params' => array('$properties' => 'array'),
-                'params' => array('$disabled_props' => 'array'),
+                'params' => array('$style' => 'string',
+                                  '$properties' => 'array',
+                                  '$disabled_props' => 'array'),
                 'return' => array('ODT table column style name' => 'string'),
                 );
         return $result;
@@ -88,6 +91,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         return $style_name;
     }
 
+    /**
+     * @param $first_name
+     * @param $value
+     * @return string
+     */
     protected static function writeExtensionNames ($first_name, $value) {
         static $names_ext = array (
               'fo:country'     => array ('style:country-asian', 'style:country-complex'),
@@ -97,7 +105,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
               'fo:font-style'  => array ('style:font-style-asian', 'style:font-style-complex'),
             );
 
-        unset ($text);
+        $text = '';
         for ($index = 0 ; $index < count($names_ext [$first_name]) ; $index++) {
             $text .= $names_ext [$first_name][$index].'="'.$value.'" ';
         }
@@ -117,6 +125,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @param null $parent
+     * @return string
      */
     public static function createTextStyle(&$style, $properties, $disabled_props = NULL, $parent = NULL){
         static $params = array (
@@ -141,8 +154,8 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // First, count parameters that are an attribute, not empty and not disabled.
         foreach ($properties as $property => $value) {
-            if ( empty ($disabled_props [$property]) === true &&
-                 empty ($properties [$property]) === false &&
+            if ( empty ($disabled_props [$property]) &&
+                 !empty ($properties [$property]) &&
                  $params [$property]['is_attr'] === true ) {
                 $attrs++;
             }
@@ -169,7 +182,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // Separate country from language
         $lang = $properties ['lang'];
         $country = $properties ['country'];
-        if ( empty($lang) === false ) {
+        if ( !empty($lang) ) {
             $parts = preg_split ('/-/', $lang);
             $lang = $parts [0];
             $country = $parts [1];
@@ -177,18 +190,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Create style name (if not given).
         $style_name = $properties ['style-name'];
-        if ( empty($style_name) === true ) {
+        if ( empty($style_name) ) {
             $style_name = self::getNewStylename ('Text');
             $properties ['style-name'] = $style_name;
         }
 
         // Build content for the different sections of the style
         // (Except style-name, already inserted above)
-        unset ($header);
-        unset ($text);
-        unset ($paragraph);
+        $header = '';
+        $text = '';
+        $paragraph = '';
         foreach ($properties as $property => $value) {
-            if ( empty ($disabled_props [$property]) === true && empty ($properties [$property]) === false ) {
+            if ( empty ($disabled_props [$property]) && !empty ($properties [$property]) ) {
                 $name = $params [$property]['name'];
                 switch ($params [$property]['section']) {
 
@@ -216,18 +229,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Some extra handling for text-position and country.
-        if ( empty ($odt_text_pos) === false ) {
+        if ( !empty ($odt_text_pos) ) {
             $text .= 'style:text-position="'.$odt_text_pos.'" ';
             $text .= self::writeExtensionNames ('style:text-position', $odt_text_pos);
         }
-        if ( empty($country) === false ) {
+        if ( !empty($country) ) {
             $text .= 'fo:country="'.$country.'" ';
             $text .= self::writeExtensionNames ('fo:country', $country);
         }
 
         // Build style.
         $style  = '<style:style '.$header.' style:family="text"';
-        if ( empty ($parent) === false ) {
+        if ( !empty ($parent) ) {
             $style .= ' style:parent-style-name="'.$parent.'" ';
         }
         $style .= '>';
@@ -250,6 +263,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @param null $parent
+     * @return string
      */
     public static function createParagraphStyle(&$style, $properties, $disabled_props = NULL, $parent = NULL){
         static $params = array (
@@ -290,14 +308,14 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // First, count parameters that are an attribute, not empty and not disabled.
         foreach ($properties as $property => $value) {
-            if ( empty ($disabled_props [$property]) === true &&
-                 empty ($properties [$property]) === false &&
+            if ( empty ($disabled_props [$property]) &&
+                 !empty ($properties [$property]) &&
                  $params [$property]['is_attr'] === true ) {
                 $attrs++;
             }
         }
 
-        if ( empty($parent) === false && empty($properties ['style-parent']) === true ) {
+        if ( !empty($parent) && empty($properties ['style-parent']) ) {
             $properties ['style-parent'] = $parent;
             $attrs++;
         }
@@ -323,7 +341,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // Separate country from language
         $lang = $properties ['lang'];
         $country = $properties ['country'];
-        if ( empty($lang) === false ) {
+        if ( !empty($lang) ) {
             $parts = preg_split ('/-/', $lang);
             $lang = $parts [0];
             $country = $parts [1];
@@ -331,18 +349,18 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Create style name (if not given).
         $style_name = $properties ['style-name'];
-        if ( empty($style_name) === true ) {
+        if ( empty($style_name) ) {
             $style_name = self::getNewStylename ('Paragraph');
             $properties ['style-name'] = $style_name;
         }
 
         // Build content for the different sections of the style
         // (Except style-name, already inserted above)
-        unset ($header);
-        unset ($text);
-        unset ($paragraph);
+        $header = '';
+        $text = '';
+        $paragraph = '';
         foreach ($properties as $property => $value) {
-            if ( empty ($disabled_props [$property]) === true && empty ($properties [$property]) === false ) {
+            if ( empty ($disabled_props [$property]) && !empty ($properties [$property]) ) {
                 switch ($params [$property]['section']) {
 
                     case 'header':
@@ -378,11 +396,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Some extra handling for text-position and country.
-        if ( empty ($odt_text_pos) === false ) {
+        if ( !empty ($odt_text_pos) ) {
             $text .= 'style:text-position="'.$odt_text_pos.'" ';
             $text .= self::writeExtensionNames ('style:text-position', $odt_text_pos);
         }
-        if ( empty($country) === false ) {
+        if ( !empty($country) ) {
             $text .= 'fo:country="'.$country.'" ';
             $text .= self::writeExtensionNames ('fo:country', $country);
         }
@@ -409,19 +427,24 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @param int $max_width_cm
+     * @return string
      */
     public static function createTableTableStyle(&$style, $properties, $disabled_props = NULL, $max_width_cm = 17){
         $attrs = 0;
 
-        if ( empty ($disabled_props ['width']) === true ) {
+        if ( empty ($disabled_props ['width']) ) {
             $width = $properties ['width'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['border-collapse']) === true ) {
+        if ( empty ($disabled_props ['border-collapse']) ) {
             $table_border_model = $properties ['border-collapse'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['background-color']) === true ) {
+        if ( empty ($disabled_props ['background-color']) ) {
             $table_bg_color = $properties ['background-color'];
             $attrs++;
         }
@@ -444,7 +467,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             return NULL;
         }
 
-        if ( empty ($width) === false ) {
+        if ( !empty ($width) ) {
             // If width has a percentage value we need to use the rel-width attribute,
             // otherwise the width attribute
             if ( $width [strlen($width)-1] != '%' ) {
@@ -460,7 +483,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
                 $table_width = (($max_width_cm * trim($width, '%'))/100).'cm';
             }
         }
-        if ( empty ($table_border_model) === false ) {
+        if ( !empty ($table_border_model) ) {
             if ( $table_border_model == 'collapse' ) {
                 $table_border_model = 'collapsing';
             } else {
@@ -470,30 +493,30 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Create style name (if not given).
         $style_name = $properties ['style-name'];
-        if ( empty($style_name) === true ) {
+        if ( empty($style_name) ) {
             $style_name = self::getNewStylename ('Table');
             $properties ['style-name'] = $style_name;
         }
 
         $style  = '<style:style style:name="'.$style_name.'" ';
-        if ( empty ($properties ['style-display-name']) === false ) {
+        if ( !empty ($properties ['style-display-name']) ) {
             $style .= 'style:display-name="'.$properties ['style-display-name'].'" ';
         }
         $style .= 'style:family="table">';
         $style .= '<style:table-properties ';
-        if ( empty ($table_width) === false ) {
+        if ( !empty ($table_width) ) {
             $style .= 'style:width="'.$table_width.'" ';
         }
-        if ( empty ($table_rel_width) === false ) {
+        if ( !empty ($table_rel_width) ) {
             $style .= 'style:rel-width="'.$table_rel_width.'" ';
         }
-        if ( empty ($table_align) === false ) {
+        if ( !empty ($table_align) ) {
             $style .= ' table:align="'.$table_align.'"';
         }
-        if ( empty ($table_border_model) === false ) {
+        if ( !empty ($table_border_model) ) {
             $style .= ' table:border-model="'.$table_border_model.'"';
         }
-        if ( empty ($table_bg_color) === false ) {
+        if ( !empty ($table_bg_color) ) {
             $style .= ' fo:background-color="'.$table_bg_color.'"';
         }
         $style .= '/>';
@@ -514,15 +537,19 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @return string
      */
     public static function createTableRowStyle(&$style, $properties, $disabled_props = NULL){
         $attrs = 0;
 
-        if ( empty ($disabled_props ['height']) === true ) {
+        if ( empty ($disabled_props ['height']) ) {
             $height = $properties ['height'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['background-color']) === true ) {
+        if ( empty ($disabled_props ['background-color']) ) {
             $table_bg_color = $properties ['background-color'];
             $attrs++;
         }
@@ -533,7 +560,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             return NULL;
         }
 
-        if ( empty ($height) === false ) {
+        if ( !empty ($height) ) {
             // If height has a percentage value we need to use the rel-height attribute,
             // otherwise the height attribute
             if ( $height [strlen($height)-1] != '%' ) {
@@ -550,13 +577,13 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         $style  = '<style:style style:name="'.$style_name.'" style:family="table-row">';
         $style .= '<style:table-properties ';
-        if ( empty ($table_height) === false ) {
+        if ( !empty ($table_height) ) {
             $style .= 'style:height="'.$table_height.'" ';
         }
-        if ( empty ($table_rel_height) === false ) {
+        if ( !empty ($table_rel_height) ) {
             $style .= 'style:rel_height="'.$table_rel_height.'" ';
         }
-        if ( empty ($table_bg_color) === false ) {
+        if ( !empty ($table_bg_color) ) {
             $style .= ' fo:background-color="'.$table_bg_color.'"';
         }
         $style .= '/>';
@@ -577,35 +604,39 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @return string
      */
     public static function createTableCellStyle(&$style, $properties, $disabled_props = NULL){
         $attrs = 0;
 
-        if ( empty ($disabled_props ['background-color']) === true ) {
+        if ( empty ($disabled_props ['background-color']) ) {
             $table_bg_color = $properties ['background-color'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['vertical-align']) === true ) {
+        if ( empty ($disabled_props ['vertical-align']) ) {
             $table_valign = $properties ['vertical-align'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['border']) === true ) {
+        if ( empty ($disabled_props ['border']) ) {
             $table_border = $properties ['border'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['padding-left']) === true ) {
+        if ( empty ($disabled_props ['padding-left']) ) {
             $pad_left = $properties ['padding-left'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['padding-right']) === true ) {
+        if ( empty ($disabled_props ['padding-right']) ) {
             $pad_right = $properties ['padding-right'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['padding-top']) === true ) {
+        if ( empty ($disabled_props ['padding-top']) ) {
             $pad_top = $properties ['padding-top'];
             $attrs++;
         }
-        if ( empty ($disabled_props ['padding-bottom']) === true ) {
+        if ( empty ($disabled_props ['padding-bottom']) ) {
             $pad_bottom = $properties ['padding-bottom'];
             $attrs++;
         }
@@ -621,25 +652,25 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         $style  = '<style:style style:name="'.$style_name.'" style:family="table-cell">';
         $style .= '<style:table-cell-properties ';
-        if ( empty ($table_valign) === false ) {
+        if ( !empty ($table_valign) ) {
             $style .= 'style:vertical-align="'.$table_valign.'" ';
         }
-        if ( empty ($table_bg_color) === false ) {
+        if ( !empty ($table_bg_color) ) {
             $style .= 'fo:background-color="'.$table_bg_color.'" ';
         }
-        if ( empty ($table_border) === false ) {
+        if ( !empty ($table_border) ) {
             $style .= 'fo:border="'.$table_border.'" ';
         }
-        if ( empty ($pad_left) === false ) {
+        if ( !empty ($pad_left) ) {
             $style .= 'fo:padding-left="'.$pad_left.'" ';
         }
-        if ( empty ($pad_right) === false ) {
+        if ( !empty ($pad_right) ) {
             $style .= 'fo:padding-right="'.$pad_right.'" ';
         }
-        if ( empty ($pad_top) === false ) {
+        if ( !empty ($pad_top) ) {
             $style .= 'fo:padding-top="'.$pad_top.'" ';
         }
-        if ( empty ($pad_bottom) === false ) {
+        if ( !empty ($pad_bottom) ) {
             $style .= 'fo:padding-bottom="'.$pad_bottom.'" ';
         }
         $style .= '/>';
@@ -660,11 +691,17 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     *
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @param null $style_name
+     * @return null|string
      */
     public static function createTableColumnStyle(&$style, $properties, $disabled_props = NULL, $style_name = NULL){
         $attrs = 0;
 
-        if ( empty ($disabled_props ['width']) === true ) {
+        if ( empty ($disabled_props ['width']) ) {
             $table_co_width = $properties ['width'];
             $attrs++;
         }
@@ -676,13 +713,13 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         }
 
         // Create style name.
-        if ( empty ($style_name) === true ) {
+        if ( empty ($style_name) ) {
             $style_name = self::getNewStylename ('TableColumn');
         }
 
         $style  = '<style:style style:name="'.$style_name.'" style:family="table-column">';
         $style .= '<style:table-column-properties ';
-        if ( empty ($table_co_width) === false ) {
+        if ( !empty ($table_co_width) ) {
             $length = strlen ($table_co_width);
             if ( $table_co_width [$length-1] != '%' ) {
                 $style .= 'style:column-width="'.$table_co_width.'" ';
@@ -712,31 +749,41 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
      * @author LarsDW223
+     *
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @return null|string
      */
     public static function createMultiColumnFrameStyle(&$style, $properties, $disabled_props = NULL) {
         $attrs = 0;
 
-        if ( empty ($disabled_props ['column-count']) === true ) {
+        $columns = '';
+        if ( empty ($disabled_props ['column-count']) ) {
             $columns = $properties ['column-count'];
             $attrs++;
         }
 
-        if ( empty ($disabled_props ['column-rule-width']) === true ) {
+        $rule_width = '';
+        if ( empty ($disabled_props ['column-rule-width']) ) {
             $rule_width = $properties ['column-rule-width'];
             $attrs++;
         }
 
-        if ( empty ($disabled_props ['column-rule-style']) === true ) {
+        $rule_style = '';
+        if ( empty ($disabled_props ['column-rule-style']) ) {
             $rule_style = $properties ['column-rule-style'];
             $attrs++;
         }
 
-        if ( empty ($disabled_props ['column-rule-color']) === true ) {
+        $rule_color = '';
+        if ( empty ($disabled_props ['column-rule-color']) ) {
             $rule_color = $properties ['column-rule-color'];
             $attrs++;
         }
 
-        if ( empty ($disabled_props ['column-gap']) === true ) {
+        $gap = '';
+        if ( empty ($disabled_props ['column-gap']) ) {
             $gap = $properties ['column-gap'];
             $attrs++;
         }
@@ -765,4 +812,4 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         return $style_name;
     }
 }
-?>
+

@@ -1,7 +1,7 @@
 <?php
 /**
  * Simple helper class to work with units (e.g. 'px', 'pt', 'cm'...)
- * 
+ *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     LarsDW223
  */
@@ -9,10 +9,9 @@
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
-
+/**
+ * Class helper_plugin_odt_units
+ */
 class helper_plugin_odt_units extends DokuWiki_Plugin {
     // Measure units as defined in "Extensible Stylesheet Language (XSL) Version 1.1"
     protected static $xsl_units = array('cm', 'mm', 'in', 'pt', 'pc', 'px', 'em');
@@ -26,13 +25,16 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     protected static $pc_in_pt = 12;
     protected static $px_per_em = 14;
 
+    /**
+     * @return array
+     */
     function getMethods() {
         $result = array();
         $result[] = array(
                 'name'   => 'getColorValue',
                 'desc'   => 'returns the color value for a given CSS color name. Returns "#000000" if the name is unknown',
                 'params' => array('name' => 'string'),
-                'return' => array('color value' => 'string'),                
+                'return' => array('color value' => 'string'),
                 );
         return $result;
     }
@@ -40,7 +42,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Strips of the leading digits from $value. So left over will be the unit only.
      *
-     * @param $value The length value string, e.g. '1cm'.
+     * @param int $value The length value string, e.g. '1cm'.
      * @return string The unit of $value, e.g. 'cm'
      */
     public function stripDigits ($value) {
@@ -50,7 +52,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Gets only the digits from $value without the unit.
      *
-     * @param $value The length value string, e.g. '1cm'.
+     * @param string|int $value The length value string, e.g. '1cm'.
      * @return string The digits of $value, e.g. '1'
      */
     public function getDigits ($value) {
@@ -68,7 +70,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Checks if $unit is a valid XSL unit.
      *
-     * @param $unit The unit string, e.g. 'cm'.
+     * @param string $unit The unit string, e.g. 'cm'.
      * @return boolean true if valid, false otherwise
      */
     public function isValidXSLUnit($unit) {
@@ -78,7 +80,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Checks if length value string $value has a valid XSL unit.
      *
-     * @param $value The length value string, e.g. '1cm'.
+     * @param string|int $value The length value string, e.g. '1cm'.
      * @return boolean true if valid, false otherwise
      */
     public function hasValidXSLUnit($value) {
@@ -88,7 +90,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Sets the pixel per em unit used for px to em conversion.
      *
-     * @param $value The value to be set.
+     * @param int $value The value to be set.
      */
     public function setPixelPerEm ($value) {
         self::$px_per_em = $value;
@@ -97,7 +99,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Query the pixel per em unit.
      *
-     * @return The current value.
+     * @return int The current value.
      */
     public function getPixelPerEm () {
         return self::$px_per_em;
@@ -106,7 +108,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Sets the twips per pixel (X axis) used for px to pt conversion.
      *
-     * @param $value The value to be set.
+     * @param int $value The value to be set.
      */
     public function setTwipsPerPixelX ($value) {
         self::$twips_per_pixel_x = $value;
@@ -115,7 +117,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Sets the twips per pixel (Y axis) unit used for px to pt conversion.
      *
-     * @param $value The value to be set.
+     * @param int $value The value to be set.
      */
     public function setTwipsPerPixelY ($value) {
         self::$twips_per_pixel_y = $value;
@@ -124,7 +126,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Query the twips per pixel (X axis) setting.
      *
-     * @return The current value.
+     * @return int The current value.
      */
     public function getTwipsPerPixelX () {
         return self::$twips_per_pixel_x;
@@ -133,7 +135,7 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Query the twips per pixel (Y axis) setting.
      *
-     * @return The current value.
+     * @return int The current value.
      */
     public function getTwipsPerPixelY () {
         return self::$twips_per_pixel_y;
@@ -142,8 +144,8 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Convert pixel (X axis) to points according to the current settings.
      *
-     * @param $pixel String with pixel length value, e.g. '20px'
-     * @return The current value.
+     * @param string|int $pixel String with pixel length value, e.g. '20px'
+     * @return string The current value.
      */
     public function pixelToPointsX ($pixel) {
         $pixel = $this->getDigits ((string)$pixel);
@@ -153,8 +155,8 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Convert pixel (Y axis) to points according to the current settings.
      *
-     * @param $pixel String with pixel length value, e.g. '20px'
-     * @return The current value.
+     * @param string|int $pixel String with pixel length value, e.g. '20px'
+     * @return string The current value.
      */
     public function pixelToPointsY ($pixel) {
         $pixel = $this->getDigits ((string)$pixel);
@@ -164,10 +166,10 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     /**
      * Convert length value with valid XSL unit to points.
      *
-     * @param $value String with length value, e.g. '20px', '20cm'...
-     * @param $axis Is the value to be converted a value on the X or Y axis? Default is 'y'.
+     * @param string $value  String with length value, e.g. '20px', '20cm'...
+     * @param string $axis   Is the value to be converted a value on the X or Y axis? Default is 'y'.
      *        Only relevant for conversion from 'px' or 'em'.
-     * @return The current value.
+     * @return string The current value.
      */
     public function toPoints ($value, $axis = 'y') {
         $unit = $this->stripDigits ($value);
@@ -208,4 +210,3 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
         return $value;
     }
 }
-?>

@@ -1,7 +1,7 @@
 <?php
 /**
  * Simple helper class to query CSS color values and names.
- * 
+ *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     LarsDW223
  */
@@ -9,10 +9,9 @@
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
-if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
-if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
-if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN', DOKU_INC.'lib/plugins/');
-
+/**
+ * Class helper_plugin_odt_csscolors
+ */
 class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
     protected static $values = array(
                             'aliceblue'            => '#F0F8FF',
@@ -299,23 +298,30 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
                             '#9ACD32' => 'YellowGreen',
                         );
 
+    /**
+     * @return array
+     */
     function getMethods() {
         $result = array();
         $result[] = array(
                 'name'   => 'getColorValue',
                 'desc'   => 'returns the color value for a given CSS color name. Returns "#000000" if the name is unknown',
                 'params' => array('name' => 'string'),
-                'return' => array('color value' => 'string'),                
+                'return' => array('color value' => 'string'),
                 );
         $result[] = array(
                 'name'   => 'getValueName',
                 'desc'   => 'returns the CSS color name for a given color value. Returns "Black" if the value is unknown',
                 'params' => array('value' => 'string'),
-                'return' => array('name' => 'string'),                
+                'return' => array('name' => 'string'),
                 );
         return $result;
     }
 
+    /**
+     * @param string|null $name
+     * @return string
+     */
     public static function getColorValue ($name=NULL) {
         $value = '#000000';
         if ($name != NULL) {
@@ -326,6 +332,10 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
         return $value;
     }
 
+    /**
+     * @param null $value
+     * @return string
+     */
     public static function getValueName ($value=NULL) {
         $name = 'Black';
         if ($value != NULL) {
@@ -336,4 +346,3 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
         return $name;
     }
 }
-?>

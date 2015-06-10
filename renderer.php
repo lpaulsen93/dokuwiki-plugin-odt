@@ -26,6 +26,7 @@ if (version_compare($dw_version, "20070626") and
  * The Renderer
  */
 class renderer_plugin_odt extends Doku_Renderer {
+    /** @var helper_plugin_odt_stylefactory */
     var $factory = null;
     /** @var helper_plugin_odt_cssimport */
     var $import = null;
@@ -3026,9 +3027,6 @@ class renderer_plugin_odt extends Doku_Renderer {
         if ( empty($min_height) ) {
             $min_height = '1pt';
         }
-
-        // For safety, init width_abs with value for 100%
-        $width_abs = $this->_getAbsWidthMindMargins (100);
 
         // Different handling for relative and absolute size...
         if ( $width [strlen($width)-1] == '%' ) {

@@ -1,6 +1,6 @@
 <?php
 /**
- * pageFormat: class for handling page fromats.
+ * pageFormat: class for handling page formats.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author LarsDW223
@@ -24,6 +24,9 @@ class pageFormat
 
     /**
      * Set format. Sets all vlaues according to $format.
+     *
+     * @param string $format
+     * @param string $orientation
      */
     public function setFormat($format, $orientation='portrait') {
         switch ($format) {
@@ -187,26 +190,44 @@ class pageFormat
         $this->margin_right = 2;
     }
 
+    /**
+     * @return float
+     */
     public function getWidth() {
         return $this->width;
     }
 
+    /**
+     * @return float
+     */
     public function getHeight() {
         return $this->height;
     }
 
+    /**
+     * @return int
+     */
     public function getMarginTop() {
         return $this->margin_top;
     }
 
+    /**
+     * @return int
+     */
     public function getMarginBottom() {
         return $this->margin_bottom;
     }
 
+    /**
+     * @return int
+     */
     public function getMarginLeft() {
         return $this->margin_left;
     }
 
+    /**
+     * @return int
+     */
     public function getMarginRight() {
         return $this->margin_right;
     }
@@ -217,6 +238,9 @@ class pageFormat
      * But usually you like to take care of margins. This function
      * adjusts the percentage to the value which should be used for margins.
      * So 100% == 21cm e.g. becomes 80.9% == 17cm (assuming a margin of 2 cm on both sides).
+     *
+     * @param string $percentage
+     * @return int|string
      */
     function getRelWidthMindMargins ($percentage = '100'){
         $percentage *= $this->width - $this->margin_left - $this->margin_right;
@@ -227,6 +251,9 @@ class pageFormat
     /**
      * Like getRelWidthMindMargins but returns the absulute width
      * in centimeters.
+     *
+     * @param string $percentage
+     * @return float
      */
     function getAbsWidthMindMargins ($percentage = '100'){
         $percentage *= $this->width - $this->margin_left - $this->margin_right;
@@ -239,6 +266,9 @@ class pageFormat
      * But usually you like to take care of margins. This function
      * adjusts the percentage to the value which should be used for margins.
      * So 100% == 29.7cm e.g. becomes 86.5% == 25.7cm (assuming a margin of 2 cm on top and bottom).
+     *
+     * @param string $percentage
+     * @return float|string
      */
     function getRelHeightMindMargins ($percentage = '100'){
         $percentage *= $this->height - $this->margin_top - $this->margin_bottom;
@@ -249,6 +279,9 @@ class pageFormat
     /**
      * Like getRelHeightMindMargins but returns the absulute width
      * in centimeters.
+     *
+     * @param string $percentage
+     * @return float
      */
     function getAbsHeightMindMargins ($percentage = '100'){
         $percentage *= $this->height - $this->margin_left - $this->margin_right;

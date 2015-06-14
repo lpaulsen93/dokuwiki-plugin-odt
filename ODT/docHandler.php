@@ -33,12 +33,24 @@ abstract class docHandler
         $this->manifest = new ODTManifest();
     }
 
-    // Check if file exists.
-    public function fileExists($name, $mime) {
+    /**
+     * Check if file exists.
+     *
+     * @param string $name
+     * @return bool
+     */
+    public function fileExists($name) {
         return $this->manifest->exists($name);
     }
 
-    // Add a file to the document
+    /**
+     * Add a file to the document
+     *
+     * @param string $name
+     * @param string $mime
+     * @param string $content
+     * @return bool
+     */
     public function addFile($name, $mime, $content) {
         if(!$this->manifest->exists($name)){
             $this->manifest->add($name, $mime);
@@ -50,10 +62,24 @@ abstract class docHandler
         return false;
     }
 
-    // Build ODT document.
+    /**
+     * Build ODT document.
+     *
+     * @param string      $doc
+     * @param string      $autostyles
+     * @param array       $commonstyles
+     * @param string      $meta
+     * @param string      $userfields
+     * @param ODTStyleSet $styleset
+     * @return mixed
+     */
     abstract public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null);
 
-    // Get ODT document file.
+    /**
+     * Get ODT document file.
+     *
+     * @return string
+     */
     public function get() {
         return $this->ZIP->get_file();
     }

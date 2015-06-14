@@ -33,6 +33,8 @@ class ODTTemplateDH extends docHandler
 
     /**
      * Set the template.
+     *
+     * @param string $template
      */
     public function setTemplate($template) {
         $this->template = $template;
@@ -41,6 +43,14 @@ class ODTTemplateDH extends docHandler
     /**
      * Build the document from the template.
      * (code taken from old function 'document_end_scratch')
+     *
+     * @param string      $doc
+     * @param string      $autostyles
+     * @param array       $commonstyles
+     * @param string      $meta
+     * @param string      $userfields
+     * @param ODTDefaultStyles $styleset
+     * @return mixed
      */
     public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null){
         // for the temp dir
@@ -59,7 +69,7 @@ class ODTTemplateDH extends docHandler
         io_mkdir_p($temp_dir);
 
         // Extract template
-        $template_path = $conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
+        $template_path = $conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template; // FIXME replace plugin function getConf()
         $this->ZIP->Extract($template_path, $temp_dir);
 
         // Prepare content
@@ -69,16 +79,16 @@ class ODTTemplateDH extends docHandler
         // Insert content
         $old_content = io_readFile($temp_dir.'/content.xml');
         if (strpos($old_content, 'DOKUWIKI-ODT-INSERT') !== FALSE) { // Replace the mark
-            $this->_odtReplaceInFile('/<text:p[^>]*>DOKUWIKI-ODT-INSERT<\/text:p>/', 
+            $this->_odtReplaceInFile('/<text:p[^>]*>DOKUWIKI-ODT-INSERT<\/text:p>/',
                 $doc, $temp_dir.'/content.xml', true);
         } else { // Append to the template
             $this->_odtReplaceInFile('</office:text>', $doc.'</office:text>', $temp_dir.'/content.xml');
         }
 
         // Cut off unwanted content
-        if (strpos($old_content, 'DOKUWIKI-ODT-CUT-START') !== FALSE 
+        if (strpos($old_content, 'DOKUWIKI-ODT-CUT-START') !== FALSE
                 && strpos($old_content, 'DOKUWIKI-ODT-CUT-STOP') !== FALSE) {
-            $this->_odtReplaceInFile('/DOKUWIKI-ODT-CUT-START.*DOKUWIKI-ODT-CUT-STOP/', 
+            $this->_odtReplaceInFile('/DOKUWIKI-ODT-CUT-START.*DOKUWIKI-ODT-CUT-STOP/',
                 '', $temp_dir.'/content.xml', true);
         }
 
@@ -124,6 +134,8 @@ class ODTTemplateDH extends docHandler
     /**
      * Recursively deletes a directory (equivalent to the "rm -rf" command)
      * Found in comments on http://www.php.net/rmdir
+     *
+     * @param string $f
      */
     protected function io_rm_rf($f) {
         if (is_dir($f)) {

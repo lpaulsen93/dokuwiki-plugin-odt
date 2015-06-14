@@ -44,6 +44,9 @@ class ODTManifest
 
     /**
      * Checks if $name is present or was added to the manifest data.
+     *
+     * @param string $name
+     * @return bool
      */
     function exists($name) {
         return isset($this->manifest[$name]);
@@ -51,6 +54,9 @@ class ODTManifest
 
     /**
      * Adds $name with $mime to the manifest data.
+     *
+     * @param string $name
+     * @param string $mime
      */
     function add($name, $mime) {
         $this->manifest[$name] = $mime;

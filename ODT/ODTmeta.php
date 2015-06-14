@@ -29,6 +29,9 @@ class ODTMeta
             );
     }
 
+    /**
+     * @param string $title
+     */
     function setTitle ($title) {
         $this->meta ['dc:title'] = $title;
     }

@@ -7,7 +7,7 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/page.php';
  * ODTDefaultStyles: class for using the basic styles from styles.xml.
  *                   This is also used if a ODT template is used, as the style names
  *                   need to match the names in styles.xml.
- * 
+ *
  * The class is doing nothing for import/export because it expects
  * the file styles.xml to be there. So the file is neither read nor written.
  *
@@ -22,11 +22,18 @@ class ODTDefaultStyles extends ODTStyleSet
         "Bitstream Vera Sans Mono"=>'<style:font-face style:name="Bitstream Vera Sans Mono" svg:font-family="\'Bitstream Vera Sans Mono\'" style:font-family-generic="modern" style:font-pitch="fixed"/>', // for source code
     );
 
+    /**
+     * @param null $source
+     */
     public function import($source=NULL) {
-        // Do nothing. 
+        // Do nothing.
     }
+
+    /**
+     * @param null $destination
+     */
     public function export($destination=NULL) {
-        // Do nothing. 
+        // Do nothing.
     }
 
     /**
@@ -34,6 +41,9 @@ class ODTDefaultStyles extends ODTStyleSet
      *
      * The class simply returns the corresponding style names
      * used in styles.xml.
+     *
+     * @param string $style
+     * @return null|string
      */
     public function getStyleName($style) {
         switch ($style) {
@@ -81,6 +91,9 @@ class ODTDefaultStyles extends ODTStyleSet
         return NULL;
     }
 
+    /**
+     * @return array
+     */
     function getStyles (){
         $styles = array(
         "Source_20_Text"=>'
@@ -126,6 +139,9 @@ class ODTDefaultStyles extends ODTStyleSet
      * Uses page parameters.
      *
      * @author LarsDW223
+     *
+     * @param pageFormat $page
+     * @return array
      */
     function getAutoStyles (pageFormat $page){
         $autostyles = array(
@@ -202,6 +218,10 @@ class ODTDefaultStyles extends ODTStyleSet
         return $autostyles;
     }
 
+    /**
+     * @param string $filename
+     * @return string
+     */
     function getMissingStyles($filename) {
         $styles = $this->getStyles();
         $value = '';
@@ -235,6 +255,10 @@ class ODTDefaultStyles extends ODTStyleSet
         return $value;
     }
 
+    /**
+     * @param string $filename
+     * @return string
+     */
     function getMissingFonts($filename) {
         $value = '';
         $existing_styles = io_readFile($filename);

@@ -36,6 +36,14 @@ class scratchDH extends docHandler
     /**
      * Build the document from scratch.
      * (code taken from old function 'document_end_scratch')
+     *
+     * @param string      $doc
+     * @param string      $autostyles
+     * @param array       $commonstyles
+     * @param string      $meta
+     * @param string      $userfields
+     * @param ODTStyleSet $styleset
+     * @return mixed
      */
     public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null){
         // add defaults
@@ -94,7 +102,7 @@ class scratchDH extends docHandler
         $value = io_readFile(DOKU_PLUGIN.'odt/styles.xml');
 
         // Add common styles.
-        unset($common);
+        $common = '';
         foreach ($commonstyles as $style) {
             $common .= $style;
         }

@@ -23,53 +23,67 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTTemplateDH.php';
  * The Renderer
  */
 class renderer_plugin_odt extends Doku_Renderer {
-    var $mode = 'scratch';
+    protected $mode = 'scratch';
     /** @var docHandler */
-    var $docHandler = null;
+    protected $docHandler = null;
     /** @var helper_plugin_odt_stylefactory */
-    var $factory = null;
+    protected $factory = null;
     /** @var helper_plugin_odt_cssimport */
-    var $import = null;
+    protected $import = null;
     /** @var helper_plugin_odt_units */
-    var $units = null;
+    protected $units = null;
     /** @var ODTStyleSet */
-    var $styleset = null;
-    var $meta;
-    var $store = '';
-    var $footnotes = array();
-    var $headers = array();
-    var $template = "";
-    var $fields = array();
-    var $in_list_item = false;
-    var $in_paragraph = false;
-    var $in_div_as_frame = 0;
-    var $highlight_style_num = 1;
-    var $temp_table_column_styles = array ();
-    var $temp_table_style = NULL;
-    var $temp_in_header = false;
-    var $temp_autocols = false;
-    var $temp_maxcols = 0;
-    var $temp_column = 0;
-    var $temp_content = NULL;
-    var $temp_cols = NULL;
-    var $quote_depth = 0;
-    var $quote_pos = 0;
-    var $div_z_index = 0;
+    protected $styleset = null;
+    /** @var ODTMeta */
+    protected $meta;
+    /** @var string temporary storage of xml-content */
+    protected $store = '';
+    /** @var array */
+    protected $footnotes = array();
+    protected $headers = array();
+    public $template = "";
+    public $fields = array(); // set by Fields Plugin
+    protected $in_list_item = false;
+    protected $in_paragraph = false;
+    protected $in_div_as_frame = 0;
+    protected $highlight_style_num = 1;
+    protected $temp_table_column_styles = array ();
+    protected $temp_table_style = NULL;
+    protected $temp_in_header = false;
+    protected $temp_autocols = false;
+    protected $temp_maxcols = 0;
+    protected $temp_column = 0;
+    protected $temp_content = NULL;
+    protected $temp_cols = NULL;
+    protected $quote_depth = 0;
+    protected $quote_pos = 0;
+    protected $div_z_index = 0;
     /** @var pageFormat */
-    var $page = null;
+    protected $page = null;
 
-    // Automatic styles. Will always be added to content.xml and styles.xml.
-    // Initalized by function initStyles.
-    var $autostyles;
-    // Regular styles. May not be present if in template mode, in which case they will be added to styles.xml
-    // Initalized by function initStyles.
-    var $styles;
-
-    var $css;
-    /** @var  string Buffer for extracted template */
+    /**
+     * Automatic styles. Will always be added to content.xml and styles.xml.
+     * Initalized by function initStyles.
+     * @var array
+     */
+    public $autostyles = array();
+    /**
+     * Regular styles. May not be present if in template mode, in which case they will be added to styles.xml
+     * Initalized by function initStyles.
+     * @var array
+     */
+    protected $styles = array();
+    /** @var string */
+    protected $css;
+    /** @var  string buffer for extracted template */
     protected $temp_dir;
     /** @var  int counter for styles */
     protected $style_count;
+
+    /** @var bool true: book export, false: single wiki article export */
+    protected $bookexport = false;
+    /** @var int number of wikipages exported with the ODT renderer */
+    protected $wikipages_count = 0;
 
     // Only for debugging
     //var $trace_dump;
@@ -3031,6 +3045,8 @@ class renderer_plugin_odt extends Doku_Renderer {
         //$this->trace_dump .= 'adjustLengthCallback: '.$property.':'.$value.'<text:line-break/>';
         return $value;
     }
+
+
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

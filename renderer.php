@@ -126,6 +126,22 @@ class renderer_plugin_odt extends Doku_Renderer {
         return true;
     }
 
+    public function enableBookexport() {
+        $this->bookexport = true;
+    }
+
+    /**
+     * Book start at the first page
+     *
+     * @return bool
+     */
+    public function isBookStart() {
+        if($this->wikipages_count == 1) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Check export mode: scratch, ODT template or CSS template?
      *
@@ -170,56 +186,65 @@ class renderer_plugin_odt extends Doku_Renderer {
      */
     function document_start() {
         global $ID;
+        // number of wiki pages included in ODT file
+        $this->wikipages_count ++;
 
-        // First, get export mode.
-        $warning = '';
-        $this->mode = $this->determineMode ($warning);
+        if(!$this->bookexport || $this->isBookStart()) {
 
-        switch ($this->mode) {
-            case 'ODT template':
-                // Document based on ODT template.
-                $this->docHandler = new ODTTemplateDH ();
-                $this->docHandler->setTemplate($this->template);
-            break;
+            // First, get export mode.
+            $warning = '';
+            $this->mode = $this->determineMode($warning);
 
-            default:
-                // Document from scratch.
-                $this->docHandler = new scratchDH ();
-            break;
+            switch($this->mode) {
+                case 'ODT template':
+                    // Document based on ODT template.
+                    $this->docHandler = new ODTTemplateDH ();
+                    $this->docHandler->setTemplate($this->template);
+                    break;
+
+                default:
+                    // Document from scratch.
+                    $this->docHandler = new scratchDH ();
+                    break;
+            }
+
+            // Setup page format.
+            $this->page = new pageFormat();
+            $this->page->setFormat('A4', 'portrait');
+
+
+
+            // Load Styleset.
+            $this->styleset = new ODTDefaultStyles();
+            $this->styleset->import();
+            $this->autostyles = $this->styleset->getAutoStyles($this->page);
+            $this->styles = $this->styleset->getStyles();
         }
-
-        // Setup page format.
-        $this->page = new pageFormat();
-        $this->page->setFormat('A4', 'portrait');
-
         // Set title in meta info.
-        $this->meta->setTitle($ID);
-
-        // Load Styleset.
-        $this->styleset = new ODTDefaultStyles();
-        $this->styleset->import();
-        $this->autostyles = $this->styleset->getAutoStyles($this->page);
-        $this->styles = $this->styleset->getStyles();
+        $this->meta->setTitle($ID); //FIXME article title != book title  SOLUTION: overwrite at the end for book
 
         // If older or equal to 2007-06-26, we need to disable caching
-        $dw_version = preg_replace('/[^\d]/', '', getversion());
+        $dw_version = preg_replace('/[^\d]/', '', getversion());  //FIXME DEPRECATED
         if (version_compare($dw_version, "20070626", "<=")) {
             $this->info["cache"] = false;
         }
 
-        //$headers = array('Content-Type'=>'text/plain'); p_set_metadata($ID,array('format' => array('odt' => $headers) )); return ; // DEBUG
-        // send the content type header, new method after 2007-06-26 (handles caching)
-        $output_filename = str_replace(':','-',$ID).".odt";
-        if (version_compare($dw_version, "20070626")) {
-            // store the content type headers in metadata
-            $headers = array(
-                'Content-Type' => 'application/vnd.oasis.opendocument.text',
-                'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
-            );
-            p_set_metadata($ID,array('format' => array('odt' => $headers) ));
-        } else { // older method
-            header('Content-Type: application/vnd.oasis.opendocument.text');
-            header('Content-Disposition: attachment; filename="'.$output_filename.'";');
+
+        if(!$this->bookexport || $this->isBookStart()) {
+            //$headers = array('Content-Type'=>'text/plain'); p_set_metadata($ID,array('format' => array('odt' => $headers) )); return ; // DEBUG
+            // send the content type header, new method after 2007-06-26 (handles caching)
+            $output_filename = str_replace(':','-',$ID).".odt";
+            if (version_compare($dw_version, "20070626")) {
+                // store the content type headers in metadata
+                $headers = array(
+                    'Content-Type' => 'application/vnd.oasis.opendocument.text',
+                    'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
+                );
+                p_set_metadata($ID,array('format' => array('odt' => $headers) ));
+            } else { // older method FIXME DEPRECATED
+                header('Content-Type: application/vnd.oasis.opendocument.text');
+                header('Content-Disposition: attachment; filename="'.$output_filename.'";');
+            }
         }
     }
 
@@ -238,6 +263,17 @@ class renderer_plugin_odt extends Doku_Renderer {
         // Delete paragraphs which only contain whitespace
         $this->doc = preg_replace('#<text:p[^>]*>\s*</text:p>#', '', $this->doc);
 
+        if(!$this->bookexport) {
+            // Build the document
+            $this->book_end();
+        }
+
+    }
+
+    /**
+     *
+     */
+    function book_end() {
         // Build the document
         $this->docHandler->build($this->doc,
                                  $this->_odtAutoStyles(),
@@ -250,6 +286,14 @@ class renderer_plugin_odt extends Doku_Renderer {
         $this->doc = $this->docHandler->get();
     }
 
+    /**
+     * Set title for ODT document
+     *
+     * @param string $title
+     */
+    public function setTitle($title) {
+         $this->meta->setTitle($title);
+    }
     /**
      * Not supported - use OpenOffice builtin tools instead!
      *

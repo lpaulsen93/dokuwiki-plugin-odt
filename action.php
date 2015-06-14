@@ -302,20 +302,20 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
     protected function generateODT($cachefile, $title) {
         global $ID;
         global $REV;
-        global $INPUT;
 
-        //some shortcuts to export settings
-//        $hasToC = $this->getExportConfig('hasToC');
-        $levels = $this->getExportConfig('levels');
-        $isDebug = $this->getExportConfig('isDebug');
-        //etc etc
-
-
+        /** @var renderer_plugin_odt $odt */
+        $odt = plugin_load('renderer','odt');
+        $odt->enableBookexport();
 
         // store original pageid
         $keep = $ID;
 
         // loop over all pages
+        $xmlcontent = '';
+
+        // insert cover page
+        // $xmlcontent .= ...
+
         $cnt = count($this->list);
         for($n = 0; $n < $cnt; $n++) {
             $page = $this->list[$n];
@@ -323,38 +323,25 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
             // set global pageid to the rendered page
             $ID = $page;
 
-            $pagecontent = p_cached_output(wikiFN($page, $REV), 'odt', $page);
+            $xmlcontent .= p_cached_output(wikiFN($page, $REV), 'odt', $page);
+
             if($n < ($cnt - 1)) {
 //                $pagecontent .= '<pagebreak />';
             }
-
-//            Store/Buffer page ..
-
         }
-        //restore ID
-        $ID = $keep;
 
         // insert the back page
-//        $body_end = $template['back'];
+        //$xmlcontent .= $template['back'];
 
-//        $body_end .= '</div>';
 
-        // finish body html
-        //....
+        $odt->doc = $xmlcontent; // FIXME doc contains only last page..
+        $odt->setTitle($title);
+        $odt->book_end();
 
-        //Return html for debugging
-//        if($isDebug) {
-//            if($INPUT->str('debughtml', 'text', true) == 'html') {
-//                echo $html;
-//            } else {
-//                header('Content-Type: text/plain; charset=utf-8');
-//                echo $html;
-//            }
-//            exit();
-//        };
-
+        //restore ID
+        $ID = $keep;
         // write to cache file
-        //$cachefile = ...;
+        io_savefile($cachefile, $odt->doc);
     }
 
     /**
@@ -369,9 +356,9 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
 
         $filename = rawurlencode(cleanID(strtr($title, ':/;"', '    ')));
         if($this->getConf('output') == 'file') {
-            header('Content-Disposition: attachment; filename="' . $filename . '.pdf";');
+            header('Content-Disposition: attachment; filename="' . $filename . '.odt";');
         } else {
-            header('Content-Disposition: inline; filename="' . $filename . '.pdf";');
+            header('Content-Disposition: inline; filename="' . $filename . '.odt";');
         }
 
         //try to send file, and exit if done

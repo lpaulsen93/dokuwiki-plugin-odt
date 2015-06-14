@@ -436,8 +436,6 @@ class css_declaration {
                     foreach ($border_sides as $border_side) {
                         $decls [] = new css_declaration ($border_side.'-color', $values [$index]);
                     }
-                    $border_color_set = true;
-                    $index++;
 
                     // This is the last value.
                     break;
@@ -1228,6 +1226,9 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return true;
     }
 
+    /**
+     * @return mixed
+     */
     public function getRaw () {
         return $this->raw;
     }

@@ -158,7 +158,7 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
     protected static $names = array(
                             '#F0F8FF' => 'AliceBlue',
                             '#FAEBD7' => 'AntiqueWhite',
-                            '#00FFFF' => 'Aqua',
+                            // '#00FFFF' => 'Aqua',  //duplicated key with Cyan
                             '#7FFFD4' => 'Aquamarine',
                             '#F0FFFF' => 'Azure',
                             '#F5F5DC' => 'Beige',
@@ -201,7 +201,7 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
                             '#B22222' => 'FireBrick',
                             '#FFFAF0' => 'FloralWhite',
                             '#228B22' => 'ForestGreen',
-                            '#FF00FF' => 'Fuchsia',
+                            //'#FF00FF' => 'Fuchsia',  //duplicated key with Magenta
                             '#DCDCDC' => 'Gainsboro',
                             '#F8F8FF' => 'GhostWhite',
                             '#FFD700' => 'Gold',
@@ -222,7 +222,7 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
                             '#ADD8E6' => 'LightBlue',
                             '#F08080' => 'LightCoral',
                             '#E0FFFF' => 'LightCyan',
-                            '#E0FFFF' => 'LightGoldenRodYellow',
+                            //'#E0FFFF' => 'LightGoldenRodYellow', //duplicated key with LightCyan
                             '#D3D3D3' => 'LightGray',
                             '#90EE90' => 'LightGreen',
                             '#FFB6C1' => 'LightPink',

@@ -1701,6 +1701,7 @@ class renderer_plugin_odt extends Doku_Renderer {
      * The paragraph must be closed by calling 'p_close'.
      *
      * @author LarsDW223
+     *
      * @param array $properties
      */
     function _odtParagraphOpenUseProperties($properties){

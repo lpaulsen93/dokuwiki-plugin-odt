@@ -9,15 +9,15 @@
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
-require_once DOKU_INC.'lib/plugins/odt/helper/cssimport.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/ODTDefaultStyles.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmeta.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/page.php';
+require_once DOKU_PLUGIN . 'odt/helper/cssimport.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTDefaultStyles.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
+require_once DOKU_PLUGIN . 'odt/ODT/page.php';
 
 // Supported document handlers.
-require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/scratchDH.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/ODTTemplateDH.php';
+require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
+require_once DOKU_PLUGIN . 'odt/ODT/scratchDH.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
 
 /**
  * The Renderer
@@ -1361,7 +1361,7 @@ class renderer_plugin_odt extends Doku_Renderer {
         global $lang;
         global $conf;
 
-        require_once(DOKU_INC.'inc/FeedParser.php');
+        require_once(DOKU_INC . 'inc/FeedParser.php');
         $feed = new FeedParser();
         $feed->feed_url($url);
 

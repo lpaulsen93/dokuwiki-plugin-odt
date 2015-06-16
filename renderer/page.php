@@ -22,7 +22,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
 /**
  * The Renderer
  */
-class renderer_plugin_odt extends Doku_Renderer {
+class renderer_plugin_odt_page extends Doku_Renderer {
     protected $mode = 'scratch';
     /** @var docHandler */
     protected $docHandler = null;

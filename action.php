@@ -105,8 +105,13 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         global $ACT;
         global $ID;
 
-        // our event?
-        if(($ACT != 'export_odtbook') && ($ACT != 'export_odt') && ($ACT != 'export_odtns')) return false;
+        // single page export: rename to the actual renderer component
+        if($ACT == 'export_odt') {
+            $ACT = 'export_odt_page';
+        }
+
+        // the book export?
+        if(($ACT != 'export_odtbook') && ($ACT != 'export_odtns')) return false;
 
         // check user's rights
         if(auth_quickaclcheck($ID) < AUTH_READ) return false;
@@ -303,9 +308,8 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         global $ID;
         global $REV;
 
-        /** @var renderer_plugin_odt $odt */
-        $odt = plugin_load('renderer','odt');
-        $odt->enableBookexport();
+        /** @var renderer_plugin_odt_book $odt */
+        $odt = plugin_load('renderer','odt_book');
 
         // store original pageid
         $keep = $ID;
@@ -323,7 +327,7 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
             // set global pageid to the rendered page
             $ID = $page;
 
-            $xmlcontent .= p_cached_output(wikiFN($page, $REV), 'odt', $page);
+            $xmlcontent .= p_cached_output(wikiFN($page, $REV), 'odt_book', $page); // FIXME caches xml, not pictures. incorrect numbering
 
             if($n < ($cnt - 1)) {
 //                $pagecontent .= '<pagebreak />';
@@ -334,9 +338,9 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         //$xmlcontent .= $template['back'];
 
 
-        $odt->doc = $xmlcontent; // FIXME doc contains only last page..
+        $odt->doc = $xmlcontent;
         $odt->setTitle($title);
-        $odt->book_end();
+        $odt->finilize_ODTfile();
 
         //restore ID
         $ID = $keep;

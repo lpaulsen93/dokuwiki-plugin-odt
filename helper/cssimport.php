@@ -1308,7 +1308,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     public function adjustValueForODT ($value, $emValue = 0) {
         // ODT specific function. Shouldn't be used anymore.
         // Call the ODT renderer's function instead.
-        dbg_deprecated('renderer_plugin_odt::adjustValueForODT');
+        dbg_deprecated('renderer_plugin_odt_page::adjustValueForODT');
 
         $values = preg_split ('/\s+/', $value);
         $value = '';

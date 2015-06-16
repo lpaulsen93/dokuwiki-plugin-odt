@@ -19,13 +19,22 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
     protected $title = '';
 
     /**
+     * clean out any per-use values
+     *
+     * This is called before each use of the renderer object and should normally be used to
+     * completely reset the state of the renderer to be reused for a new document.
+     * For ODT book it resets only some properties.
+     */
+    public function reset() {
+        $this->doc = '';
+    }
+    /**
      * Initialize the document
      */
     public function document_start() {
         // number of wiki pages included in ODT file
         $this->wikipages_count ++;
 
-        $this->doc = '';   //FIXME move to reset()??
 
         if($this->isBookStart()) {
             parent::document_start();

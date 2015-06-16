@@ -36,13 +36,18 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      * Closes the document
      */
     public function document_end() {
-         //all actions are performed by finilize_ODTfile()
+        $this->pagebreak();
+
+         //ODT file creation is performed by finilize_ODTfile()
     }
 
     /**
      * Completes the ODT file
      */
     public function finalize_ODTfile() {
+        // FIXME remove last pagebreak
+        // <text:p text:style-name="pagebreak"/>
+
         $this->meta->setTitle($this->title);
 
         parent::finalize_ODTfile();

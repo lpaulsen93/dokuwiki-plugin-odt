@@ -250,13 +250,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
 
         // Build the document
-        $this->finilize_ODTfile();
+        $this->finalize_ODTfile();
     }
 
     /**
      * Completes the ODT file
      */
-    function finilize_ODTfile() {
+    public function finalize_ODTfile() {
         // Delete paragraphs which only contain whitespace
         $this->doc = preg_replace('#<text:p[^>]*>\s*</text:p>#', '', $this->doc);
         // Build the document

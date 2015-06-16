@@ -15,20 +15,9 @@ if(!defined('DOKU_INC')) die();
 class action_plugin_odt extends DokuWiki_Action_Plugin {
 
     /**
-     * Settings for current export, collected from url param, plugin config, global config
-     *
      * @var array
      */
-    protected $exportConfig = null;
-    protected $tpl;
     protected $list = array();
-
-    /**
-     * Constructor. Sets the correct template
-     */
-    public function __construct() {
-        $this->tpl = $this->getExportConfig('template');
-    }
 
     /**
      * Register the events
@@ -38,6 +27,7 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
     public function register(Doku_Event_Handler $controller) {
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'convert', array());
         $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton', array());
+        $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'handle_cache_prepare');
     }
 
 
@@ -250,15 +240,17 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
      */
     protected function prepareCache($title, &$depends) {
         global $REV;
+        global $INPUT;
+
+        //different caches for varying config settings
+        $template = $this->getConf("tpl_default");
+        $template = $INPUT->get->str('odt-template', $template, true);
+
 
         $cachekey = join(',', $this->list)
-            . $REV
-            . $this->getExportConfig('template')
-            . $this->getExportConfig('pagesize')
-            . $this->getExportConfig('orientation')
-//            . $this->getExportConfig('doublesided')
-//            . ($this->getExportConfig('hasToC') ? join('-', $this->getExportConfig('levels')) : '0')
-            . $title;
+                    . $REV
+                    . $template
+                    . $title;
         $cache = new cache($cachekey, '.odt');
 
         $dependencies = array();
@@ -288,8 +280,9 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
 
         $depends['files'] = array_map('wikiFN', $this->list);
         $depends['files'][] = __FILE__;
-        $depends['files'][] = dirname(__FILE__) . '/../renderer.php';
-//        $depends['files'][] = dirname(__FILE__) . '/../mpdf/mpdf.php';
+        $depends['files'][] = dirname(__FILE__) . '/renderer/page.php';
+        $depends['files'][] = dirname(__FILE__) . '/renderer/book.php';
+        $depends['files'][] = dirname(__FILE__) . '/plugin.info.txt';
         $depends['files'] = array_merge(
             $depends['files'],
             $dependencies,
@@ -317,33 +310,26 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         // loop over all pages
         $xmlcontent = '';
 
-        // insert cover page
-        // $xmlcontent .= ...
-
         $cnt = count($this->list);
         for($n = 0; $n < $cnt; $n++) {
             $page = $this->list[$n];
 
             // set global pageid to the rendered page
             $ID = $page;
-
-            $xmlcontent .= p_cached_output(wikiFN($page, $REV), 'odt_book', $page); // FIXME caches xml, not pictures. incorrect numbering
+            $xmlcontent .= p_render('odt_book', p_cached_instructions(wikiFN($page, $REV),false,$page), $info);
 
             if($n < ($cnt - 1)) {
 //                $pagecontent .= '<pagebreak />';
             }
         }
 
-        // insert the back page
-        //$xmlcontent .= $template['back'];
-
+        //restore ID
+        $ID = $keep;
 
         $odt->doc = $xmlcontent;
         $odt->setTitle($title);
-        $odt->finilize_ODTfile();
+        $odt->finalize_ODTfile();
 
-        //restore ID
-        $ID = $keep;
         // write to cache file
         io_savefile($cachefile, $odt->doc);
     }
@@ -413,100 +399,4 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         return 0;
     }
 
-    /**
-     * Return settings read from:
-     *   1. url parameters
-     *   2. plugin config
-     *   3. global config
-     *
-     * @return array
-     */
-    protected function loadExportConfig() {
-        global $INPUT;
-        global $conf;
-
-        $this->exportConfig = array();
-
-        // decide on the paper setup from param or config
-        $this->exportConfig['pagesize'] = $INPUT->str('pagesize', $this->getConf('pagesize'), true);
-        $this->exportConfig['orientation'] = $INPUT->str('orientation', $this->getConf('orientation'), true);
-
-        $doublesided = $INPUT->bool('doublesided', (bool) $this->getConf('doublesided'));
-        $this->exportConfig['doublesided'] = $doublesided ? '1' : '0';
-
-//        $hasToC = $INPUT->bool('toc', (bool) $this->getConf('toc'));
-//        $levels = array();
-//        if($hasToC) {
-//            $toclevels = $INPUT->str('toclevels', $this->getConf('toclevels'), true);
-//            list($top_input, $max_input) = explode('-', $toclevels, 2);
-//            list($top_conf, $max_conf) = explode('-', $this->getConf('toclevels'), 2);
-//            $bounds_input = array(
-//                'top' => array(
-//                    (int) $top_input,
-//                    (int) $top_conf
-//                ),
-//                'max' => array(
-//                    (int) $max_input,
-//                    (int) $max_conf
-//                )
-//            );
-//            $bounds = array(
-//                'top' => $conf['toptoclevel'],
-//                'max' => $conf['maxtoclevel']
-//
-//            );
-//            foreach($bounds_input as $bound => $values) {
-//                foreach($values as $value) {
-//                    if($value > 0 && $value <= 5) {
-//                        //stop at valid value and store
-//                        $bounds[$bound] = $value;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//            if($bounds['max'] < $bounds['top']) {
-//                $bounds['max'] = $bounds['top'];
-//            }
-//
-//            for($level = $bounds['top']; $level <= $bounds['max']; $level++) {
-//                $levels["H$level"] = $level - 1;
-//            }
-//        }
-//        $this->exportConfig['hasToC'] = $hasToC;
-//        $this->exportConfig['levels'] = $levels;
-
-        $this->exportConfig['maxbookmarks'] = $INPUT->int('maxbookmarks', $this->getConf('maxbookmarks'), true);
-
-        $tplconf = $this->getConf('template');
-        $tpl = $INPUT->str('tpl', $tplconf, true);
-        if(!is_dir(DOKU_PLUGIN . 'dw2pdf/tpl/' . $tpl)) {
-            $tpl = $tplconf;
-        }
-        if(!$tpl){
-            $tpl = 'default';
-        }
-        $this->exportConfig['template'] = $tpl;
-
-        $this->exportConfig['isDebug'] = $conf['allowdebug'] && $INPUT->has('debughtml');
-    }
-
-    /**
-     * Returns requested config
-     *
-     * @param string $name
-     * @param mixed  $notset
-     * @return mixed|bool
-     */
-    public function getExportConfig($name, $notset = false) {
-        if ($this->exportConfig === null){
-            $this->loadExportConfig();
-        }
-
-        if(isset($this->exportConfig[$name])){
-            return $this->exportConfig[$name];
-        }else{
-            return $notset;
-        }
-    }
 }

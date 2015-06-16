@@ -42,10 +42,10 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
     /**
      * Completes the ODT file
      */
-    public function finilize_ODTfile() {
+    public function finalize_ODTfile() {
         $this->meta->setTitle($this->title);
 
-        parent::finilize_ODTfile();
+        parent::finalize_ODTfile();
     }
 
     /**

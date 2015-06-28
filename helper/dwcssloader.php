@@ -69,8 +69,19 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         $css = '';
         foreach($files as $file => $location) {
             $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
-            $css .= "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
-            $css .= css_loadfile($file, $location);
+            $css_content = "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
+            $css_content = css_loadfile($file, $location);
+            if ( strpos ($file, 'screen.css') !== false ) {
+                $css .= "\n@media screen {\n" . $css_content . "\n}\n";
+            } else if ( strpos ($file, 'style.css') !== false ) {
+                $css .= "\n@media screen {\n" . $css_content . "\n}\n";
+            } else if ( strpos ($file, $format.'.css') !== false ) {
+                $css .= "\n@media print {\n" . $css_content . "\n}\n";
+            } else if ( strpos ($file, 'print.css') !== false ) {
+                $css .= "\n@media print {\n" . $css_content . "\n}\n";
+            } else {
+                $css .= $css_content;
+            }
         }
 
         if(function_exists('css_parseless')) {
@@ -105,14 +116,14 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         $usestyle = explode(',', $this->getConf('usestyles'));
         foreach($plugins as $p) {
             if(in_array($p, $usestyle)) {
-                $list[DOKU_PLUGIN . "$p/screen.css"] = DOKU_BASE . "lib/plugins/$p/";
-                $list[DOKU_PLUGIN . "$p/style.css"] = DOKU_BASE . "lib/plugins/$p/";
+                $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
+                $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
             }
 
-            if(file_exists(DOKU_PLUGIN . "$p/".$format.".css")) {
-                $list[DOKU_PLUGIN . "$p/".$format.".css"] = DOKU_BASE . "lib/plugins/$p/";
+            if(file_exists(DOKU_PLUGIN . $p ."/". $format .".css")) {
+                $list[DOKU_PLUGIN . $p ."/". $format .".css"] = DOKU_BASE . "lib/plugins/". $p ."/";
             } else {
-                $list[DOKU_PLUGIN . "$p/print.css"] = DOKU_BASE . "lib/plugins/$p/";
+                $list[DOKU_PLUGIN . $p ."/print.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
             }
         }
         return $list;

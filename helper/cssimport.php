@@ -924,7 +924,6 @@ class css_rule {
             //print ("\nNo-Match ".$this->media."==".$media); //Debuging
             return false;
         }
-        //print ("\nMatch ".$this->media."==".$media); //Debuging
 
         $matches = 0;
         $classes = explode (' ', $classString);
@@ -1019,9 +1018,11 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     }
 
     /**
+     * Delete comments in $contents. All comments are overwritten with spaces.
+     * The '&' is required. DO NOT DELETE!!!
      * @param $contents
      */
-    protected function deleteComments ($contents) {
+    protected function deleteComments (&$contents) {
         // Delete all comments first
         $pos = 0;
         $max = strlen ($contents);
@@ -1060,17 +1061,24 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @param null $media
      * @return bool
      */
-    protected function importFromStringInternal($contents, $media = NULL) {
+    protected function importFromStringInternal($contents, $media = NULL, &$processed = NULL) {
         // Find all CSS rules
         $pos = 0;
         $max = strlen ($contents);
         while ( $pos < $max ) {
             $bracket_open = strpos ($contents, '{', $pos);
             if ( $bracket_open === false ) {
-                break;
+                return false;
             }
-            $bracket_close = strpos ($contents, '}', $bracket_open);
+            $bracket_close = strpos ($contents, '}', $pos);
             if ( $bracket_close === false ) {
+                return false;
+            }
+
+            // If this is a nested call we might hit a closing } for the media section
+            // which was the reason for this function call. In this case break and return.
+            if ( $bracket_close < $bracket_open ) {
+                $pos = $bracket_close + 1;
                 break;
             }
 
@@ -1084,12 +1092,18 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
             if ( $mediapos !== false ) {
 
                 // Yes, decode content as normal rules with @media ... { ... }
-                $new_media = substr_replace ($before_open_bracket, NULL, $mediapos, strlen ('@media'));
-                $contents_in_media = substr ($contents, $bracket_open + 1, $bracket_close - $bracket_open);
+                //$new_media = substr_replace ($before_open_bracket, NULL, $mediapos, strlen ('@media'));
+                $new_media = substr ($before_open_bracket, $mediapos + strlen ('@media'));
+                $contents_in_media = substr ($contents, $bracket_open + 1);
 
-                $this->importFromStringInternal ($contents_in_media, $new_media);
+                $nested_processed = 0;
+                $result = $this->importFromStringInternal ($contents_in_media, $new_media, $nested_processed);
+                if ( $result !== true ) {
+                    // Stop parsing on error.
+                    return false;
+                }
                 unset ($new_media);
-
+                $pos = $bracket_open + 1 + $nested_processed;
             } else {
 
                 // No, decode rule the normal way selector { ... }
@@ -1103,9 +1117,11 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                     $this->rules [] = new css_rule ($selector, $decls, $media);
                 }
 
+                $pos = $bracket_close + 1;
             }
-
-            $pos = $bracket_close + 1;
+        }
+        if ( $processed !== NULL ) {
+            $processed = $pos;
         }
         return true;
     }

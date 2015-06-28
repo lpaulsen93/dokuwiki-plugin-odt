@@ -420,8 +420,6 @@ class css_declaration {
                 }
                 if ( $border_color_set === false ) {
                     $decls [] = new css_declaration ('border-color', $values [$index]);
-                    $border_color_set = true;
-                    $index++;
 
                     // This is the last value.
                     break;
@@ -1178,7 +1176,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         // Find the start of the replacements section
         $rep_start = strpos ($contents, '[replacements]');
         if ( $rep_start === false ) {
-            break;
+            return false;
         }
         $rep_start += strlen ('[replacements]');
 
@@ -1203,7 +1201,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
 
             $lineend = strpos ($defs, "\n", $linestart);
             if ( $lineend === false ) {
-                $lineend = $def_end;
+                $lineend = $defs_end;
             }
 
             $equal_sign = strpos ($defs, '=', $linestart);

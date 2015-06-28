@@ -254,7 +254,11 @@ class renderer_plugin_odt extends Doku_Renderer {
         //$this->doc .= $this->_odtAutoStyles(); return; // DEBUG
         // DEBUG: The following puts out the loaded raw CSS code
         //$this->p_open();
-        //$this->doc .= 'CSS: '.$this->css;
+        // This line outputs the raw CSS code
+        //$test = 'CSS: '.$this->css;
+        // The next two lines output the parsed CSS rules with linebreaks
+        //$test = $this->import->rulesToString();
+        //$this->doc .= preg_replace ('/\n/', '<text:line-break/>', $test);
         //$this->linebreak();
         //$this->doc .= 'Tracedump: '.$this->trace_dump;
         //$this->p_close();
@@ -3358,7 +3362,12 @@ class renderer_plugin_odt extends Doku_Renderer {
                 break;
 
                 case CSSValueType::StrokeOrBorderWidth:
-                    $adjusted = $value;
+                    if ( $property != 'border' ) {
+                        $adjusted = $value;
+                    } else {
+                        // border in ODT spans does not support 'px' units, so we convert it.
+                        $adjusted = $this->pixelToPointsY($number).'pt';
+                    }
                 break;
 
                 case CSSValueType::LengthValueYAxis:

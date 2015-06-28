@@ -807,9 +807,25 @@ class css_declaration {
                     call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueYAxis);
             break;
 
+            case 'border':
+                $this->adjustLengthValuesBorder ($callback);
+            break;
+
             // FIXME: Shorthands are currently not processed.
             // Every Shorthand would need an extra function which knows if it has any length values.
             // Just like the explode...Shorthand functions.
+        }
+    }
+
+    /**
+     * @param $callback
+     */
+    protected function adjustLengthValuesBorder ($callback) {
+        if ( $this->property == 'border' ) {
+            $values = preg_split ('/\s+/', $this->value);
+            $width =
+                call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth);
+            $this->value = $width . ' ' . $values [1] . ' ' . $values [2];
         }
     }
 }

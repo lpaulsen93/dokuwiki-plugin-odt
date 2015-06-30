@@ -317,10 +317,6 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
             // set global pageid to the rendered page
             $ID = $page;
             $xmlcontent .= p_render('odt_book', p_cached_instructions(wikiFN($page, $REV),false,$page), $info);
-
-            if($n < ($cnt - 1)) {
-//                $pagecontent .= '<pagebreak />';
-            }
         }
 
         //restore ID

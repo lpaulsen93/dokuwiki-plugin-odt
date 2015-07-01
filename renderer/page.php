@@ -975,7 +975,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // from inc/parserutils.php:p_xhtml_cached_geshi()
-        require_once(DOKU_INC . 'inc/geshi.php');
         $geshi = new GeSHi($text, $language, DOKU_INC . 'inc/geshi');
         $geshi->set_encoding('utf-8');
         // $geshi->enable_classes(); DO NOT WANT !

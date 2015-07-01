@@ -189,6 +189,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 // Document based on ODT template.
                 $this->docHandler = new ODTTemplateDH ();
                 $this->docHandler->setTemplate($this->template);
+                $this->docHandler->setDirectory($this->getConf("tpl_dir"));
                 break;
 
             default:

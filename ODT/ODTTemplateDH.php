@@ -65,7 +65,7 @@ class ODTTemplateDH extends docHandler
             $temp_dir = $conf['savedir'].'/cache/tmp';
         }
         $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
-        if (is_dir($temp_dir)) { $this->io_rmdir($temp_dir,true); }
+        if (is_dir($temp_dir)) { io_rmdir($temp_dir,true); }
         io_mkdir_p($temp_dir);
 
         // Extract template
@@ -110,7 +110,7 @@ class ODTTemplateDH extends docHandler
 
         // Build the Zip
         $this->ZIP->Compress(null, $temp_dir, null);
-        $this->io_rmdir($temp_dir,true);
+        io_rmdir($temp_dir,true);
     }
 
     /**

@@ -23,6 +23,7 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
 class ODTTemplateDH extends docHandler
 {
     var $template = null;
+    var $directory = null;
 
     /**
      * Constructor.
@@ -38,6 +39,15 @@ class ODTTemplateDH extends docHandler
      */
     public function setTemplate($template) {
         $this->template = $template;
+    }
+
+    /**
+     * Set the template directory.
+     *
+     * @param string $directory
+     */
+    public function setDirectory($directory) {
+        $this->directory = $directory;
     }
 
     /**
@@ -69,7 +79,7 @@ class ODTTemplateDH extends docHandler
         io_mkdir_p($temp_dir);
 
         // Extract template
-        $template_path = $conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template; // FIXME replace plugin function getConf()
+        $template_path = $conf['mediadir'].'/'.$this->directory."/".$this->template; // FIXME replace plugin function getConf()
         $this->ZIP->Extract($template_path, $temp_dir);
 
         // Prepare content

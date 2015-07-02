@@ -149,11 +149,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Template name provided in the URL
         if (isset($_GET["odt-template"])) {
             $this->template = $_GET["odt-template"];
+            $mode = 'ODT template';
         }
 
         // Template provided in the configuration
         if (!$this->template and $this->getConf("tpl_default")) {
             $this->template = $this->getConf("tpl_default");
+            $mode = 'ODT template';
         }
 
         if ($this->template) {

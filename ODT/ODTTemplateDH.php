@@ -79,8 +79,11 @@ class ODTTemplateDH extends docHandler
         io_mkdir_p($temp_dir);
 
         // Extract template
-        $template_path = $conf['mediadir'].'/'.$this->directory."/".$this->template; // FIXME replace plugin function getConf()
-        $this->ZIP->Extract($template_path, $temp_dir);
+        $template_path = $conf['mediadir'].'/'.$this->directory."/".$this->template;
+        $ok = $this->ZIP->Extract($template_path, $temp_dir);
+        if($ok == -1){
+            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$temp_dir);
+        }
 
         // Prepare content
         $missingstyles = $styleset->getMissingStyles($temp_dir.'/styles.xml');

@@ -142,7 +142,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return string
      */
     protected function determineMode(&$warning) {
-        global $conf;
+        global $conf, $ID;
 
         $mode = 'scratch';
 
@@ -156,6 +156,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if (!$this->template and $this->getConf("tpl_default")) {
             $this->template = $this->getConf("tpl_default");
             $mode = 'ODT template';
+        }
+
+        $odt_meta = p_get_metadata($ID, 'relation odt');
+        $template_name = $odt_meta["template"];
+        if(!empty($template_name)) {
+            $this->template = $template_name;
         }
 
         if ($this->template) {
@@ -254,7 +260,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Tracedump: '.$this->trace_dump;
         //$this->p_close();
 
-
+        //$this->p_open();
+        //$this->doc .= 'Mode: '.$this->mode;
+        //$this->doc .= 'Template: '.$this->template;
+        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
+        //$this->p_close();
 
         // Build the document
         $this->finalize_ODTfile();

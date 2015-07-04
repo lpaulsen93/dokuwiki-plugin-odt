@@ -371,6 +371,7 @@ class css_declaration {
      * @param css_declaration[] $decls
      */
     protected function explodeBorderShorthand (&$decls) {
+        $border_sides = array ('border-left', 'border-right', 'border-top', 'border-bottom');
         if ( $this->property == 'border' ) {
             $values = preg_split ('/\s+/', $this->value);
             $index = 0;
@@ -384,10 +385,16 @@ class css_declaration {
                         case 'medium':
                         case 'thick':
                             $decls [] = new css_declaration ('border-width', $values [$index]);
+                            foreach ($border_sides as $border_side) {
+                                $decls [] = new css_declaration ($border_side.'-width', $values [$index]);
+                            }
                         break;
                         default:
                             if ( strpos ($values [$index], 'px') !== false ) {
                                 $decls [] = new css_declaration ('border-width', $values [$index]);
+                                foreach ($border_sides as $border_side) {
+                                    $decls [] = new css_declaration ($border_side.'-width', $values [$index]);
+                                }
                             } else {
                                 // There is no default value? So leave it unset.
                             }
@@ -409,9 +416,15 @@ class css_declaration {
                         case 'inset':
                         case 'outset':
                             $decls [] = new css_declaration ('border-style', $values [$index]);
+                            foreach ($border_sides as $border_side) {
+                                $decls [] = new css_declaration ($border_side.'-style', $values [$index]);
+                            }
                         break;
                         default:
                             $decls [] = new css_declaration ('border-style', 'none');
+                            foreach ($border_sides as $border_side) {
+                                $decls [] = new css_declaration ($border_side.'-style', 'none');
+                            }
                         break;
                     }
                     $border_style_set = true;
@@ -420,10 +433,16 @@ class css_declaration {
                 }
                 if ( $border_color_set === false ) {
                     $decls [] = new css_declaration ('border-color', $values [$index]);
+                    foreach ($border_sides as $border_side) {
+                        $decls [] = new css_declaration ($border_side.'-color', $values [$index]);
+                    }
 
                     // This is the last value.
                     break;
                 }
+            }
+            foreach ($border_sides as $border_side) {
+                $decls [] = new css_declaration ($border_side, $values [0].' '.$values [1].' '.$values [2]);
             }
         }
     }
@@ -1239,6 +1258,9 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
         return true;
     }
 
+    /**
+     * @return mixed
+     */
     public function getRaw () {
         return $this->raw;
     }
@@ -1318,7 +1340,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     public function adjustValueForODT ($value, $emValue = 0) {
         // ODT specific function. Shouldn't be used anymore.
         // Call the ODT renderer's function instead.
-        dbg_deprecated('renderer_plugin_odt::adjustValueForODT');
+        dbg_deprecated('renderer_plugin_odt_page::adjustValueForODT');
 
         $values = preg_split ('/\s+/', $value);
         $value = '';

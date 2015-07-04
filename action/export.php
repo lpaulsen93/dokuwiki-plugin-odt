@@ -1,23 +1,37 @@
 <?php
 /**
- * ODT Plugin: Exports to ODT
+ * ODT export Plugin component. Mainly based at dw2pdf export action plugin component.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author     Aurelien Bompard <aurelien@bompard.org>
- * @author       Florian Lamml <info@florian-lamml.de>
+ * @author     Luigi Micco <l.micco@tiscali.it>
+ * @author     Andreas Gohr <andi@splitbrain.org>
+ * @author     Gerrit Uitslag <klapinklapin@gmail.com>
  */
+
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
 /**
- * Add the template as a page dependency for the caching system
+ * Class action_plugin_odt_export
+ *
+ * Collect pages and export these. GUI is available via bookcreator.
  */
-class action_plugin_odt extends DokuWiki_Action_Plugin {
-
+class action_plugin_odt_export extends DokuWiki_Action_Plugin {
     /**
+     * Settings for current export, collected from url param, plugin config, global config
+     *
      * @var array
      */
+    protected $exportConfig = null;
+    protected $tpl;
     protected $list = array();
+
+    /**
+     * Constructor. Sets the correct template
+     */
+    public function __construct() {
+        $this->tpl = $this->getExportConfig('template');
+    }
 
     /**
      * Register the events
@@ -27,81 +41,21 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
     public function register(Doku_Event_Handler $controller) {
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'convert', array());
         $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton', array());
-        $controller->register_hook('PARSER_CACHE_USE', 'BEFORE', $this, 'handle_cache_prepare');
     }
-
-
-    /**
-     * Add dependencies to cache
-     *
-     * @param Doku_Event $event
-     */
-    public function handle_cache_prepare(Doku_Event $event) {
-        global $conf, $ID;
-
-        $cache =& $event->data;
-        // only the ODT rendering mode needs caching tweaks
-        if($cache->mode != "odt") return;
-
-        $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["template"];
-        if(!$template_name) {
-            return;
-        }
-        $template_path = $conf['mediadir'] . '/' . $this->getConf("tpl_dir") . "/" . $template_name;
-        if(file_exists($template_path)) {
-            $cache->depends['files'][] = $template_path;
-        }
-    }
-
-    /**
-     * Add 'export odt'-button to pagetools
-     *
-     * @param Doku_Event $event
-     */
-    public function addbutton(Doku_Event $event) {
-        global $ID, $REV;
-
-        if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
-            $params = array('do' => 'export_odt');
-            if($REV) {
-                $params['rev'] = $REV;
-            }
-
-            // insert button at position before last (up to top)
-            $event->data['items'] = array_slice($event->data['items'], 0, -1, true) +
-                array('export_odt' =>
-                        '<li>'
-                        . '<a href="' . wl($ID, $params) . '"  class="action export_odt" rel="nofollow" title="' . $this->getLang('export_odt_button') . '">'
-                        . '<span>' . $this->getLang('export_odt_button') . '</span>'
-                        . '</a>'
-                        . '</li>'
-                ) +
-                array_slice($event->data['items'], -1, 1, true);
-        }
-    }
-
-    /***********************************************************************************
-     *  Book export                                                                    *
-     ***********************************************************************************/
 
     /**
      * Do article(s) to ODT conversion work
      *
      * @param Doku_Event $event
+     * @param array      $param
      * @return bool
      */
-    public function convert(Doku_Event $event) {
+    public function convert(Doku_Event $event, $param) {
         global $ACT;
         global $ID;
 
-        // single page export: rename to the actual renderer component
-        if($ACT == 'export_odt') {
-            $ACT = 'export_odt_page';
-        }
-
-        // the book export?
-        if(($ACT != 'export_odtbook') && ($ACT != 'export_odtns')) return false;
+        // our event?
+        if(($ACT != 'export_odtbook') && ($ACT != 'export_odt') && ($ACT != 'export_odtns')) return false;
 
         // check user's rights
         if(auth_quickaclcheck($ID) < AUTH_READ) return false;
@@ -240,17 +194,15 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
      */
     protected function prepareCache($title, &$depends) {
         global $REV;
-        global $INPUT;
-
-        //different caches for varying config settings
-        $template = $this->getConf("tpl_default");
-        $template = $INPUT->get->str('odt-template', $template, true);
-
 
         $cachekey = join(',', $this->list)
-                    . $REV
-                    . $template
-                    . $title;
+            . $REV
+            . $this->getExportConfig('template')
+            . $this->getExportConfig('pagesize')
+            . $this->getExportConfig('orientation')
+//            . $this->getExportConfig('doublesided')
+//            . ($this->getExportConfig('hasToC') ? join('-', $this->getExportConfig('levels')) : '0')
+            . $title;
         $cache = new cache($cachekey, '.odt');
 
         $dependencies = array();
@@ -280,9 +232,8 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
 
         $depends['files'] = array_map('wikiFN', $this->list);
         $depends['files'][] = __FILE__;
-        $depends['files'][] = dirname(__FILE__) . '/renderer/page.php';
-        $depends['files'][] = dirname(__FILE__) . '/renderer/book.php';
-        $depends['files'][] = dirname(__FILE__) . '/plugin.info.txt';
+        $depends['files'][] = dirname(__FILE__) . '/../renderer.php';
+//        $depends['files'][] = dirname(__FILE__) . '/../mpdf/mpdf.php';
         $depends['files'] = array_merge(
             $depends['files'],
             $dependencies,
@@ -300,38 +251,59 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
     protected function generateODT($cachefile, $title) {
         global $ID;
         global $REV;
+        global $INPUT;
 
-        /** @var renderer_plugin_odt_book $odt */
-        $odt = plugin_load('renderer','odt_book');
+        //some shortcuts to export settings
+//        $hasToC = $this->getExportConfig('hasToC');
+        $levels = $this->getExportConfig('levels');
+        $isDebug = $this->getExportConfig('isDebug');
+        //etc etc
+
+
 
         // store original pageid
         $keep = $ID;
 
         // loop over all pages
-        $xmlcontent = '';
-
         $cnt = count($this->list);
         for($n = 0; $n < $cnt; $n++) {
             $page = $this->list[$n];
 
             // set global pageid to the rendered page
             $ID = $page;
-            $xmlcontent .= p_render('odt_book', p_cached_instructions(wikiFN($page, $REV),false,$page), $info);
 
+            $pagecontent = p_cached_output(wikiFN($page, $REV), 'odt', $page);
             if($n < ($cnt - 1)) {
 //                $pagecontent .= '<pagebreak />';
             }
-        }
 
+//            Store/Buffer page ..
+
+        }
         //restore ID
         $ID = $keep;
 
-        $odt->doc = $xmlcontent;
-        $odt->setTitle($title);
-        $odt->finalize_ODTfile();
+        // insert the back page
+//        $body_end = $template['back'];
+
+//        $body_end .= '</div>';
+
+         // finish body html
+         //....
+
+        //Return html for debugging
+        if($isDebug) {
+            if($INPUT->str('debughtml', 'text', true) == 'html') {
+                echo $html;
+            } else {
+                header('Content-Type: text/plain; charset=utf-8');
+                echo $html;
+            }
+            exit();
+        };
 
         // write to cache file
-        io_savefile($cachefile, $odt->doc);
+        //$cachefile = ...;
     }
 
     /**
@@ -346,9 +318,9 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
 
         $filename = rawurlencode(cleanID(strtr($title, ':/;"', '    ')));
         if($this->getConf('output') == 'file') {
-            header('Content-Disposition: attachment; filename="' . $filename . '.odt";');
+            header('Content-Disposition: attachment; filename="' . $filename . '.pdf";');
         } else {
-            header('Content-Disposition: inline; filename="' . $filename . '.odt";');
+            header('Content-Disposition: inline; filename="' . $filename . '.pdf";');
         }
 
         //try to send file, and exit if done
@@ -399,4 +371,128 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         return 0;
     }
 
+    /**
+     * Return settings read from:
+     *   1. url parameters
+     *   2. plugin config
+     *   3. global config
+     *
+     * @return array
+     */
+    protected function loadExportConfig() {
+        global $INPUT;
+        global $conf;
+
+        $this->exportConfig = array();
+
+        // decide on the paper setup from param or config
+        $this->exportConfig['pagesize'] = $INPUT->str('pagesize', $this->getConf('pagesize'), true);
+        $this->exportConfig['orientation'] = $INPUT->str('orientation', $this->getConf('orientation'), true);
+
+        $doublesided = $INPUT->bool('doublesided', (bool) $this->getConf('doublesided'));
+        $this->exportConfig['doublesided'] = $doublesided ? '1' : '0';
+
+//        $hasToC = $INPUT->bool('toc', (bool) $this->getConf('toc'));
+//        $levels = array();
+//        if($hasToC) {
+//            $toclevels = $INPUT->str('toclevels', $this->getConf('toclevels'), true);
+//            list($top_input, $max_input) = explode('-', $toclevels, 2);
+//            list($top_conf, $max_conf) = explode('-', $this->getConf('toclevels'), 2);
+//            $bounds_input = array(
+//                'top' => array(
+//                    (int) $top_input,
+//                    (int) $top_conf
+//                ),
+//                'max' => array(
+//                    (int) $max_input,
+//                    (int) $max_conf
+//                )
+//            );
+//            $bounds = array(
+//                'top' => $conf['toptoclevel'],
+//                'max' => $conf['maxtoclevel']
+//
+//            );
+//            foreach($bounds_input as $bound => $values) {
+//                foreach($values as $value) {
+//                    if($value > 0 && $value <= 5) {
+//                        //stop at valid value and store
+//                        $bounds[$bound] = $value;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//            if($bounds['max'] < $bounds['top']) {
+//                $bounds['max'] = $bounds['top'];
+//            }
+//
+//            for($level = $bounds['top']; $level <= $bounds['max']; $level++) {
+//                $levels["H$level"] = $level - 1;
+//            }
+//        }
+//        $this->exportConfig['hasToC'] = $hasToC;
+//        $this->exportConfig['levels'] = $levels;
+
+        $this->exportConfig['maxbookmarks'] = $INPUT->int('maxbookmarks', $this->getConf('maxbookmarks'), true);
+
+        $tplconf = $this->getConf('template');
+        $tpl = $INPUT->str('tpl', $tplconf, true);
+        if(!is_dir(DOKU_PLUGIN . 'dw2pdf/tpl/' . $tpl)) {
+            $tpl = $tplconf;
+        }
+        if(!$tpl){
+            $tpl = 'default';
+        }
+        $this->exportConfig['template'] = $tpl;
+
+        $this->exportConfig['isDebug'] = $conf['allowdebug'] && $INPUT->has('debughtml');
+    }
+
+    /**
+     * Returns requested config
+     *
+     * @param string $name
+     * @param mixed  $notset
+     * @return mixed|bool
+     */
+    public function getExportConfig($name, $notset = false) {
+        if ($this->exportConfig === null){
+            $this->loadExportConfig();
+        }
+
+        if(isset($this->exportConfig[$name])){
+            return $this->exportConfig[$name];
+        }else{
+            return $notset;
+        }
+    }
+
+    /**
+     * Add 'export odt'-button to pagetools
+     *
+     * @param Doku_Event $event
+     * @param mixed      $param not defined
+     */
+    public function addbutton(Doku_Event $event, $param) {
+        global $ID, $REV;
+
+        if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
+            $params = array('do' => 'export_odt');
+            if($REV) {
+                $params['rev'] = $REV;
+            }
+
+            // insert button at position before last (up to top)
+            $event->data['items'] = array_slice($event->data['items'], 0, -1, true) +
+                array('export_odt' =>
+                          '<li>'
+                          . '<a href="' . wl($ID, $params) . '"  class="action export_odt" rel="nofollow" title="' . $this->getLang('export_odt_button') . '">'
+                          . '<span>' . $this->getLang('export_odt_button') . '</span>'
+                          . '</a>'
+                          . '</li>'
+                ) +
+                array_slice($event->data['items'], -1, 1, true);
+        }
+    }
 }

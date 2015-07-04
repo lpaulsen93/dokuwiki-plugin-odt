@@ -269,32 +269,37 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      */
     public static function createParagraphStyle(&$style, $properties, $disabled_props = NULL, $parent = NULL){
         static $params = array (
-              'style-name'         => array ('section' => 'header',    'name' => 'style:name',           'is_attr' => false),
-              'style-display-name' => array ('section' => 'header',    'name' => 'style:display-name',   'is_attr' => false),
-              'text-align'         => array ('section' => 'paragraph', 'name' => 'fo:text-align',        'is_attr' => true),
-              'text-indent'        => array ('section' => 'paragraph', 'name' => 'fo:text-indent',       'is_attr' => true),
-              'margin-top'         => array ('section' => 'paragraph', 'name' => 'fo:margin-top',        'is_attr' => true),
-              'margin-bottom'      => array ('section' => 'paragraph', 'name' => 'fo:margin-bottom',     'is_attr' => true),
-              'margin-left'        => array ('section' => 'paragraph', 'name' => 'fo:margin-left',       'is_attr' => true),
-              'margin-right'       => array ('section' => 'paragraph', 'name' => 'fo:margin-right',      'is_attr' => true),
-              'padding-top'        => array ('section' => 'paragraph', 'name' => 'fo:padding-top',       'is_attr' => true),
-              'padding-bottom'     => array ('section' => 'paragraph', 'name' => 'fo:padding-bottom',    'is_attr' => true),
-              'padding-left'       => array ('section' => 'paragraph', 'name' => 'fo:padding-left',      'is_attr' => true),
-              'padding-right'      => array ('section' => 'paragraph', 'name' => 'fo:padding-right',     'is_attr' => true),
-              'border'             => array ('section' => 'text',      'name' => 'fo:border',            'is_attr' => true),
-              'color'              => array ('section' => 'text',      'name' => 'fo:color',             'is_attr' => true),
-              'background-color'   => array ('section' => 'text',      'name' => 'fo:background-color',  'is_attr' => true),
-              'background-image'   => array ('section' => 'text',      'name' => 'fo:background-image',  'is_attr' => true),
-              'font-style'         => array ('section' => 'text',      'name' => 'fo:font-style',        'is_attr' => true),
-              'font-weight'        => array ('section' => 'text',      'name' => 'fo:font-weight',       'is_attr' => true),
-              'font-size'          => array ('section' => 'text',      'name' => 'fo:font-size',         'is_attr' => true),
-              'font-family'        => array ('section' => 'text',      'name' => 'fo:font-family',       'is_attr' => true),
-              'font-variant'       => array ('section' => 'text',      'name' => 'fo:font-variant',      'is_attr' => true),
-              'letter-spacing'     => array ('section' => 'text',      'name' => 'fo:letter-spacing',    'is_attr' => true),
-              'vertical-align'     => array ('section' => 'text',      'name' => 'style:vertical-align', 'is_attr' => true),
-              'line-height'        => array ('section' => 'text',      'name' => 'fo:line-height',       'is_attr' => true),
-              'display'            => array ('section' => 'text',      'name' => 'text:display',         'is_attr' => true),
-              'lang'               => array ('section' => 'text',      'name' => 'fo:language',          'is_attr' => true),
+              'style-name'         => array ('section' => 'header',    'name' => 'style:name',              'is_attr' => false),
+              'style-display-name' => array ('section' => 'header',    'name' => 'style:display-name',      'is_attr' => false),
+              'style-parent'       => array ('section' => 'header',    'name' => 'style:parent-style-name', 'is_attr' => true),
+              'style-class'        => array ('section' => 'header',    'name' => 'style:class',             'is_attr' => true),
+              'text-align'         => array ('section' => 'paragraph', 'name' => 'fo:text-align',           'is_attr' => true),
+              'text-indent'        => array ('section' => 'paragraph', 'name' => 'fo:text-indent',          'is_attr' => true),
+              'margin-top'         => array ('section' => 'paragraph', 'name' => 'fo:margin-top',           'is_attr' => true),
+              'margin-bottom'      => array ('section' => 'paragraph', 'name' => 'fo:margin-bottom',        'is_attr' => true),
+              'margin-left'        => array ('section' => 'paragraph', 'name' => 'fo:margin-left',          'is_attr' => true),
+              'margin-right'       => array ('section' => 'paragraph', 'name' => 'fo:margin-right',         'is_attr' => true),
+              'padding-top'        => array ('section' => 'paragraph', 'name' => 'fo:padding-top',          'is_attr' => true),
+              'padding-bottom'     => array ('section' => 'paragraph', 'name' => 'fo:padding-bottom',       'is_attr' => true),
+              'padding-left'       => array ('section' => 'paragraph', 'name' => 'fo:padding-left',         'is_attr' => true),
+              'padding-right'      => array ('section' => 'paragraph', 'name' => 'fo:padding-right',        'is_attr' => true),
+              'border-left'        => array ('section' => 'text',      'name' => 'fo:border-left',          'is_attr' => true),
+              'border-right'       => array ('section' => 'text',      'name' => 'fo:border-right',         'is_attr' => true),
+              'border-top'         => array ('section' => 'text',      'name' => 'fo:border-top',           'is_attr' => true),
+              'border-bottom'      => array ('section' => 'text',      'name' => 'fo:border-bottom',        'is_attr' => true),
+              'color'              => array ('section' => 'text',      'name' => 'fo:color',                'is_attr' => true),
+              'background-color'   => array ('section' => 'text',      'name' => 'fo:background-color',     'is_attr' => true),
+              'background-image'   => array ('section' => 'text',      'name' => 'fo:background-image',     'is_attr' => true),
+              'font-style'         => array ('section' => 'text',      'name' => 'fo:font-style',           'is_attr' => true),
+              'font-weight'        => array ('section' => 'text',      'name' => 'fo:font-weight',          'is_attr' => true),
+              'font-size'          => array ('section' => 'text',      'name' => 'fo:font-size',            'is_attr' => true),
+              'font-family'        => array ('section' => 'text',      'name' => 'fo:font-family',          'is_attr' => true),
+              'font-variant'       => array ('section' => 'text',      'name' => 'fo:font-variant',         'is_attr' => true),
+              'letter-spacing'     => array ('section' => 'text',      'name' => 'fo:letter-spacing',       'is_attr' => true),
+              'vertical-align'     => array ('section' => 'text',      'name' => 'style:vertical-align',    'is_attr' => true),
+              'line-height'        => array ('section' => 'text',      'name' => 'fo:line-height',          'is_attr' => true),
+              'display'            => array ('section' => 'text',      'name' => 'text:display',            'is_attr' => true),
+              'lang'               => array ('section' => 'text',      'name' => 'fo:language',             'is_attr' => true),
               );
 
         $attrs = 0;
@@ -306,6 +311,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
                  $params [$property]['is_attr'] === true ) {
                 $attrs++;
             }
+        }
+
+        if ( !empty($parent) && empty($properties ['style-parent']) ) {
+            $properties ['style-parent'] = $parent;
+            $attrs++;
         }
 
         // If all relevant properties are empty or disabled, then there
@@ -394,9 +404,6 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 
         // Build style.
         $style  = '<style:style '.$header.' style:family="paragraph"';
-        if ( !empty ($parent) ) {
-            $style .= ' style:parent-style-name="'.$parent.'" ';
-        }
         $style .= '>';
         $style .= '<style:paragraph-properties '.$paragraph.'/>';
         $style .= '<style:text-properties '.$text.'/>';

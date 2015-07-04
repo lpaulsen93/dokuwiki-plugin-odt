@@ -38,6 +38,8 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
 
         if($this->isBookStart()) {
             parent::document_start();
+        } else {
+            $this->pagebreak();
         }
     }
 
@@ -45,9 +47,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      * Closes the document
      */
     public function document_end() {
-        $this->pagebreak();
-
-         //ODT file creation is performed by finilize_ODTfile()
+         //ODT file creation is performed by finalize_ODTfile()
     }
 
     /**

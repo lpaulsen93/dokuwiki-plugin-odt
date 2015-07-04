@@ -13,7 +13,7 @@
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
-require_once DOKU_INC.'inc/ZipLib.class.php';
+require_once DOKU_INC.'inc/io.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
 
@@ -23,6 +23,7 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
 class ODTTemplateDH extends docHandler
 {
     var $template = null;
+    var $directory = null;
 
     /**
      * Constructor.
@@ -38,6 +39,15 @@ class ODTTemplateDH extends docHandler
      */
     public function setTemplate($template) {
         $this->template = $template;
+    }
+
+    /**
+     * Set the template directory.
+     *
+     * @param string $directory
+     */
+    public function setDirectory($directory) {
+        $this->directory = $directory;
     }
 
     /**
@@ -65,12 +75,15 @@ class ODTTemplateDH extends docHandler
             $temp_dir = $conf['savedir'].'/cache/tmp';
         }
         $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
-        if (is_dir($temp_dir)) { $this->io_rm_rf($temp_dir); }
+        if (is_dir($temp_dir)) { io_rmdir($temp_dir,true); }
         io_mkdir_p($temp_dir);
 
         // Extract template
-        $template_path = $conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template; // FIXME replace plugin function getConf()
-        $this->ZIP->Extract($template_path, $temp_dir);
+        $template_path = $conf['mediadir'].'/'.$this->directory."/".$this->template;
+        $ok = $this->ZIP->Extract($template_path, $temp_dir);
+        if($ok == -1){
+            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$temp_dir);
+        }
 
         // Prepare content
         $missingstyles = $styleset->getMissingStyles($temp_dir.'/styles.xml');
@@ -110,7 +123,7 @@ class ODTTemplateDH extends docHandler
 
         // Build the Zip
         $this->ZIP->Compress(null, $temp_dir, null);
-        $this->io_rm_rf($temp_dir);
+        io_rmdir($temp_dir,true);
     }
 
     /**
@@ -129,27 +142,6 @@ class ODTTemplateDH extends docHandler
         $file_f = fopen($file, 'w');
         fwrite($file_f, $value);
         fclose($file_f);
-    }
-
-    /**
-     * Recursively deletes a directory (equivalent to the "rm -rf" command)
-     * Found in comments on http://www.php.net/rmdir
-     *
-     * @param string $f
-     */
-    protected function io_rm_rf($f) {
-        if (is_dir($f)) {
-            foreach(glob($f.'/*') as $sf) {
-                if (is_dir($sf) && !is_link($sf)) {
-                    $this->io_rm_rf($sf);
-                } else {
-                    unlink($sf);
-                }
-            }
-        } else { // avoid nasty consequenses if something wrong is given
-            die("Error: not a directory - $f");
-        }
-        rmdir($f);
     }
 }
 

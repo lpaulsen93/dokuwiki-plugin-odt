@@ -1,3 +1,7 @@
+2015-07-08 LarsDW223
+
+    * Added syntax tag for including a TOC in the exported ODT file.
+
 2015-07-04 LarsDW223
 
     * Added/merged support for exporting books to ODT (interface to bookcreator plugin).

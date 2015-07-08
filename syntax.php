@@ -108,6 +108,17 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                      $renderer->meta['relation']['odt']['template'] = $info_value;
                  }
             }
+            if($info_type == "toc") { // Insert TOC in exported ODT file
+                 if($format == 'odt') {
+                     /** @var renderer_plugin_odt_page $renderer */
+                     $renderer->toc_settings = $info_value;
+                     $renderer->render_TOC();
+
+                 } elseif($format == 'metadata') {
+                     /** @var Doku_Renderer_metadata $renderer */
+                     $renderer->meta['relation']['odt']['toc'] = $info_value;
+                 }
+            }
         }
         return false;
     }

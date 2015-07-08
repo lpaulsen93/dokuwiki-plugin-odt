@@ -273,6 +273,10 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
               'style-display-name' => array ('section' => 'header',    'name' => 'style:display-name',      'is_attr' => false),
               'style-parent'       => array ('section' => 'header',    'name' => 'style:parent-style-name', 'is_attr' => true),
               'style-class'        => array ('section' => 'header',    'name' => 'style:class',             'is_attr' => true),
+              'style-position'     => array ('section' => 'tab-stop',  'name' => 'style:position',          'is_attr' => true),
+              'style-type'         => array ('section' => 'tab-stop',  'name' => 'style:type',              'is_attr' => true),
+              'style-leader-style' => array ('section' => 'tab-stop',  'name' => 'style:leader-style',      'is_attr' => true),
+              'style-leader-text'  => array ('section' => 'tab-stop',  'name' => 'style:leader-text',       'is_attr' => true),
               'text-align'         => array ('section' => 'paragraph', 'name' => 'fo:text-align',           'is_attr' => true),
               'text-indent'        => array ('section' => 'paragraph', 'name' => 'fo:text-indent',          'is_attr' => true),
               'margin-top'         => array ('section' => 'paragraph', 'name' => 'fo:margin-top',           'is_attr' => true),
@@ -356,6 +360,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         $header = '';
         $text = '';
         $paragraph = '';
+        $tab = '';
         foreach ($properties as $property => $value) {
             if ( empty ($disabled_props [$property]) && !empty ($properties [$property]) ) {
                 switch ($params [$property]['section']) {
@@ -388,6 +393,11 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
                             $paragraph .= ' style:auto-text-indent="false" ';
                         }
                         break;
+
+                    case 'tab-stop':
+                        $tab .= $params [$property]['name'].'="'.$value.'" ';
+                        $tab .= self::writeExtensionNames ($params [$property]['name'], $value);
+                        break;
                 }
             }
         }
@@ -405,8 +415,14 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // Build style.
         $style  = '<style:style '.$header.' style:family="paragraph"';
         $style .= '>';
-        $style .= '<style:paragraph-properties '.$paragraph.'/>';
-        $style .= '<style:text-properties '.$text.'/>';
+        $style .= '<style:paragraph-properties '.$paragraph.'>';
+        if ( !empty($tab) ) {
+            $style .= '<style:tab-stops><style:tab-stop '.$tab.'/></style:tab-stops>';
+        }
+        $style .= '</style:paragraph-properties>';
+        if ( !empty($text) ) {
+            $style .= '<style:text-properties '.$text.'/>';
+        }
         $style .= '</style:style>';
 
         return $style_name;

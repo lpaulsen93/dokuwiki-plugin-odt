@@ -23,6 +23,11 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
  * The Renderer
  */
 class renderer_plugin_odt_page extends Doku_Renderer {
+    /** @var array store the table of contents */
+    protected $toc = array();
+    /** @var array store the table of contents */
+    public $toc_settings = 'leader-sign=.;';
+    /** @var export mode (scratch or ODT template) */
     protected $mode = 'scratch';
     /** @var docHandler */
     protected $docHandler = null;
@@ -60,6 +65,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $div_z_index = 0;
     /** @var pageFormat */
     protected $page = null;
+    /** @var refIDCount */
+    protected $refIDCount = 0;
 
     /**
      * Automatic styles. Will always be added to content.xml and styles.xml.
@@ -188,6 +195,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function document_start() {
         global $ID;
 
+        // Reset TOC.
+        $this->toc = array();
+
         // First, get export mode.
         $warning = '';
         $this->mode = $this->determineMode($warning);
@@ -266,6 +276,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
         //$this->p_close();
 
+        // Insert TOC (if required)
+        $this->insert_TOC();
+
         // Build the document
         $this->finalize_ODTfile();
     }
@@ -290,20 +303,241 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
 
     /**
-     * Not supported - use OpenOffice builtin tools instead!
+     * This function does not really render the TOC but inserts a placeholder.
+     * See also insert_TOC().
      *
      * @return string
      */
-    function render_TOC() { return ''; }
+    function render_TOC() {
+        $this->p_close();
+        $this->doc .= '<text:table-of-content/>';
+        return '';
+    }
+
+    /**
+     * This function builds the actual TOC and replaces the placeholder with it.
+     * It is called in document_end() after all headings have been added to the TOC, see toc_additem().
+     * The page numbers are just a counter. Update the TOC e.g. in LibreOffice to get the real page numbers!
+     *
+     * The TOC is inserted by the syntax tag '{{odt>toc:setting=value;}};'.
+     * The following settings are supported:
+     * - Title e.g. '{{odt>toc:title=Example;}}'.
+     *   Default is 'Table of Contents' (for english, see language files for other languages default value).
+     * - Leader sign, e.g. '{{odt>toc:leader-sign=.;}}'.
+     *   Default is '.'.
+     * - Indents (in cm), e.g. '{{odt>toc:indents=indents=0,0.5,1,1.5,2,2.5,3;}};'.
+     *   Default is 0.5 cm indent more per level.
+     * - Maximum outline/TOC level, e.g. '{{odt>toc:maxtoclevel=5;}}'.
+     *   Default is taken from DokuWiki config setting 'maxtoclevel'.
+     * - Insert pagebreak after TOC, e.g. '{{odt>toc:pagebreak=1;}}'.
+     *   Default is '1', means insert pagebreak after TOC.
+     * - Set style per outline/TOC level, e.g. '{{odt>toc:styleL2="color:red;font-weight:900;";}}'.
+     *   Default is 'color:black'.
+     *
+     * It is allowed to use defaults for all settings by using '{{odt>toc}}'.
+     * Multiple settings can be combined, e.g. '{{odt>toc:leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;}}'.
+     */
+    protected function insert_TOC() {
+        global $conf;
+
+        $matches = array();
+        $stylesL = array();
+        $stylesLNames = array();
+
+        // It seems to be not supported in ODT to have a different start
+        // outline level than 1.
+        //$start_outline_level = $conf['toptoclevel'];
+        $max_outline_level = $conf['maxtoclevel'];
+        if ( preg_match('/maxtoclevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+            $temp = substr ($matches [0], 12);
+            $temp = trim ($temp, ';');
+            $max_outline_level = $temp;
+        }
+
+        // Determine title, default is 'Table of Contents'.
+        // Syntax for 'Test' as title would be "title=test;".
+        $title = $this->getLang('toc_title');
+        if ( preg_match('/title=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+            $temp = substr ($matches [0], 6);
+            $temp = trim ($temp, ';');
+            $title = $temp;
+        }
+
+        // Determine leader-sign, default is '.'.
+        // Syntax for '.' as leader-sign would be "leader-sign=.;".
+        $leader_sign = '.';
+        if ( preg_match('/leader-sign=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+            $temp = substr ($matches [0], 12);
+            $temp = trim ($temp, ';');
+            $leader_sign = $temp [0];
+        }
+
+        // Determine indents, default is '0.5' (cm) per level.
+        // Syntax for a indent of '0.5' for 5 levels would be "indents=0,0.5,1,1.5,2;".
+        // The values are absolute for each level, not relative to the higher level.
+        if ( preg_match('/indents=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+            $temp = substr ($matches [0], 8);
+            $temp = trim ($temp, ';');
+            $indents = explode (',', $temp);
+        } else {
+            $indents = array();
+            for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
+                $indents [$count] = $count * 0.5;
+            }
+        }
+
+        // Determine pagebreak, default is on '1'.
+        // Syntax for pagebreak off would be "pagebreak=0;".
+        $pagebreak = 1;
+        if ( preg_match('/pagebreak=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+            $temp = substr ($matches [0], 10);
+            $temp = trim ($temp, ';');
+            $pagebreak = $temp;
+        }
+
+        // Determine text styles per level.
+        // Syntax for a style level 1 is "styleL1="color:black;"".
+        // The default style is just 'color:black;'.
+        for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
+            if ( preg_match('/styleL'.($count + 1).'="[^"]+";/', $this->toc_settings, $matches) === 1 ) {
+                $quote = strpos ($matches [0], '"');
+                $temp = substr ($matches [0], $quote+1);
+                $temp = trim ($temp, '";');
+                $stylesL [$count + 1] = $temp.';';
+            } else {
+                $stylesL [$count + 1] = 'color:black;';
+            }
+        }
+
+        // Create paragraph styles
+        $p_styles = array();
+        $indent = 0;
+        for ( $count = 0 ; $count < $max_outline_level ; $count++ )
+        {
+            $indent = $indents [$count];
+            $properties = array();
+            $properties ['style-parent'] = 'Index';
+            $properties ['style-class'] = 'index';
+            $properties ['style-position'] = 17 - $indent .'cm';
+            $properties ['style-type'] = 'right';
+            $properties ['style-leader-style'] = 'dotted';
+            $properties ['style-leader-text'] = $leader_sign;
+            $properties ['margin-left'] = $indent.'cm';
+            $properties ['margin-right'] = '0cm';
+            $properties ['text-indent'] = '0cm';
+            $style_content = '';
+            $style_name = $this->factory->createParagraphStyle($style_content, $properties);
+
+            // Add paragraph style to styles array (= common styles).
+            // (It MUST be added to styles NOT to autostyles. Otherwise LibreOffice will
+            //  overwrite/change the style on updating the TOC!!!)
+            $this->styles[$style_name] = $style_content;
+            $p_styles [$count+1] = $style_name;
+        }
+
+        // Create text style for TOC text.
+        // (this MUST be a text style (not paragraph!) and MUST be placed in styles (not autostyles) to work!)
+        for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
+            $properties = array();
+            $this->_processCSSStyle ($properties, $stylesL [$count+1]);
+            $style_content = '';
+            $stylesLNames [$count+1] = $this->factory->createTextStyle($style_content, $properties);
+            $this->styles[$stylesLNames [$count+1]] = $style_content;
+        }
+
+        // Generate ODT toc tag and content
+        $toc  = '<text:table-of-content text:style-name="Standard" text:protected="true" text:name="Table of Contents">';
+        $toc .= '<text:table-of-content-source text:outline-level="'.$max_outline_level.'">';
+        $toc .= '<text:index-title-template text:style-name="'.$this->styleset->getStyleName('heading1').'">'.$title.'</text:index-title-template>';
+
+        // Create TOC templates per outline level.
+        // The styles listed here need to be the same as later used for the headers.
+        // Otherwise the style of the TOC entries/headers will change after an update.
+        for ( $count = 0 ; $count < $max_outline_level ; $count++ )
+        {
+            $level = $count + 1;
+            $toc .= '<text:table-of-content-entry-template text:outline-level="'.$level.'" text:style-name="'.$p_styles [$level].'">';
+            $toc .= '<text:index-entry-link-start text:style-name="'.$stylesLNames [$level].'"/>';
+            $toc .= '<text:index-entry-chapter/>';
+            $toc .= '<text:index-entry-text/>';
+            $toc .= '<text:index-entry-tab-stop style:type="right" style:leader-char="'.$leader_sign.'"/>';
+            $toc .= '<text:index-entry-page-number/>';
+            $toc .= '<text:index-entry-link-end/>';
+            $toc .= '</text:table-of-content-entry-template>';
+        }
+
+        $toc .= '</text:table-of-content-source>';
+        $toc .= '<text:index-body>';
+        $toc .= '<text:index-title text:style-name="Standard" text:name="Table of Contents_Head">';
+        $toc .= '<text:p text:style-name="'.$this->styleset->getStyleName('heading1').'">'.$title.'</text:p>';
+        $toc .= '</text:index-title>';
+
+        // Add headers to TOC.
+        $page = 0;
+        foreach ($this->toc as $item) {
+            $params = explode (',', $item);
+
+            // Only add the heading to the TOC if its <= $max_outline_level
+            if ( $params [2] <= $max_outline_level ) {
+                $level = $params [2];
+                $toc .= '<text:p text:style-name="'.$p_styles [$level].'">';
+                $toc .= '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" text:style-name="'.$stylesLNames [$level].'" text:visited-style-name="'.$stylesLNames [$level].'">';
+                $toc .= $params [1];
+                $toc .= '<text:tab/>';
+                $page++;
+                $toc .= $page;
+                $toc .= '</text:a>';
+                $toc .= '</text:p>';
+            }
+        }
+
+        $toc .= '</text:index-body>';
+        $toc .= '</text:table-of-content>';
+
+        // Add a pagebreak if required.
+        if ( (is_numeric($pagebreak) && $pagebreak) || $pagebreak == 'true' ) {
+            $this->createPagebreakStyle();
+            $toc .= '<text:p text:style-name="pagebreak"/>';
+        }
+
+        // Replace placeholder with TOC content.
+        $this->doc = str_replace ('<text:table-of-content/>', $toc, $this->doc);
+    }
+
+    /**
+     * Creates a reference ID for the TOC
+     *
+     * @param string $title The headline/item title
+     * @return string
+     *
+     * @author LarsDW223
+     */
+    protected function _buildTOCReferenceID($title) {
+        $title = str_replace(':','',cleanID($title));
+        $title = ltrim($title,'0123456789._-');
+        if(empty($title)) {
+            $title='NoTitle';
+        }
+
+        $this->refIDCount++;
+        // The reference ID needs to start with '__RefHeading___'.
+        // Otherwise LibreOffice will display $ref instead of the heading
+        // name when moving the mouse over the link in the TOC.
+        $ref = '__RefHeading___'.$title.'_'.$this->refIDCount;
+        return $ref;
+    }
 
     /**
      * Add an item to the TOC
      *
-     * @param string $id       the hash link
+     * @param string $refID    the reference ID
      * @param string $text     the text to display
      * @param int    $level    the nesting level
      */
-    function toc_additem($id, $text, $level) {}
+    function toc_additem($refID, $text, $level) {
+        $item = $refID.','.$text.','. $level;
+        $this->toc[] = $item;
+    }
 
     /**
      * Return total page width in centimeters
@@ -483,11 +717,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function header($text, $level, $pos){
         $this->p_close();
         $hid = $this->_headerToLink($text,true);
+        $TOCRef = $this->_buildTOCReferenceID($text);
         $this->doc .= '<text:h text:style-name="'.$this->styleset->getStyleName('heading'.$level).'" text:outline-level="'.$level.'">';
+        $this->doc .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
         $this->doc .= '<text:bookmark-start text:name="'.$hid.'"/>';
         $this->doc .= $this->_xmlEntities($text);
+        $this->doc .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
         $this->doc .= '<text:bookmark-end text:name="'.$hid.'"/>';
         $this->doc .= '</text:h>';
+
+        // Do not add headings in frames
+        if ( $this->in_div_as_frame == 0 ) {
+            $this->toc_additem($TOCRef, $text, $level);
+        }
     }
 
     function hr() {
@@ -499,10 +741,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '<text:line-break/>';
     }
 
-    function pagebreak() {
+    protected function createPagebreakStyle() {
         if ( empty ($this->autostyles['pagebreak']) ) {
             $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
         }
+    }
+
+    function pagebreak() {
+        $this->createPagebreakStyle();
         $this->p_close();
         $this->doc .= '<text:p text:style-name="pagebreak"/>';
     }

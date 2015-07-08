@@ -11,3 +11,5 @@ $lang['export_odt_button'] = "ODT export";
 // template not found in the directory
 $lang['tpl_not_found'] = 'WARNING : the ODT template "%s" was not found in the templates directory "%s". Using the default template.';
 
+// default TOC title
+$lang['toc_title'] = 'Table of Contents';

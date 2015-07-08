@@ -59,6 +59,9 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
 
         $this->meta->setTitle($this->title);
 
+        // Insert TOC (if required)
+        $this->insert_TOC();
+
         parent::finalize_ODTfile();
     }
 

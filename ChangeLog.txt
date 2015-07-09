@@ -1,3 +1,8 @@
+2015-07-09 LarsDW223
+
+    * Changed the locallink() implementation from just inserting text to inserting a link
+      to the corresponding heading.
+
 2015-07-08 LarsDW223
 
     * Added syntax tag for including a TOC in the exported ODT file.

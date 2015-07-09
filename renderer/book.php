@@ -62,6 +62,9 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
         // Insert TOC (if required)
         $this->insert_TOC();
 
+        // Replace local link placeholders
+        $this->insert_locallinks();
+
         parent::finalize_ODTfile();
     }
 

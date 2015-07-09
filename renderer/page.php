@@ -279,6 +279,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Insert TOC (if required)
         $this->insert_TOC();
 
+        // Replace local link placeholders
+        $this->insert_locallinks();
+
         // Build the document
         $this->finalize_ODTfile();
     }
@@ -478,11 +481,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $params = explode (',', $item);
 
             // Only add the heading to the TOC if its <= $max_outline_level
-            if ( $params [2] <= $max_outline_level ) {
-                $level = $params [2];
+            if ( $params [3] <= $max_outline_level ) {
+                $level = $params [3];
                 $toc .= '<text:p text:style-name="'.$p_styles [$level].'">';
                 $toc .= '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" text:style-name="'.$stylesLNames [$level].'" text:visited-style-name="'.$stylesLNames [$level].'">';
-                $toc .= $params [1];
+                $toc .= $params [2];
                 $toc .= '<text:tab/>';
                 $page++;
                 $toc .= $page;
@@ -499,6 +502,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->createPagebreakStyle();
             $toc .= '<text:p text:style-name="pagebreak"/>';
         }
+
+        // Only for debugging
+        //foreach ($this->toc as $item) {
+        //    $params = explode (',', $item);
+        //    $toc .= '<text:p>'.$params [0].'€'.$params [1].'€'.$params [2].'€'.$params [3].'</text:p>';
+        //}
 
         // Replace placeholder with TOC content.
         $this->doc = str_replace ('<text:table-of-content/>', $toc, $this->doc);
@@ -534,8 +543,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text     the text to display
      * @param int    $level    the nesting level
      */
-    function toc_additem($refID, $text, $level) {
-        $item = $refID.','.$text.','. $level;
+    function toc_additem($refID, $hid, $text, $level) {
+        $item = $refID.','.$hid.','.$text.','. $level;
         $this->toc[] = $item;
     }
 
@@ -728,7 +737,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Do not add headings in frames
         if ( $this->in_div_as_frame == 0 ) {
-            $this->toc_additem($TOCRef, $text, $level);
+            $this->toc_additem($TOCRef, $hid, $text, $level);
         }
     }
 
@@ -1423,6 +1432,37 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Replace local links with bookmark references or text
+     */
+    protected function insert_locallinks() {
+        $matches = array();
+        if ( preg_match('/<locallink>.+<\/locallink>/', $this->doc, $matches) === 1 ) {
+            foreach ($matches as $match) {
+                $text = substr ($match, 11);
+                $text = str_replace ('</locallink>', '', $text);
+                $page = str_replace (' ', '_', $text);
+
+                $found = false;
+                foreach ($this->toc as $item) {
+                    $params = explode (',', $item);
+                    if ( $page == $params [1] ) {
+                        $found = true;
+                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'">';
+                        $link .= $text;
+                        $link .= '</text:a>';
+
+                        $this->doc = str_replace ($match, $link, $this->doc);
+                    }
+                }
+
+                if ( $found == false ) {
+                    $this->doc = str_replace ($match, $text, $this->doc);
+                }
+            }
+        }
+    }
+
+    /**
      * Just print local links
      *
      * @fixme add image handling
@@ -1432,7 +1472,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function locallink($hash, $name = NULL){
         $name  = $this->_getLinkTitle($name, $hash, $isImage);
-        $this->doc .= $name;
+        $this->doc .= '<locallink>'.$name.'</locallink>';
     }
 
     /**

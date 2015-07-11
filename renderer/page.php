@@ -25,6 +25,8 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
 class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array store the table of contents */
     protected $toc = array();
+    /** @var array store the bookmarks */
+    protected $bookmarks = array();
     /** @var array store the table of contents */
     public $toc_settings = 'leader-sign=.;';
     /** @var export mode (scratch or ODT template) */
@@ -252,6 +254,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             header('Content-Type: application/vnd.oasis.opendocument.text');
             header('Content-Disposition: attachment; filename="'.$output_filename.'";');
         }
+
+        $this->insert_bookmark($ID);
     }
 
     /**
@@ -714,6 +718,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->in_paragraph = false;
             $this->doc .= '</text:p>';
         }
+    }
+
+    /**
+     * Insert a bookmark.
+     *
+     * @param string $id    ID of the bookmark
+     */
+    function insert_bookmark($id){
+        $this->p_open();
+        $this->doc .= '<text:bookmark text:name="'.$id.'"/>';
+        $this->p_close();
+        $this->bookmarks [] = $id;
     }
 
     /**
@@ -1436,34 +1452,98 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     protected function insert_locallinks() {
         $matches = array();
-        if ( preg_match('/<locallink>.+<\/locallink>/', $this->doc, $matches) === 1 ) {
-            foreach ($matches as $match) {
-                $text = substr ($match, 11);
-                $text = str_replace ('</locallink>', '', $text);
-                $page = str_replace (' ', '_', $text);
+        $position = 0;
+        $max = strlen ($this->doc);
+        $length = strlen ('<locallink>');
+        $length_with_name = strlen ('<locallink name=');
+        while ( $position < $max ) {
+            $first = strpos ($this->doc, '<locallink', $position);
+            if ( $first === false ) {
+                break;
+            }
+            $end_first = strpos ($this->doc, '>', $first);
+            if ( $end_first === false ) {
+                break;
+            }
+            $second = strpos ($this->doc, '</locallink>', $end_first);
+            if ( $second === false ) {
+                break;
+            }
 
-                $found = false;
-                foreach ($this->toc as $item) {
-                    $params = explode (',', $item);
-                    if ( $page == $params [1] ) {
+            // $match includes the whole tag '<locallink name="...">text</locallink>'
+            // The attribute 'name' is optional!
+            $match = substr ($this->doc, $first, $second - $first + $length + 1);
+            $text = substr ($match, $end_first-$first+1, -($length + 1));
+            $page = str_replace (' ', '_', $text);
+            $opentag = substr ($match, 0, $end_first-$first);
+            $name = substr ($opentag, $length_with_name);
+            $name = trim ($name, '">');
+
+            $found = false;
+            foreach ($this->toc as $item) {
+                $params = explode (',', $item);
+                if ( $page == $params [1] ) {
+                    $found = true;
+                    $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'">';
+                    $link .= $text;
+                    $link .= '</text:a>';
+
+                    $this->doc = str_replace ($match, $link, $this->doc);
+                    $position = $first + strlen ($link);
+                }
+            }
+
+            if ( $found == false ) {
+                // Nothing found yet, check the bookmarks too.
+                foreach ($this->bookmarks as $item) {
+                    if ( $page == $item ) {
                         $found = true;
-                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'">';
-                        $link .= $text;
+                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$item.'">';
+                        if ( !empty($name) ) {
+                            $link .= $name;
+                        } else {
+                            $link .= $text;
+                        }
                         $link .= '</text:a>';
 
                         $this->doc = str_replace ($match, $link, $this->doc);
+                        $position = $first + strlen ($link);
                     }
                 }
+            }
 
-                if ( $found == false ) {
+            if ( $found == false ) {
+                // If we get here, then the referenced target was not found.
+                // There must be a bug manging the bookmarks or links!
+                // At least remove the locallink element and insert text.
+                if ( !empty($name) ) {
+                    $this->doc = str_replace ($match, $name, $this->doc);
+                } else {
                     $this->doc = str_replace ($match, $text, $this->doc);
                 }
+                $position = $first + strlen ($text);
             }
         }
     }
 
     /**
-     * Just print local links
+     * Insert local link placeholder with name.
+     * The reference will be resolved on calling insert_locallinks();
+     *
+     * @fixme add image handling
+     *
+     * @param string $hash hash link identifier
+     * @param string $id   name for the link (the reference)
+     * @param string $name text for the link (text inserted instead of reference)
+     */
+    function locallink_with_name($hash, $id = NULL, $name = NULL){
+        $id  = $this->_getLinkTitle($id, $hash, $isImage);
+        $this->doc .= '<locallink name="'.$name.'">'.$id.'</locallink>';
+    }
+
+    /**
+     * Insert local link placeholder.
+     * The reference will be resolved on calling insert_locallinks();
      *
      * @fixme add image handling
      *

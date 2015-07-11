@@ -17,6 +17,20 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
     protected $wikipages_count = 0;
     /** @var string document title*/
     protected $title = '';
+    /**
+     * Stores action instance
+     *
+     * @var action_plugin_dw2pdf
+     */
+    private $actioninstance = null;
+
+    /**
+     * load action plugin instance
+     */
+    public function __construct() {
+        parent::__construct();
+        $this->actioninstance = plugin_load('action', 'odt');
+    }
 
     /**
      * clean out any per-use values
@@ -32,6 +46,8 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      * Initialize the document
      */
     public function document_start() {
+        global $ID;
+
         // number of wiki pages included in ODT file
         $this->wikipages_count ++;
 
@@ -40,6 +56,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
             parent::document_start();
         } else {
             $this->pagebreak();
+            $this->insert_bookmark($ID);
         }
     }
 
@@ -87,5 +104,46 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      */
     public function setTitle($title) {
         $this->title = $title;
+    }
+
+    /**
+     * Render a wiki internal link.
+     * In book export mode a local link with a name/test will be inserted if the
+     * referenced page is included in the exported pages. Otherwise an external
+     * link will be created.
+     *
+     * @param string       $id   page ID to link to. eg. 'wiki:syntax'
+     * @param string|array $name name for the link, array for media file
+     *
+     * @author Andreas Gohr <andi@splitbrain.org>, LarsDW223
+     */
+    function internallink($id, $name = NULL) {
+        global $ID;
+        // default name is based on $id as given
+        $default = $this->_simpleTitle($id);
+        // now first resolve and clean up the $id
+        resolve_pageid(getNS($ID),$id,$exists);
+        $name = $this->_getLinkTitle($name, $default, $isImage, $id);
+
+        // build the absolute URL (keeping a hash if any)
+        list($id,$hash) = explode('#',$id,2);
+
+        // Is the link a link to a page included in the book?
+        $pages = $this->actioninstance->getExportedPages();
+        if ( in_array($id, $pages) ) {
+            // Yes, create a local link with a name
+            parent::locallink_with_name($hash, $id, $name);
+            return;
+        }
+
+        // No, create an external link
+        $url = wl($id,'',true);
+        if($hash) $url .='#'.$hash;
+
+        if ($ID == $id) {
+            $this->reference($hash, $name);
+        } else {
+            $this->_doLink($url,$name);
+        }
     }
 }

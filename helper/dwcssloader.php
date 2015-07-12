@@ -113,7 +113,11 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         $list = array();
         $plugins = plugin_list();
 
-        $usestyle = explode(',', $this->getConf('usestyles'));
+        $temp = explode(',', $this->getConf('usestyles'));
+        $usestyle = array();
+        foreach ($temp as $entry) {
+            $usestyle [] = trim ($entry);
+        }
         foreach($plugins as $p) {
             if(in_array($p, $usestyle)) {
                 $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";

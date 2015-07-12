@@ -825,6 +825,10 @@ class css_declaration {
             break;
 
             case 'border':
+            case 'border-left':
+            case 'border-right':
+            case 'border-top':
+            case 'border-bottom':
                 $this->adjustLengthValuesBorder ($callback);
             break;
 
@@ -838,11 +842,17 @@ class css_declaration {
      * @param $callback
      */
     protected function adjustLengthValuesBorder ($callback) {
-        if ( $this->property == 'border' ) {
-            $values = preg_split ('/\s+/', $this->value);
-            $width =
-                call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth);
-            $this->value = $width . ' ' . $values [1] . ' ' . $values [2];
+        switch ($this->property) {
+            case 'border':
+            case 'border-left':
+            case 'border-right':
+            case 'border-top':
+            case 'border-bottom':
+                $values = preg_split ('/\s+/', $this->value);
+                $width =
+                    call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth);
+                $this->value = $width . ' ' . $values [1] . ' ' . $values [2];
+            break;
         }
     }
 }

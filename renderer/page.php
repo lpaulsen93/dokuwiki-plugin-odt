@@ -3375,11 +3375,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 break;
 
                 case CSSValueType::StrokeOrBorderWidth:
-                    if ( $property != 'border' ) {
-                        $adjusted = $value;
-                    } else {
-                        // border in ODT spans does not support 'px' units, so we convert it.
-                        $adjusted = $this->pixelToPointsY($number).'pt';
+                    switch ($property) {
+                        case 'border':
+                        case 'border-left':
+                        case 'border-right':
+                        case 'border-top':
+                        case 'border-bottom':
+                            // border in ODT spans does not support 'px' units, so we convert it.
+                            $adjusted = $this->pixelToPointsY($number).'pt';
+                        break;
+
+                        default:
+                            $adjusted = $value;
+                        break;
                     }
                 break;
 

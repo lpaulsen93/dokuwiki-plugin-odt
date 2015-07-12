@@ -946,15 +946,21 @@ class css_rule {
         $classes = explode (' ', $classString);
 
         foreach ($this->selectors as $selector) {
-            foreach ($classes as $class) {
-                if ( $selector [0] == '.' && $selector == '.'.$class ) {
-                    $matches++;
-                    break;
-                } else {
-                    if ( $selector == $element || $selector == $element.'.'.$class ) {
+            if ( !empty($classString) ) {
+                foreach ($classes as $class) {
+                    if ( $selector [0] == '.' && $selector == '.'.$class ) {
                         $matches++;
                         break;
+                    } else {
+                        if ( $selector == $element || $selector == $element.'.'.$class ) {
+                            $matches++;
+                            break;
+                        }
                     }
+                }
+            } else {
+                if ( $selector == $element ) {
+                    $matches++;
                 }
             }
         }

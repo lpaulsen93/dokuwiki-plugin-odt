@@ -42,13 +42,49 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $decl = new css_declaration ('border', '5px solid red;');
         $decl->explode ($decls);
 
-        $this->assertEquals(count($decls), 3);
+        $this->assertEquals(count($decls), 19);
         $this->assertEquals($decls [0]->getProperty(), 'border-width');
         $this->assertEquals($decls [0]->getValue(), '5px');
-        $this->assertEquals($decls [1]->getProperty(), 'border-style');
-        $this->assertEquals($decls [1]->getValue(), 'solid');
-        $this->assertEquals($decls [2]->getProperty(), 'border-color');
-        $this->assertEquals($decls [2]->getValue(), 'red');
+        $this->assertEquals($decls [1]->getProperty(), 'border-left-width');
+        $this->assertEquals($decls [1]->getValue(), '5px');
+        $this->assertEquals($decls [2]->getProperty(), 'border-right-width');
+        $this->assertEquals($decls [2]->getValue(), '5px');
+        $this->assertEquals($decls [3]->getProperty(), 'border-top-width');
+        $this->assertEquals($decls [3]->getValue(), '5px');
+        $this->assertEquals($decls [4]->getProperty(), 'border-bottom-width');
+        $this->assertEquals($decls [4]->getValue(), '5px');
+
+        $this->assertEquals($decls [5]->getProperty(), 'border-style');
+        $this->assertEquals($decls [5]->getValue(), 'solid');
+        $this->assertEquals($decls [6]->getProperty(), 'border-left-style');
+        $this->assertEquals($decls [6]->getValue(), 'solid');
+        $this->assertEquals($decls [7]->getProperty(), 'border-right-style');
+        $this->assertEquals($decls [7]->getValue(), 'solid');
+        $this->assertEquals($decls [8]->getProperty(), 'border-top-style');
+        $this->assertEquals($decls [8]->getValue(), 'solid');
+        $this->assertEquals($decls [9]->getProperty(), 'border-bottom-style');
+        $this->assertEquals($decls [9]->getValue(), 'solid');
+
+        $this->assertEquals($decls [10]->getProperty(), 'border-color');
+        $this->assertEquals($decls [10]->getValue(), 'red');
+        $this->assertEquals($decls [11]->getProperty(), 'border-left-color');
+        $this->assertEquals($decls [11]->getValue(), 'red');
+        $this->assertEquals($decls [12]->getProperty(), 'border-right-color');
+        $this->assertEquals($decls [12]->getValue(), 'red');
+        $this->assertEquals($decls [13]->getProperty(), 'border-top-color');
+        $this->assertEquals($decls [13]->getValue(), 'red');
+        $this->assertEquals($decls [14]->getProperty(), 'border-bottom-color');
+        $this->assertEquals($decls [14]->getValue(), 'red');
+
+        $this->assertEquals($decls [15]->getProperty(), 'border-left');
+        $this->assertEquals($decls [15]->getValue(), '5px solid red');
+        $this->assertEquals($decls [16]->getProperty(), 'border-right');
+        $this->assertEquals($decls [16]->getValue(), '5px solid red');
+        $this->assertEquals($decls [17]->getProperty(), 'border-top');
+        $this->assertEquals($decls [17]->getValue(), '5px solid red');
+        $this->assertEquals($decls [18]->getProperty(), 'border-bottom');
+        $this->assertEquals($decls [18]->getValue(), '5px solid red');
+
     }
 
     /**
@@ -487,7 +523,8 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $import->importFromString ($css_code);
         $import->getPropertiesForElement ($properties, 'p', NULL);
 
-        print ($import->rulesToString());
+        // Only for debugging.
+        //print ($import->rulesToString());
 
         $this->assertEquals(count($properties), 1);
         $this->assertEquals('blue', $properties ['background-color']);
@@ -593,7 +630,7 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         //fclose ($handle);
 
         // Check properties
-        $this->assertEquals(17, count($properties));
+        $this->assertEquals(33, count($properties));
         $this->assertEquals('1em 1em .5em', $properties ['padding']);
         $this->assertEquals('1em', $properties ['padding-top']);
         $this->assertEquals('1em', $properties ['padding-right']);
@@ -608,9 +645,25 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $this->assertEquals('#dcc2ef', $properties ['background-color']);
         $this->assertEquals('url(/lib/plugins/wrap/images/note/48/help.png)', $properties ['background-image']);
         $this->assertEquals('2px solid #999', $properties ['border']);
+        $this->assertEquals('2px solid #999', $properties ['border-left']);
+        $this->assertEquals('2px solid #999', $properties ['border-right']);
+        $this->assertEquals('2px solid #999', $properties ['border-top']);
+        $this->assertEquals('2px solid #999', $properties ['border-bottom']);
         $this->assertEquals('2px', $properties ['border-width']);
+        $this->assertEquals('2px', $properties ['border-left-width']);
+        $this->assertEquals('2px', $properties ['border-right-width']);
+        $this->assertEquals('2px', $properties ['border-top-width']);
+        $this->assertEquals('2px', $properties ['border-bottom-width']);
         $this->assertEquals('solid', $properties ['border-style']);
+        $this->assertEquals('solid', $properties ['border-left-style']);
+        $this->assertEquals('solid', $properties ['border-right-style']);
+        $this->assertEquals('solid', $properties ['border-top-style']);
+        $this->assertEquals('solid', $properties ['border-bottom-style']);
         $this->assertEquals('#999', $properties ['border-color']);
+        $this->assertEquals('#999', $properties ['border-left-color']);
+        $this->assertEquals('#999', $properties ['border-right-color']);
+        $this->assertEquals('#999', $properties ['border-top-color']);
+        $this->assertEquals('#999', $properties ['border-bottom-color']);
         $this->assertEquals('', $properties ['']);
         $this->assertEquals('1.5em', $properties ['margin-bottom']);
     }
@@ -633,11 +686,27 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         //fclose ($handle);
 
         // Check properties
-        $this->assertEquals(10, count($properties));
+        $this->assertEquals(26, count($properties));
         $this->assertEquals('2px solid #999', $properties ['border']);
+        $this->assertEquals('2px solid #999', $properties ['border-left']);
+        $this->assertEquals('2px solid #999', $properties ['border-right']);
+        $this->assertEquals('2px solid #999', $properties ['border-top']);
+        $this->assertEquals('2px solid #999', $properties ['border-bottom']);
         $this->assertEquals('2px', $properties ['border-width']);
+        $this->assertEquals('2px', $properties ['border-left-width']);
+        $this->assertEquals('2px', $properties ['border-right-width']);
+        $this->assertEquals('2px', $properties ['border-top-width']);
+        $this->assertEquals('2px', $properties ['border-bottom-width']);
         $this->assertEquals('solid', $properties ['border-style']);
+        $this->assertEquals('solid', $properties ['border-left-style']);
+        $this->assertEquals('solid', $properties ['border-right-style']);
+        $this->assertEquals('solid', $properties ['border-top-style']);
+        $this->assertEquals('solid', $properties ['border-bottom-style']);
         $this->assertEquals('#999', $properties ['border-color']);
+        $this->assertEquals('#999', $properties ['border-left-color']);
+        $this->assertEquals('#999', $properties ['border-right-color']);
+        $this->assertEquals('#999', $properties ['border-top-color']);
+        $this->assertEquals('#999', $properties ['border-bottom-color']);
         $this->assertEquals('1em 1em .5em', $properties ['padding']);
         $this->assertEquals('1em', $properties ['padding-top']);
         $this->assertEquals('1em', $properties ['padding-right']);
@@ -717,11 +786,27 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         fclose ($handle);
 
         // We shouldn't get any properties
-        $this->assertEquals(9, count($properties));
+        $this->assertEquals(25, count($properties));
         $this->assertEquals('1px solid #999', $properties ['border']);
+        $this->assertEquals('1px solid #999', $properties ['border-left']);
+        $this->assertEquals('1px solid #999', $properties ['border-right']);
+        $this->assertEquals('1px solid #999', $properties ['border-top']);
+        $this->assertEquals('1px solid #999', $properties ['border-bottom']);
         $this->assertEquals('1px', $properties ['border-width']);
+        $this->assertEquals('1px', $properties ['border-left-width']);
+        $this->assertEquals('1px', $properties ['border-right-width']);
+        $this->assertEquals('1px', $properties ['border-top-width']);
+        $this->assertEquals('1px', $properties ['border-bottom-width']);
         $this->assertEquals('solid', $properties ['border-style']);
+        $this->assertEquals('solid', $properties ['border-left-style']);
+        $this->assertEquals('solid', $properties ['border-right-style']);
+        $this->assertEquals('solid', $properties ['border-top-style']);
+        $this->assertEquals('solid', $properties ['border-bottom-style']);
         $this->assertEquals('#999', $properties ['border-color']);
+        $this->assertEquals('#999', $properties ['border-left-color']);
+        $this->assertEquals('#999', $properties ['border-right-color']);
+        $this->assertEquals('#999', $properties ['border-top-color']);
+        $this->assertEquals('#999', $properties ['border-bottom-color']);
         $this->assertEquals('0 .3em', $properties ['padding']);
         $this->assertEquals('0', $properties ['padding-top']);
         $this->assertEquals('.3em', $properties ['padding-right']);

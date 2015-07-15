@@ -153,6 +153,14 @@ class ODTDefaultStyles extends ODTStyleSet
                 <style:header-style/>
                 <style:footer-style/>
             </style:page-layout>',
+        "pm2"=>'
+            <style:page-layout style:name="pm2">
+                <style:page-layout-properties fo:page-width="'.$page->getHeight().'cm" fo:page-height="'.$page->getWidth().'cm" style:num-format="1" style:print-orientation="landscape" fo:margin-top="'.$page->getMarginTop().'cm" fo:margin-bottom="'.$page->getMarginBottom().'cm" fo:margin-left="'.$page->getMarginLeft().'cm" fo:margin-right="'.$page->getMarginRight().'cm" style:writing-mode="lr-tb" style:footnote-max-height="0cm">
+                    <style:footnote-sep style:width="0.018cm" style:distance-before-sep="0.1cm" style:distance-after-sep="0.1cm" style:adjustment="left" style:rel-width="25%" style:color="#000000"/>
+                </style:page-layout-properties>
+                <style:header-style/>
+                <style:footer-style/>
+            </style:page-layout>',
         "sub"=>'
             <style:style style:name="sub" style:family="text">
                 <style:text-properties style:text-position="-33% 80%"/>

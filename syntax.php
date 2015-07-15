@@ -119,6 +119,16 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                      $renderer->meta['relation']['odt']['toc'] = $info_value;
                  }
             }
+            if($info_type == "orientation") { // Change page's orientation here
+                if($format == 'odt') {
+                    $renderer->set_orientation($info_value);
+                }
+            }
+            if($info_type == "pagebreak") {
+                if($format == 'odt') {
+                    $renderer->pagebreak();
+                }
+            }
         }
         return false;
     }

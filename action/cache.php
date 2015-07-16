@@ -1,6 +1,6 @@
 <?php
 /**
- * ODT Plugin: Exports to ODT
+ * ODT Plugin: extends the dependencies of the cache with ODT related files
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Aurelien Bompard <aurelien@bompard.org>
@@ -14,8 +14,8 @@ if(!defined('DOKU_INC')) die();
  */
 class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
 
-     /**
-     * Registers a callback function for a given event
+    /**
+     * Register the event
      *
      * @param Doku_Event_Handler $controller
      */

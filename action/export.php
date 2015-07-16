@@ -259,9 +259,9 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
 
         $depends['files'] = array_map('wikiFN', $this->list);
         $depends['files'][] = __FILE__;
-        $depends['files'][] = dirname(__FILE__) . '/renderer/page.php';
-        $depends['files'][] = dirname(__FILE__) . '/renderer/book.php';
-        $depends['files'][] = dirname(__FILE__) . '/plugin.info.txt';
+        $depends['files'][] = dirname(__FILE__) . '/../renderer/page.php';
+        $depends['files'][] = dirname(__FILE__) . '/../renderer/book.php';
+        $depends['files'][] = dirname(__FILE__) . '/../plugin.info.txt';
         $depends['files'] = array_merge(
             $depends['files'],
             $dependencies,

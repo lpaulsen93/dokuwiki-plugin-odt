@@ -772,6 +772,35 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
+    protected function createLandscapeStyle() {
+        if ( empty ($this->autostyles['landscape']) ) {
+            $this->autostyles['landscape'] = '<style:style style:name="landscape" style:family="paragraph" style:master-page-name="Landscape" parent-style-name="Standard"><style:paragraph-properties style:page-number="auto"/></style:style>';
+        }
+    }
+
+    protected function createPortraitStyle() {
+        if ( empty ($this->autostyles['portrait']) ) {
+            $this->autostyles['portrait'] = '<style:style style:name="portrait" style:family="paragraph" style:master-page-name="Standard" parent-style-name="Standard"><style:paragraph-properties style:page-number="auto"/></style:style>';
+        }
+    }
+
+    function set_orientation($orientation = 'portrait')
+    {
+        switch($orientation)
+        {
+            case 'portrait':
+                $this->createPortraitStyle();
+                $this->p_close();
+                $this->doc .= '<text:p text:style-name="portrait"/>';
+            break;
+            case 'landscape':
+                $this->createLandscapeStyle();
+                $this->p_close();
+                $this->doc .= '<text:p text:style-name="landscape"/>';
+            break;
+        }
+    }
+
     function pagebreak() {
         $this->createPagebreakStyle();
         $this->p_close();

@@ -1,3 +1,9 @@
+2015-07-18 LarsDW223
+
+    * Added syntax tag for changing the page format, orientation and page margins.
+      E.g. '{{odt>page:A3,landscape,1,1,1,1}}' sets the page format to A3, landscape orientation
+      with a 1cm margin on each side. If the margins are omitted, 2cm margins are assumed.
+
 2015-07-09 LarsDW223
 
     * Changed the locallink() implementation from just inserting text to inserting a link

@@ -65,8 +65,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
-    /** @var pageFormat */
+    /** @var Current pageFormat */
     protected $page = null;
+    /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
+    protected $page_styles = array ();
     /** @var refIDCount */
     protected $refIDCount = 0;
 
@@ -291,6 +293,60 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * This function sets the page format.
+     * The format, orientation and page margins can be changed.
+     * See function queryFormat() in ODT/page.php for supported formats.
+     *
+     * @param string  $format         e.g. 'A4', 'A3'
+     * @param string  $orientation    e.g. 'portrait' or 'landscape'
+     * @param numeric $margin_top     Top-Margin in cm, default 2
+     * @param numeric $margin_right   Right-Margin in cm, default 2
+     * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
+     * @param numeric $margin_left    Left-Margin in cm, default 2
+     */
+    public function setPageFormat ($format, $orientation, $margin_top=2, $margin_right=2, $margin_bottom=2, $margin_left=2) {
+        $data = array ();
+
+        // Adjust given parameters, query resulting format data and get format-string
+        $this->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
+        $format_string = $this->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+
+        if ( $format_string == $this->page->toString () ) {
+            // Current page already uses this format, no need to do anything...
+            return;
+        }
+
+        // Create page layout style
+        $properties ['style-name']    = 'Style-Page-'.$format_string;
+        $properties ['width']         = $data ['width'];
+        $properties ['height']        = $data ['height'];
+        $properties ['margin-top']    = $data ['margin-top'];
+        $properties ['margin-bottom'] = $data ['margin-bottom'];
+        $properties ['margin-left']   = $data ['margin-left'];
+        $properties ['margin-right']  = $data ['margin-right'];
+        $style_name = $this->factory->createPageLayoutStyle($style_content, $properties);
+
+        // Save style data in page style array, in common styles and set current page format
+        $master_page_style_name = $format_string;
+        $this->page_styles [$master_page_style_name] = $style_name;
+        $this->autostyles [$style_name] = $style_content;
+        $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+
+        // Create paragraph style.
+        $properties = array();
+        $properties ['style-name']       = 'Style-'.$format_string;
+        $properties ['master-page-name'] = $master_page_style_name;
+        $properties ['style-parent']     = 'Standard';
+        $properties ['page-number']      = 'auto';
+        $style_name = $this->factory->createParagraphStyle($style_content, $properties);
+        $this->autostyles [$style_name] = $style_content;
+
+        // Open paragraph with new style format
+        $this->p_close();
+        $this->p_open ($style_name);
+    }
+
+    /**
      * Completes the ODT file
      */
     public function finalize_ODTfile() {
@@ -302,7 +358,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                  $this->styles,
                                  $this->meta->getContent(),
                                  $this->_odtUserFields(),
-                                 $this->styleset);
+                                 $this->styleset,
+                                 $this->page_styles);
 
         // Assign document
         $this->doc = $this->docHandler->get();

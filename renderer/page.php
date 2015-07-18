@@ -2491,7 +2491,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->temp_in_header = true;
 
         // Create style.
-        $style_name = $this->factory->createTableTableStyle ($style, $properties);
+        $style_name = $this->factory->createTableTableStyle ($style, $properties, NULL, $this->_getAbsWidthMindMargins (100));
         $this->autostyles[$style_name] = $style;
         if ( empty ($properties ['width']) ) {
             // If the caller did not specify a table width, save the style name

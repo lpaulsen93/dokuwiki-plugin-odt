@@ -69,6 +69,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $page = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
     protected $page_styles = array ();
+    /** @var Array of paragraph style names that prevent an empty paragraph from being deleted */
+    protected $preventDeletetionStyles = array ();
     /** @var refIDCount */
     protected $refIDCount = 0;
 
@@ -341,17 +343,84 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $style_name = $this->factory->createParagraphStyle($style_content, $properties);
         $this->autostyles [$style_name] = $style_content;
 
+        // Save paragraph style name in 'Do not delete array'!
+        $this->preventDeletetionStyles [] = $style_name;
+
         // Open paragraph with new style format
         $this->p_close();
         $this->p_open ($style_name);
     }
 
     /**
+     * This function deletes the useless elements. Right now, these are empty paragraphs
+     * or paragraphs that only include whitespace.
+     *
+     * IMPORTANT:
+     * Paragraphs can be used for pagebreaks/changing page format.
+     * Such paragraphs may not be deleted!
+     */
+    protected function deleteUselessElements() {
+        $length_open = strlen ('<text:p>');
+        $length_close = strlen ('</text:p>');
+        $max = strlen ($this->doc);
+        $pos = 0;
+
+        while ($pos < $max) {
+            $start_open = strpos ($this->doc, '<text:p', $pos);
+            if ( $start_open === false ) {
+                break;
+            }
+            $start_close = strpos ($this->doc, '>', $start_open + $length_open);
+            if ( $start_close === false ) {
+                break;
+            }
+            $end = strpos ($this->doc, '</text:p>', $start_close + 1);
+            if ( $end === false ) {
+                break;
+            }
+
+            $deleted = false;
+            $length = $end - $start_open + $length_close;
+            $content = substr ($this->doc, $start_close + 1, $end - ($start_close + 1));
+
+            if ( empty($content) || ctype_space ($content) ) {
+                // Paragraph is empty or consists of whitespace only. Check style name.
+                $style_start = strpos ($this->doc, '"', $start_open);
+                if ( $style_start === false ) {
+                    // No '"' found??? Ignore this paragraph.
+                    break;
+                }
+                $style_end = strpos ($this->doc, '"', $style_start+1);
+                if ( $style_end === false ) {
+                    // No '"' found??? Ignore this paragraph.
+                    break;
+                }
+                $style_name = substr ($this->doc, $style_start+1, $style_end - ($style_start+1));
+
+                // Only delete empty paragraph if not listed in 'Do not delete' array!
+                if ( !in_array($style_name, $this->preventDeletetionStyles) )
+                {
+                    $this->doc = substr_replace($this->doc, '', $start_open, $length);
+
+                    $deleted = true;
+                    $max -= $length;
+                    $pos = $start_open;
+                }
+            }
+
+            if ( $deleted == false ) {
+                $pos = $start_open + $length;
+            }
+        }
+    }
+
+    /**
      * Completes the ODT file
      */
     public function finalize_ODTfile() {
-        // Delete paragraphs which only contain whitespace
-        $this->doc = preg_replace('#<text:p[^>]*>\s*</text:p>#', '', $this->doc);
+        // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
+        $this->deleteUselessElements();
+
         // Build the document
         $this->docHandler->build($this->doc,
                                  $this->_odtAutoStyles(),
@@ -826,6 +895,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected function createPagebreakStyle() {
         if ( empty ($this->autostyles['pagebreak']) ) {
             $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
+
+            // Save paragraph style name in 'Do not delete array'!
+            $this->preventDeletetionStyles [] = 'pagebreak';
         }
     }
 

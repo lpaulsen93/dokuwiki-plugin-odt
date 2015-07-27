@@ -73,6 +73,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $preventDeletetionStyles = array ();
     /** @var refIDCount */
     protected $refIDCount = 0;
+    /** @var pageBookmark */
+    protected $pageBookmark = NULL;
 
     /**
      * Automatic styles. Will always be added to content.xml and styles.xml.
@@ -259,7 +261,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             header('Content-Disposition: attachment; filename="'.$output_filename.'";');
         }
 
-        $this->insert_bookmark($ID);
+        $this->set_page_bookmark($ID);
     }
 
     /**
@@ -837,6 +839,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->in_paragraph = true;
             $this->doc .= '<text:p text:style-name="'.$style.'">';
         }
+
+        // Insert page bookmark if requested and not done yet.
+        if ( !empty($this->pageBookmark) ) {
+            $this->insert_bookmark($this->pageBookmark, false);
+            $this->pageBookmark = NULL;
+        }
     }
 
     function p_close(){
@@ -851,11 +859,26 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @param string $id    ID of the bookmark
      */
-    function insert_bookmark($id){
-        $this->p_open();
+    function insert_bookmark($id,$open_paragraph=true){
+        if ($open_paragraph) {
+            $this->p_open();
+        }
         $this->doc .= '<text:bookmark text:name="'.$id.'"/>';
-        $this->p_close();
         $this->bookmarks [] = $id;
+    }
+
+    /**
+     * Set bookmark for the start of the page. This just saves the title temporarily.
+     * It is then to be inserted in the first header or paragraph.
+     *
+     * @param string $id    ID of the bookmark
+     */
+    function set_page_bookmark($id){
+        if ( $this->in_paragraph ) {
+            $this->insert_bookmark($id);
+        } else {
+            $this->pageBookmark = $id;
+        }
     }
 
     /**
@@ -870,6 +893,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $hid = $this->_headerToLink($text,true);
         $TOCRef = $this->_buildTOCReferenceID($text);
         $this->doc .= '<text:h text:style-name="'.$this->styleset->getStyleName('heading'.$level).'" text:outline-level="'.$level.'">';
+
+        // Insert page bookmark if requested and not done yet.
+        if ( !empty($this->pageBookmark) ) {
+            $this->insert_bookmark($this->pageBookmark, false);
+            $this->pageBookmark = NULL;
+        }
+
         $this->doc .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
         $this->doc .= '<text:bookmark-start text:name="'.$hid.'"/>';
         $this->doc .= $this->_xmlEntities($text);

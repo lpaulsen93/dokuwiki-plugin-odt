@@ -56,7 +56,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
             parent::document_start();
         } else {
             $this->pagebreak();
-            $this->insert_bookmark($ID);
+            $this->set_page_bookmark($ID);
         }
     }
 

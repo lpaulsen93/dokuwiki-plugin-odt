@@ -73,7 +73,7 @@ abstract class docHandler
      * @param ODTStyleSet $styleset
      * @return mixed
      */
-    abstract public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null);
+    abstract public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null, $pagestyles=null);
 
     /**
      * Get ODT document file.

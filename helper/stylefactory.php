@@ -280,6 +280,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
               'style-display-name' => array ('section' => 'header',    'name' => 'style:display-name',      'is_attr' => false),
               'style-parent'       => array ('section' => 'header',    'name' => 'style:parent-style-name', 'is_attr' => true),
               'style-class'        => array ('section' => 'header',    'name' => 'style:class',             'is_attr' => true),
+              'master-page-name'   => array ('section' => 'header',    'name' => 'style:master-page-name',  'is_attr' => true),
               'style-position'     => array ('section' => 'tab-stop',  'name' => 'style:position',          'is_attr' => true),
               'style-type'         => array ('section' => 'tab-stop',  'name' => 'style:type',              'is_attr' => true),
               'style-leader-style' => array ('section' => 'tab-stop',  'name' => 'style:leader-style',      'is_attr' => true),
@@ -290,6 +291,7 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
               'margin-bottom'      => array ('section' => 'paragraph', 'name' => 'fo:margin-bottom',        'is_attr' => true),
               'margin-left'        => array ('section' => 'paragraph', 'name' => 'fo:margin-left',          'is_attr' => true),
               'margin-right'       => array ('section' => 'paragraph', 'name' => 'fo:margin-right',         'is_attr' => true),
+              'page-number'        => array ('section' => 'paragraph', 'name' => 'style:page-number',       'is_attr' => true),
               'padding-top'        => array ('section' => 'text',      'name' => 'fo:padding-top',          'is_attr' => true),
               'padding-bottom'     => array ('section' => 'text',      'name' => 'fo:padding-bottom',       'is_attr' => true),
               'padding-left'       => array ('section' => 'text',      'name' => 'fo:padding-left',         'is_attr' => true),
@@ -829,6 +831,38 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
 </style:columns>
 </style:graphic-properties></style:style>';
 
+        return $style_name;
+    }
+
+    /**
+     * This function creates a page layout style with the parameters given in $properies.
+     *
+     * The currently supported properties are:
+     * style-name, width, height, margin-top, margin-bottom, margin-right and margin-left.
+     * All properties except the style-name are expected to be numeric values.
+     * The function will add 'cm' itself, so do not add any units.
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     *
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @return string
+     */
+    public static function createPageLayoutStyle(&$style, $properties) {
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) ) {
+            $style_name = self::getNewStylename ('Page');
+        }
+        $style = '<style:page-layout style:name="'.$style_name.'">
+                <style:page-layout-properties fo:page-width="'.$properties ['width'].'cm" fo:page-height="'.$properties ['height'].'cm" style:num-format="1" style:print-orientation="landscape" fo:margin-top="'.$properties ['margin-top'].'cm" fo:margin-bottom="'.$properties ['margin-bottom'].'cm" fo:margin-left="'.$properties ['margin-left'].'cm" fo:margin-right="'.$properties ['margin-right'].'cm" style:writing-mode="lr-tb" style:footnote-max-height="0cm">
+                    <style:footnote-sep style:width="0.018cm" style:distance-before-sep="0.1cm" style:distance-after-sep="0.1cm" style:adjustment="left" style:rel-width="25%" style:color="#000000"/>
+                </style:page-layout-properties>
+                <style:header-style/>
+                <style:footer-style/>
+            </style:page-layout>';
         return $style_name;
     }
 }

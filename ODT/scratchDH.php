@@ -45,7 +45,7 @@ class scratchDH extends docHandler
      * @param ODTStyleSet $styleset
      * @return mixed
      */
-    public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null){
+    public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null, $pagestyles=null){
         // add defaults
         $this->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
         $this->ZIP->add_File($meta,'meta.xml');
@@ -100,6 +100,15 @@ class scratchDH extends docHandler
         $this->ZIP->add_File($value,'content.xml');
 
         $value = io_readFile(DOKU_PLUGIN.'odt/styles.xml');
+
+        // Add page styles
+        $page = '';
+        foreach ($pagestyles as $name => $layout_name) {
+            $page .= '<style:master-page style:name="'.$name.'" style:page-layout-name="'.$layout_name.'"/>';
+        }
+        if ( !empty($page) ) {
+            $value = str_replace('</office:master-styles>', $page.'</office:master-styles>', $value);
+        }
 
         // Add common styles.
         $common = '';

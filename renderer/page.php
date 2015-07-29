@@ -287,6 +287,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
         //$this->p_close();
 
+        // Switch links back on
+        $this->enable_links();
+
         // Insert TOC (if required)
         $this->insert_TOC();
 

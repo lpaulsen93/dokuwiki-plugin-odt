@@ -66,10 +66,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_pos = 0;
     protected $div_z_index = 0;
     protected $disable_links = false;
-    /** @var pageFormat */
+    /** @var Current pageFormat */
     protected $page = null;
+    /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
+    protected $page_styles = array ();
+    /** @var Array of paragraph style names that prevent an empty paragraph from being deleted */
+    protected $preventDeletetionStyles = array ();
     /** @var refIDCount */
     protected $refIDCount = 0;
+    /** @var pageBookmark */
+    protected $pageBookmark = NULL;
 
     /**
      * Automatic styles. Will always be added to content.xml and styles.xml.
@@ -256,7 +262,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             header('Content-Disposition: attachment; filename="'.$output_filename.'";');
         }
 
-        $this->insert_bookmark($ID);
+        $this->set_page_bookmark($ID);
     }
 
     /**
@@ -292,18 +298,140 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * This function sets the page format.
+     * The format, orientation and page margins can be changed.
+     * See function queryFormat() in ODT/page.php for supported formats.
+     *
+     * @param string  $format         e.g. 'A4', 'A3'
+     * @param string  $orientation    e.g. 'portrait' or 'landscape'
+     * @param numeric $margin_top     Top-Margin in cm, default 2
+     * @param numeric $margin_right   Right-Margin in cm, default 2
+     * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
+     * @param numeric $margin_left    Left-Margin in cm, default 2
+     */
+    public function setPageFormat ($format, $orientation, $margin_top=2, $margin_right=2, $margin_bottom=2, $margin_left=2) {
+        $data = array ();
+
+        // Adjust given parameters, query resulting format data and get format-string
+        $this->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
+        $format_string = $this->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+
+        if ( $format_string == $this->page->toString () ) {
+            // Current page already uses this format, no need to do anything...
+            return;
+        }
+
+        // Create page layout style
+        $properties ['style-name']    = 'Style-Page-'.$format_string;
+        $properties ['width']         = $data ['width'];
+        $properties ['height']        = $data ['height'];
+        $properties ['margin-top']    = $data ['margin-top'];
+        $properties ['margin-bottom'] = $data ['margin-bottom'];
+        $properties ['margin-left']   = $data ['margin-left'];
+        $properties ['margin-right']  = $data ['margin-right'];
+        $style_name = $this->factory->createPageLayoutStyle($style_content, $properties);
+
+        // Save style data in page style array, in common styles and set current page format
+        $master_page_style_name = $format_string;
+        $this->page_styles [$master_page_style_name] = $style_name;
+        $this->autostyles [$style_name] = $style_content;
+        $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+
+        // Create paragraph style.
+        $properties = array();
+        $properties ['style-name']       = 'Style-'.$format_string;
+        $properties ['master-page-name'] = $master_page_style_name;
+        $properties ['style-parent']     = 'Standard';
+        $properties ['page-number']      = 'auto';
+        $style_name = $this->factory->createParagraphStyle($style_content, $properties);
+        $this->autostyles [$style_name] = $style_content;
+
+        // Save paragraph style name in 'Do not delete array'!
+        $this->preventDeletetionStyles [] = $style_name;
+
+        // Open paragraph with new style format
+        $this->p_close();
+        $this->p_open ($style_name);
+    }
+
+    /**
+     * This function deletes the useless elements. Right now, these are empty paragraphs
+     * or paragraphs that only include whitespace.
+     *
+     * IMPORTANT:
+     * Paragraphs can be used for pagebreaks/changing page format.
+     * Such paragraphs may not be deleted!
+     */
+    protected function deleteUselessElements() {
+        $length_open = strlen ('<text:p>');
+        $length_close = strlen ('</text:p>');
+        $max = strlen ($this->doc);
+        $pos = 0;
+
+        while ($pos < $max) {
+            $start_open = strpos ($this->doc, '<text:p', $pos);
+            if ( $start_open === false ) {
+                break;
+            }
+            $start_close = strpos ($this->doc, '>', $start_open + $length_open);
+            if ( $start_close === false ) {
+                break;
+            }
+            $end = strpos ($this->doc, '</text:p>', $start_close + 1);
+            if ( $end === false ) {
+                break;
+            }
+
+            $deleted = false;
+            $length = $end - $start_open + $length_close;
+            $content = substr ($this->doc, $start_close + 1, $end - ($start_close + 1));
+
+            if ( empty($content) || ctype_space ($content) ) {
+                // Paragraph is empty or consists of whitespace only. Check style name.
+                $style_start = strpos ($this->doc, '"', $start_open);
+                if ( $style_start === false ) {
+                    // No '"' found??? Ignore this paragraph.
+                    break;
+                }
+                $style_end = strpos ($this->doc, '"', $style_start+1);
+                if ( $style_end === false ) {
+                    // No '"' found??? Ignore this paragraph.
+                    break;
+                }
+                $style_name = substr ($this->doc, $style_start+1, $style_end - ($style_start+1));
+
+                // Only delete empty paragraph if not listed in 'Do not delete' array!
+                if ( !in_array($style_name, $this->preventDeletetionStyles) )
+                {
+                    $this->doc = substr_replace($this->doc, '', $start_open, $length);
+
+                    $deleted = true;
+                    $max -= $length;
+                    $pos = $start_open;
+                }
+            }
+
+            if ( $deleted == false ) {
+                $pos = $start_open + $length;
+            }
+        }
+    }
+
+    /**
      * Completes the ODT file
      */
     public function finalize_ODTfile() {
-        // Delete paragraphs which only contain whitespace
-        $this->doc = preg_replace('#<text:p[^>]*>\s*</text:p>#', '', $this->doc);
+        // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
+        $this->deleteUselessElements();
+
         // Build the document
         $this->docHandler->build($this->doc,
                                  $this->_odtAutoStyles(),
                                  $this->styles,
                                  $this->meta->getContent(),
                                  $this->_odtUserFields(),
-                                 $this->styleset);
+                                 $this->styleset,
+                                 $this->page_styles);
 
         // Assign document
         $this->doc = $this->docHandler->get();
@@ -725,6 +853,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->in_paragraph = true;
             $this->doc .= '<text:p text:style-name="'.$style.'">';
         }
+
+        // Insert page bookmark if requested and not done yet.
+        if ( !empty($this->pageBookmark) ) {
+            $this->insert_bookmark($this->pageBookmark, false);
+            $this->pageBookmark = NULL;
+        }
     }
 
     function p_close(){
@@ -739,11 +873,26 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @param string $id    ID of the bookmark
      */
-    function insert_bookmark($id){
-        $this->p_open();
+    function insert_bookmark($id,$open_paragraph=true){
+        if ($open_paragraph) {
+            $this->p_open();
+        }
         $this->doc .= '<text:bookmark text:name="'.$id.'"/>';
-        $this->p_close();
         $this->bookmarks [] = $id;
+    }
+
+    /**
+     * Set bookmark for the start of the page. This just saves the title temporarily.
+     * It is then to be inserted in the first header or paragraph.
+     *
+     * @param string $id    ID of the bookmark
+     */
+    function set_page_bookmark($id){
+        if ( $this->in_paragraph ) {
+            $this->insert_bookmark($id);
+        } else {
+            $this->pageBookmark = $id;
+        }
     }
 
     /**
@@ -758,6 +907,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $hid = $this->_headerToLink($text,true);
         $TOCRef = $this->_buildTOCReferenceID($text);
         $this->doc .= '<text:h text:style-name="'.$this->styleset->getStyleName('heading'.$level).'" text:outline-level="'.$level.'">';
+
+        // Insert page bookmark if requested and not done yet.
+        if ( !empty($this->pageBookmark) ) {
+            $this->insert_bookmark($this->pageBookmark, false);
+            $this->pageBookmark = NULL;
+        }
+
         $this->doc .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
         $this->doc .= '<text:bookmark-start text:name="'.$hid.'"/>';
         $this->doc .= $this->_xmlEntities($text);
@@ -783,6 +939,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected function createPagebreakStyle() {
         if ( empty ($this->autostyles['pagebreak']) ) {
             $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
+
+            // Save paragraph style name in 'Do not delete array'!
+            $this->preventDeletetionStyles [] = 'pagebreak';
         }
     }
 
@@ -2448,7 +2607,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->temp_in_header = true;
 
         // Create style.
-        $style_name = $this->factory->createTableTableStyle ($style, $properties);
+        $style_name = $this->factory->createTableTableStyle ($style, $properties, NULL, $this->_getAbsWidthMindMargins (100));
         $this->autostyles[$style_name] = $style;
         if ( empty ($properties ['width']) ) {
             // If the caller did not specify a table width, save the style name

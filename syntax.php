@@ -132,6 +132,20 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                     }
                 break;
             }
+            if($info_type == "page") { // Set/change page format in exported ODT file
+                 if($format == 'odt') {
+                     /** @var renderer_plugin_odt_page $renderer */
+                     $params = explode(',', $info_value);
+                     $format = trim ($params [0]);
+                     $orientation = trim ($params [1]);
+                     for ( $index = 2 ; $index < 6 ; $index++ ) {
+                         if ( empty($params [$index]) ) {
+                             $params [$index] = 2;
+                         }
+                     }
+                     $renderer->setPageFormat($format, $orientation, $params [2], $params [3], $params [4], $params [5]);
+                 }
+            }
         }
         return false;
     }

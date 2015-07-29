@@ -62,7 +62,7 @@ class ODTTemplateDH extends docHandler
      * @param ODTDefaultStyles $styleset
      * @return mixed
      */
-    public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null){
+    public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null, $pagestyles=null){
         // for the temp dir
         global $conf, $ID;
 
@@ -117,6 +117,15 @@ class ODTTemplateDH extends docHandler
         $this->_odtReplaceInFile('</office:automatic-styles>', substr($autostyles, 25), $temp_dir.'/styles.xml');
         $this->_odtReplaceInFile('</office:styles>', $missingstyles.'</office:styles>', $temp_dir.'/styles.xml');
         $this->_odtReplaceInFile('</office:font-face-decls>', $missingfonts.'</office:font-face-decls>', $temp_dir.'/styles.xml');
+
+        // Insert page styles
+        $page = '';
+        foreach ($pagestyles as $name => $layout_name) {
+            $page .= '<style:master-page style:name="'.$name.'" style:page-layout-name="'.$layout_name.'"/>';
+        }
+        if ( !empty($page) ) {
+            $this->_odtReplaceInFile('</office:master-styles>', $page.'</office:master-styles>', $temp_dir.'/styles.xml');
+        }
 
         // Add manifest data
         $this->_odtReplaceInFile('</manifest:manifest>', $this->manifest->getExtraContent() . '</manifest:manifest>', $temp_dir . '/META-INF/manifest.xml');

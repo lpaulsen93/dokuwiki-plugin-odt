@@ -65,6 +65,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
+    protected $disable_links = false;
     /** @var Current pageFormat */
     protected $page = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
@@ -286,6 +287,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
         //$this->p_close();
 
+        // Switch links back on
+        $this->enable_links();
+
         // Insert TOC (if required)
         $this->insert_TOC();
 
@@ -436,6 +440,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc = $this->docHandler->get();
     }
 
+    /**
+     * Simple setter to enable creating links
+     */
+    function enable_links() {
+        $this->disable_links = false;
+    }
+
+    /**
+     * Simple setter to disable creating links
+     */
+    function disable_links() {
+        $this->disable_links = true;
+    }
 
     /**
      * This function does not really render the TOC but inserts a placeholder.
@@ -1767,7 +1784,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $url = $this->_xmlEntities($url);
         if(is_array($name)){
             // Images
-            if($url) $this->doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->disable_links) $this->doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
 
             if($name['type'] == 'internalmedia'){
                 $this->internalmedia($name['src'],
@@ -1779,12 +1796,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      $name['linking']);
             }
 
-            if($url) $this->doc .= '</draw:a>';
+            if($url && !$this->disable_links) $this->doc .= '</draw:a>';
         }else{
             // Text
-            if($url) $this->doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->disable_links) $this->doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
             $this->doc .= $name; // we get the name already XML encoded
-            if($url) $this->doc .= '</text:a>';
+            if($url && !$this->disable_links) $this->doc .= '</text:a>';
         }
     }
 

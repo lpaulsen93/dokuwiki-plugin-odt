@@ -76,6 +76,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $refIDCount = 0;
     /** @var pageBookmark */
     protected $pageBookmark = NULL;
+    /** @var pagebreak */
+    protected $pagebreak = false;
 
     /**
      * Automatic styles. Will always be added to content.xml and styles.xml.
@@ -648,8 +650,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Add a pagebreak if required.
         if ( (is_numeric($pagebreak) && $pagebreak) || $pagebreak == 'true' ) {
-            $this->createPagebreakStyle();
-            $toc .= '<text:p text:style-name="pagebreak"/>';
+            $style_name = $this->createPagebreakStyle(NULL, false);
+            $toc .= '<text:p text:style-name="'.$style_name.'"/>';
         }
 
         // Only for debugging
@@ -854,6 +856,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
         if (!$this->in_paragraph) { // opening a paragraph inside another paragraph is illegal
             $this->in_paragraph = true;
+            if ( $this->pagebreak ) {
+                $style = $this->createPagebreakStyle ($style);
+                $this->pagebreak = false;
+            }
             $this->doc .= '<text:p text:style-name="'.$style.'">';
         }
 
@@ -909,7 +915,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->p_close();
         $hid = $this->_headerToLink($text,true);
         $TOCRef = $this->_buildTOCReferenceID($text);
-        $this->doc .= '<text:h text:style-name="'.$this->styleset->getStyleName('heading'.$level).'" text:outline-level="'.$level.'">';
+        $style = $this->styleset->getStyleName('heading'.$level);
+        if ( $this->pagebreak ) {
+            $style = $this->createPagebreakStyle ($style);
+            $this->pagebreak = false;
+        }
+        $this->doc .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
 
         // Insert page bookmark if requested and not done yet.
         if ( !empty($this->pageBookmark) ) {
@@ -939,19 +950,32 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '<text:line-break/>';
     }
 
-    protected function createPagebreakStyle() {
-        if ( empty ($this->autostyles['pagebreak']) ) {
-            $this->autostyles['pagebreak'] = '<style:style style:name="pagebreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>';
+    protected function createPagebreakStyle($parent=NULL,$before=true) {
+        $style_name = 'pagebreak';
+        $attr = 'fo:break-before';
+        if ( !$before ) {
+            $style_name .= '_after';
+            $attr = 'fo:break-after';
+        }
+        if ( !empty($parent) ) {
+            $style_name .= '_'.$parent;
+        }
+        if ( empty ($this->autostyles[$style_name]) ) {
+            $this->autostyles[$style_name] = '<style:style style:name="'.$style_name.'" style:family="paragraph" style:parent-style-name="'.$parent.'"><style:paragraph-properties '.$attr.'="page"/></style:style>';
 
             // Save paragraph style name in 'Do not delete array'!
-            $this->preventDeletetionStyles [] = 'pagebreak';
+            $this->preventDeletetionStyles [] = $style_name;
         }
+        return $style_name;
     }
 
     function pagebreak() {
-        $this->createPagebreakStyle();
+        // Only set marker to insert a pagebreak on "next occasion".
+        // The pagebreak will then be inserted in the next call to p_open() or header().
+        // The style will be a "pagebreak" style with the paragraph or header style as the parent.
+        // This prevents extra empty lines after the pagebreak.
         $this->p_close();
-        $this->doc .= '<text:p text:style-name="pagebreak"/>';
+        $this->pagebreak = true;
     }
 
     function strong_open() {

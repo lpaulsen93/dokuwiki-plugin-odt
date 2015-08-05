@@ -1516,23 +1516,28 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * Render an internal media file
      *
-     * @param string $src     media ID
-     * @param string $title   descriptive text
-     * @param string $align   left|center|right
-     * @param int    $width   width of media in pixel
-     * @param int    $height  height of media in pixel
-     * @param string $cache   cache|recache|nocache
-     * @param string $linking linkonly|detail|nolink
+     * @param string $src       media ID
+     * @param string $title     descriptive text
+     * @param string $align     left|center|right
+     * @param int    $width     width of media in pixel
+     * @param int    $height    height of media in pixel
+     * @param string $cache     cache|recache|nocache
+     * @param string $linking   linkonly|detail|nolink
+     * @param bool   $returnonly whether to return odt or write to doc attribute
      */
     function internalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
-                            $height=NULL, $cache=NULL, $linking=NULL) {
+                            $height=NULL, $cache=NULL, $linking=NULL, $returnonly = false) {
         global $ID;
         resolve_mediaid(getNS($ID),$src, $exists);
         list(/* $ext */,$mime) = mimetype($src);
 
         if(substr($mime,0,5) == 'image'){
             $file = mediaFN($src);
-            $this->_odtAddImage($file, $width, $height, $align, $title);
+            if($returnonly) {
+              return $this->_odtAddImage($file, $width, $height, $align, $title, true);
+            } else {
+              $this->_odtAddImage($file, $width, $height, $align, $title);
+            }
         }else{
 /*
             // FIXME build absolute medialink and call externallink()
@@ -1540,7 +1545,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 */
             //FIX by EPO/Intersel - create a link to the dokuwiki internal resource
             if (empty($title)) {$title=explode(':',$src); $title=end($title);}
-            $this->externalmedia(str_replace('doku.php?id=','lib/exe/fetch.php?media=',wl($src,'',true)),$title);
+            if($returnonly) {
+              return $this->externalmedia(str_replace('doku.php?id=','lib/exe/fetch.php?media=',wl($src,'',true)),$title,
+                                        null, null, null, null, null, true);
+            } else {
+              $this->externalmedia(str_replace('doku.php?id=','lib/exe/fetch.php?media=',wl($src,'',true)),$title,
+                                        null, null, null, null, null);
+            }
             //End of FIX
         }
     }
@@ -1548,16 +1559,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * Render an external media file
      *
-     * @param string $src     full media URL
-     * @param string $title   descriptive text
-     * @param string $align   left|center|right
-     * @param int    $width   width of media in pixel
-     * @param int    $height  height of media in pixel
-     * @param string $cache   cache|recache|nocache
-     * @param string $linking linkonly|detail|nolink
+     * @param string $src        full media URL
+     * @param string $title      descriptive text
+     * @param string $align      left|center|right
+     * @param int    $width      width of media in pixel
+     * @param int    $height     height of media in pixel
+     * @param string $cache      cache|recache|nocache
+     * @param string $linking    linkonly|detail|nolink
+     * @param bool   $returnonly whether to return odt or write to doc attribute
      */
     function externalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
-                            $height=NULL, $cache=NULL, $linking=NULL) {
+                            $height=NULL, $cache=NULL, $linking=NULL, $returnonly = false) {
         global $conf;
         list($ext,$mime) = mimetype($src);
 
@@ -1577,21 +1589,36 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     fclose($tmp_img);
                 }
             }
-            $this->_odtAddImage($tmp_name, $width, $height, $align, $title);
-            if (file_exists($tmp_name)) unlink($tmp_name);
+            if($returnonly) {
+              $ret = $this->_odtAddImage($tmp_name, $width, $height, $align, $title, true);
+              if (file_exists($tmp_name)) unlink($tmp_name);
+              return $ret;
+            } else {
+              $this->_odtAddImage($tmp_name, $width, $height, $align, $title);
+              if (file_exists($tmp_name)) unlink($tmp_name);
+            }
         }else{
-            $this->externallink($src,$title);
+            if($returnonly) {
+              return $this->externallink($src,$title,true);
+            } else {
+              $this->externallink($src,$title);
+            }
         }
     }
 
     /**
      * Render a CamelCase link
      *
-     * @param string $link The link name
+     * @param string $link       The link name
+     * @param bool   $returnonly whether to return odt or write to doc attribute
      * @see http://en.wikipedia.org/wiki/CamelCase
      */
-    function camelcaselink($link) {
-        $this->internallink($link,$link);
+    function camelcaselink($link, $returnonly) {
+        if($returnonly) {
+          return $this->internallink($link,$link, null, true);
+        } else {
+          $this->internallink($link, $link);
+        }
     }
 
     /**
@@ -1599,23 +1626,25 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $name
      */
     function reference($id, $name = NULL) {
-        $this->doc .= '<text:a xlink:type="simple" xlink:href="#'.$id.'"';
+        $ret = '<text:a xlink:type="simple" xlink:href="#'.$id.'"';
         if ($name) {
-            $this->doc .= '>'.$this->_xmlEntities($name).'</text:a>';
+            $ret .= '>'.$this->_xmlEntities($name).'</text:a>';
         } else {
-            $this->doc .= '/>';
+            $ret .= '/>';
         }
+        return $ret;
     }
 
     /**
      * Render a wiki internal link
      *
-     * @param string       $id   page ID to link to. eg. 'wiki:syntax'
-     * @param string|array $name name for the link, array for media file
+     * @param string       $id         page ID to link to. eg. 'wiki:syntax'
+     * @param string|array $name       name for the link, array for media file
+     * @param bool         $returnonly whether to return odt or write to doc attribute
      *
      * @author Andreas Gohr <andi@splitbrain.org>
      */
-    function internallink($id, $name = NULL) {
+    function internallink($id, $name = NULL, $returnonly = false) {
         global $ID;
         // default name is based on $id as given
         $default = $this->_simpleTitle($id);
@@ -1629,22 +1658,35 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if($hash) $url .='#'.$hash;
 
         if ($ID == $id) {
-            $this->reference($hash, $name);
+          if($returnonly) {
+            return $this->reference($hash, $name);
+          } else {
+            $this->doc .= $this->reference($hash, $name);
+          }
         } else {
-            $this->_doLink($url,$name);
+          if($returnonly) {
+            return $this->_doLink($url,$name);
+          } else {
+            $this->doc .= $this->_doLink($url,$name);
+          }
         }
     }
 
     /**
      * Add external link
      *
-     * @param string       $url  full URL with scheme
-     * @param string|array $name name for the link, array for media file
+     * @param string       $url        full URL with scheme
+     * @param string|array $name       name for the link, array for media file
+     * @param bool         $returnonly whether to return odt or write to doc attribute
      */
-    function externallink($url, $name = NULL) {
+    function externallink($url, $name = NULL, $returnonly = false) {
         $name = $this->_getLinkTitle($name, $url, $isImage);
 
-        $this->_doLink($url,$name);
+        if($returnonly) {
+          return $this->_doLink($url,$name,$returnonly);
+        } else {
+          $this->doc .= $this->_doLink($url,$name);
+        }
     }
 
     /**
@@ -1760,14 +1802,20 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * You may want to use $this->_resolveInterWiki() here
      *
-     * @param string       $match     original link - probably not much use
-     * @param string|array $name    name for the link, array for media file
-     * @param string       $wikiName indentifier (shortcut) for the remote wiki
-     * @param string       $wikiUri  the fragment parsed from the original link     */
-    function interwikilink($match, $name = NULL, $wikiName, $wikiUri) {
+     * @param string       $match      original link - probably not much use
+     * @param string|array $name       name for the link, array for media file
+     * @param string       $wikiName   indentifier (shortcut) for the remote wiki
+     * @param string       $wikiUri    the fragment parsed from the original link
+     * @param bool         $returnonly whether to return odt or write to doc attribute
+     */
+    function interwikilink($match, $name = NULL, $wikiName, $wikiUri, $returnonly = false) {
         $name  = $this->_getLinkTitle($name, $wikiUri, $isImage);
         $url = $this-> _resolveInterWiki($wikiName,$wikiUri);
-        $this->_doLink($url,$name);
+        if($returnonly) {
+          return $this->_doLink($url,$name);
+        } else {
+          $this->doc .= $this->_doLink($url,$name);
+        }
     }
 
     /**
@@ -1775,12 +1823,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @fixme add image handling
      *
-     * @param string       $url  the link
-     * @param string|array $name name for the link, array for media file
+     * @param string       $url        the link
+     * @param string|array $name       name for the link, array for media file
+     * @param bool         $returnonly whether to return odt or write to doc attribute
      */
-    function windowssharelink($url, $name = NULL) {
+    function windowssharelink($url, $name = NULL,$returnonly) {
         $name  = $this->_getLinkTitle($name, $url, $isImage);
-        $this->doc .= $name;
+        if($returnonly) {
+          return $name;
+        } else {
+          $this->doc .= $name;
+        }
     }
 
     /**
@@ -1788,12 +1841,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @fixme add image handling
      *
-     * @param string $address Email-Address
-     * @param string|array $name name for the link, array for media file
+     * @param string       $address    Email-Address
+     * @param string|array $name       name for the link, array for media file
+     * @param bool         $returnonly whether to return odt or write to doc attribute
      */
-    function emaillink($address, $name = NULL) {
+    function emaillink($address, $name = NULL, $returnonly) {
         $name  = $this->_getLinkTitle($name, $address, $isImage);
-        $this->_doLink("mailto:".$address,$name);
+        if($returnonly) {
+          return $this->_doLink("mailto:".$address,$name);
+        } else {
+          $this->doc .= $this->_doLink("mailto:".$address,$name);
+        }
     }
 
     /**
@@ -1806,27 +1864,30 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _doLink($url,$name){
         $url = $this->_xmlEntities($url);
+        $doc = '';
         if(is_array($name)){
             // Images
-            if($url && !$this->disable_links) $this->doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->disable_links) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
 
             if($name['type'] == 'internalmedia'){
-                $this->internalmedia($name['src'],
+                $doc .= $this->internalmedia($name['src'],
                                      $name['title'],
                                      $name['align'],
                                      $name['width'],
                                      $name['height'],
                                      $name['cache'],
-                                     $name['linking']);
+                                     $name['linking'],
+                                     true);
             }
 
-            if($url && !$this->disable_links) $this->doc .= '</draw:a>';
+            if($url && !$this->disable_links) $doc .= '</draw:a>';
         }else{
             // Text
-            if($url && !$this->disable_links) $this->doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
-            $this->doc .= $name; // we get the name already XML encoded
-            if($url && !$this->disable_links) $this->doc .= '</text:a>';
+            if($url && !$this->disable_links) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
+            $doc .= $name; // we get the name already XML encoded
+            if($url && !$this->disable_links) $doc .= '</text:a>';
         }
+        return $doc;
     }
 
     /**
@@ -2051,8 +2112,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param  $align
      * @param  $title
      * @param  $style
+     * @param  $returnonly
      */
-    function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL){
+    function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
+        $doc = '';
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
             $name = 'Pictures/'.md5($src).'.'.$ext;
@@ -2080,19 +2143,24 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         if ($title) {
-            $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).' Legend"
+            $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).' Legend"
                             text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
-            $this->doc .= '<draw:text-box>';
-            $this->doc .= '<text:p text:style-name="'.$this->styleset->getStyleName('legend center').'">';
+            $doc .= '<draw:text-box>';
+            $doc .= '<text:p text:style-name="'.$this->styleset->getStyleName('legend center').'">';
         }
-        $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
+        $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
                         text:anchor-type="'.$anchor.'" draw:z-index="0"
                         svg:width="'.$width.'" svg:height="'.$height.'" >';
-        $this->doc .= '<draw:image xlink:href="'.$this->_xmlEntities($name).'"
+        $doc .= '<draw:image xlink:href="'.$this->_xmlEntities($name).'"
                         xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
-        $this->doc .= '</draw:frame>';
+        $doc .= '</draw:frame>';
         if ($title) {
-            $this->doc .= $this->_xmlEntities($title).'</text:p></draw:text-box></draw:frame>';
+            $doc .= $this->_xmlEntities($title).'</text:p></draw:text-box></draw:frame>';
+        }
+        if($returnonly) {
+          return $doc;
+        } else {
+          $this->doc .= $doc;
         }
     }
 

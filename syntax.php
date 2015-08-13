@@ -100,14 +100,14 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
             list($info_type, $info_value) = $data;
             switch($info_type)
             {
-                case 'template': // Template-based export
+                case 'odt_template': // Template-based export
                     if($format == 'odt') {
                         /** @var renderer_plugin_odt_page $renderer */
-                        $renderer->template = $info_value;
+                        $renderer->odt_template = $info_value;
 
                     } elseif($format == 'metadata') {
                         /** @var Doku_Renderer_metadata $renderer */
-                        $renderer->meta['relation']['odt']['template'] = $info_value;
+                        $renderer->meta['relation']['odt']['odt_template'] = $info_value;
                     }
                 break;
                 case 'toc': // Insert TOC in exported ODT file

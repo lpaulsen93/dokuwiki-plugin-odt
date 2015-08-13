@@ -48,7 +48,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array */
     protected $footnotes = array();
     protected $headers = array();
-    public $template = "";
+    public $odt_template = "";
     public $fields = array(); // set by Fields Plugin
     protected $in_list_item = false;
     protected $in_paragraph = false;
@@ -164,33 +164,33 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         $mode = 'scratch';
 
-        // Template name provided in the URL
-        if (isset($_GET["odt-template"])) {
-            $this->template = $_GET["odt-template"];
+        // Template provided in the configuration
+        if (!$this->odt_template and $this->getConf("odt_template")) {
+            $this->odt_template = $this->getConf("odt_template");
             $mode = 'ODT template';
         }
 
-        // Template provided in the configuration
-        if (!$this->template and $this->getConf("tpl_default")) {
-            $this->template = $this->getConf("tpl_default");
+        // Template name provided in the URL
+        if (isset($_GET["odt_template"])) {
+            $this->odt_template = $_GET["odt_template"];
             $mode = 'ODT template';
         }
 
         $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["template"];
+        $template_name = $odt_meta["odt_template"];
         if(!empty($template_name)) {
-            $this->template = $template_name;
+            $this->odt_template = $template_name;
         }
 
-        if ($this->template) {
+        if ($this->odt_template) {
             // template chosen
-            if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template)) {
+            if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->odt_template)) {
                 //template found
                 $mode = 'ODT template';
             } else {
                 // template chosen but not found : warn the user and use the default template
                 $warning = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
-                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->template,$this->getConf("tpl_dir")) )
+                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->odt_template,$this->getConf("tpl_dir")) )
                              .'</text:span></text:p>'.$this->doc;
             }
         }
@@ -217,7 +217,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             case 'ODT template':
                 // Document based on ODT template.
                 $this->docHandler = new ODTTemplateDH ();
-                $this->docHandler->setTemplate($this->template);
+                $this->docHandler->setTemplate($this->odt_template);
                 $this->docHandler->setDirectory($this->getConf("tpl_dir"));
                 break;
 
@@ -285,8 +285,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         //$this->p_open();
         //$this->doc .= 'Mode: '.$this->mode;
-        //$this->doc .= 'Template: '.$this->template;
-        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
+        //$this->doc .= 'Template: '.$this->odt_template;
+        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->odt_template;
         //$this->p_close();
 
         // Switch links back on

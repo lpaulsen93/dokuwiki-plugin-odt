@@ -222,8 +222,8 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         global $INPUT;
 
         //different caches for varying config settings
-        $template = $this->getConf("tpl_default");
-        $template = $INPUT->get->str('odt-template', $template, true);
+        $template = $this->getConf("odt_template");
+        $template = $INPUT->get->str('odt_template', $template, true);
 
 
         $cachekey = join(',', $this->list)

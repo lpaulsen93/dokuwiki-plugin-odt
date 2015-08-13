@@ -6,8 +6,8 @@
 // Directory of the templates in the media manager
 $conf['tpl_dir'] = 'odt';
 
-// Default template (filename only)
-$conf['tpl_default'] = '';
+// Default ODT template (filename only)
+$conf['odt_template'] = '';
 
 $conf['showexportbutton'] = 1;
 

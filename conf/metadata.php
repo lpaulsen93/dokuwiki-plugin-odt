@@ -6,7 +6,7 @@
  */
 
 $meta['tpl_dir']   = array('string');
-$meta['tpl_default'] = array('string');
+$meta['odt_template'] = array('string');
 $meta['showexportbutton'] = array('onoff');
 
 $meta['media_sel'] = array('string');

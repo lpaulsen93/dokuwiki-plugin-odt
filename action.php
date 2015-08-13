@@ -44,7 +44,7 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         if($cache->mode != "odt") return;
 
         $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["template"];
+        $template_name = $odt_meta["odt_template"];
         if(!$template_name) {
             return;
         }
@@ -243,8 +243,8 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         global $INPUT;
 
         //different caches for varying config settings
-        $template = $this->getConf("tpl_default");
-        $template = $INPUT->get->str('odt-template', $template, true);
+        $template = $this->getConf("odt_template");
+        $template = $INPUT->get->str('odt_template', $template, true);
 
 
         $cachekey = join(',', $this->list)

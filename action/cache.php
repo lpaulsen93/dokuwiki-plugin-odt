@@ -36,7 +36,7 @@ class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
         if($cache->mode != "odt") return;
 
         $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["template"];
+        $template_name = $odt_meta["odt_template"];
         if(!$template_name) {
             return;
         }

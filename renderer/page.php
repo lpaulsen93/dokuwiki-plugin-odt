@@ -114,6 +114,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config ['css_template'] = NULL;
         // CSS media selector (screen or print)
         $this->config ['media_sel'] = NULL;
+        // Usestyles: list of plugins for which screen styles should be loaded
+        $this->config ['usestyles'] = NULL;
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
@@ -175,7 +177,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         /** @var helper_plugin_odt_dwcssloader $loader */
         $loader = plugin_load('helper', 'odt_dwcssloader');
         if ( $loader != NULL ) {
-            $this->css = $loader->load('odt', 'odt', $this->config ['css_template']);
+            $this->css = $loader->load('odt', 'odt', $this->config ['css_template'], $this->config ['usestyles']);
         }
 
         $this->import = plugin_load('helper', 'odt_cssimport');

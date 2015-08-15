@@ -28,3 +28,6 @@ $conf['margin_right']  = '2';
 $conf['margin_bottom'] = '2';
 $conf['margin_left']   = '2';
 
+// Disable link creation?
+$conf['disable_links'] = 'No';
+

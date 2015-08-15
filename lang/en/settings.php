@@ -21,3 +21,5 @@ $lang['margin_right']          = 'Page margin Right';
 $lang['margin_bottom']         = 'Page margin Bottom';
 $lang['margin_left']           = 'Page margin Left';
 
+$lang['disable_links']         = 'Disable link creation?';
+

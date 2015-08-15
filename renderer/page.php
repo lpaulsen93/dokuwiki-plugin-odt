@@ -50,6 +50,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $headers = array();
     /** @var array Central storage for config parameters. Only access this, not getConf()!!! */
     protected $config = array();
+    /** @var array Config options that need to be refreshed in document_end */
+    protected $config_refesh = array();
     public $fields = array(); // set by Fields Plugin
     protected $in_list_item = false;
     protected $in_paragraph = false;
@@ -66,7 +68,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
-    protected $disable_links = false;
     /** @var Current pageFormat */
     protected $page = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
@@ -127,6 +128,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config ['margin_bottom'] = NULL;
         $this->config ['margin_left']   = NULL;
         $this->config ['page']          = NULL;
+        // Disable links
+        $this->config ['disable_links'] = NULL;
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
@@ -209,12 +212,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Load all config parameters: global config options, URL and syntax tag.
      * Check export mode: scratch, ODT template or CSS template?
      *
      * @param string $warning (reference) warning message
      * @return string
      */
-    protected function determineMode(&$warning) {
+    protected function load_config(&$warning) {
         global $conf, $ID;
 
         $mode = 'scratch';
@@ -254,7 +258,53 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
+        // Convert Yes/No-String in 'disable_links' to boolean.
+        if ( $this->config ['disable_links'] != 'Yes' ) {
+            $this->config ['disable_links'] = false;
+        } else {
+            $this->config ['disable_links'] = true;
+        }
+
         return $mode;
+    }
+
+    /**
+     * Refresh config parameters. See also load_config().
+     */
+    protected function refresh_config() {
+        global $conf, $ID;
+
+        $mode = 'scratch';
+
+        // Only refresh required config parameters, not all.
+        $odt_meta = p_get_metadata($ID, 'relation odt');
+        foreach ($this->config as $name => $value) {
+            if ( in_array($name, $config_refesh) {
+                // Check plugin configuration.
+                if (!$value and $this->getConf($name)) {
+                    $this->config [$name] = $this->getConf($name);
+                }
+
+                // Check if parameter is provided in the URL.
+                if (isset($_GET[$name])) {
+                    $this->config [$name] = $_GET[$name];
+                }
+
+                // Check meta data in case syntax tags have written
+                // the config parameters to it.
+                $value = $odt_meta[$name];
+                if(!empty($value)) {
+                    $this->config [$name] = $value;
+                }
+            }
+        }
+
+        // Convert Yes/No-String in 'disable_links' to boolean.
+        if ( $this->config ['disable_links'] != 'Yes' ) {
+            $this->config ['disable_links'] = false;
+        } else {
+            $this->config ['disable_links'] = true;
+        }
     }
 
     /**
@@ -268,7 +318,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // First, get export mode.
         $warning = '';
-        $this->mode = $this->determineMode($warning);
+        $this->mode = $this->load_config($warning);
 
         // Load and import CSS files, setup Units
         $this->load_css();
@@ -352,8 +402,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->config ['odt_template'];
         //$this->p_close();
 
-        // Switch links back on
-        $this->enable_links();
+        // Refresh certain config parameters e.g. 'disable_links'
+        $this->refresh_config();
 
         // Insert TOC (if required)
         $this->insert_TOC();
@@ -529,14 +579,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Simple setter to enable creating links
      */
     function enable_links() {
-        $this->disable_links = false;
+        $this->config ['disable_links'] = false;
     }
 
     /**
      * Simple setter to disable creating links
      */
     function disable_links() {
-        $this->disable_links = true;
+        $this->config ['disable_links'] = true;
     }
 
     /**
@@ -1950,7 +2000,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $doc = '';
         if(is_array($name)){
             // Images
-            if($url && !$this->disable_links) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config ['disable_links']) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
 
             if($name['type'] == 'internalmedia'){
                 $doc .= $this->internalmedia($name['src'],
@@ -1963,12 +2013,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      true);
             }
 
-            if($url && !$this->disable_links) $doc .= '</draw:a>';
+            if($url && !$this->config ['disable_links']) $doc .= '</draw:a>';
         }else{
             // Text
-            if($url && !$this->disable_links) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config ['disable_links']) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
             $doc .= $name; // we get the name already XML encoded
-            if($url && !$this->disable_links) $doc .= '</text:a>';
+            if($url && !$this->config ['disable_links']) $doc .= '</text:a>';
         }
         return $doc;
     }

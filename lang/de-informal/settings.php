@@ -19,3 +19,5 @@ $lang['margin_right']          = 'Seitenrand Rechts';
 $lang['margin_bottom']         = 'Seitenrand Unten';
 $lang['margin_left']           = 'Seitenrand Links';
 
+$lang['disable_links']         = 'Link-Generierung ausschalten?';
+

@@ -31,4 +31,5 @@ $meta['margin_top']    = array('numeric');
 $meta['margin_right']  = array('numeric');
 $meta['margin_bottom'] = array('numeric');
 $meta['margin_left']   = array('numeric');
+$meta['disable_links'] = array('multichoice', '_choices' => array('No', 'Yes'));
 

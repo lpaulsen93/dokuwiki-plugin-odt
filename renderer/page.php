@@ -120,12 +120,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config ['twips_per_pixel_x'] = NULL;
         $this->config ['twips_per_pixel_y'] = NULL;
         // Page format, orientation and margins
-        $this->config ['format'] = NULL;
-        $this->config ['orientation'] = NULL;
-        $this->config ['margin_top'] = NULL;
-        $this->config ['margin_right'] = NULL;
+        $this->config ['format']        = NULL;
+        $this->config ['orientation']   = NULL;
+        $this->config ['margin_top']    = NULL;
+        $this->config ['margin_right']  = NULL;
         $this->config ['margin_bottom'] = NULL;
-        $this->config ['margin_left'] = NULL;
+        $this->config ['margin_left']   = NULL;
+        $this->config ['page']          = NULL;
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 

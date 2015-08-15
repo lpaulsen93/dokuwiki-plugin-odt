@@ -112,6 +112,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config ['odt_template'] = NULL;
         // CSS template.
         $this->config ['css_template'] = NULL;
+        // CSS media selector (screen or print)
+        $this->config ['media_sel'] = NULL;
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
@@ -131,6 +133,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if (!empty($name)) {
             $this->config [$name] = $value;
         }
+    }
+
+    /**
+     * Is the $string specified the name of a ODT plugin config parameter?
+     *
+     * @return bool Is it a config parameter?
+     */
+    public function isConfigParam($string) {
+        if (!empty($string)) {
+            return array_key_exists($string, $this->config);
+        }
+        return false;
     }
 
     /**
@@ -3499,7 +3513,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     public function getODTProperties (&$dest, $element, $classString, $inlineStyle) {
         // Get properties for our class/element from imported CSS
-        $this->import->getPropertiesForElement($dest, $element, $classString, $this->getConf('media_sel'));
+        $this->import->getPropertiesForElement($dest, $element, $classString, $this->config ['media_sel']);
 
         // Interpret and add values from style to our properties
         $this->_processCSSStyle($dest, $inlineStyle);

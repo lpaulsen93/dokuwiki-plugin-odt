@@ -98,28 +98,22 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         } else { // Extended info
 
             list($info_type, $info_value) = $data;
+
+            // If it is a config option store it in the meta data
+            // and set the config parameter in the renderer.
+            if ( $renderer->isConfigParam($info_type) ) {
+                if($format == 'odt') {
+                    /** @var renderer_plugin_odt_page $renderer */
+                    $renderer->setConfigParam($info_type, $info_value);
+		} elseif($format == 'metadata') {
+                    /** @var Doku_Renderer_metadata $renderer */
+                    $renderer->meta['relation']['odt'][$info_type] = $info_value;
+                }
+            }
+
+            // Do some more work for the tags which are not just a config parameter setter
             switch($info_type)
             {
-                case 'odt_template': // Template-based export
-                    if($format == 'odt') {
-                        /** @var renderer_plugin_odt_page $renderer */
-                        $renderer->setConfigParam('odt_template', $info_value);
-
-                    } elseif($format == 'metadata') {
-                        /** @var Doku_Renderer_metadata $renderer */
-                        $renderer->meta['relation']['odt']['odt_template'] = $info_value;
-                    }
-                break;
-                case 'css_template': // CSS-Template
-                    if($format == 'odt') {
-                        /** @var renderer_plugin_odt_page $renderer */
-                        $renderer->setConfigParam('css_template', $info_value);
-
-                    } elseif($format == 'metadata') {
-                        /** @var Doku_Renderer_metadata $renderer */
-                        $renderer->meta['relation']['odt']['css_template'] = $info_value;
-                    }
-                break;
                 case 'toc': // Insert TOC in exported ODT file
                     if($format == 'odt') {
                         /** @var renderer_plugin_odt_page $renderer */

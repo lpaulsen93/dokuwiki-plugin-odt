@@ -12,9 +12,9 @@ $conf['odt_template'] = '';
 $conf['showexportbutton'] = 1;
 
 // Parameters for CSS import
-$conf['media_sel'] = 'print';
-$conf['template']  = 'default';
-$conf['usestyles'] = '';
+$conf['media_sel']     = 'print';
+$conf['css_template']  = 'default';
+$conf['usestyles']     = '';
 
 // Parameters for converting pixel to points
 $conf['twips_per_pixel_x'] = '16';

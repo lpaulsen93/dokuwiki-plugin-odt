@@ -103,11 +103,21 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                 case 'odt_template': // Template-based export
                     if($format == 'odt') {
                         /** @var renderer_plugin_odt_page $renderer */
-                        $renderer->odt_template = $info_value;
+                        $renderer->setConfigParam('odt_template', $info_value);
 
                     } elseif($format == 'metadata') {
                         /** @var Doku_Renderer_metadata $renderer */
                         $renderer->meta['relation']['odt']['odt_template'] = $info_value;
+                    }
+                break;
+                case 'css_template': // CSS-Template
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $renderer->setConfigParam('css_template', $info_value);
+
+                    } elseif($format == 'metadata') {
+                        /** @var Doku_Renderer_metadata $renderer */
+                        $renderer->meta['relation']['odt']['css_template'] = $info_value;
                     }
                 break;
                 case 'toc': // Insert TOC in exported ODT file

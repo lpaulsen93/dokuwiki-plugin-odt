@@ -48,7 +48,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array */
     protected $footnotes = array();
     protected $headers = array();
-    public $odt_template = "";
+    /** @var array Central storage for config parameters. Only access this, not getConf()!!! */
+    protected $config = array();
     public $fields = array(); // set by Fields Plugin
     protected $in_list_item = false;
     protected $in_paragraph = false;
@@ -102,26 +103,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     //var $trace_dump;
 
     /**
-     * Constructor. Loads and imports CSS and helper plugins.
+     * Constructor. Loads helper plugins.
      */
     public function __construct() {
+        // Set up empty array with known config parameters
+
+        // ODT template.
+        $this->config ['odt_template'] = NULL;
+        // CSS template.
+        $this->config ['css_template'] = NULL;
+
         $this->factory = plugin_load('helper', 'odt_stylefactory');
-
-        /** @var helper_plugin_odt_dwcssloader $loader */
-        $loader = plugin_load('helper', 'odt_dwcssloader');
-        if ( $loader != NULL ) {
-            $this->css = $loader->load('odt', 'odt', $this->getConf('template'));
-        }
-
-        $this->import = plugin_load('helper', 'odt_cssimport');
-        if ( $this->import != NULL ) {
-            $this->import->importFromString ($this->css);
-        }
-
-        // Call adjustLengthValues to make our callback function being called for every
-        // length value imported. This gives us the chance to convert it once from
-        // pixel to points.
-        $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
 
         // Load helper class for unit conversion.
         $this->units = plugin_load('helper', 'odt_units');
@@ -130,6 +122,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->units->setTwipsPerPixelY($this->getConf('twips_per_pixel_y'));
 
         $this->meta = new ODTMeta();
+    }
+
+    /**
+     * Set a config parameter from extern.
+     */
+    public function setConfigParam($name, $value) {
+        if (!empty($name)) {
+            $this->config [$name] = $value;
+        }
     }
 
     /**
@@ -154,6 +155,27 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Load and imports CSS.
+     */
+    protected function load_css() {
+        /** @var helper_plugin_odt_dwcssloader $loader */
+        $loader = plugin_load('helper', 'odt_dwcssloader');
+        if ( $loader != NULL ) {
+            $this->css = $loader->load('odt', 'odt', $this->config ['css_template']);
+        }
+
+        $this->import = plugin_load('helper', 'odt_cssimport');
+        if ( $this->import != NULL ) {
+            $this->import->importFromString ($this->css);
+        }
+
+        // Call adjustLengthValues to make our callback function being called for every
+        // length value imported. This gives us the chance to convert it once from
+        // pixel to points.
+        $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
+    }
+
+    /**
      * Check export mode: scratch, ODT template or CSS template?
      *
      * @param string $warning (reference) warning message
@@ -164,38 +186,40 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         $mode = 'scratch';
 
-        // Template provided in the configuration
-        if (!$this->odt_template and $this->getConf("odt_template")) {
-            $this->odt_template = $this->getConf("odt_template");
-            $mode = 'ODT template';
-        }
-
-        // Template name provided in the URL
-        if (isset($_GET["odt_template"])) {
-            $this->odt_template = $_GET["odt_template"];
-            $mode = 'ODT template';
-        }
-
+        // Get all known config parameters, see __construct().
         $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["odt_template"];
-        if(!empty($template_name)) {
-            $this->odt_template = $template_name;
+        foreach ($this->config as $name => $value) {
+            // Check plugin configuration.
+            if (!$value and $this->getConf($name)) {
+                $this->config [$name] = $this->getConf($name);
+            }
+
+            // Check if parameter is provided in the URL.
+            if (isset($_GET[$name])) {
+                $this->config [$name] = $_GET[$name];
+            }
+
+            // Check meta data in case syntax tags have written
+            // the config parameters to it.
+            $value = $odt_meta[$name];
+            if(!empty($value)) {
+                $this->config [$name] = $value;
+            }
         }
 
-        if ($this->odt_template) {
-            // template chosen
-            if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->odt_template)) {
+        // ODT-Template based export required?
+        if (!empty($this->config ['odt_template'])) {
+            // ODT-Template chosen
+            if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->config ['odt_template'])) {
                 //template found
                 $mode = 'ODT template';
             } else {
                 // template chosen but not found : warn the user and use the default template
                 $warning = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
-                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->odt_template,$this->getConf("tpl_dir")) )
+                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->config ['odt_template'],$this->getConf("tpl_dir")) )
                              .'</text:span></text:p>'.$this->doc;
             }
         }
-
-        // FIXME: determine CSS template!
 
         return $mode;
     }
@@ -213,11 +237,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $warning = '';
         $this->mode = $this->determineMode($warning);
 
+        // Load and import CSS files.
+        $this->load_css();
+
         switch($this->mode) {
             case 'ODT template':
                 // Document based on ODT template.
                 $this->docHandler = new ODTTemplateDH ();
-                $this->docHandler->setTemplate($this->odt_template);
+                $this->docHandler->setTemplate($this->config ['odt_template']);
                 $this->docHandler->setDirectory($this->getConf("tpl_dir"));
                 break;
 
@@ -285,8 +312,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         //$this->p_open();
         //$this->doc .= 'Mode: '.$this->mode;
-        //$this->doc .= 'Template: '.$this->odt_template;
-        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->odt_template;
+        //$this->doc .= 'Template: '.$this->config ['odt_template'];
+        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->config ['odt_template'];
         //$this->p_close();
 
         // Switch links back on

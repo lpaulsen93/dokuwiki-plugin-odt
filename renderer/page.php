@@ -131,6 +131,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Disable links
         $this->config ['disable_links'] = NULL;
 
+        // Set config parameters that need to be refreshed.
+        $config_refesh [] = 'disable_links';
+
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
         $this->meta = new ODTMeta();

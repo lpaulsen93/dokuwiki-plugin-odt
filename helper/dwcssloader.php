@@ -86,14 +86,14 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
 
         if(function_exists('css_parseless')) {
             // apply pattern replacements
-            $styleini = css_styleini($conf['template']);
+            $styleini = css_styleini($template);
             $css = css_applystyle($css, $styleini['replacements']);
 
             // parse less
             $css = css_parseless($css);
         } else {
             // @deprecated 2013-12-19: fix backward compatibility
-            $css = css_applystyle($css, DOKU_INC . 'lib/tpl/' . $conf['template'] . '/');
+            $css = css_applystyle($css, DOKU_INC . 'lib/tpl/' . $template . '/');
         }
 
         return $css;

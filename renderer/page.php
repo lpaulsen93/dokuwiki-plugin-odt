@@ -116,14 +116,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config ['media_sel'] = NULL;
         // Usestyles: list of plugins for which screen styles should be loaded
         $this->config ['usestyles'] = NULL;
+        // Twips per pixel x and y
+        $this->config ['twips_per_pixel_x'] = NULL;
+        $this->config ['twips_per_pixel_y'] = NULL;
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
-
-        // Load helper class for unit conversion.
-        $this->units = plugin_load('helper', 'odt_units');
-        $this->units->setPixelPerEm(14);
-        $this->units->setTwipsPerPixelX($this->getConf('twips_per_pixel_x'));
-        $this->units->setTwipsPerPixelY($this->getConf('twips_per_pixel_y'));
 
         $this->meta = new ODTMeta();
     }
@@ -192,6 +189,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Load and configure units helper.
+     */
+    protected function setupUnits()
+    {
+        // Load helper class for unit conversion.
+        $this->units = plugin_load('helper', 'odt_units');
+        $this->units->setPixelPerEm(14);
+        $this->units->setTwipsPerPixelX($this->config ['twips_per_pixel_x']);
+        $this->units->setTwipsPerPixelY($this->config ['twips_per_pixel_y']);
+    }
+
+    /**
      * Check export mode: scratch, ODT template or CSS template?
      *
      * @param string $warning (reference) warning message
@@ -253,8 +262,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $warning = '';
         $this->mode = $this->determineMode($warning);
 
-        // Load and import CSS files.
+        // Load and import CSS files, setup Units.
         $this->load_css();
+        $this->setupUnits();
 
         switch($this->mode) {
             case 'ODT template':
@@ -3540,7 +3550,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsX ($pixel) {
-        return ($pixel * $this->getConf('twips_per_pixel_x')) / 20;
+        return ($pixel * $this->config ['twips_per_pixel_x']) / 20;
     }
 
     /**
@@ -3548,7 +3558,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsY ($pixel) {
-        return ($pixel * $this->getConf('twips_per_pixel_y')) / 20;
+        return ($pixel * $this->config ['twips_per_pixel_y']) / 20;
     }
 
     /**

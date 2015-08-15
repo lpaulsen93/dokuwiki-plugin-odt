@@ -73,7 +73,7 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         } else { // value may contain colons
             $info_value = implode(array_slice($extinfo, 1), ':');
         }
-        return array($info_type, $info_value);
+        return array($info_type, $info_value, $pos);
     }
 
     /**
@@ -97,11 +97,12 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
 
         } else { // Extended info
 
-            list($info_type, $info_value) = $data;
+            list($info_type, $info_value, $pos) = $data;
 
             // If it is a config option store it in the meta data
             // and set the config parameter in the renderer.
-            if ( $renderer->isConfigParam($info_type) ) {
+            //if ( $renderer->isConfigParam($info_type) ) {
+            if ( $info_type != 'margin_left' && $info_type != 'margin_top' || $pos == 0 ) {
                 if($format == 'odt') {
                     /** @var renderer_plugin_odt_page $renderer */
                     $renderer->setConfigParam($info_type, $info_value);
@@ -110,6 +111,7 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                     $renderer->meta['relation']['odt'][$info_type] = $info_value;
                 }
             }
+            //}
 
             // Do some more work for the tags which are not just a config parameter setter
             switch($info_type)
@@ -135,20 +137,62 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                         $renderer->enable_links();
                     }
                 break;
-            }
-            if($info_type == "page") { // Set/change page format in exported ODT file
-                 if($format == 'odt') {
-                     /** @var renderer_plugin_odt_page $renderer */
-                     $params = explode(',', $info_value);
-                     $format = trim ($params [0]);
-                     $orientation = trim ($params [1]);
-                     for ( $index = 2 ; $index < 6 ; $index++ ) {
-                         if ( empty($params [$index]) ) {
-                             $params [$index] = 2;
-                         }
-                     }
-                     $renderer->setPageFormat($format, $orientation, $params [2], $params [3], $params [4], $params [5]);
-                 }
+                case 'page':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $params = explode(',', $info_value);
+                        $format = trim ($params [0]);
+                        $orientation = trim ($params [1]);
+                        for ( $index = 2 ; $index < 6 ; $index++ ) {
+                            if ( empty($params [$index]) ) {
+                                $params [$index] = 2;
+                            }
+                        }
+                        $renderer->setPageFormat($format, $orientation, $params [2], $params [3], $params [4], $params [5]);
+                    }
+                break;
+                case 'format':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $format = trim ($info_value);
+                        $renderer->setPageFormat($format);
+                    }
+                break;
+                case 'orientation':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $orientation = trim ($info_value);
+                        $renderer->setPageFormat(NULL,$orientation);
+                    }
+                break;
+                case 'margin_top':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $margin = trim ($info_value);
+                        $renderer->setPageFormat(NULL,NULL,$margin);
+                    }
+                break;
+                case 'margin_right':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $margin = trim ($info_value);
+                        $renderer->setPageFormat(NULL,NULL,NULL,$margin);
+                    }
+                break;
+                case 'margin_bottom':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $margin = trim ($info_value);
+                        $renderer->setPageFormat(NULL,NULL,NULL,NULL,$margin);
+                    }
+                break;
+                case 'margin_left':
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $margin = trim ($info_value);
+                        $renderer->setPageFormat(NULL,NULL,NULL,NULL,NULL,$margin);
+                    }
+                break;
             }
         }
         return false;

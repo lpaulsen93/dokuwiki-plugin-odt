@@ -119,6 +119,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Twips per pixel x and y
         $this->config ['twips_per_pixel_x'] = NULL;
         $this->config ['twips_per_pixel_y'] = NULL;
+        // Page format, orientation and margins
+        $this->config ['format'] = NULL;
+        $this->config ['orientation'] = NULL;
+        $this->config ['margin_top'] = NULL;
+        $this->config ['margin_right'] = NULL;
+        $this->config ['margin_bottom'] = NULL;
+        $this->config ['margin_left'] = NULL;
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
@@ -262,7 +269,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $warning = '';
         $this->mode = $this->determineMode($warning);
 
-        // Load and import CSS files, setup Units.
+        // Load and import CSS files, setup Units
         $this->load_css();
         $this->setupUnits();
 
@@ -282,7 +289,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Setup page format.
         $this->page = new pageFormat();
-        $this->page->setFormat('A4', 'portrait');
+        $this->setPageFormat($this->config ['format'], $this->config ['orientation'],
+            $this->config ['margin_top'], $this->config ['margin_right'], $this->config ['margin_bottom'], $this->config ['margin_left']);
+        //$this->page->setFormat('A4', 'portrait');
 
 
 
@@ -367,8 +376,28 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
      * @param numeric $margin_left    Left-Margin in cm, default 2
      */
-    public function setPageFormat ($format, $orientation, $margin_top=2, $margin_right=2, $margin_bottom=2, $margin_left=2) {
+    public function setPageFormat ($format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
         $data = array ();
+
+        // Fill missing values with current settings
+        if ( empty($format) ) {
+            $format = $this->page->getFormat();
+        }
+        if ( empty($orientation) ) {
+            $orientation = $this->page->getOrientation();
+        }
+        if ( empty($margin_top) ) {
+            $margin_top = $this->page->getMarginTop();
+        }
+        if ( empty($margin_right) ) {
+            $margin_right = $this->page->getMarginRight();
+        }
+        if ( empty($margin_bottom) ) {
+            $margin_bottom = $this->page->getMarginBottom();
+        }
+        if ( empty($margin_left) ) {
+            $margin_left = $this->page->getMarginLeft();
+        }
 
         // Adjust given parameters, query resulting format data and get format-string
         $this->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);

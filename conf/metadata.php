@@ -16,3 +16,19 @@ $meta['usestyles']    = array('string');
 $meta['twips_per_pixel_x'] = array('numeric');
 $meta['twips_per_pixel_y'] = array('numeric');
 
+$meta['format']        = array('multichoice', '_choices' => array('A6', 'A5', 'A4', 'A3',
+                                                                  'B6 (ISO)', 'B5 (ISO)', 'B4 (ISO)',
+                                                                  'Letter', 'Legal', 'Long Bond', 'Tabloid',
+                                                                  'B6 (JIS)', 'B5 (JIS)', 'B4 (JIS)',
+                                                                  '16 Kai', '32 Kai', 'Big 32 Kai',
+                                                                  'DL Envelope',
+                                                                  'C6 Envelope', 'C6/5 Envelope', 'C5 Envelope', 'C4 Envelope',
+                                                                  '#6 3/4 Envelope', '#7 3/4 (Monarch) Envelope',
+                                                                  '#9 Envelope', '#10 Envelope', '#11 Envelope', '#12 Envelope',
+                                                                  'Japanese Postcard'));
+$meta['orientation']   = array('multichoice', '_choices' => array('portrait', 'landscape'));
+$meta['margin_top']    = array('numeric');
+$meta['margin_right']  = array('numeric');
+$meta['margin_bottom'] = array('numeric');
+$meta['margin_left']   = array('numeric');
+

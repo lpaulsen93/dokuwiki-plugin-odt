@@ -20,3 +20,11 @@ $conf['usestyles']     = '';
 $conf['twips_per_pixel_x'] = '16';
 $conf['twips_per_pixel_y'] = '20';
 
+// Page format, orientation and margins in 'cm'
+$conf['format']        = 'A4';
+$conf['orientation']   = 'portrait';
+$conf['margin_top']    = '2';
+$conf['margin_right']  = '2';
+$conf['margin_bottom'] = '2';
+$conf['margin_left']   = '2';
+

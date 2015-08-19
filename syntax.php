@@ -13,7 +13,8 @@ if(!defined('DOKU_INC')) die();
  * Class syntax_plugin_odt
  */
 class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
-
+    protected $config = NULL;
+    
     /**
      * What kind of syntax are we?
      */
@@ -96,22 +97,26 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
             return true;
 
         } else { // Extended info
+            // Load config helper if not done yet
+            if ( $this->config == NULL ) {
+                $this->config = plugin_load('helper', 'odt_config');
+            }
 
             list($info_type, $info_value, $pos) = $data;
 
             // If it is a config option store it in the meta data
             // and set the config parameter in the renderer.
-            //if ( $renderer->isConfigParam($info_type) ) {
-            if ( $info_type != 'margin_left' && $info_type != 'margin_top' || $pos == 0 ) {
+            if ( $this->config->isParam($info_type) ) {
                 if($format == 'odt') {
                     /** @var renderer_plugin_odt_page $renderer */
                     $renderer->setConfigParam($info_type, $info_value);
-		} elseif($format == 'metadata') {
-                    /** @var Doku_Renderer_metadata $renderer */
-                    $renderer->meta['relation']['odt'][$info_type] = $info_value;
+                } elseif($format == 'metadata') {
+                    if ($this->config->addingToMetaIsAllowed($info_type, $pos)) {
+                        /** @var Doku_Renderer_metadata $renderer */
+                        $renderer->meta['relation']['odt'][$info_type] = $info_value;
+                    }
                 }
             }
-            //}
 
             // Do some more work for the tags which are not just a config parameter setter
             switch($info_type)

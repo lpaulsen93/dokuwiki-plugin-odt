@@ -48,10 +48,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array */
     protected $footnotes = array();
     protected $headers = array();
-    /** @var array Central storage for config parameters. Only access this, not getConf()!!! */
-    protected $config = array();
-    /** @var array Config options that need to be refreshed in document_end */
-    protected $config_refesh = array();
+    /** @var helper_plugin_odt_config */
+    protected $config = null;
     public $fields = array(); // set by Fields Plugin
     protected $in_list_item = false;
     protected $in_paragraph = false;
@@ -108,31 +106,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     public function __construct() {
         // Set up empty array with known config parameters
-
-        // ODT template.
-        $this->config ['odt_template'] = NULL;
-        // CSS template.
-        $this->config ['css_template'] = NULL;
-        // CSS media selector (screen or print)
-        $this->config ['media_sel'] = NULL;
-        // Usestyles: list of plugins for which screen styles should be loaded
-        $this->config ['usestyles'] = NULL;
-        // Twips per pixel x and y
-        $this->config ['twips_per_pixel_x'] = NULL;
-        $this->config ['twips_per_pixel_y'] = NULL;
-        // Page format, orientation and margins
-        $this->config ['format']        = NULL;
-        $this->config ['orientation']   = NULL;
-        $this->config ['margin_top']    = NULL;
-        $this->config ['margin_right']  = NULL;
-        $this->config ['margin_bottom'] = NULL;
-        $this->config ['margin_left']   = NULL;
-        $this->config ['page']          = NULL;
-        // Disable links
-        $this->config ['disable_links'] = NULL;
-
-        // Set config parameters that need to be refreshed.
-        $config_refesh [] = 'disable_links';
+        $this->config = plugin_load('helper', 'odt_config');
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
@@ -143,9 +117,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Set a config parameter from extern.
      */
     public function setConfigParam($name, $value) {
-        if (!empty($name)) {
-            $this->config [$name] = $value;
-        }
+        $this->config->setParam($name, $value);
     }
 
     /**
@@ -154,10 +126,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return bool Is it a config parameter?
      */
     public function isConfigParam($string) {
-        if (!empty($string)) {
-            return array_key_exists($string, $this->config);
-        }
-        return false;
+        return $this->config->isParam($string);
     }
 
     /**
@@ -188,7 +157,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         /** @var helper_plugin_odt_dwcssloader $loader */
         $loader = plugin_load('helper', 'odt_dwcssloader');
         if ( $loader != NULL ) {
-            $this->css = $loader->load('odt', 'odt', $this->config ['css_template'], $this->config ['usestyles']);
+            $this->css = $loader->load
+                ('odt', 'odt', $this->config->getParam('css_template'), $this->config->getParam('usestyles'));
         }
 
         $this->import = plugin_load('helper', 'odt_cssimport');
@@ -210,104 +180,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Load helper class for unit conversion.
         $this->units = plugin_load('helper', 'odt_units');
         $this->units->setPixelPerEm(14);
-        $this->units->setTwipsPerPixelX($this->config ['twips_per_pixel_x']);
-        $this->units->setTwipsPerPixelY($this->config ['twips_per_pixel_y']);
-    }
-
-    /**
-     * Load all config parameters: global config options, URL and syntax tag.
-     * Check export mode: scratch, ODT template or CSS template?
-     *
-     * @param string $warning (reference) warning message
-     * @return string
-     */
-    protected function load_config(&$warning) {
-        global $conf, $ID;
-
-        $mode = 'scratch';
-
-        // Get all known config parameters, see __construct().
-        $odt_meta = p_get_metadata($ID, 'relation odt');
-        foreach ($this->config as $name => $value) {
-            // Check plugin configuration.
-            if (!$value and $this->getConf($name)) {
-                $this->config [$name] = $this->getConf($name);
-            }
-
-            // Check if parameter is provided in the URL.
-            if (isset($_GET[$name])) {
-                $this->config [$name] = $_GET[$name];
-            }
-
-            // Check meta data in case syntax tags have written
-            // the config parameters to it.
-            $value = $odt_meta[$name];
-            if(!empty($value)) {
-                $this->config [$name] = $value;
-            }
-        }
-
-        // ODT-Template based export required?
-        if (!empty($this->config ['odt_template'])) {
-            // ODT-Template chosen
-            if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->config ['odt_template'])) {
-                //template found
-                $mode = 'ODT template';
-            } else {
-                // template chosen but not found : warn the user and use the default template
-                $warning = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
-                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->config ['odt_template'],$this->getConf("tpl_dir")) )
-                             .'</text:span></text:p>'.$this->doc;
-            }
-        }
-
-        // Convert Yes/No-String in 'disable_links' to boolean.
-        if ( $this->config ['disable_links'] != 'Yes' ) {
-            $this->config ['disable_links'] = false;
-        } else {
-            $this->config ['disable_links'] = true;
-        }
-
-        return $mode;
-    }
-
-    /**
-     * Refresh config parameters. See also load_config().
-     */
-    protected function refresh_config() {
-        global $conf, $ID;
-
-        $mode = 'scratch';
-
-        // Only refresh required config parameters, not all.
-        $odt_meta = p_get_metadata($ID, 'relation odt');
-        foreach ($this->config as $name => $value) {
-            if ( in_array($name, $config_refesh) {
-                // Check plugin configuration.
-                if (!$value and $this->getConf($name)) {
-                    $this->config [$name] = $this->getConf($name);
-                }
-
-                // Check if parameter is provided in the URL.
-                if (isset($_GET[$name])) {
-                    $this->config [$name] = $_GET[$name];
-                }
-
-                // Check meta data in case syntax tags have written
-                // the config parameters to it.
-                $value = $odt_meta[$name];
-                if(!empty($value)) {
-                    $this->config [$name] = $value;
-                }
-            }
-        }
-
-        // Convert Yes/No-String in 'disable_links' to boolean.
-        if ( $this->config ['disable_links'] != 'Yes' ) {
-            $this->config ['disable_links'] = false;
-        } else {
-            $this->config ['disable_links'] = true;
-        }
+        $this->units->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
+        $this->units->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
     }
 
     /**
@@ -321,7 +195,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // First, get export mode.
         $warning = '';
-        $this->mode = $this->load_config($warning);
+        $this->mode = $this->config->load($warning);
+        //$this->config->setParam ($, $this->getConf('format'));
+        //FIXME: output warning to document, like:
+/*                // template chosen but not found : warn the user and use the default template
+                $warning = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
+                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->config ['odt_template'],$this->getConf("tpl_dir")) )
+                             .'</text:span></text:p>'.$this->doc;*/
 
         // Load and import CSS files, setup Units
         $this->load_css();
@@ -331,8 +211,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             case 'ODT template':
                 // Document based on ODT template.
                 $this->docHandler = new ODTTemplateDH ();
-                $this->docHandler->setTemplate($this->config ['odt_template']);
-                $this->docHandler->setDirectory($this->getConf("tpl_dir"));
+                $this->docHandler->setTemplate($this->config->getParam ('odt_template'));
+                $this->docHandler->setDirectory($this->config->getParam ('tpl_dir'));
                 break;
 
             default:
@@ -343,8 +223,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Setup page format.
         $this->page = new pageFormat();
-        $this->setPageFormat($this->config ['format'], $this->config ['orientation'],
-            $this->config ['margin_top'], $this->config ['margin_right'], $this->config ['margin_bottom'], $this->config ['margin_left']);
+        $this->setPageFormat($this->config->getParam ('format'),
+                             $this->config->getParam ('orientation'),
+                             $this->config->getParam ('margin_top'),
+                             $this->config->getParam ('margin_right'),
+                             $this->config->getParam ('margin_bottom'),
+                             $this->config->getParam ('margin_left'));
         //$this->page->setFormat('A4', 'portrait');
 
 
@@ -401,12 +285,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         //$this->p_open();
         //$this->doc .= 'Mode: '.$this->mode;
-        //$this->doc .= 'Template: '.$this->config ['odt_template'];
-        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->config ['odt_template'];
+        //$this->doc .= 'Template: '.$this->config->getParam ('odt_template');
+        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->config->getParam('tpl_dir')."/".$this->config->getParam ('odt_template');
         //$this->p_close();
 
         // Refresh certain config parameters e.g. 'disable_links'
-        $this->refresh_config();
+        $this->config->refresh();
 
         // Insert TOC (if required)
         $this->insert_TOC();
@@ -582,14 +466,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Simple setter to enable creating links
      */
     function enable_links() {
-        $this->config ['disable_links'] = false;
+        $this->setParam ('disable_links', false);
     }
 
     /**
      * Simple setter to disable creating links
      */
     function disable_links() {
-        $this->config ['disable_links'] = true;
+        $this->setParam ('disable_links', true);
     }
 
     /**
@@ -2003,7 +1887,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $doc = '';
         if(is_array($name)){
             // Images
-            if($url && !$this->config ['disable_links']) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
 
             if($name['type'] == 'internalmedia'){
                 $doc .= $this->internalmedia($name['src'],
@@ -2016,12 +1900,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      true);
             }
 
-            if($url && !$this->config ['disable_links']) $doc .= '</draw:a>';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '</draw:a>';
         }else{
             // Text
-            if($url && !$this->config ['disable_links']) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
             $doc .= $name; // we get the name already XML encoded
-            if($url && !$this->config ['disable_links']) $doc .= '</text:a>';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '</text:a>';
         }
         return $doc;
     }
@@ -3608,7 +3492,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     public function getODTProperties (&$dest, $element, $classString, $inlineStyle) {
         // Get properties for our class/element from imported CSS
-        $this->import->getPropertiesForElement($dest, $element, $classString, $this->config ['media_sel']);
+        $this->import->getPropertiesForElement($dest, $element, $classString, $this->config->getParam ('media_sel'));
 
         // Interpret and add values from style to our properties
         $this->_processCSSStyle($dest, $inlineStyle);
@@ -3633,7 +3517,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsX ($pixel) {
-        return ($pixel * $this->config ['twips_per_pixel_x']) / 20;
+        return ($pixel * $this->config->getParam ('twips_per_pixel_x')) / 20;
     }
 
     /**
@@ -3641,7 +3525,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsY ($pixel) {
-        return ($pixel * $this->config ['twips_per_pixel_y']) / 20;
+        return ($pixel * $this->config->getParam ('twips_per_pixel_y')) / 20;
     }
 
     /**

@@ -68,7 +68,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
 
         // Refresh certain config parameters e.g. 'disable_links'
         // to switch links back to the configured value if they were enabled/disabled at some point
-        $this->refresh_config();
+        $this->config->refresh();
     }
 
     /**

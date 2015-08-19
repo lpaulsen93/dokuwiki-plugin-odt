@@ -521,7 +521,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // It seems to be not supported in ODT to have a different start
         // outline level than 1.
         //$start_outline_level = $conf['toptoclevel'];
-        $max_outline_level = $conf['maxtoclevel'];
+        $max_outline_level = $this->config->getParam('toc_maxlevel');
         if ( preg_match('/maxtoclevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 12);
             $temp = trim ($temp, ';');

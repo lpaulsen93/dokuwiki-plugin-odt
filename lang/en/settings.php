@@ -23,3 +23,4 @@ $lang['margin_left']           = 'Page margin Left';
 
 $lang['disable_links']         = 'Disable link creation?';
 
+$lang['toc_maxlevel']          = 'Maximum depth of the table of contents';

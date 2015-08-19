@@ -45,6 +45,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // Template directory.
         $this->config ['tpl_dir'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => false,
                   'hasMeta'            => false,
@@ -53,6 +54,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // ODT template.
         $this->config ['odt_template'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -61,6 +63,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // CSS template.
         $this->config ['css_template'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -69,6 +72,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // CSS media selector (screen or print)
         $this->config ['media_sel'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -77,6 +81,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // Usestyles: list of plugins for which screen styles should be loaded
         $this->config ['usestyles'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -85,6 +90,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // Twips per pixel x and y
         $this->config ['twips_per_pixel_x'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -92,6 +98,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['twips_per_pixel_y'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -106,6 +113,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // change the format of the first page!
         $this->config ['format']        =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -113,6 +121,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['orientation']   =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -120,6 +129,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['margin_top']    =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -127,6 +137,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['margin_right']  =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -134,6 +145,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['margin_bottom'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -141,6 +153,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['margin_left']   =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -148,6 +161,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         $this->config ['page']          =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => false,
                   'hasURL'             => true,
                   'hasMeta'            => true,
@@ -156,11 +170,21 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // Disable links
         $this->config ['disable_links'] =
             array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,
                   'hasURL'             => true,
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => true);
+        // TOC: maxlevel
+        $this->config ['toc_maxlevel'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'maxtoclevel',
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
     }
 
     /**
@@ -199,6 +223,18 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     public function isRefreshable($name) {
         if (!empty($name)) {
             return $this->config [$name]['refresh'];
+        }
+        return false;
+    }
+
+    /**
+     * Does the config parameter have a DokuWiki global config setting?
+     *
+     * @return string Name of global DokuWiki option or NULL
+     */
+    public function hasDWGlobalSetting($name) {
+        if (!empty($name)) {
+            return $this->config [$name]['DWGlobalName'];
         }
         return false;
     }
@@ -271,6 +307,12 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         foreach ($this->config as $name => $value) {
             $value = $this->getParam ($name);
             if ( !$refresh || $this->isRefreshable($name) ) {
+                // Check DokuWiki global configuration.
+                $dw_name = $this->hasDWGlobalSetting ($name);
+                if (!$value && $conf[$dw_name]) {
+                    $this->setParam ($name, $conf[$dw_name]);
+                }
+                
                 // Check plugin configuration.
                 if (!$value && $this->isGlobalSetting($name) && $this->getConf($name)) {
                     $this->setParam ($name, $this->getConf($name));

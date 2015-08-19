@@ -42,6 +42,14 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     public function __construct() {
         // Set up empty array with known config parameters
 
+        // Template directory.
+        $this->config ['tpl_dir'] =
+            array('value'              => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // ODT template.
         $this->config ['odt_template'] =
             array('value'              => NULL,

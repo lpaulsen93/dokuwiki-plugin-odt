@@ -28,7 +28,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array store the bookmarks */
     protected $bookmarks = array();
     /** @var array store the table of contents */
-    public $toc_settings = 'leader-sign=.;';
+    public $toc_settings = null;
     /** @var export mode (scratch or ODT template) */
     protected $mode = 'scratch';
     /** @var docHandler */
@@ -522,7 +522,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // outline level than 1.
         //$start_outline_level = $conf['toptoclevel'];
         $max_outline_level = $this->config->getParam('toc_maxlevel');
-        if ( preg_match('/maxtoclevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+        if ( preg_match('/maxlevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 12);
             $temp = trim ($temp, ';');
             $max_outline_level = $temp;
@@ -538,9 +538,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Determine leader-sign, default is '.'.
-        // Syntax for '.' as leader-sign would be "leader-sign=.;".
-        $leader_sign = '.';
-        if ( preg_match('/leader-sign=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+        // Syntax for '.' as leader-sign would be "leader_sign=.;".
+        $leader_sign = $this->config->getParam('toc_leader_sign');
+        if ( preg_match('/leader_sign=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 12);
             $temp = trim ($temp, ';');
             $leader_sign = $temp [0];

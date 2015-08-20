@@ -185,6 +185,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // TOC: toc_leader_sign
+        $this->config ['toc_leader_sign'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
     }
 
     /**

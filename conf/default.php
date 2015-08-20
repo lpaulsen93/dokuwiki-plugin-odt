@@ -32,4 +32,5 @@ $conf['margin_left']   = '2';
 $conf['disable_links'] = 'No';
 
 // TOC settings
-$conf['toc_maxlevel'] = '';
+$conf['toc_maxlevel']    = '';
+$conf['toc_leader_sign'] = '.';

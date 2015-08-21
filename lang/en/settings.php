@@ -25,3 +25,4 @@ $lang['disable_links']         = 'Disable link creation?';
 
 $lang['toc_maxlevel']          = 'Maximum depth of the table of contents';
 $lang['toc_leader_sign']       = 'Leader sign for the table of contents';
+$lang['toc_indents']           = 'Table of contents: Indentation per level in cm';

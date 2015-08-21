@@ -194,6 +194,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // TOC: toc_indents
+        $this->config ['toc_indents'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
     }
 
     /**
@@ -314,8 +323,9 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // Get all known config parameters, see __construct().
         $odt_meta = p_get_metadata($ID, 'relation odt');
         foreach ($this->config as $name => $value) {
-            $value = $this->getParam ($name);
             if ( !$refresh || $this->isRefreshable($name) ) {
+                $value = $this->getParam ($name);
+
                 // Check DokuWiki global configuration.
                 $dw_name = $this->hasDWGlobalSetting ($name);
                 if (!$value && $conf[$dw_name]) {
@@ -332,9 +342,6 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                 if ($this->isURLSetting($name) && isset($url_param)) {
                     $this->setParam ($name, $url_param);
                 }
-                //if ($this->isURLSetting($name) && isset($_GET[$name])) {
-                //    $this->setParam ($name, $_GET[$name]);
-                //}
 
                 // Check meta data in case syntax tags have written
                 // the config parameters to it.

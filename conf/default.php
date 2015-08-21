@@ -34,3 +34,4 @@ $conf['disable_links'] = 'No';
 // TOC settings
 $conf['toc_maxlevel']    = '';
 $conf['toc_leader_sign'] = '.';
+$conf['toc_indents']     = '0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5';

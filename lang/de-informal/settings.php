@@ -23,3 +23,4 @@ $lang['disable_links']         = 'Link-Generierung ausschalten?';
 
 $lang['toc_maxlevel']          = 'Maximale Tiefe des Inhaltsverzeichnis';
 $lang['toc_leader_sign']       = 'Füllzeichen für das Inhaltsverzeichnis';
+$lang['toc_indents']           = 'Inhaltsverzeichnis: Einzüge der Ebenen in cm';

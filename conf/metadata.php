@@ -36,3 +36,4 @@ $meta['disable_links'] = array('multichoice', '_choices' => array('No', 'Yes'));
 
 $meta['toc_maxlevel']    = array('numeric');
 $meta['toc_leader_sign'] = array('string');
+$meta['toc_indents']     = array('string');

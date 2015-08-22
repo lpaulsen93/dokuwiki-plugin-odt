@@ -212,6 +212,17 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // TOC-Styles per level
+        for ( $level = 1 ; $level < 11 ; $level++ ) {
+            $this->config ['toc_styleL'.$level] =
+                array('value'              => NULL,
+                      'DWGlobalName'       => NULL,
+                      'hasGlobal'          => true,
+                      'hasURL'             => true,
+                      'hasMeta'            => true,
+                      'addMetaAtStartOnly' => false,
+                      'refresh'            => false);
+        }
     }
 
     /**

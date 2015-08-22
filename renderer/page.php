@@ -574,7 +574,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Syntax for a style level 1 is "styleL1="color:black;"".
         // The default style is just 'color:black;'.
         for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
-            $stylesL [$count + 1] = $this->config->getParam('toc_styleL'.($count + 1));
+            $stylesL [$count + 1] = $this->config->getParam('toc_style');
             if ( preg_match('/styleL'.($count + 1).'="[^"]+";/', $this->toc_settings, $matches) === 1 ) {
                 $quote = strpos ($matches [0], '"');
                 $temp = substr ($matches [0], $quote+1);

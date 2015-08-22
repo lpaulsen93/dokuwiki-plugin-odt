@@ -549,24 +549,25 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Determine indents, default is '0.5' (cm) per level.
         // Syntax for a indent of '0.5' for 5 levels would be "indents=0,0.5,1,1.5,2;".
         // The values are absolute for each level, not relative to the higher level.
+        $indents = explode (',', $this->config->getParam('toc_indents'));
         if ( preg_match('/indents=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 8);
             $temp = trim ($temp, ';');
             $indents = explode (',', $temp);
-        } else {
-            $indents = array();
-            for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
-                $indents [$count] = $count * 0.5;
-            }
         }
 
         // Determine pagebreak, default is on '1'.
         // Syntax for pagebreak off would be "pagebreak=0;".
-        $pagebreak = 1;
+        $pagebreak = $this->config->getParam('toc_pagebreak');
         if ( preg_match('/pagebreak=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 10);
             $temp = trim ($temp, ';');
-            $pagebreak = $temp;
+            $pagebreak = false;            
+            if ( $temp == '1' ) {
+                $pagebreak = true;
+            } else if ( strcasecmp($temp, 'true') == 0 ) {
+                $pagebreak = true;
+            }
         }
 
         // Determine text styles per level.
@@ -669,7 +670,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $toc .= '</text:table-of-content>';
 
         // Add a pagebreak if required.
-        if ( (is_numeric($pagebreak) && $pagebreak) || $pagebreak == 'true' ) {
+        if ( $pagebreak ) {
             $style_name = $this->createPagebreakStyle(NULL, false);
             $toc .= '<text:p text:style-name="'.$style_name.'"/>';
         }

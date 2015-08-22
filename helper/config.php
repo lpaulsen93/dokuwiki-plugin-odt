@@ -203,6 +203,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // TOC: toc_pagebreak
+        $this->config ['toc_pagebreak'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
     }
 
     /**
@@ -365,10 +374,21 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                 }
 
                 // Convert Yes/No-String in 'disable_links' to boolean.
-                if ( $name == 'disable_links' && $this->getParam ('disable_links') != 'Yes' ) {
-                    $this->setParam ('disable_links', false);
-                } else {
-                    $this->setParam ('disable_links', true);
+                if ( $name == 'disable_links' ) {
+                    if ( strcasecmp($this->getParam ('disable_links'), 'Yes') != 0 ) {
+                        $this->setParam ('disable_links', false);
+                    } else {
+                        $this->setParam ('disable_links', true);
+                    }
+                }
+
+                // Convert Yes/No-String in 'toc_pagebreak' to boolean.
+                if ( $name == 'toc_pagebreak' ) {
+                    if ( strcasecmp($this->getParam ('toc_pagebreak'), 'Yes') == 0 ) {
+                        $this->setParam ('toc_pagebreak', true);
+                    } else {
+                        $this->setParam ('toc_pagebreak', false);
+                    }
                 }
             }
         }

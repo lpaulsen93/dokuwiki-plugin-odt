@@ -22,16 +22,72 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     function getMethods() {
         $result = array();
         $result[] = array(
-                'name'   => 'getColorValue',
-                'desc'   => 'returns the color value for a given CSS color name. Returns "#000000" if the name is unknown',
-                'params' => array('name' => 'string'),
-                'return' => array('color value' => 'string'),
+                'name'   => 'setParam',
+                'desc'   => 'set config param $name to $value.',
+                'params' => array('name' => 'string', 'value' => 'mixed'),
                 );
         $result[] = array(
-                'name'   => 'getValueName',
-                'desc'   => 'returns the CSS color name for a given color value. Returns "Black" if the value is unknown',
-                'params' => array('value' => 'string'),
-                'return' => array('name' => 'string'),
+                'name'   => 'getParam',
+                'desc'   => 'returns the current value for config param $value',
+                'params' => array('name' => 'string'),
+                'return' => array('value' => 'mixed'),
+                );
+        $result[] = array(
+                'name'   => 'isParam',
+                'desc'   => 'Is $name a known config param?',
+                'params' => array('name' => 'string'),
+                'return' => array('isParam' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'isRefreshable',
+                'desc'   => 'Is $name a refreshable config param?',
+                'params' => array('name' => 'string'),
+                'return' => array('isRefreshable' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'hasDWGlobalSetting',
+                'desc'   => 'Does param $name have a corresponding global DW param to inherit from?',
+                'params' => array('name' => 'string'),
+                'return' => array('hasDWGlobalSetting' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'isGlobalSetting',
+                'desc'   => 'Does param $name have a global config setting?',
+                'params' => array('name' => 'string'),
+                'return' => array('isGlobalSetting' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'isURLSetting',
+                'desc'   => 'Does param $name have a URL setting?',
+                'params' => array('name' => 'string'),
+                'return' => array('isURLSetting' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'isMetaSetting',
+                'desc'   => 'Does param $name have a Metadata setting?',
+                'params' => array('name' => 'string'),
+                'return' => array('isMetaSetting' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'addingToMetaIsAllowed',
+                'desc'   => 'Is it allowed to add $name (at position $pos) to the meta data?',
+                'params' => array('name' => 'string', 'pos' => 'integer'),
+                'return' => array('addingAllowed' => 'bool'),
+                );
+        $result[] = array(
+                'name'   => 'load',
+                'desc'   => 'Load the corrent settings from the global config, URL params or syntax tags/meta data',
+                'params' => array('warnings' => 'string'),
+                'return' => array('mode' => 'string'),
+                );
+        $result[] = array(
+                'name'   => 'refresh',
+                'desc'   => 'Refresh the corrent settings from the global config, URL params or syntax tags/meta data',
+                );
+        $result[] = array(
+                'name'   => 'hash',
+                'desc'   => 'Get MD5 hash of currently stored settings.',
+                'return' => array('hash' => 'string'),
                 );
         return $result;
     }
@@ -225,6 +281,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
 
     /**
      * Set a config parameter.
+     * @param string $name Name of the config param
+     * @param string $value Value to be set
      */
     public function setParam($name, $value) {
         if (!empty($name)) {
@@ -234,6 +292,9 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
 
     /**
      * Get a config parameter.
+     *
+     * @param string $name Name of the config param
+     * @return mixed Current value of param $name
      */
     public function getParam($name) {
         return $this->config [$name]['value'];
@@ -242,6 +303,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * Is the $name specified the name of a ODT plugin config parameter?
      *
+     * @param string $name Name of the config param
      * @return bool Is it a config parameter?
      */
     public function isParam($name) {
@@ -254,7 +316,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * Does the config parameter need a refresh?
      *
-     * @return bool
+     * @param string $name Name of the config param
+     * @return bool is refreshable
      */
     public function isRefreshable($name) {
         if (!empty($name)) {
@@ -266,6 +329,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * Does the config parameter have a DokuWiki global config setting?
      *
+     * @param string $name Name of the config param
      * @return string Name of global DokuWiki option or NULL
      */
     public function hasDWGlobalSetting($name) {
@@ -278,7 +342,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * Does the config parameter have a global config setting?
      *
-     * @return bool
+     * @param string $name Name of the config param
+     * @return bool is global setting
      */
     public function isGlobalSetting($name) {
         if (!empty($name)) {
@@ -290,7 +355,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * Does the config parameter have a URL config setting?
      *
-     * @return bool
+     * @param string $name Name of the config param
+     * @return bool is URL Setting
      */
     public function isURLSetting($name) {
         if (!empty($name)) {
@@ -302,7 +368,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * Does the config parameter have a Meta-Data config setting?
      *
-     * @return bool
+     * @param string $name Name of the config param
+     * @return bool is Meta Setting
      */
     public function isMetaSetting($name) {
         if (!empty($name)) {
@@ -314,6 +381,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /**
      * May the parameter be added to the Meta data?
      *
+     * @param string $name Name of the config param
+     * @param string $pos  Poistion in wiki page
      * @return bool
      */
     public function addingToMetaIsAllowed($name, $pos) {

@@ -13,7 +13,7 @@ $conf['showexportbutton'] = 1;
 
 // Parameters for CSS import
 $conf['media_sel']     = 'print';
-$conf['css_template']  = 'default';
+$conf['css_template']  = 'dokuwiki';
 $conf['usestyles']     = '';
 
 // Parameters for converting pixel to points

@@ -10,7 +10,7 @@ $meta['odt_template'] = array('string');
 $meta['showexportbutton'] = array('onoff');
 
 $meta['media_sel']    = array('string');
-$meta['css_template'] = array('dirchoice', '_dir' => DOKU_PLUGIN . 'odt/tpl/');
+$meta['css_template'] = array('dirchoice', '_dir' => DOKU_INC . 'lib/tpl/');
 $meta['usestyles']    = array('string');
 
 $meta['twips_per_pixel_x'] = array('numeric');

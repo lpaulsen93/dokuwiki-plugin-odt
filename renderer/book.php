@@ -118,10 +118,11 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      *
      * @param string       $id   page ID to link to. eg. 'wiki:syntax'
      * @param string|array $name name for the link, array for media file
+     * @param bool         $returnonly whether to return odt or write to doc attribute
      *
      * @author Andreas Gohr <andi@splitbrain.org>, LarsDW223
      */
-    function internallink($id, $name = NULL) {
+    function internallink($id, $name = NULL, $returnonly = false) {
         global $ID;
         // default name is based on $id as given
         $default = $this->_simpleTitle($id);
@@ -145,9 +146,17 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
         if($hash) $url .='#'.$hash;
 
         if ($ID == $id) {
-            $this->reference($hash, $name);
+            if($returnonly) {
+                return $this->reference($hash, $name);
+            } else {
+                $this->doc .= $this->reference($hash, $name);
+            }
         } else {
-            $this->_doLink($url,$name);
+            if($returnonly) {
+                return $this->_doLink($url,$name);
+            } else {
+                $this->doc .= $this->_doLink($url,$name);
+            }
         }
     }
 }

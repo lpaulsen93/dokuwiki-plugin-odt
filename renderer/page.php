@@ -78,6 +78,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $pageBookmark = NULL;
     /** @var pagebreak */
     protected $pagebreak = false;
+    /** @var changePageFormat */
+    protected $changePageFormat = NULL;
 
     /**
      * Automatic styles. Will always be added to content.xml and styles.xml.
@@ -346,7 +348,37 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             return;
         }
 
+        // Set marker and save data for pending change format.
+        // The format change istelf will be done on the next call to p_open or header()
+        // to prevent empty lines after the format change.
+        $this->changePageFormat = $data;
+
+        // Close paragraph if open
+        $this->p_close();
+    }
+
+    /**
+     * This function creates a style for changin the page format if required.
+     * It returns NULL if no page format change is pending or if the current
+     * page format is equal to the required page format.
+     *
+     * @param string  $parent Parent style name.
+     * @return string Name of the style to be used for changing page format
+     */
+    protected function doPageFormatChange ($parent = NULL) {
+        if ( $this->changePageFormat == NULL ) {
+            // Error.
+            return NULL;
+        }
+        $data = $this->changePageFormat;
+        $this->changePageFormat = NULL;
+
+        if ( empty($parent) ) {
+            $parent = 'Standard';
+        }
+
         // Create page layout style
+        $format_string = $this->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
         $properties ['style-name']    = 'Style-Page-'.$format_string;
         $properties ['width']         = $data ['width'];
         $properties ['height']        = $data ['height'];
@@ -366,7 +398,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $properties = array();
         $properties ['style-name']       = 'Style-'.$format_string;
         $properties ['master-page-name'] = $master_page_style_name;
-        $properties ['style-parent']     = 'Standard';
+        $properties ['style-parent']     = $parent;
         $properties ['page-number']      = 'auto';
         $style_name = $this->factory->createParagraphStyle($style_content, $properties);
         $this->autostyles [$style_name] = $style_content;
@@ -374,9 +406,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Save paragraph style name in 'Do not delete array'!
         $this->preventDeletetionStyles [] = $style_name;
 
-        // Open paragraph with new style format
-        $this->p_close();
-        $this->p_open ($style_name);
+        return $style_name;
     }
 
     /**
@@ -862,6 +892,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      */
     function cdata($text) {
+        // Insert pagebreak or page format change if still pending.
+        // Attention: NOT if $text is empty. This would lead to empty lines before headings
+        //            right after a pagebreak!
+        if ( !empty($text) ) {
+            if ( ($this->pagebreak || $this->changePageFormat != NULL) && !$this->in_paragraph ) {
+                $this->p_open();
+            }
+        }
         $this->doc .= $this->_xmlEntities($text);
     }
 
@@ -876,6 +914,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
         if (!$this->in_paragraph) { // opening a paragraph inside another paragraph is illegal
             $this->in_paragraph = true;
+            if ( $this->changePageFormat != NULL ) {
+                $page_style = $this->doPageFormatChange($style);
+                if ( $page_style != NULL ) {
+                    $style = $page_style;
+                    // Delete pagebreak, the format change will also introduce a pagebreak.
+                    $this->pagebreak = false;
+                }
+            }
             if ( $this->pagebreak ) {
                 $style = $this->createPagebreakStyle ($style);
                 $this->pagebreak = false;
@@ -936,6 +982,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $hid = $this->_headerToLink($text,true);
         $TOCRef = $this->_buildTOCReferenceID($text);
         $style = $this->styleset->getStyleName('heading'.$level);
+        if ( $this->changePageFormat != NULL ) {
+            $page_style = $this->doPageFormatChange($style);
+            if ( $page_style != NULL ) {
+                $style = $page_style;
+                // Delete pagebreak, the format change will also introduce a pagebreak.
+                $this->pagebreak = false;
+            }
+        }
         if ( $this->pagebreak ) {
             $style = $this->createPagebreakStyle ($style);
             $this->pagebreak = false;

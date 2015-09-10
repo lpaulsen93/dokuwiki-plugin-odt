@@ -285,15 +285,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Tracedump: '.$this->trace_dump;
         //$this->p_close();
 
-        //$this->p_open();
-        //$this->doc .= 'Mode: '.$this->mode;
-        //$this->doc .= 'Template: '.$this->config->getParam ('odt_template');
-        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->config->getParam('tpl_dir')."/".$this->config->getParam ('odt_template');
-        //$this->p_close();
-
-        // Refresh certain config parameters e.g. 'disable_links'
-        $this->config->refresh();
-
         // Insert TOC (if required)
         $this->insert_TOC();
 
@@ -302,6 +293,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Build the document
         $this->finalize_ODTfile();
+
+        // Refresh certain config parameters e.g. 'disable_links'
+        $this->config->refresh();
     }
 
     /**
@@ -542,15 +536,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Multiple settings can be combined, e.g. '{{odt>toc:leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;}}'.
      */
     protected function insert_TOC() {
-        global $conf;
-
         $matches = array();
         $stylesL = array();
         $stylesLNames = array();
 
         // It seems to be not supported in ODT to have a different start
         // outline level than 1.
-        //$start_outline_level = $conf['toptoclevel'];
         $max_outline_level = $this->config->getParam('toc_maxlevel');
         if ( preg_match('/maxlevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 12);
@@ -588,15 +579,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Determine pagebreak, default is on '1'.
         // Syntax for pagebreak off would be "pagebreak=0;".
-        $pagebreak = $this->config->getParam('toc_pagebreak');
+        $toc_pagebreak = $this->config->getParam('toc_pagebreak');
         if ( preg_match('/pagebreak=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 10);
             $temp = trim ($temp, ';');
-            $pagebreak = false;            
+            $toc_pagebreak = false;            
             if ( $temp == '1' ) {
-                $pagebreak = true;
+                $toc_pagebreak = true;
             } else if ( strcasecmp($temp, 'true') == 0 ) {
-                $pagebreak = true;
+                $toc_pagebreak = true;
             }
         }
 
@@ -699,7 +690,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $toc .= '</text:table-of-content>';
 
         // Add a pagebreak if required.
-        if ( $pagebreak ) {
+        $toc_pagebreak = $this->config->getParam('toc_pagebreak');
+        if ( $toc_pagebreak ) {
             $style_name = $this->createPagebreakStyle(NULL, false);
             $toc .= '<text:p text:style-name="'.$style_name.'"/>';
         }
@@ -1644,11 +1636,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function externalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
                             $height=NULL, $cache=NULL, $linking=NULL, $returnonly = false) {
-        global $conf;
         list($ext,$mime) = mimetype($src);
 
         if(substr($mime,0,5) == 'image'){
-            $tmp_dir = $conf['tmpdir']."/odt";
+            $tmp_dir = $this->config->getParam ('tmpdir')."/odt";
             $tmp_name = $tmp_dir."/".md5($src).'.'.$ext;
             $final_name = 'Pictures/'.md5($tmp_name).'.'.$ext;
             if(!$this->docHandler->fileExists($final_name)){
@@ -1976,11 +1967,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return mixed
      */
     function _getLinkTitle($title, $default, & $isImage, $id=null) {
-        global $conf;
-
         $isImage = false;
         if (is_null($title) || trim($title) == '') {
-            if ($conf['useheading'] && $id) {
+            if ($this->config->getParam ('useheading') && $id) {
                 $heading = p_get_first_heading($id);
                 if ($heading) {
                     return $this->_xmlEntities($heading);
@@ -2040,7 +2029,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function rss ($url,$params){
         global $lang;
-        global $conf;
 
         require_once(DOKU_INC . 'inc/FeedParser.php');
         $feed = new FeedParser();
@@ -2082,7 +2070,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     }
                 }
                 if($params['date']){
-                    $this->cdata(' ('.$item->get_date($conf['dformat']).')');
+                    $this->cdata(' ('.$item->get_date($this->config->getParam ('dformat')).')');
                 }
                 if($params['details']){
                     $this->cdata(strip_tags($item->get_description()));

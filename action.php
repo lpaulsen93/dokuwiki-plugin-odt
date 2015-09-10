@@ -13,6 +13,7 @@ if(!defined('DOKU_INC')) die();
  * Add the template as a page dependency for the caching system
  */
 class action_plugin_odt extends DokuWiki_Action_Plugin {
+    protected $config = NULL;
 
     /**
      * @var array
@@ -37,18 +38,21 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      */
     public function handle_cache_prepare(Doku_Event $event) {
-        global $conf, $ID;
+        // Load config helper if not done yet
+        if ( $this->config == NULL ) {
+            $this->config = plugin_load('helper', 'odt_config');
+            $this->config->load($warning);
+        }
 
         $cache =& $event->data;
         // only the ODT rendering mode needs caching tweaks
         if($cache->mode != "odt") return;
 
-        $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["odt_template"];
+        $template_name = $this->config->getParam('odt_template');
         if(!$template_name) {
             return;
         }
-        $template_path = $conf['mediadir'] . '/' . $this->getConf("tpl_dir") . "/" . $template_name;
+        $template_path = $this->config->getParam('mediadir') . '/' . $this->config->getParam('tpl_dir') . "/" . $template_name;
         if(file_exists($template_path)) {
             $cache->depends['files'][] = $template_path;
         }
@@ -62,7 +66,13 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
     public function addbutton(Doku_Event $event) {
         global $ID, $REV;
 
-        if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
+        // Load config helper if not done yet
+        if ( $this->config == NULL ) {
+            $this->config = plugin_load('helper', 'odt_config');
+            $this->config->load($warning);
+        }
+
+        if($this->config->getParam('showexportbutton') && $event->data['view'] == 'main') {
             $params = array('do' => 'export_odt');
             if($REV) {
                 $params['rev'] = $REV;
@@ -140,7 +150,12 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
         global $ACT;
         global $ID;
         global $INPUT;
-        global $conf;
+
+        // Load config helper if not done yet
+        if ( $this->config == NULL ) {
+            $this->config = plugin_load('helper', 'odt_config');
+            $this->config->load($warning);
+        }
 
         // list of one or multiple pages
         $list = array();
@@ -181,7 +196,7 @@ class action_plugin_odt extends DokuWiki_Action_Plugin {
             $result = array();
             $opts = array('depth' => $depth); //recursive all levels
             $dir = utf8_encodeFN(str_replace(':', '/', $docnamespace));
-            search($result, $conf['datadir'], 'search_allpages', $opts, $dir);
+            search($result, $this->config->getParam ('datadir'), 'search_allpages', $opts, $dir);
 
             //sorting
             if(count($result) > 0) {

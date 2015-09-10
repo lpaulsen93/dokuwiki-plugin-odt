@@ -15,6 +15,7 @@ if (!defined('DOKU_INC')) die();
 class helper_plugin_odt_config extends DokuWiki_Plugin {
     /** @var array Central storage for config parameters. */
     protected $config = array();
+    protected $mode = null;
 
     /**
      * @return array
@@ -98,6 +99,69 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     public function __construct() {
         // Set up empty array with known config parameters
 
+        // Option 'dformat', taken from global value.
+        $this->config ['dformat'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'dformat',
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Option 'useheading', taken from global value.
+        $this->config ['useheading'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'useheading',
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Temp directory, taken from global value.
+        $this->config ['tmpdir'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'tmpdir',
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Media directory, taken from global value.
+        $this->config ['mediadir'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'mediadir',
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Data directory, taken from global value.
+        $this->config ['datadir'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'datadir',
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Save directory, taken from global value.
+        $this->config ['savedir'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => 'savedir',
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Option 'showexportbutton'
+        $this->config ['showexportbutton'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // Template directory.
         $this->config ['tpl_dir'] =
             array('value'              => NULL,
@@ -405,7 +469,9 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     protected function loadIntern(&$warning, $refresh) {
         global $conf, $ID, $INPUT;
 
-        $mode = 'scratch';
+        if ( $this->mode == null ) {
+            $this->mode = 'scratch';
+        }
 
         // Get all known config parameters, see __construct().
         $odt_meta = p_get_metadata($ID, 'relation odt');
@@ -442,18 +508,17 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                     // ODT-Template chosen
                     if (file_exists($this->getParam('mediadir').'/'.$this->getParam('tpl_dir')."/".$this->getParam ('odt_template'))) {
                         //template found
-                        $mode = 'ODT template';
+                        $this->mode = 'ODT template';
                     } else {
-                        if ($warning) {
-                            // template chosen but not found : warn the user and use the default template
-                            $warning = $this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->getParam ('odt_template'),$this->getParam ('tpl_dir')) );
-                        }
+                        // template chosen but not found : warn the user and use the default template
+                        $warning = sprintf($this->getLang('tpl_not_found'),$this->getParam ('odt_template'),$this->getParam ('tpl_dir'));
                     }
                 }
 
                 // Convert Yes/No-String in 'disable_links' to boolean.
                 if ( $name == 'disable_links' ) {
-                    if ( strcasecmp($this->getParam ('disable_links'), 'Yes') != 0 ) {
+                    $temp = $this->getParam ('disable_links');
+                    if ( strcasecmp($temp, 'Yes') != 0 && $temp !== true ) {
                         $this->setParam ('disable_links', false);
                     } else {
                         $this->setParam ('disable_links', true);
@@ -462,7 +527,8 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
 
                 // Convert Yes/No-String in 'toc_pagebreak' to boolean.
                 if ( $name == 'toc_pagebreak' ) {
-                    if ( strcasecmp($this->getParam ('toc_pagebreak'), 'Yes') == 0 ) {
+                    $temp = $this->getParam ('toc_pagebreak');
+                    if ( strcasecmp($temp, 'Yes') == 0 || $temp === true ) {
                         $this->setParam ('toc_pagebreak', true);
                     } else {
                         $this->setParam ('toc_pagebreak', false);
@@ -471,7 +537,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
             }
         }
 
-        return $mode;
+        return $this->mode;
     }
 
     /**

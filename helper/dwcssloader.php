@@ -39,7 +39,6 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
      * @return string
      */
     public function load($plugin_name, $format, $template, $usestyles) {
-        global $conf;
         //reusue the CSS dispatcher functions without triggering the main function
         define('SIMPLE_TEST', 1);
         require_once(DOKU_INC . 'lib/exe/css.php');

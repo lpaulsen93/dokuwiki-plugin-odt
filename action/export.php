@@ -17,6 +17,7 @@ if(!defined('DOKU_INC')) die();
  * Collect pages and export these. GUI is available via bookcreator.
  */
 class action_plugin_odt_export extends DokuWiki_Action_Plugin {
+    protected $config = null;
 
     /**
      * @var array
@@ -119,7 +120,12 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         global $ACT;
         global $ID;
         global $INPUT;
-        global $conf;
+
+        // Load config helper if not done yet
+        if ( $this->config == NULL ) {
+            $this->config = plugin_load('helper', 'odt_config');
+            $this->config->load($warning);
+        }
 
         // list of one or multiple pages
         $list = array();
@@ -160,7 +166,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
             $result = array();
             $opts = array('depth' => $depth); //recursive all levels
             $dir = utf8_encodeFN(str_replace(':', '/', $docnamespace));
-            search($result, $conf['datadir'], 'search_allpages', $opts, $dir);
+            search($result, $this->config->getParam('datadir'), 'search_allpages', $opts, $dir);
 
             //sorting
             if(count($result) > 0) {

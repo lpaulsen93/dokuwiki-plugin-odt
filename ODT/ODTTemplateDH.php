@@ -22,6 +22,7 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
  */
 class ODTTemplateDH extends docHandler
 {
+    protected $config = null;
     var $template = null;
     var $directory = null;
 
@@ -30,6 +31,10 @@ class ODTTemplateDH extends docHandler
      */
     public function __construct() {
         parent::__construct();
+
+        // Load config
+        $this->config = plugin_load('helper', 'odt_config');
+        $this->config->load($warning);
     }
 
     /**
@@ -64,22 +69,22 @@ class ODTTemplateDH extends docHandler
      */
     public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null, $pagestyles=null){
         // for the temp dir
-        global $conf, $ID;
+        global $ID;
 
         // Temp dir
-        if (is_dir($conf['tmpdir'])) {
+        if (is_dir($this->config->getParam('tmpdir'))) {
             // version > 20070626
-            $temp_dir = $conf['tmpdir'];
+            $temp_dir = $this->config->getParam('tmpdir');
         } else {
             // version <= 20070626
-            $temp_dir = $conf['savedir'].'/cache/tmp';
+            $temp_dir = $this->config->getParam('savedir').'/cache/tmp';
         }
         $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
         if (is_dir($temp_dir)) { io_rmdir($temp_dir,true); }
         io_mkdir_p($temp_dir);
 
         // Extract template
-        $template_path = $conf['mediadir'].'/'.$this->directory."/".$this->template;
+        $template_path = $this->config->getParam('mediadir').'/'.$this->directory."/".$this->template;
         $ok = $this->ZIP->Extract($template_path, $temp_dir);
         if($ok == -1){
             throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$temp_dir);

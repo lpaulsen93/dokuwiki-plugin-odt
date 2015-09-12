@@ -180,6 +180,16 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // Template =ODT template, old parameter,
+        // included for backwards compatibility.
+        $this->config ['template'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // CSS template.
         $this->config ['css_template'] =
             array('value'              => NULL,
@@ -501,6 +511,19 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                 $value = $odt_meta[$name];
                 if($this->isMetaSetting($name) && !empty($value)) {
                     $this->setParam ($name, $value);
+                }
+
+                // ODT-Template based export required?
+                // (old parameter)
+                if ( $name == 'template' && !empty($this->getParam ('template'))) {
+                    // ODT-Template chosen
+                    if (file_exists($this->getParam('mediadir').'/'.$this->getParam('tpl_dir')."/".$this->getParam ('template'))) {
+                        //template found
+                        $this->mode = 'ODT template';
+                    } else {
+                        // template chosen but not found : warn the user and use the default template
+                        $warning = sprintf($this->getLang('tpl_not_found'),$this->getParam ('template'),$this->getParam ('tpl_dir'));
+                    }
                 }
 
                 // ODT-Template based export required?

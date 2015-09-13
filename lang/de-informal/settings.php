@@ -9,6 +9,20 @@ $lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Media Manage
 $lang['showexportbutton']      = 'Den ODT Export Button anzeigen';
 
 $lang['media_sel']             = 'Welcher @media Selektor soll verwendet werden um CSS-Eigenschaften abzufragen?';
-$lang['template']              = 'Welches Template soll zur Formatierung der ODT-Dateien verwendet werden?';
+$lang['css_template']          = 'Welches Template soll zur Formatierung der ODT-Dateien verwendet werden?';
 $lang['usestyles']             = 'Hier können komma-separiert Plugins angegeben werden, von denen die <code>style.css</code> oder <code>screen.css</code> für die ODT-Generierung verwendet werden sollen. Als Standard wird nur <code>print.css</code> und <code>odt.css</code> verwendet.';
 
+$lang['format']                = 'Seitenformat';
+$lang['orientation']           = 'Seiten-Ausrichtung';
+$lang['margin_top']            = 'Seitenrand Oben';
+$lang['margin_right']          = 'Seitenrand Rechts';
+$lang['margin_bottom']         = 'Seitenrand Unten';
+$lang['margin_left']           = 'Seitenrand Links';
+
+$lang['disable_links']         = 'Link-Generierung ausschalten?';
+
+$lang['toc_maxlevel']          = 'Maximale Tiefe des Inhaltsverzeichnis';
+$lang['toc_leader_sign']       = 'Füllzeichen für das Inhaltsverzeichnis';
+$lang['toc_indents']           = 'Inhaltsverzeichnis: Einzüge der Ebenen in cm';
+$lang['toc_pagebreak']         = 'Nach dem Inhaltsverzeichnis einen Seitenumbruch einfügen?';
+$lang['toc_style']             = 'Text-Stil für das Inhaltsverzeichnis';

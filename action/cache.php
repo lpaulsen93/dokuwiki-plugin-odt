@@ -13,6 +13,7 @@ if(!defined('DOKU_INC')) die();
  * Add the template as a page dependency for the caching system
  */
 class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
+    protected $config = null;
 
     /**
      * Register the event
@@ -29,18 +30,21 @@ class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      */
     public function handle_cache_prepare(Doku_Event $event) {
-        global $conf, $ID;
+        // Load config helper if not done yet
+        if ( $this->config == NULL ) {
+            $this->config = plugin_load('helper', 'odt_config');
+            $this->config->load($warning);
+        }
 
         $cache =& $event->data;
         // only the ODT rendering mode needs caching tweaks
         if($cache->mode != "odt") return;
 
-        $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["template"];
+        $template_name = $this->config->getParam('odt_template');
         if(!$template_name) {
             return;
         }
-        $template_path = $conf['mediadir'] . '/' . $this->getConf("tpl_dir") . "/" . $template_name;
+        $template_path = $this->config->getParam('mediadir') . '/' . $this->config->getParam('tpl_dir') . "/" . $template_name;
         if(file_exists($template_path)) {
             $cache->depends['files'][] = $template_path;
         }

@@ -28,7 +28,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array store the bookmarks */
     protected $bookmarks = array();
     /** @var array store the table of contents */
-    public $toc_settings = 'leader-sign=.;';
+    public $toc_settings = null;
     /** @var export mode (scratch or ODT template) */
     protected $mode = 'scratch';
     /** @var docHandler */
@@ -48,7 +48,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var array */
     protected $footnotes = array();
     protected $headers = array();
-    public $template = "";
+    /** @var helper_plugin_odt_config */
+    protected $config = null;
     public $fields = array(); // set by Fields Plugin
     protected $in_list_item = false;
     protected $in_paragraph = false;
@@ -65,7 +66,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
-    protected $disable_links = false;
     /** @var Current pageFormat */
     protected $page = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
@@ -104,34 +104,31 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     //var $trace_dump;
 
     /**
-     * Constructor. Loads and imports CSS and helper plugins.
+     * Constructor. Loads helper plugins.
      */
     public function __construct() {
+        // Set up empty array with known config parameters
+        $this->config = plugin_load('helper', 'odt_config');
+
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
-        /** @var helper_plugin_odt_dwcssloader $loader */
-        $loader = plugin_load('helper', 'odt_dwcssloader');
-        if ( $loader != NULL ) {
-            $this->css = $loader->load('odt', 'odt', $this->getConf('template'));
-        }
-
-        $this->import = plugin_load('helper', 'odt_cssimport');
-        if ( $this->import != NULL ) {
-            $this->import->importFromString ($this->css);
-        }
-
-        // Call adjustLengthValues to make our callback function being called for every
-        // length value imported. This gives us the chance to convert it once from
-        // pixel to points.
-        $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
-
-        // Load helper class for unit conversion.
-        $this->units = plugin_load('helper', 'odt_units');
-        $this->units->setPixelPerEm(14);
-        $this->units->setTwipsPerPixelX($this->getConf('twips_per_pixel_x'));
-        $this->units->setTwipsPerPixelY($this->getConf('twips_per_pixel_y'));
-
         $this->meta = new ODTMeta();
+    }
+
+    /**
+     * Set a config parameter from extern.
+     */
+    public function setConfigParam($name, $value) {
+        $this->config->setParam($name, $value);
+    }
+
+    /**
+     * Is the $string specified the name of a ODT plugin config parameter?
+     *
+     * @return bool Is it a config parameter?
+     */
+    public function isConfigParam($string) {
+        return $this->config->isParam($string);
     }
 
     /**
@@ -156,50 +153,37 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Check export mode: scratch, ODT template or CSS template?
-     *
-     * @param string $warning (reference) warning message
-     * @return string
+     * Load and imports CSS.
      */
-    protected function determineMode(&$warning) {
-        global $conf, $ID;
-
-        $mode = 'scratch';
-
-        // Template name provided in the URL
-        if (isset($_GET["odt-template"])) {
-            $this->template = $_GET["odt-template"];
-            $mode = 'ODT template';
+    protected function load_css() {
+        /** @var helper_plugin_odt_dwcssloader $loader */
+        $loader = plugin_load('helper', 'odt_dwcssloader');
+        if ( $loader != NULL ) {
+            $this->css = $loader->load
+                ('odt', 'odt', $this->config->getParam('css_template'), $this->config->getParam('usestyles'));
         }
 
-        // Template provided in the configuration
-        if (!$this->template and $this->getConf("tpl_default")) {
-            $this->template = $this->getConf("tpl_default");
-            $mode = 'ODT template';
+        $this->import = plugin_load('helper', 'odt_cssimport');
+        if ( $this->import != NULL ) {
+            $this->import->importFromString ($this->css);
         }
 
-        $odt_meta = p_get_metadata($ID, 'relation odt');
-        $template_name = $odt_meta["template"];
-        if(!empty($template_name)) {
-            $this->template = $template_name;
-        }
+        // Call adjustLengthValues to make our callback function being called for every
+        // length value imported. This gives us the chance to convert it once from
+        // pixel to points.
+        $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
+    }
 
-        if ($this->template) {
-            // template chosen
-            if (file_exists($conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template)) {
-                //template found
-                $mode = 'ODT template';
-            } else {
-                // template chosen but not found : warn the user and use the default template
-                $warning = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
-                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->template,$this->getConf("tpl_dir")) )
-                             .'</text:span></text:p>'.$this->doc;
-            }
-        }
-
-        // FIXME: determine CSS template!
-
-        return $mode;
+    /**
+     * Load and configure units helper.
+     */
+    protected function setupUnits()
+    {
+        // Load helper class for unit conversion.
+        $this->units = plugin_load('helper', 'odt_units');
+        $this->units->setPixelPerEm(14);
+        $this->units->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
+        $this->units->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
     }
 
     /**
@@ -213,14 +197,24 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // First, get export mode.
         $warning = '';
-        $this->mode = $this->determineMode($warning);
+        $this->mode = $this->config->load($warning);
+        //$this->config->setParam ($, $this->getConf('format'));
+        //FIXME: output warning to document, like:
+/*                // template chosen but not found : warn the user and use the default template
+                $warning = '<text:p text:style-name="'.$this->styleset->getStyleName('body').'"><text:span text:style-name="'.$this->styleset->getStyleName('strong').'">'
+                             .$this->_xmlEntities( sprintf($this->getLang('tpl_not_found'),$this->config ['odt_template'],$this->getConf("tpl_dir")) )
+                             .'</text:span></text:p>'.$this->doc;*/
+
+        // Load and import CSS files, setup Units
+        $this->load_css();
+        $this->setupUnits();
 
         switch($this->mode) {
             case 'ODT template':
                 // Document based on ODT template.
                 $this->docHandler = new ODTTemplateDH ();
-                $this->docHandler->setTemplate($this->template);
-                $this->docHandler->setDirectory($this->getConf("tpl_dir"));
+                $this->docHandler->setTemplate($this->config->getParam ('odt_template'));
+                $this->docHandler->setDirectory($this->config->getParam ('tpl_dir'));
                 break;
 
             default:
@@ -231,7 +225,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Setup page format.
         $this->page = new pageFormat();
-        $this->page->setFormat('A4', 'portrait');
+        $this->setPageFormat($this->config->getParam ('format'),
+                             $this->config->getParam ('orientation'),
+                             $this->config->getParam ('margin_top'),
+                             $this->config->getParam ('margin_right'),
+                             $this->config->getParam ('margin_bottom'),
+                             $this->config->getParam ('margin_left'));
+        //$this->page->setFormat('A4', 'portrait');
 
 
 
@@ -285,15 +285,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->doc .= 'Tracedump: '.$this->trace_dump;
         //$this->p_close();
 
-        //$this->p_open();
-        //$this->doc .= 'Mode: '.$this->mode;
-        //$this->doc .= 'Template: '.$this->template;
-        //$this->doc .= 'Path: '.$conf['mediadir'].'/'.$this->getConf("tpl_dir")."/".$this->template;
-        //$this->p_close();
-
-        // Switch links back on
-        $this->enable_links();
-
         // Insert TOC (if required)
         $this->insert_TOC();
 
@@ -302,6 +293,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Build the document
         $this->finalize_ODTfile();
+
+        // Refresh certain config parameters e.g. 'disable_links'
+        $this->config->refresh();
     }
 
     /**
@@ -496,14 +490,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Simple setter to enable creating links
      */
     function enable_links() {
-        $this->disable_links = false;
+        $this->setParam ('disable_links', false);
     }
 
     /**
      * Simple setter to disable creating links
      */
     function disable_links() {
-        $this->disable_links = true;
+        $this->setParam ('disable_links', true);
     }
 
     /**
@@ -542,17 +536,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Multiple settings can be combined, e.g. '{{odt>toc:leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;}}'.
      */
     protected function insert_TOC() {
-        global $conf;
-
         $matches = array();
         $stylesL = array();
         $stylesLNames = array();
 
         // It seems to be not supported in ODT to have a different start
         // outline level than 1.
-        //$start_outline_level = $conf['toptoclevel'];
-        $max_outline_level = $conf['maxtoclevel'];
-        if ( preg_match('/maxtoclevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+        $max_outline_level = $this->config->getParam('toc_maxlevel');
+        if ( preg_match('/maxlevel=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 12);
             $temp = trim ($temp, ';');
             $max_outline_level = $temp;
@@ -568,9 +559,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Determine leader-sign, default is '.'.
-        // Syntax for '.' as leader-sign would be "leader-sign=.;".
-        $leader_sign = '.';
-        if ( preg_match('/leader-sign=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
+        // Syntax for '.' as leader-sign would be "leader_sign=.;".
+        $leader_sign = $this->config->getParam('toc_leader_sign');
+        if ( preg_match('/leader_sign=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 12);
             $temp = trim ($temp, ';');
             $leader_sign = $temp [0];
@@ -579,37 +570,37 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Determine indents, default is '0.5' (cm) per level.
         // Syntax for a indent of '0.5' for 5 levels would be "indents=0,0.5,1,1.5,2;".
         // The values are absolute for each level, not relative to the higher level.
+        $indents = explode (',', $this->config->getParam('toc_indents'));
         if ( preg_match('/indents=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 8);
             $temp = trim ($temp, ';');
             $indents = explode (',', $temp);
-        } else {
-            $indents = array();
-            for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
-                $indents [$count] = $count * 0.5;
-            }
         }
 
         // Determine pagebreak, default is on '1'.
         // Syntax for pagebreak off would be "pagebreak=0;".
-        $pagebreak = 1;
+        $toc_pagebreak = $this->config->getParam('toc_pagebreak');
         if ( preg_match('/pagebreak=[^;]+;/', $this->toc_settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 10);
             $temp = trim ($temp, ';');
-            $pagebreak = $temp;
+            $toc_pagebreak = false;            
+            if ( $temp == '1' ) {
+                $toc_pagebreak = true;
+            } else if ( strcasecmp($temp, 'true') == 0 ) {
+                $toc_pagebreak = true;
+            }
         }
 
         // Determine text styles per level.
         // Syntax for a style level 1 is "styleL1="color:black;"".
         // The default style is just 'color:black;'.
         for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
+            $stylesL [$count + 1] = $this->config->getParam('toc_style');
             if ( preg_match('/styleL'.($count + 1).'="[^"]+";/', $this->toc_settings, $matches) === 1 ) {
                 $quote = strpos ($matches [0], '"');
                 $temp = substr ($matches [0], $quote+1);
                 $temp = trim ($temp, '";');
                 $stylesL [$count + 1] = $temp.';';
-            } else {
-                $stylesL [$count + 1] = 'color:black;';
             }
         }
 
@@ -699,7 +690,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $toc .= '</text:table-of-content>';
 
         // Add a pagebreak if required.
-        if ( (is_numeric($pagebreak) && $pagebreak) || $pagebreak == 'true' ) {
+        $toc_pagebreak = $this->config->getParam('toc_pagebreak');
+        if ( $toc_pagebreak ) {
             $style_name = $this->createPagebreakStyle(NULL, false);
             $toc .= '<text:p text:style-name="'.$style_name.'"/>';
         }
@@ -1644,11 +1636,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function externalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
                             $height=NULL, $cache=NULL, $linking=NULL, $returnonly = false) {
-        global $conf;
         list($ext,$mime) = mimetype($src);
 
         if(substr($mime,0,5) == 'image'){
-            $tmp_dir = $conf['tmpdir']."/odt";
+            $tmp_dir = $this->config->getParam ('tmpdir')."/odt";
             $tmp_name = $tmp_dir."/".md5($src).'.'.$ext;
             $final_name = 'Pictures/'.md5($tmp_name).'.'.$ext;
             if(!$this->docHandler->fileExists($final_name)){
@@ -1941,7 +1932,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $doc = '';
         if(is_array($name)){
             // Images
-            if($url && !$this->disable_links) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
 
             if($name['type'] == 'internalmedia'){
                 $doc .= $this->internalmedia($name['src'],
@@ -1954,12 +1945,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      true);
             }
 
-            if($url && !$this->disable_links) $doc .= '</draw:a>';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '</draw:a>';
         }else{
             // Text
-            if($url && !$this->disable_links) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
             $doc .= $name; // we get the name already XML encoded
-            if($url && !$this->disable_links) $doc .= '</text:a>';
+            if($url && !$this->config->getParam ('disable_links')) $doc .= '</text:a>';
         }
         return $doc;
     }
@@ -1976,11 +1967,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return mixed
      */
     function _getLinkTitle($title, $default, & $isImage, $id=null) {
-        global $conf;
-
         $isImage = false;
         if (is_null($title) || trim($title) == '') {
-            if ($conf['useheading'] && $id) {
+            if ($this->config->getParam ('useheading') && $id) {
                 $heading = p_get_first_heading($id);
                 if ($heading) {
                     return $this->_xmlEntities($heading);
@@ -2040,7 +2029,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function rss ($url,$params){
         global $lang;
-        global $conf;
 
         require_once(DOKU_INC . 'inc/FeedParser.php');
         $feed = new FeedParser();
@@ -2082,7 +2070,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     }
                 }
                 if($params['date']){
-                    $this->cdata(' ('.$item->get_date($conf['dformat']).')');
+                    $this->cdata(' ('.$item->get_date($this->config->getParam ('dformat')).')');
                 }
                 if($params['details']){
                     $this->cdata(strip_tags($item->get_description()));
@@ -3546,7 +3534,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     public function getODTProperties (&$dest, $element, $classString, $inlineStyle) {
         // Get properties for our class/element from imported CSS
-        $this->import->getPropertiesForElement($dest, $element, $classString, $this->getConf('media_sel'));
+        $this->import->getPropertiesForElement($dest, $element, $classString, $this->config->getParam ('media_sel'));
 
         // Interpret and add values from style to our properties
         $this->_processCSSStyle($dest, $inlineStyle);
@@ -3571,7 +3559,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsX ($pixel) {
-        return ($pixel * $this->getConf('twips_per_pixel_x')) / 20;
+        return ($pixel * $this->config->getParam ('twips_per_pixel_x')) / 20;
     }
 
     /**
@@ -3579,7 +3567,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsY ($pixel) {
-        return ($pixel * $this->getConf('twips_per_pixel_y')) / 20;
+        return ($pixel * $this->config->getParam ('twips_per_pixel_y')) / 20;
     }
 
     /**

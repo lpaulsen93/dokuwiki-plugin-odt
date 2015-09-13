@@ -38,8 +38,7 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
      * @param $template
      * @return string
      */
-    public function load($plugin_name, $format, $template) {
-        global $conf;
+    public function load($plugin_name, $format, $template, $usestyles) {
         //reusue the CSS dispatcher functions without triggering the main function
         define('SIMPLE_TEST', 1);
         require_once(DOKU_INC . 'lib/exe/css.php');
@@ -56,7 +55,7 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
                     => DOKU_BASE . 'lib/styles/',
             ),
             css_pluginstyles('all'),
-            $this->css_pluginFormatStyles($format),
+            $this->css_pluginFormatStyles($format, $usestyles),
             array(
                 DOKU_PLUGIN . $plugin_name.'/conf/style.css'
                     => DOKU_BASE . 'lib/plugins/'.$plugin_name.'/conf/',
@@ -86,14 +85,14 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
 
         if(function_exists('css_parseless')) {
             // apply pattern replacements
-            $styleini = css_styleini($conf['template']);
+            $styleini = css_styleini($template);
             $css = css_applystyle($css, $styleini['replacements']);
 
             // parse less
             $css = css_parseless($css);
         } else {
             // @deprecated 2013-12-19: fix backward compatibility
-            $css = css_applystyle($css, DOKU_INC . 'lib/tpl/' . $conf['template'] . '/');
+            $css = css_applystyle($css, DOKU_INC . 'lib/tpl/' . $template . '/');
         }
 
         return $css;
@@ -109,11 +108,11 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
      * @param string $format
      * @return array
      */
-    protected function css_pluginFormatStyles($format) {
+    protected function css_pluginFormatStyles($format, $usestyles) {
         $list = array();
         $plugins = plugin_list();
 
-        $temp = explode(',', $this->getConf('usestyles'));
+        $temp = explode(',', $usestyles);
         $usestyle = array();
         foreach ($temp as $entry) {
             $usestyle [] = trim ($entry);

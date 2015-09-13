@@ -64,9 +64,11 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      * Closes the document
      */
     public function document_end() {
-         //ODT file creation is performed by finalize_ODTfile()
-         // Switch links back on in case they were disabled at some point
-         $this->enable_links();
+        //ODT file creation is performed by finalize_ODTfile()
+
+        // Refresh certain config parameters e.g. 'disable_links'
+        // to switch links back to the configured value if they were enabled/disabled at some point
+        $this->config->refresh();
     }
 
     /**

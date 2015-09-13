@@ -17,6 +17,7 @@ if(!defined('DOKU_INC')) die();
  * Collect pages and export these. GUI is available via bookcreator.
  */
 class action_plugin_odt_export extends DokuWiki_Action_Plugin {
+    protected $config = null;
 
     /**
      * @var array
@@ -79,6 +80,20 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
             $ACT = 'export_odt_page';
         }
 
+        if( strncmp($ACT, 'export_odt', strlen('export_odt')) == 0 ) {
+            // On export to ODT load config helper if not done yet
+            // and stop on errors.
+            if ( $this->config == NULL ) {
+                $this->config = plugin_load('helper', 'odt_config');
+                $this->config->load($warning);
+
+                if (!empty($warning)) {
+                    $this->showPageWithErrorMsg($event, NULL, $warning);
+                    return false;
+                }
+            }
+        }
+
         // the book export?
         if(($ACT != 'export_odtbook') && ($ACT != 'export_odtns')) return false;
 
@@ -119,7 +134,12 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         global $ACT;
         global $ID;
         global $INPUT;
-        global $conf;
+
+        // Load config helper if not done yet
+        if ( $this->config == NULL ) {
+            $this->config = plugin_load('helper', 'odt_config');
+            $this->config->load($warning);
+        }
 
         // list of one or multiple pages
         $list = array();
@@ -160,7 +180,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
             $result = array();
             $opts = array('depth' => $depth); //recursive all levels
             $dir = utf8_encodeFN(str_replace(':', '/', $docnamespace));
-            search($result, $conf['datadir'], 'search_allpages', $opts, $dir);
+            search($result, $this->config->getParam('datadir'), 'search_allpages', $opts, $dir);
 
             //sorting
             if(count($result) > 0) {
@@ -203,8 +223,14 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      * @param string     $msglangkey key of translation key
      */
-    private function showPageWithErrorMsg(Doku_Event $event, $msglangkey) {
-        msg($this->getLang($msglangkey), -1);
+    private function showPageWithErrorMsg(Doku_Event $event, $msglangkey, $translatedMsg=NULL) {
+        if (!empty($msglangkey)) {
+            // Message need to be translated.
+            msg($this->getLang($msglangkey), -1);
+        } else {
+            // Message already has been translated.
+            msg($translatedMsg, -1);
+        }
 
         $event->data = 'show';
         $_SERVER['REQUEST_METHOD'] = 'POST'; //clears url
@@ -222,8 +248,8 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         global $INPUT;
 
         //different caches for varying config settings
-        $template = $this->getConf("tpl_default");
-        $template = $INPUT->get->str('odt-template', $template, true);
+        $template = $this->getConf("odt_template");
+        $template = $INPUT->get->str('odt_template', $template, true);
 
 
         $cachekey = join(',', $this->list)

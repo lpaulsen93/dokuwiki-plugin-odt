@@ -51,6 +51,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var helper_plugin_odt_config */
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
+    protected $in_list = null;
+    protected $list_interrupted = null;
     protected $in_list_item = false;
     protected $in_paragraph = false;
     protected $in_div_as_frame = 0;
@@ -1100,6 +1102,53 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '</text:span>';
     }
 
+    /**
+     * Interrupt a list and set variables to continue it later
+     * in form of a new list continuing the numbering.
+     *
+     * This is necessary if a table is part of a list item as in the ODT
+     * format a table:table element may not be included or be child of a list item.
+     */
+    protected function interruptList () {
+        if ($this->in_list) {
+            $this->listcontent_close();
+            $this->listitem_close();
+
+            switch($this->in_list) {
+                case 'listu':
+                    $this->listu_close();
+                    $this->list_interrupted = 'listu';
+                    break;
+                case 'listo':
+                    $this->listo_close();
+                    $this->list_interrupted = 'listo';
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Continue/re-open a list previously closed/interrupted by
+     * calling interruptList ().
+     */
+    protected function continueList () {
+        if ($this->list_interrupted != null) {
+            switch($this->list_interrupted) {
+                case 'listu':
+                    $this->listu_open(true);
+                    break;
+                case 'listo':
+                    $this->listo_open(true);
+                    break;
+            }
+            // list_interrupted will be reset on the next call to listitem_open():
+            // the parser will still call listcontent_close() and listitem_close()
+            // and this functions may do nothing until the next item is opened.
+            // The last list item has been closed on opening the table!
+            //$this->list_interrupted = null;
+        }
+    }
+
     /*
      * Tables
      */
@@ -1111,6 +1160,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $numrows NOT IMPLEMENTED
      */
     function table_open($maxcols = NULL, $numrows = NULL){
+        // Do additional actions required if we are in a list
+        $this->interruptList ();
+        
         $this->doc .= '<table:table>';
         for($i=0; $i<$maxcols; $i++){
             $this->doc .= '<table:table-column />';
@@ -1119,6 +1171,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function table_close(){
         $this->doc .= '</table:table>';
+
+        // Do additional actions required if we interripted a list,
+        // see table_open()
+        $this->continueList ();
     }
 
     function tablerow_open(){
@@ -1237,22 +1293,34 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
-    function listu_open() {
+    function listu_open($continue=false) {
         $this->p_close();
-        $this->doc .= '<text:list text:style-name="'.$this->styleset->getStyleName('list').'">';
+        $this->doc .= '<text:list text:style-name="'.$this->styleset->getStyleName('list').'"';
+        if ($continue) {
+            $this->doc .= ' text:continue-numbering="true" ';
+        }
+        $this->doc .= '>';
+        $this->in_list = 'listu';
     }
 
     function listu_close() {
         $this->doc .= '</text:list>';
+        $this->in_list = null;
     }
 
-    function listo_open() {
+    function listo_open($continue=false) {
         $this->p_close();
-        $this->doc .= '<text:list text:style-name="'.$this->styleset->getStyleName('numbering').'">';
+        $this->doc .= '<text:list text:style-name="'.$this->styleset->getStyleName('numbering').'"';
+        if ($continue) {
+            $this->doc .= ' text:continue-numbering="true" ';
+        }
+        $this->doc .= '>';
+        $this->in_list = 'listo';
     }
 
     function listo_close() {
         $this->doc .= '</text:list>';
+        $this->in_list = null;
     }
     /**
      * Open a list item
@@ -1260,11 +1328,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $level the nesting level
      */
     function listitem_open($level) {
+        $this->list_interrupted = null;
         $this->in_list_item = true;
         $this->doc .= '<text:list-item>';
     }
 
     function listitem_close() {
+        if ($this->list_interrupted != null) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
         $this->in_list_item = false;
         $this->doc .= '</text:list-item>';
     }
@@ -1274,6 +1347,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function listcontent_close() {
+        if ($this->list_interrupted != null) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
         $this->doc .= '</text:p>';
     }
 

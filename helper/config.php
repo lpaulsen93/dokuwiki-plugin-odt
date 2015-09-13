@@ -16,6 +16,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
     /** @var array Central storage for config parameters. */
     protected $config = array();
     protected $mode = null;
+    protected $messages = null;
 
     /**
      * @return array
@@ -523,6 +524,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                     } else {
                         // template chosen but not found : warn the user and use the default template
                         $warning = sprintf($this->getLang('tpl_not_found'),$this->getParam ('template'),$this->getParam ('tpl_dir'));
+                        $this->messages .= $warning;
                     }
                 }
 
@@ -560,6 +562,10 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
             }
         }
 
+        if (!empty($this->getParam ('template')) && empty($this->getParam ('odt_template'))) {
+            $this->setParam ('odt_template', $this->getParam ('template'));
+        }
+
         return $this->mode;
     }
 
@@ -595,5 +601,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         
         // Return the md5 hash for it.
         return hash('md5', $content);
+    }
+
+    /**
+     * Get warning messages from loading the config which
+     * can be presented to the user.
+     *
+     * @return string Collected messages.
+     */
+    public function getMessages() {
+        return $this->messages;
     }
 }

@@ -17,9 +17,8 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
     public static function setUpBeforeClass(){
         parent::setUpBeforeClass();
 
-        // copy CSS test file to test directory
-        TestUtils::rcopy(DOKU_INC.'_test/data/tmp', DOKU_INC.'lib/plugins/odt/_test/dw_css_with_wrap.css');
-        TestUtils::rcopy(DOKU_INC.'_test/data/tmp', DOKU_INC.'lib/plugins/odt/_test/dw_css_without_extra_wrap.css');
+        // copy CSS test files to test directory
+        TestUtils::rcopy(TMP_DIR, dirname(__FILE__) . '/data/');
     }
 
     /**
@@ -620,12 +619,12 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $properties = array();
 
         $import = new helper_plugin_odt_cssimport ();
-        $import->importFromFile ('./data/tmp/dw_css_with_wrap.css');
+        $import->importFromFile (TMP_DIR . '/data/dw_css_with_wrap.css');
         $import->getPropertiesForElement ($properties, 'div', 'dokuwiki wrap_help', 'only screen and (max-width: 600px)');
 
         // For debugging: this will write the parsed/imported CSS in the file
-        // _test/data/tmp/odt_parsed.css
-        //$handle = fopen ('./data/tmp/odt_parsed.css', 'w');
+        // /tmp/dwtests-xxx.yyy/data/odt_parsed.css
+        //$handle = fopen (TMP_DIR . '/data/odt_parsed.css', 'w');
         //fwrite ($handle, $import->rulesToString());
         //fclose ($handle);
 
@@ -676,12 +675,12 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $properties = array();
 
         $import = new helper_plugin_odt_cssimport ();
-        $import->importFromFile ('./data/tmp/dw_css_without_extra_wrap.css');
+        $import->importFromFile (TMP_DIR . '/data/dw_css_without_extra_wrap.css');
         $import->getPropertiesForElement ($properties, 'div', 'dokuwiki wrap_help', 'print');
 
         // For debugging: this will write the parsed/imported CSS in the file
-        // _test/data/tmp/odt_parsed.css
-        //$handle = fopen ('./data/tmp/odt_parsed.css', 'w');
+        // /tmp/dwtests-xxx.yyy/data/odt_parsed.css
+        //$handle = fopen (TMP_DIR . '/data/odt_parsed.css', 'w');
         //fwrite ($handle, $import->rulesToString());
         //fclose ($handle);
 
@@ -732,8 +731,8 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $import->getPropertiesForElement ($properties, 'div', 'dokuwiki wrap_help');
 
         // For debugging: this will write the parsed/imported CSS in the file
-        // _test/data/tmp/odt_parsed.css
-        //$handle = fopen ('./data/tmp/odt_parsed.css', 'w');
+        // /tmp/dwtests-xxx.yyy/data/odt_parsed.css
+        //$handle = fopen (TMP_DIR . '/data/odt_parsed.css', 'w');
         //fwrite ($handle, $import->rulesToString());
         //fclose ($handle);
 
@@ -741,7 +740,7 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $this->assertEquals(2, count($properties));
         $this->assertEquals('#dcc2ef', $properties ['background-color']);
         $this->assertEquals('url(images/note/48/help.png)', $properties ['background-image']);
-   }
+    }
 
     /**
      * Test some more  wrap CSS.
@@ -780,8 +779,8 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $import->getPropertiesForElement ($properties, 'span', 'dokuwiki wrap_help', 'print');
 
         // For debugging: this will write the parsed/imported CSS in the file
-        // _test/data/tmp/odt_parsed.css
-        $handle = fopen ('./data/tmp/odt_parsed.css', 'w');
+        // /tmp/dwtests-xxx.yyy/data/odt_parsed.css
+        $handle = fopen (TMP_DIR . '/data/odt_parsed.css', 'w');
         fwrite ($handle, $import->rulesToString());
         fclose ($handle);
 
@@ -812,5 +811,5 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $this->assertEquals('.3em', $properties ['padding-right']);
         $this->assertEquals('.3em', $properties ['padding-left']);
         $this->assertEquals('0', $properties ['padding-bottom']);
-   }
+    }
 }

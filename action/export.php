@@ -80,7 +80,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
             $ACT = 'export_odt_page';
         }
 
-        if( strncmp($ACT, 'export_odt', strlen('export_odt')) == 0 ) {
+        if( !is_array($ACT) && strncmp($ACT, 'export_odt', strlen('export_odt')) == 0 ) {
             // On export to ODT load config helper if not done yet
             // and stop on errors.
             if ( $this->config == NULL ) {

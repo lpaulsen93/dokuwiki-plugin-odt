@@ -60,9 +60,9 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'table heading':     return 'Table_20_Heading';
             case 'table header':      return 'tableheader';
             case 'table cell':        return 'tablecell';
-            case 'tablealign center': return 'tablealign center';
-            case 'tablealign right':  return 'tablealign right';
-            case 'tablealign left':   return 'tablealign left';
+            case 'tablealign center': return 'tablealigncenter';
+            case 'tablealign right':  return 'tablealignright';
+            case 'tablealign left':   return 'tablealignleft';
             case 'preformatted':      return 'Preformatted_20_Text';
             case 'source code':       return 'Source_20_Code';
             case 'source file':       return 'Source_20_File';

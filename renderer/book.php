@@ -29,7 +29,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
      */
     public function __construct() {
         parent::__construct();
-        $this->actioninstance = plugin_load('action', 'odt');
+        $this->actioninstance = plugin_load('action', 'odt_export');
     }
 
     /**

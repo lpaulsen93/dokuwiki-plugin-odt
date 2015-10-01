@@ -73,7 +73,7 @@ abstract class docHandler
      * @param ODTStyleSet $styleset
      * @return mixed
      */
-    abstract public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null, $pagestyles=null);
+    abstract public function build($doc=null, $meta=null, $userfields=null, $pagestyles=null);
 
     /**
      * Get ODT document file.
@@ -83,5 +83,41 @@ abstract class docHandler
     public function get() {
         return $this->ZIP->get_file();
     }
-}
 
+    /**
+     * Each docHandler needs to provide a way to add a style to the document.
+     *
+     * @param $new The ODTStyle to add.
+     */
+    abstract public function addStyle(ODTStyle $new);
+
+    /**
+     * Each docHandler needs to provide a way to add an automatic style to the document.
+     *
+     * @param $new The ODTStyle to add.
+     */
+    abstract public function addAutomaticStyle(ODTStyle $new);
+
+    /**
+     * Each docHandler needs to provide a way to check if a style definition
+     * already exists in the document.
+     *
+     * @param $name Name of the style to check
+     * @return boolean
+     */
+    abstract public function styleExists ($name);
+
+    /**
+     * Each docHandler needs to provide a way to get a style definition's
+     * object (if it exists).
+     *
+     * @param $name Name of the style
+     * @return ODTStyle
+     */
+    abstract public function getStyle ($name);
+
+    /**
+     * The function returns the style names used for the basic syntax.
+     */
+    abstract public function getStyleName($style);
+}

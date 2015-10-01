@@ -23,7 +23,8 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
  */
 class scratchDH extends docHandler
 {
-    var $settings;
+    protected $settings;
+    protected $styleset = NULL;
 
     /**
      * Constructor.
@@ -31,6 +32,10 @@ class scratchDH extends docHandler
     public function __construct() {
         parent::__construct();
         $this->settings = new ODTSettings();
+
+        // Create styles.
+        $this->styleset = new ODTDefaultStyles();
+        $this->styleset->import();
     }
 
     /**
@@ -45,11 +50,14 @@ class scratchDH extends docHandler
      * @param ODTStyleSet $styleset
      * @return mixed
      */
-    public function build($doc=null, $autostyles=null, $commonstyles=null, $meta=null, $userfields=null, $styleset=null, $pagestyles=null){
+    public function build($doc=null, $meta=null, $userfields=null, $pagestyles=null){
         // add defaults
         $this->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
         $this->ZIP->add_File($meta,'meta.xml');
         $this->ZIP->add_File($this->settings->getContent(),'settings.xml');
+
+        $autostyles = $this->styleset->export('office:automatic-styles');
+        $commonstyles = $this->styleset->export('office:styles');
 
         $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
         $value .=   '<office:document-content ';
@@ -99,6 +107,7 @@ class scratchDH extends docHandler
 
         $this->ZIP->add_File($value,'content.xml');
 
+        // Edit 'styles.xml'
         $value = io_readFile(DOKU_PLUGIN.'odt/styles.xml');
 
         // Add page styles
@@ -111,17 +120,55 @@ class scratchDH extends docHandler
         }
 
         // Add common styles.
-        $common = '';
-        foreach ($commonstyles as $style) {
-            $common .= $style;
-        }
-        $value = str_replace('</office:styles>', $common.'</office:styles>', $value);
+        $original = XMLUtil::getElement('office:styles', $value);
+        $value = str_replace($original, $commonstyles, $value);
 
+        // Add automatic styles.
         $value = str_replace('<office:automatic-styles/>', $autostyles, $value);
         $this->ZIP->add_File($value,'styles.xml');
 
         // build final manifest
         $this->ZIP->add_File($this->manifest->getContent(),'META-INF/manifest.xml');
     }
-}
 
+    /**
+     * @param null $source
+     */
+    public function addStyle(ODTStyle $new) {
+        return $this->styleset->addStyle($new);
+    }
+
+    /**
+     * @param null $source
+     */
+    public function addAutomaticStyle(ODTStyle $new) {
+        return $this->styleset->addAutomaticStyle($new);
+    }
+
+    /**
+     * The function style checks if a style with the given $name already exists.
+     * 
+     * @param $name Name of the style to check
+     * @return boolean
+     */
+    public function styleExists ($name) {
+        return $this->styleset->styleExists($name);
+    }
+
+    /**
+     * The function returns the style with the given name
+     * 
+     * @param $name Name of the style
+     * @return ODTStyle or NULL
+     */
+    public function getStyle ($name) {
+        return $this->styleset->getStyle($name);
+    }
+
+    /**
+     * The function returns the style names used for the basic syntax.
+     */
+    public function getStyleName($style) {
+        return $this->styleset->getStyleName($style);
+    }
+}

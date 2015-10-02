@@ -18,6 +18,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/page.php';
 require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
 require_once DOKU_PLUGIN . 'odt/ODT/scratchDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
+require_once DOKU_PLUGIN . 'odt/ODT/CSSTemplateDH.php';
 
 /**
  * The Renderer
@@ -196,6 +197,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $this->docHandler = new ODTTemplateDH ();
                 $this->docHandler->setTemplate($this->config->getParam ('odt_template'));
                 $this->docHandler->setDirectory($this->config->getParam ('tpl_dir'));
+                break;
+
+            case 'CSS template':
+                // Document based on DokuWiki CSS template.
+                $this->docHandler = new CSSTemplateDH ();
+                $media_sel = $this->config->getParam ('media_sel');
+                $template = $this->config->getParam ('odt_template');
+                $directory = $this->config->getParam ('tpl_dir');
+                $template_path = $this->config->getParam('mediadir').'/'.$directory."/".$template;
+                $this->docHandler->import($template_path, $media_sel);
                 break;
 
             default:

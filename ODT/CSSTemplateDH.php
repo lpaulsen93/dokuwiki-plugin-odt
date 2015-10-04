@@ -1,13 +1,9 @@
 <?php
 /**
- * scratchDH: docHandler for creating a document from scratch.
- * No additional files, styles are taken from styles.xml.
- *
- * Most code was taken from renderer.php.
+ * CSSTemplateDH: docHandler for creating a document based on a DokuWiki CSS template.
+ * Basic styles are taken from styles.xml and are overwritten with CSS definitions.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author Andreas Gohr <andi@splitbrain.org>
- * @author Aurelien Bompard <aurelien@bompard.org>
  * @author LarsDW223
  */
 // must be run within Dokuwiki
@@ -21,10 +17,12 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
 /**
  * The scratch document handler
  */
-class scratchDH extends docHandler
+class CSSTemplateDH extends docHandler
 {
+    protected $factory = NULL;
     protected $settings;
     protected $styleset = NULL;
+    protected $template = NULL;
 
     /**
      * Constructor.
@@ -33,10 +31,70 @@ class scratchDH extends docHandler
         parent::__construct();
         $this->settings = new ODTSettings();
 
-        // Create styles.
+        $this->factory = plugin_load('helper', 'odt_stylefactory');
+
+        // Create default styles (from styles.xml).
         $this->styleset = new ODTDefaultStyles();
         $this->styleset->import();
     }
+
+    protected function importStyle($import, $style_type, $element, $media_sel) {
+        $name = $this->styleset->getStyleName($style_type);
+        $style = $this->styleset->getStyle($name);
+        if ( $style != NULL ) {
+            $style->clearLayoutProperties();
+
+            $properties = array();
+            $import->getPropertiesForElement($properties, $element, NULL, $media_sel);
+
+            // Adjust values for ODT
+            foreach ($properties as $property => $value) {
+                $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
+            }
+
+            $style->importProperties($properties, NULL);
+        }
+    }
+
+    /**
+     * Set the DokuWiki CSS template.
+     *
+     * @param string $template
+     */
+    public function import($template_path, $media_sel=NULL) {
+        $import = plugin_load('helper', 'odt_cssimport');
+        if ( $import != NULL ) {
+            $import->importFromFile ($template_path);
+        }
+        
+        $this->importStyle($import, 'heading1',        'h1',         $media_sel);
+        $this->importStyle($import, 'heading2',        'h2',         $media_sel);
+        $this->importStyle($import, 'heading3',        'h3',         $media_sel);
+        $this->importStyle($import, 'heading4',        'h4',         $media_sel);
+        $this->importStyle($import, 'heading5',        'h5',         $media_sel);
+
+        $this->importStyle($import, 'horizontal line', 'hr',         $media_sel);
+
+        $this->importStyle($import, 'body',            'body',       $media_sel);
+
+        $this->importStyle($import, 'emphasis',        'em',         $media_sel);
+        $this->importStyle($import, 'strong',          'strong',     $media_sel);
+        $this->importStyle($import, 'underline',       'u',          $media_sel);
+        $this->importStyle($import, 'monospace',       'code',       $media_sel);
+        $this->importStyle($import, 'del',             'del',        $media_sel);
+        $this->importStyle($import, 'preformatted',    'pre',        $media_sel);
+
+        $this->importStyle($import, 'quotation1',      'quotation1', $media_sel);
+        $this->importStyle($import, 'quotation2',      'quotation2', $media_sel);
+        $this->importStyle($import, 'quotation3',      'quotation3', $media_sel);
+        $this->importStyle($import, 'quotation4',      'quotation4', $media_sel);
+        $this->importStyle($import, 'quotation5',      'quotation5', $media_sel);
+
+        $this->importStyle($import, 'table header',    'thead',      $media_sel);
+        $this->importStyle($import, 'table heading',   'th',         $media_sel);
+        $this->importStyle($import, 'table cell',      'td',         $media_sel);
+    }
+
 
     /**
      * Build the document from scratch.

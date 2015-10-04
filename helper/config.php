@@ -534,8 +534,12 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                 if ( $name == 'odt_template' && !empty($odt_template) ) {
                     // ODT-Template chosen
                     if (file_exists($this->getParam('mediadir').'/'.$this->getParam('tpl_dir')."/".$this->getParam ('odt_template'))) {
-                        //template found
-                        $this->mode = 'ODT template';
+                        // Template found: ODT or CSS?
+                        if ( strpos ($odt_template, '.css') === false ) {
+                            $this->mode = 'ODT template';
+                        } else {
+                            $this->mode = 'CSS template';
+                        }
                     } else {
                         // template chosen but not found : warn the user and use the default template
                         $warning = sprintf($this->getLang('tpl_not_found'),$this->getParam ('odt_template'),$this->getParam ('tpl_dir'));

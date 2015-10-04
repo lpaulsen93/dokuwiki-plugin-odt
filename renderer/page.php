@@ -81,8 +81,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $changePageFormat = NULL;
     /** @var string */
     protected $css;
-    /** @var  string buffer for extracted template */
-    protected $temp_dir;
     /** @var  int counter for styles */
     protected $style_count;
 

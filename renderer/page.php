@@ -252,7 +252,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->set_page_bookmark($ID);
 
         $this->p_open();
-        $this->doc .= 'Mode: '.$this->mode.'!';
     }
 
     /**

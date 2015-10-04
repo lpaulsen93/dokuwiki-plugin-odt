@@ -52,7 +52,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
-    protected $in_list_item = false;
     protected $in_div_as_frame = 0;
     protected $highlight_style_num = 1;
     protected $temp_table_column_styles = array ();
@@ -1619,16 +1618,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $text = str_replace("\t",'<text:tab/>',$text);
         $text = preg_replace_callback('/(  +)/',array($this,'_preserveSpace'),$text);
 
-        if ($this->in_list_item) { // if we're in a list item, we must close the <text:p> tag
-            $this->doc .= '</text:p>';
-            $this->doc .= '<text:p text:style-name="'.$style.'">';
+        if ($this->state->getInListItem()) {
+            // if we're in a list item, we must close the <text:p> tag
+            $this->p_close();
+            $this->p_open($style);
             $this->doc .= $text;
-            $this->doc .= '</text:p>';
-            $this->doc .= '<text:p>';
+            $this->p_close();
+            // FIXME: query previous style before preformatted text was opened and re-use it here
+            $this->p_open();
         } else {
-            $this->doc .= '<text:p text:style-name="'.$style.'">';
+            $this->p_open($style);
             $this->doc .= $text;
-            $this->doc .= '</text:p>';
+            $this->p_close();
         }
     }
 

@@ -19,6 +19,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
 require_once DOKU_PLUGIN . 'odt/ODT/scratchDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/CSSTemplateDH.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 
 /**
  * The Renderer
@@ -50,10 +51,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var helper_plugin_odt_config */
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
-    protected $in_list = null;
-    protected $list_interrupted = null;
+    protected $state = null;
     protected $in_list_item = false;
-    protected $in_paragraph = false;
     protected $in_div_as_frame = 0;
     protected $highlight_style_num = 1;
     protected $temp_table_column_styles = array ();
@@ -99,6 +98,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config = plugin_load('helper', 'odt_config');
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
+
+        $this->state = new ODTState();
 
         $this->meta = new ODTMeta();
     }
@@ -252,7 +253,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->set_page_bookmark($ID);
 
         $this->p_open();
-        $this->doc .= 'Mode: '.$this->mode.'!';
     }
 
     /**
@@ -281,6 +281,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Refresh certain config parameters e.g. 'disable_links'
         $this->config->refresh();
+
+        // Reset state.
+        $this->state->reset();
     }
 
     /**
@@ -859,7 +862,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Attention: NOT if $text is empty. This would lead to empty lines before headings
         //            right after a pagebreak!
         if ( !empty($text) ) {
-            if ( ($this->pagebreak || $this->changePageFormat != NULL) && !$this->in_paragraph ) {
+            $in_paragraph = $this->state->getInParagraph();
+            if ( ($this->pagebreak || $this->changePageFormat != NULL) && !$in_paragraph ) {
                 $this->p_open();
             }
         }
@@ -875,8 +879,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ( empty($style) ) {
             $style = $this->docHandler->getStyleName('body');
         }
-        if (!$this->in_paragraph) { // opening a paragraph inside another paragraph is illegal
-            $this->in_paragraph = true;
+        
+        // opening a paragraph inside another paragraph is illegal
+        $in_paragraph = $this->state->getInParagraph();
+        if (!$in_paragraph) {
+            $this->state->enter('text:p', 'paragraph');
+            $this->state->setInParagraph(true);
             if ( $this->changePageFormat != NULL ) {
                 $page_style = $this->doPageFormatChange($style);
                 if ( $page_style != NULL ) {
@@ -900,9 +908,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function p_close(){
-        if ($this->in_paragraph) {
-            $this->in_paragraph = false;
+        $in_paragraph = $this->state->getInParagraph();
+        if ($in_paragraph) {
             $this->doc .= '</text:p>';
+            $this->state->leave();
         }
     }
 
@@ -926,7 +935,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $id    ID of the bookmark
      */
     function set_page_bookmark($id){
-        if ( $this->in_paragraph ) {
+        $in_paragraph = $this->state->getInParagraph();
+        if ( $in_paragraph ) {
             $this->insert_bookmark($id);
         } else {
             $this->pageBookmark = $id;
@@ -1071,53 +1081,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '</text:span>';
     }
 
-    /**
-     * Interrupt a list and set variables to continue it later
-     * in form of a new list continuing the numbering.
-     *
-     * This is necessary if a table is part of a list item as in the ODT
-     * format a table:table element may not be included or be child of a list item.
-     */
-    protected function interruptList () {
-        if ($this->in_list) {
-            $this->listcontent_close();
-            $this->listitem_close();
-
-            switch($this->in_list) {
-                case 'listu':
-                    $this->listu_close();
-                    $this->list_interrupted = 'listu';
-                    break;
-                case 'listo':
-                    $this->listo_close();
-                    $this->list_interrupted = 'listo';
-                    break;
-            }
-        }
-    }
-
-    /**
-     * Continue/re-open a list previously closed/interrupted by
-     * calling interruptList ().
-     */
-    protected function continueList () {
-        if ($this->list_interrupted != null) {
-            switch($this->list_interrupted) {
-                case 'listu':
-                    $this->listu_open(true);
-                    break;
-                case 'listo':
-                    $this->listo_open(true);
-                    break;
-            }
-            // list_interrupted will be reset on the next call to listitem_open():
-            // the parser will still call listcontent_close() and listitem_close()
-            // and this functions may do nothing until the next item is opened.
-            // The last list item has been closed on opening the table!
-            //$this->list_interrupted = null;
-        }
-    }
-
     /*
      * Tables
      */
@@ -1129,8 +1092,57 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $numrows NOT IMPLEMENTED
      */
     function table_open($maxcols = NULL, $numrows = NULL){
-        // Do additional actions required if we are in a list
-        $this->interruptList ();
+        // Do additional actions if the parent element is a list.
+        // In this case we need to finish the list and re-open it later
+        // after the table has been closed! --> tables may not be part of a list item in ODT!
+
+        $interrupted = false;
+        if ($this->state->getInListItem()) {
+            // Close all open lists and remeber their style (may be nested!)
+            $lists = array();
+            $first = true;
+            $iterations = 0;
+            while ($this->state->getInList() === true)
+            {
+                // Close list items
+                if ($first == true) {
+                    $first = false;
+                    $this->listcontent_close();
+                }
+                $this->listitem_close();
+                
+                // Now we are in the list state!
+                // Get the lists style name before closing it.
+                $lists [] = $this->state->getStyleName();
+                $this->list_close();
+                
+                if ($this->state == NULL || $this->state->getElement() == 'root') {
+                    break;
+                }
+                
+                // Just to prevent endless loops in case of an error!
+                $iterations++;
+                if ($iterations == 50) {
+                    $this->doc .= 'Error: ENDLESS LOOP!';
+                    break;
+                }
+            }
+
+            $interrupted = true;
+        }
+        
+        $this->state->enter('table:table', 'table');
+        if ($interrupted == true) {
+            // Set marker that list has been interrupted
+            $this->state->setListInterrupted(true);
+
+            // Save the lists array as temporary data
+            // in THIS state because this is the state that we get back
+            // to in table_close!!!
+            // (we closed the ODT list, we can't access its state info anymore!
+            //  So we use the table state to save the style name!)
+            $this->state->setTemp($lists);
+        }
         
         $this->doc .= '<table:table>';
         for($i=0; $i<$maxcols; $i++){
@@ -1139,19 +1151,46 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function table_close(){
-        $this->doc .= '</table:table>';
+        $interrupted = false;
+        if ($this->state->getListInterrupted()) {
+            $interrupted = true;
+            $lists = $this->state->getTemp();
+        }
 
-        // Do additional actions required if we interripted a list,
+        $this->doc .= '</table:table>';
+        $this->state->leave();
+
+        // Do additional actions required if we interrupted a list,
         // see table_open()
-        $this->continueList ();
+        if ($interrupted) {
+            // Re-open list(s) with original style!
+            // (in revers order of lists array)
+            $max = count($lists);
+            for ($index = $max ; $index > 0 ; $index--) {
+                $this->list_open(true, $lists [$index-1]);
+                
+                // If this is not the most inner list then we need to open
+                // a list item too!
+                if ($index > 0) {
+                    $this->listitem_open($max-$index);
+                }
+            }
+
+            // DO NOT set marker that list is not interrupted anymore, yet!
+            // The renderer will still call listcontent_close and listitem_close!
+            // The marker will only be reset on the next call from the renderer to listitem_open!!!
+            //$this->state->setListInterrupted(false);
+        }
     }
 
     function tablerow_open(){
+        $this->state->enter('table:table-row', 'table-row');
         $this->doc .= '<table:table-row>';
     }
 
     function tablerow_close(){
         $this->doc .= '</table:table-row>';
+        $this->state->leave();
 
         // Reset temporary column counter
         //$this->temp_column = 0;
@@ -1165,6 +1204,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $rowspan
      */
     function tableheader_open($colspan = 1, $align = "left", $rowspan = 1){
+        // ODT has no element for the table header.
+        // We mark the state with a differnt class to be able
+        // to differ between a normal cell and a header cell.
+        $this->state->enter('table:table-cell', 'table-header');
         $this->doc .= '<table:table-cell office:value-type="string" table:style-name="'.$this->docHandler->getStyleName('table header').'" ';
         //$this->doc .= ' table:style-name="tablealign'.$align.'"';
         if ( $colspan > 1 ) {
@@ -1174,12 +1217,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';
         }
         $this->doc .= '>';
+
+        // A new table cell allows opening of a new paragraph!
+        $this->state->setInParagraph(false);
         $this->p_open($this->docHandler->getStyleName('table heading'));
     }
 
     function tableheader_close(){
         $this->p_close();
         $this->doc .= '</table:table-cell>';
+        $this->state->leave();
     }
 
     /**
@@ -1190,6 +1237,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $rowspan
      */
     function tablecell_open($colspan = 1, $align = "left", $rowspan = 1){
+        $this->state->enter('table:table-cell', 'table-cell');
         $this->doc .= '<table:table-cell office:value-type="string" table:style-name="'.$this->docHandler->getStyleName('table cell').'" ';
         if ( $colspan > 1 ) {
             $this->doc .= ' table:number-columns-spanned="'.$colspan.'"';
@@ -1200,12 +1248,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '>';
         if (!$align) $align = "left";
         $style = $this->docHandler->getStyleName('tablealign '.$align);
+
+        // A new table cell allows opening of a new paragraph!
+        $this->state->setInParagraph(false);
         $this->p_open($style);
     }
 
     function tablecell_close(){
         $this->p_close();
         $this->doc .= '</table:table-cell>';
+        $this->state->leave();
     }
 
     /**
@@ -1262,34 +1314,43 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
-    function listu_open($continue=false) {
+    function list_open($continue=false, $style) {
         $this->p_close();
-        $this->doc .= '<text:list text:style-name="'.$this->docHandler->getStyleName('list').'"';
+
+        $this->doc .= '<text:list text:style-name="'.$style.'"';
         if ($continue) {
             $this->doc .= ' text:continue-numbering="true" ';
         }
         $this->doc .= '>';
-        $this->in_list = 'listu';
+
+        $this->state->enter('text:list', 'list');
+        $this->state->setStyleName($style);
+        $this->state->setInList(true);
+    }
+
+    function list_close() {
+        if ($this->state->getListInterrupted()) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
+        $this->doc .= '</text:list>';
+        $this->state->leave();
+    }
+
+    function listu_open($continue=false) {
+        $this->list_open($continue, $this->docHandler->getStyleName('list'));
     }
 
     function listu_close() {
-        $this->doc .= '</text:list>';
-        $this->in_list = null;
+        $this->list_close();
     }
 
     function listo_open($continue=false) {
-        $this->p_close();
-        $this->doc .= '<text:list text:style-name="'.$this->docHandler->getStyleName('numbering').'"';
-        if ($continue) {
-            $this->doc .= ' text:continue-numbering="true" ';
-        }
-        $this->doc .= '>';
-        $this->in_list = 'listo';
+        $this->list_open($continue, $this->docHandler->getStyleName('numbering'));
     }
 
     function listo_close() {
-        $this->doc .= '</text:list>';
-        $this->in_list = null;
+        $this->list_close();
     }
     /**
      * Open a list item
@@ -1297,30 +1358,44 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $level the nesting level
      */
     function listitem_open($level) {
-        $this->list_interrupted = null;
-        $this->in_list_item = true;
+        // Set marker that list interruption has stopped!!!
+        if ($this->state != NULL ) {
+            $this->state->setListInterrupted(false);
+        }
+        
         $this->doc .= '<text:list-item>';
+
+        if ($this->state != NULL ) {
+            $this->state->enter('text:list-item', 'list-item');
+            $this->state->setInListItem(true);
+
+            // A new list items allows opening of a new paragraph
+            $this->state->setInParagraph(false);
+
+        }
     }
 
     function listitem_close() {
-        if ($this->list_interrupted != null) {
+        if ($this->state->getListInterrupted()) {
             // Do not do anything as long as list is interrupted
             return;
         }
-        $this->in_list_item = false;
         $this->doc .= '</text:list-item>';
+        $this->state->leave();
     }
 
     function listcontent_open() {
-        $this->doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('body').'">';
+        $this->p_open($this->docHandler->getStyleName('body'));
+        //$this->doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('body').'">';
     }
 
     function listcontent_close() {
-        if ($this->list_interrupted != null) {
+        if ($this->state->getListInterrupted()) {
             // Do not do anything as long as list is interrupted
             return;
         }
-        $this->doc .= '</text:p>';
+        $this->p_close();
+        //$this->doc .= '</text:p>';
     }
 
     /**
@@ -1507,7 +1582,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ( $this->quote_depth > 0 ) {
             $this->quote_depth--;
         }
-        if ($this->quote_depth == 0 && $this->in_paragraph) { // only close the paragraph if we're actually in one
+        if ($this->quote_depth == 0) {
+            // This will only close the paragraph if we're actually in one
             $this->p_close();
         }
     }
@@ -2492,11 +2568,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function _odtParagraphOpenUseProperties($properties){
         $disabled = array ();
 
-        if ($this->in_paragraph) {
+        $in_paragraph = $this->state->getInParagraph();
+        if ($in_paragraph) {
             // opening a paragraph inside another paragraph is illegal
             return;
         }
-        $this->in_paragraph = true;
 
         $odt_bg = $properties ['background-color'];
         $picture = $properties ['background-image'];
@@ -2522,6 +2598,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $style_name = $this->_createParagraphStyle ($properties, $disabled);
 
         // Open a paragraph
+        $this->state->enter('text:p', 'paragraph');
+        $this->state->setInParagraph(true);
         $this->doc .= '<text:p text:style-name="'.$style_name.'">';
     }
 

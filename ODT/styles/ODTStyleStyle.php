@@ -82,6 +82,7 @@ abstract class ODTStyleStyle extends ODTStyle
         $table_column = '';
         $table_row = '';
         $table_cell = '';
+        $tab_stop = '';
         foreach ($this->properties as $property => $items) {
             switch ($items ['section']) {
                 case 'style':
@@ -105,6 +106,9 @@ abstract class ODTStyleStyle extends ODTStyle
                 case 'table-cell':
                     $table_cell .= $items ['odt_property'].'="'.$items ['value'].'" ';
                     break;
+                case 'tab-stop':
+                    $tab_stop .= $items ['odt_property'].'="'.$items ['value'].'" ';
+                    break;
             }
         }
 
@@ -112,7 +116,13 @@ abstract class ODTStyleStyle extends ODTStyle
         $element = $this->getElementName();
         $style  = '<'.$element.' '.$style.'>'."\n";
         if ( !empty($paragraph) ) {
-            $style .= '    <style:paragraph-properties '.$paragraph.'/>'."\n";
+            if ( empty($tab_stop) ) {
+                $style .= '    <style:paragraph-properties '.$paragraph.'/>'."\n";
+            } else {
+                $style .= '    <style:paragraph-properties '.$paragraph.'>'."\n";
+                $style .= '        <style:tab-stops><style:tab-stop '.$tab_stop.'/></style:tab-stops>'."\n";
+                $style .= '    </style:paragraph-properties>'."\n";
+            }
         }
         if ( !empty($text) ) {
             $style .= '    <style:text-properties '.$text.'/>'."\n";

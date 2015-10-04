@@ -69,6 +69,15 @@ class ODTParagraphStyle extends ODTStyleStyle
         'snap-to-layout-grid'              => array ('style:snap-to-layout-grid',            'paragraph',  true),
         'page-number'                      => array ('style:page-number',                    'paragraph',  true),
         'background-transparency'          => array ('style:background-transparency',        'paragraph',  true),
+
+        // Additional fields for child element tab-stop.
+        'style-position'                   => array ('style:position',                       'tab-stop',   true),
+        'style-type'                       => array ('style:type',                           'tab-stop',   true),
+        'style-leader-type'                => array ('style:leader-type',                    'tab-stop',   true),
+        'style-leader-style'               => array ('style:leader-style',                   'tab-stop',   true),
+        'style-leader-width'               => array ('style:leader-width',                   'tab-stop',   true),
+        'style-leader-color'               => array ('style:leader-color',                   'tab-stop',   true),
+        'style-leader-text'                => array ('style:leader-text',                    'tab-stop',   true),
     );
 
     /**

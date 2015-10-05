@@ -53,7 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_table_column_styles = array ();
     protected $temp_table_style = NULL;
     protected $temp_in_header = false;
     protected $temp_autocols = false;
@@ -2895,6 +2894,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $numrows
      */
     function _odtTableOpenUseProperties ($properties, $maxcols = NULL, $numrows = NULL){
+        $this->p_close();
+        
         unset ($this->temp_content);
 
         // We are starting a new table header declaration.
@@ -2914,11 +2915,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Open the table referencing our style.
         $this->doc .= '<table:table table:style-name="'.$style_name.'">';
-
-        // Delete any old values in the temporary column styles array.
-        for ( $column = 0 ; $column < count($this->temp_table_column_styles) ; $column++ ) {
-            unset($this->temp_table_column_styles [$column]);
-        }
+        $this->state->enter('table', 'table');
 
         // Create columns with predefined and temporarily remembered style names.
         if ( empty ($maxcols) ) {
@@ -2929,10 +2926,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         } else {
             $this->temp_autocols = false;
 
+            $table_column_styles = $this->state->getTableColumnStyles();
             for ( $column = 0 ; $column < $maxcols ; $column++ ) {
                 $this->style_count++;
                 $style_name = 'odt_auto_style_table_column_'.$this->style_count;
-                $this->temp_table_column_styles [$column] = $style_name;
+                $table_column_styles [$column] = $style_name;
 
                 $this->doc .= '<table:table-column table:style-name="'.$style_name.'"/>';
             }
@@ -2955,8 +2953,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // width with the result.
         // Abort if a column has a percentage width or no width.
         $sum = 0;
+        $table = $this->state->findClosestWithClass('table', 'table');
+        if ($table != NULL) {
+            $table_column_styles = $table->getTableColumnStyles();
+        }
         for ($index = 0 ; $index < $this->temp_maxcols ; $index++ ) {
-            $style_name = $this->temp_table_column_styles [$index];
+            $style_name = $table_column_styles [$index];
             $style_obj = $this->docHandler->getStyle($style_name);
             if ($style_obj != NULL && $style_obj->getProperty('column-width') != NULL) {
                 $width = $style_obj->getProperty('column-width');
@@ -2994,6 +2996,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
         $this->doc .= '</table:table>';
+        $this->state->leave();
     }
 
     /**
@@ -3031,14 +3034,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function _odtTableAddColumnUseProperties (array $properties = NULL){
         // Overwrite/Create column style for actual column if $properties has any
         // meaningful params for a column-style (e.g. width).
-        $style_name = $this->temp_table_column_styles [$this->temp_column];
+        $table = $this->state->findClosestWithClass('table', 'table');
+        if ($table != NULL) {
+            $table_column_styles = $table->getTableColumnStyles();
+        }
+        $style_name = $table_column_styles [$this->temp_column];
         $properties ['style-name'] = $style_name;
         $style_obj = $this->factory->createTableColumnStyle ($properties);
         $this->docHandler->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
         
         // FIXME: check this double style name assignment...
-        $this->temp_table_column_styles [$this->temp_column] = $style_name;
+        $table_column_styles [$this->temp_column] = $style_name;
         $this->temp_column++;
 
         // Eventually add a new temp column if in auto mode
@@ -3117,6 +3124,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Open table row.
         $this->doc .= '<table:table-row table:style-name="'.$style_name.'">';
+        $this->state->enter('table:table-row', 'table-row');
     }
 
     /**
@@ -3212,6 +3220,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';
         }
         $this->doc .= '>';
+
+        if ( $inHeader === true ) {
+            $this->state->enter('table:table-cell', 'table-header');
+        } else {
+            $this->state->enter('table:table-cell', 'table-cell');
+        }
+        
+        // Opening a cell allows opening of a new paragraph!
+        $this->state->setInParagraph(false);
 
         // If a paragraph style was created, means text properties were set,
         // then we open a paragraph with our own style. Otherwise we use the standard style.

@@ -52,7 +52,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
-    protected $in_div_as_frame = 0;
     protected $highlight_style_num = 1;
     protected $temp_table_column_styles = array ();
     protected $temp_table_style = NULL;
@@ -980,7 +979,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '</text:h>';
 
         // Do not add headings in frames
-        if ( $this->in_div_as_frame == 0 ) {
+        if (!$this->state->getInFrame()) {
             $this->toc_additem($TOCRef, $hid, $text, $level);
         }
     }
@@ -1625,6 +1624,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // FIXME: query previous style before preformatted text was opened and re-use it here
             $this->p_open();
         } else {
+            $this->p_close();
             $this->p_open($style);
             $this->doc .= $text;
             $this->p_close();
@@ -1695,6 +1695,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Create style and add it to the document
         $style_obj = $this->factory->createTextStyle($properties);
         $this->docHandler->addAutomaticStyle($style_obj);
+        $style_name = $style_obj->getProperty('style-name');
 
         // now make use of the new style
         return '<text:span text:style-name="'.$style_name.'">';
@@ -2622,8 +2623,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $element
      */
     function _odtDivOpenAsFrameUseCSS (helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL) {
-        $this->in_div_as_frame++;
-        if ( $this->in_div_as_frame > 1 ) {
+        if ($this->state->getInFrame()) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
             return;
         }
@@ -2795,6 +2795,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
+        
+        $this->state->enter('frame', 'frame');
+        $this->state->setInFrame(true);
+
         $this->p_open($style_name.'_text_box');
     }
 
@@ -3434,8 +3438,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param array $properties
      */
     function _odtOpenTextBoxUseProperties ($properties) {
-        $this->in_div_as_frame++;
-        if ( $this->in_div_as_frame > 1 ) {
+        if ($this->state->getInFrame()) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
             //return;
         }
@@ -3591,7 +3594,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         $anchor_type = 'paragraph';
         // FIXME: Later try to get nested frames working - probably with anchor = as-char
-        if ( $this->in_div_as_frame > 1 ) {
+        if ($this->state->getInFrame()) {
             $anchor_type = 'as-char';
         }
 
@@ -3623,6 +3626,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->doc .= 'draw:corner-radius="'.$radius.'" ';
 
         $this->doc .= '>';
+        $this->state->enter('frame', 'frame');
+        $this->state->setInFrame(true);
         //$this->p_open($style_name.'_text_box');
     }
 
@@ -3632,10 +3637,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtCloseTextBox () {
-        if ( $this->in_div_as_frame > 0 ) {
-            $this->in_div_as_frame--;
-        }
-        if ( $this->in_div_as_frame > 0 ) {
+        $this->state->leave();
+        if ($this->state->getInFrame()) {
             // Do not close the frame if this is a close for a nested frame.
             //return;
         }

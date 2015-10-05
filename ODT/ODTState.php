@@ -19,7 +19,7 @@ class ODTStateEntry
     protected $in_frame = false;
     protected $table_column_styles = array ();
     protected $table_style = NULL;
-    protected $autocols = false;
+    protected $table_autocols = false;
     protected $maxcols = 0;
     protected $column = 0;
     protected $content = NULL;
@@ -135,6 +135,13 @@ class ODTStateEntry
     public function getTableStyle() {
         return $this->table_style;
     }
+
+    public function setTableAutoColumns($value) {
+        $this->table_autocols = $value;
+    }
+    public function getTableAutoColumns() {
+        return $this->table_autocols;
+    }
 }
 /**
  * ODTState: class for maintaining the ODT state stack.
@@ -245,6 +252,13 @@ class ODTState
     }
     public function getTableStyle() {
         return $this->stack [$this->index]->getTableStyle();
+    }
+
+    public function setTableAutoColumns($value) {
+        $this->stack [$this->index]->setTableAutoColumns($value);
+    }
+    public function getTableAutoColumns() {
+        return $this->stack [$this->index]->getTableAutoColumns();
     }
 
     public function enter($element, $clazz) {

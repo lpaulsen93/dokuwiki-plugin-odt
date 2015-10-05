@@ -53,7 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_autocols = false;
     protected $temp_maxcols = 0;
     protected $temp_column = 0;
     protected $temp_content = NULL;
@@ -2914,11 +2913,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Create columns with predefined and temporarily remembered style names.
         if ( empty ($maxcols) ) {
             // Try to automatically detect the number of columns.
-            $this->temp_autocols = true;
+            $this->state->setTableAutoColumns(true);
             $this->doc .= '<ColumnsPlaceholder>';
             unset ($this->temp_cols);
         } else {
-            $this->temp_autocols = false;
+            $this->state->setTableAutoColumns(false);
 
             $table_column_styles = $this->state->getTableColumnStyles();
             for ( $column = 0 ; $column < $maxcols ; $column++ ) {
@@ -2978,10 +2977,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Eventually replace table width.
         $this->_replaceTableWidth ();
 
+        $table = $this->state->findClosestWithClass('table', 'table');
+        if ($table != NULL) {
+            $auto_columns = $table->getTableAutoColumns();
+        }
+
         // Writeback temporary table content if this is the first cell in the table body.
         if ( !empty($this->temp_cols) ) {
             // First replace columns placeholder with created columns, if in auto mode.
-            if ( $this->temp_autocols === true ) {
+            if ( $auto_columns === true ) {
                 $this->doc =
                     str_replace ('<ColumnsPlaceholder>', $this->temp_cols, $this->doc);
 
@@ -2990,7 +2994,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
                 unset ($this->temp_content);
                 unset ($this->temp_cols);
-                $this->temp_autocols = false;
             }
         }
         $this->doc .= '</table:table>';
@@ -3035,6 +3038,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $table = $this->state->findClosestWithClass('table', 'table');
         if ($table != NULL) {
             $table_column_styles = $table->getTableColumnStyles();
+            $auto_columns = $table->getTableAutoColumns();
         }
         $style_name = $table_column_styles [$this->temp_column];
         $properties ['style-name'] = $style_name;
@@ -3047,7 +3051,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->temp_column++;
 
         // Eventually add a new temp column if in auto mode
-        if ( $this->temp_autocols === true ) {
+        if ( $auto_columns === true ) {
             if ( $this->temp_column > $this->temp_maxcols ) {
                 // Add temp column.
                 $this->temp_cols .= '<table:table-column table:style-name="'.$style_name.'"/>';
@@ -3184,6 +3188,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected function _odtTableCellOpenUsePropertiesInternal ($properties, $inHeader = false, $colspan = 1, $rowspan = 1){
         $disabled = array ();
 
+        // Find our table state.
+        $table = $this->state->findClosestWithClass('table', 'table');
+        if ($table != NULL) {
+            $auto_columns = $table->getTableAutoColumns();
+        }
+
         // Create style name. (Re-enable background-color!)
         $style_obj = $this->factory->createTableCellStyle ($properties);
         $this->docHandler->addAutomaticStyle($style_obj);
@@ -3206,7 +3216,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ( $colspan > 1 ) {
             $this->doc .= ' table:number-columns-spanned="'.$colspan.'"';
         }
-        if ( $inHeader === true && $this->temp_autocols === true && $colspan == 0 ) {
+        if ( $inHeader === true && $auto_columns === true && $colspan == 0 ) {
             $this->doc .= ' table:number-columns-spanned="<MaxColsPlaceholder>"';
         }
         if ( $rowspan > 1 ) {

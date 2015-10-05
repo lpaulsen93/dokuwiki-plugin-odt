@@ -53,7 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_in_header = false;
     protected $temp_autocols = false;
     protected $temp_maxcols = 0;
     protected $temp_column = 0;
@@ -2897,10 +2896,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         
         unset ($this->temp_content);
 
-        // We are starting a new table header declaration.
-        // The flag will be set to false on opening the first table cell of the body.
-        $this->temp_in_header = true;
-
         // Create style.
         $style_obj = $this->factory->createTableTableStyle ($properties, NULL, $this->_getAbsWidthMindMargins (100));
         $this->docHandler->addAutomaticStyle($style_obj);
@@ -3188,11 +3183,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     protected function _odtTableCellOpenUsePropertiesInternal ($properties, $inHeader = false, $colspan = 1, $rowspan = 1){
         $disabled = array ();
-
-        if ( $inHeader === false ) {
-            // Table header definition is finished.
-            $this->temp_in_header = false;
-        }
 
         // Create style name. (Re-enable background-color!)
         $style_obj = $this->factory->createTableCellStyle ($properties);

@@ -17,7 +17,6 @@ class ODTStateEntry
     protected $list_interrupt_now = false;
     protected $in_paragraph = false;
     protected $in_frame = false;
-    protected $in_header = false;
     protected $table_column_styles = array ();
     protected $table_style = NULL;
     protected $autocols = false;
@@ -109,13 +108,6 @@ class ODTStateEntry
         return $this->in_paragraph;
     }
 
-    public function setInHeader($value) {
-        $this->in_header = $value;
-    }
-    public function getInHeader() {
-        return $this->in_header;
-    }
-
     public function setInFrame($value) {
         $this->in_frame = $value;
     }
@@ -128,6 +120,20 @@ class ODTStateEntry
     }
     public function getTemp() {
         return $this->temp;
+    }
+
+    public function setTableColumnStyles($value) {
+        $this->table_column_styles = $value;
+    }
+    public function getTableColumnStyles() {
+        return $this->table_column_styles;
+    }
+
+    public function setTableStyle($value) {
+        $this->table_style = $value;
+    }
+    public function getTableStyle() {
+        return $this->table_style;
     }
 }
 /**
@@ -213,13 +219,6 @@ class ODTState
         return $this->stack [$this->index]->getInParagraph();
     }
 
-    public function setInHeader($value) {
-        $this->stack [$this->index]->setInHeader($value);
-    }
-    public function getInHeader() {
-        return $this->stack [$this->index]->getInHeader();
-    }
-
     public function setInFrame($value) {
         $this->stack [$this->index]->setInFrame($value);
     }
@@ -232,6 +231,20 @@ class ODTState
     }
     public function getTemp() {
         return $this->stack [$this->index]->getTemp();
+    }
+
+    public function setTableColumnStyles($value) {
+        $this->stack [$this->index]->setTableColumnStyles($value);
+    }
+    public function getTableColumnStyles() {
+        return $this->stack [$this->index]->getTableColumnStyles();
+    }
+
+    public function setTableStyle($value) {
+        $this->stack [$this->index]->setTableStyle($value);
+    }
+    public function getTableStyle() {
+        return $this->stack [$this->index]->getTableStyle();
     }
 
     public function enter($element, $clazz) {

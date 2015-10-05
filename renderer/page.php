@@ -53,7 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_table_style = NULL;
     protected $temp_in_header = false;
     protected $temp_autocols = false;
     protected $temp_maxcols = 0;
@@ -2906,16 +2905,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $style_obj = $this->factory->createTableTableStyle ($properties, NULL, $this->_getAbsWidthMindMargins (100));
         $this->docHandler->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
-        if ( empty ($properties ['width']) ) {
-            // If the caller did not specify a table width, save the style name
-            // to eventually later replace the table width set in createTableTableStyle()
-            // with the sum of all column width (in _odtTableClose).
-            $this->temp_table_style = $style_name;
-        }
 
         // Open the table referencing our style.
         $this->doc .= '<table:table table:style-name="'.$style_name.'">';
         $this->state->enter('table', 'table');
+        if ( empty ($properties ['width']) ) {
+            // If the caller did not specify a table width, save the style name
+            // to eventually later replace the table width set in createTableTableStyle()
+            // with the sum of all column width (in _odtTableClose).
+            $this->state->setTableStyle($style_name);
+        }
 
         // Create columns with predefined and temporarily remembered style names.
         if ( empty ($maxcols) ) {
@@ -2944,7 +2943,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected function _replaceTableWidth () {
         $matches = array ();
 
-        if ( empty($this->temp_table_style) || empty($this->temp_cols) ) {
+        $table = $this->state->findClosestWithClass('table', 'table');
+        if ($table == NULL) {
+            // ??? Should not happen.
+            return;
+        }
+
+        $table_style = $table->getTableStyle();
+        if ( empty($table_style) || empty($this->temp_cols) ) {
             return;
         }
 
@@ -2953,10 +2959,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // width with the result.
         // Abort if a column has a percentage width or no width.
         $sum = 0;
-        $table = $this->state->findClosestWithClass('table', 'table');
-        if ($table != NULL) {
-            $table_column_styles = $table->getTableColumnStyles();
-        }
+        $table_column_styles = $table->getTableColumnStyles();
         for ($index = 0 ; $index < $this->temp_maxcols ; $index++ ) {
             $style_name = $table_column_styles [$index];
             $style_obj = $this->docHandler->getStyle($style_name);
@@ -2970,7 +2973,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
-        $style_obj = $this->docHandler->getStyle($this->temp_table_style);
+        $style_obj = $this->docHandler->getStyle($table_style);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $sum.'pt');
         }

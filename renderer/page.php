@@ -978,7 +978,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function hr() {
         $this->p_close();
-        $this->doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('horizontal line').'"/>';
+        $style_name = $this->docHandler->getStyleName('horizontal line');
+        $this->p_open($style_name);
+        $this->p_close();
+
+        // Save paragraph style name in 'Do not delete array'!
+        $this->preventDeletetionStyles [] = $style_name;
     }
 
     function linebreak() {
@@ -1283,16 +1288,21 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // its a new footnote, add it to the $footnotes array
             $this->footnotes[$i] = $footnote;
 
+            // Enter footnote state and allow new paragraph!
+            $this->state->enter('text:note', 'footnote');
+            $this->state->setInParagraph(false);
+
             $this->doc .= '<text:note text:id="ftn'.$i.'" text:note-class="footnote">';
             $this->doc .= '<text:note-citation>'.($i+1).'</text:note-citation>';
             $this->doc .= '<text:note-body>';
-            //FIXME: Can break document if paragraphs have been opened inside of $footnote!!!
-            $this->doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('footnote').'">';
+            $this->p_open($this->docHandler->getStyleName('footnote'));
             $this->doc .= $footnote;
-            $this->doc .= '</text:p>';
+            $this->p_close();
             $this->doc .= '</text:note-body>';
             $this->doc .= '</text:note>';
 
+            // Leave footnote state
+            $this->state->leave();
         } else {
             // seen this one before - just reference it FIXME: style isn't correct yet
             $this->doc .= '<text:note-ref text:note-class="footnote" text:ref-name="ftn'.$i.'">'.($i+1).'</text:note-ref>';
@@ -1371,7 +1381,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function listcontent_open() {
         $this->p_open($this->docHandler->getStyleName('body'));
-        //$this->doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('body').'">';
     }
 
     function listcontent_close() {
@@ -1380,7 +1389,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             return;
         }
         $this->p_close();
-        //$this->doc .= '</text:p>';
     }
 
     /**
@@ -2242,11 +2250,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $style = $this->docHandler->getStyleName('media '.$align);
         }
 
+        // Enter Frame state and allow new paragraph.
+        $this->state->enter('frame', 'frame');
+        $this->state->setInParagraph(false);
+
         if ($title) {
             $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).' Legend"
                             text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
             $this->doc .= '<draw:text-box>';
-            $this->doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('legend center').'">';
+            $this->p_open($this->docHandler->getStyleName('legend center'));
         }
         $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
                         text:anchor-type="'.$anchor.'" draw:z-index="0"
@@ -2255,8 +2267,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                         xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
         $this->doc .= '</draw:frame>';
         if ($title) {
-            $this->doc .= $this->_xmlEntities($title).'</text:p></draw:text-box></draw:frame>';
+            $this->doc .= $this->_xmlEntities($title);
+            $this->p_close();
+            $this->doc .= '</draw:text-box></draw:frame>';
         }
+        
+        // Leave Frame state
+        $this->state->leave();
     }
 
     /**
@@ -2333,6 +2350,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ($title) {
             $doc .= $this->_xmlEntities($title).'</text:p></draw:text-box></draw:frame>';
         }
+
         if($returnonly) {
           return $doc;
         } else {
@@ -2587,9 +2605,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $style_name = $this->_createParagraphStyle ($properties, $disabled);
 
         // Open a paragraph
-        $this->state->enter('text:p', 'paragraph');
-        $this->state->setInParagraph(true);
-        $this->doc .= '<text:p text:style-name="'.$style_name.'">';
+        $this->p_open($style_name);
     }
 
     /**
@@ -2749,7 +2765,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Group the frame so that they are stacked one on each other.
         $this->p_close();
-        $this->doc .= '<text:p>';
+        $this->p_open();
         if ( $display == NULL ) {
             $this->doc .= '<draw:g>';
         } else {
@@ -2785,8 +2801,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         $this->doc .= '>';
         
+        // Enter frame state and allow new paragraph!
         $this->state->enter('frame', 'frame');
         $this->state->setInFrame(true);
+        $this->state->setInParagraph(false);
 
         $this->p_open($style_name.'_text_box');
     }
@@ -3418,7 +3436,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Group the frame so that they are stacked one on each other.
         $this->p_close();
-        $this->doc .= '<text:p>';
+        $this->p_open();
+
+        $this->state->enter('frame', 'frame');
+        $this->state->setInParagraph(false);
 
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
@@ -3434,9 +3455,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _odtCloseMultiColumnFrame () {
         $this->doc .= '</draw:text-box></draw:frame>';
-        $this->doc .= '</text:p>';
+        $this->p_close();
 
         $this->div_z_index -= 5;
+
+        $this->state->leave();
     }
 
     /**
@@ -3600,7 +3623,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Group the frame so that they are stacked one on each other.
         $this->p_close();
-        $this->doc .= '<text:p>';
+        $this->p_open();
         $this->linebreak();
         if ( $display == NULL ) {
             $this->doc .= '<draw:g>';
@@ -3644,7 +3667,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '>';
         $this->state->enter('frame', 'frame');
         $this->state->setInFrame(true);
-        //$this->p_open($style_name.'_text_box');
+        $this->state->setInParagraph(false);
     }
 
     /**
@@ -3662,7 +3685,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->p_close();
         $this->doc .= '</draw:text-box></draw:frame>';
         $this->doc .= '</draw:g>';
-        $this->doc .= '</text:p>';
+        $this->p_close();
 
         $this->div_z_index -= 5;
     }

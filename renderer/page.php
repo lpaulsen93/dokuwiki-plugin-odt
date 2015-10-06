@@ -53,7 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_maxcols = 0;
     protected $temp_column = 0;
     protected $temp_content = NULL;
     protected $temp_cols = NULL;
@@ -2931,7 +2930,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Reset temporary column counter
         $this->temp_column = 0;
-        $this->temp_maxcols = 0;
     }
 
     protected function _replaceTableWidth () {
@@ -2954,7 +2952,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Abort if a column has a percentage width or no width.
         $sum = 0;
         $table_column_styles = $table->getTableColumnStyles();
-        for ($index = 0 ; $index < $this->temp_maxcols ; $index++ ) {
+        for ($index = 0 ; $index < $table->getTableMaxColumns() ; $index++ ) {
             $style_name = $table_column_styles [$index];
             $style_obj = $this->docHandler->getStyle($style_name);
             if ($style_obj != NULL && $style_obj->getProperty('column-width') != NULL) {
@@ -2990,7 +2988,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     str_replace ('<ColumnsPlaceholder>', $this->temp_cols, $this->doc);
 
                 $this->doc =
-                    str_replace ('<MaxColsPlaceholder>', $this->temp_maxcols, $this->doc);
+                    str_replace ('<MaxColsPlaceholder>', $table->getTableMaxColumns(), $this->doc);
 
                 unset ($this->temp_content);
                 unset ($this->temp_cols);
@@ -3039,6 +3037,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ($table != NULL) {
             $table_column_styles = $table->getTableColumnStyles();
             $auto_columns = $table->getTableAutoColumns();
+            $max_columns = $table->getTableMaxColumns();
         }
         $style_name = $table_column_styles [$this->temp_column];
         $properties ['style-name'] = $style_name;
@@ -3052,10 +3051,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Eventually add a new temp column if in auto mode
         if ( $auto_columns === true ) {
-            if ( $this->temp_column > $this->temp_maxcols ) {
+            if ( $this->temp_column > $max_columns ) {
                 // Add temp column.
                 $this->temp_cols .= '<table:table-column table:style-name="'.$style_name.'"/>';
-                $this->temp_maxcols++;
+                $table->setTableMaxColumns($max_columns + 1);
             }
         }
     }

@@ -570,7 +570,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
 
         $template = $this->getParam ('template');
         $odt_template = $this->getParam ('odt_template');
-        if (!empty($this->getParam ('template')) && empty($this->getParam ('odt_template'))) {
+        if (!empty($template) && empty($odt_template)) {
             $this->setParam ('odt_template', $this->getParam ('template'));
         }
 

@@ -20,9 +20,8 @@ class ODTStateEntry
     protected $table_column_styles = array ();
     protected $table_style = NULL;
     protected $table_autocols = false;
-    protected $maxcols = 0;
-    protected $column = 0;
-    protected $content = NULL;
+    protected $table_maxcols = 0;
+    protected $table_curr_column = 0;
     protected $cols = NULL;
     protected $temp_style_name = NULL;
     // Temp pointer for various use! Can point to different things!
@@ -35,10 +34,9 @@ class ODTStateEntry
 
         $this->table_column_styles = array ();
         $this->table_style = NULL;
-        $this->autocols = false;
-        $this->maxcols = 0;
-        $this->column = 0;
-        $this->content = NULL;
+        $this->table_autocols = false;
+        $this->table_maxcols = 0;
+        $this->table_curr_column = 0;
         $this->cols = NULL;
 
         $this->list_interrupted = false;
@@ -141,6 +139,20 @@ class ODTStateEntry
     }
     public function getTableAutoColumns() {
         return $this->table_autocols;
+    }
+
+    public function setTableMaxColumns($value) {
+        $this->table_maxcols = $value;
+    }
+    public function getTableMaxColumns() {
+        return $this->table_maxcols;
+    }
+
+    public function setTableCurrentColumn($value) {
+        $this->table_curr_column = $value;
+    }
+    public function getTableCurrentColumn() {
+        return $this->table_curr_column;
     }
 }
 /**
@@ -259,6 +271,20 @@ class ODTState
     }
     public function getTableAutoColumns() {
         return $this->stack [$this->index]->getTableAutoColumns();
+    }
+
+    public function setTableMaxColumns($value) {
+        $this->stack [$this->index]->setTableMaxColumns($value);
+    }
+    public function getTableMaxColumns() {
+        return $this->stack [$this->index]->getTableMaxColumns();
+    }
+
+    public function setTableCurrentColumn($value) {
+        $this->stack [$this->index]->setTableCurrentColumn($value);
+    }
+    public function getTableCurrentColumns() {
+        return $this->stack [$this->index]->getTableCurrentColumn();
     }
 
     public function enter($element, $clazz) {

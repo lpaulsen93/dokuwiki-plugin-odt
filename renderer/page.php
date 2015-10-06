@@ -53,8 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_column = 0;
-    protected $temp_content = NULL;
     protected $temp_cols = NULL;
     protected $quote_depth = 0;
     protected $quote_pos = 0;
@@ -1182,9 +1180,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function tablerow_close(){
         $this->doc .= '</table:table-row>';
         $this->state->leave();
-
-        // Reset temporary column counter
-        //$this->temp_column = 0;
     }
 
     /**
@@ -2892,8 +2887,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function _odtTableOpenUseProperties ($properties, $maxcols = NULL, $numrows = NULL){
         $this->p_close();
         
-        unset ($this->temp_content);
-
         // Create style.
         $style_obj = $this->factory->createTableTableStyle ($properties, NULL, $this->_getAbsWidthMindMargins (100));
         $this->docHandler->addAutomaticStyle($style_obj);
@@ -2928,8 +2921,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
-        // Reset temporary column counter
-        $this->temp_column = 0;
+        // We start with the first column
+        $this->state->setTableCurrentColumn(0);
     }
 
     protected function _replaceTableWidth () {
@@ -2990,7 +2983,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $this->doc =
                     str_replace ('<MaxColsPlaceholder>', $table->getTableMaxColumns(), $this->doc);
 
-                unset ($this->temp_content);
                 unset ($this->temp_cols);
             }
         }
@@ -3038,20 +3030,22 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $table_column_styles = $table->getTableColumnStyles();
             $auto_columns = $table->getTableAutoColumns();
             $max_columns = $table->getTableMaxColumns();
+            $curr_column = $table->getTableCurrentColumn();
         }
-        $style_name = $table_column_styles [$this->temp_column];
+        $style_name = $table_column_styles [$curr_column];
         $properties ['style-name'] = $style_name;
         $style_obj = $this->factory->createTableColumnStyle ($properties);
         $this->docHandler->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
         
         // FIXME: check this double style name assignment...
-        $table_column_styles [$this->temp_column] = $style_name;
-        $this->temp_column++;
+        $table_column_styles [$curr_column] = $style_name;
+        $curr_column++;
+        $table->setTableCurrentColumn($curr_column);
 
         // Eventually add a new temp column if in auto mode
         if ( $auto_columns === true ) {
-            if ( $this->temp_column > $max_columns ) {
+            if ( $curr_column > $max_columns ) {
                 // Add temp column.
                 $this->temp_cols .= '<table:table-column table:style-name="'.$style_name.'"/>';
                 $table->setTableMaxColumns($max_columns + 1);
@@ -3092,8 +3086,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         $this->_odtTableRowOpenUseProperties($properties);
 
-        // Reset temporary column counter
-        $this->temp_column = 0;
+        // A new row, we are back in the first column again.
+        $table = $this->state->findClosestWithClass('table', 'table');
+        if ($table != NULL) {
+            $table->setTableCurrentColumn(0);
+        }
     }
 
     /**

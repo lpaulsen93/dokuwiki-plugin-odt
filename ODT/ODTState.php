@@ -8,22 +8,28 @@
  */
 class ODTStateEntry
 {
+    // General state information
     protected $element = NULL;
     protected $clazz = NULL;
     protected $style_name = NULL;
+
+    // List state data
     protected $in_list = false;
     protected $in_list_item = false;
     protected $list_interrupted = false;
-    protected $list_interrupt_now = false;
+
+    // Paragraph or frame entered?
     protected $in_paragraph = false;
     protected $in_frame = false;
+
+    // Table state data
     protected $table_column_styles = array ();
     protected $table_style = NULL;
     protected $table_autocols = false;
     protected $table_maxcols = 0;
     protected $table_curr_column = 0;
     protected $table_column_defs = NULL;
-    protected $temp_style_name = NULL;
+
     // Temp pointer for various use! Can point to different things!
     protected $temp = NULL;
 
@@ -40,7 +46,6 @@ class ODTStateEntry
         $this->table_column_defs = NULL;
 
         $this->list_interrupted = false;
-        $this->list_interrupt_now = false;
     }
 
     public function setElement($value) {
@@ -64,13 +69,6 @@ class ODTStateEntry
         return $this->style_name;
     }
 
-    public function setTempStyleName($value) {
-        $this->temp_style_name = $value;
-    }
-    public function getTempStyleName() {
-        return $this->temp_style_name;
-    }
-
     public function setInList($value) {
         $this->in_list = $value;
     }
@@ -83,13 +81,6 @@ class ODTStateEntry
     }
     public function getListInterrupted() {
         return $this->list_interrupted;
-    }
-
-    public function setListInterruptNow($value) {
-        $this->list_interrupt_now = $value;
-    }
-    public function getListInterruptNow() {
-        return $this->list_interrupt_now;
     }
 
     public function setInListItem($value) {
@@ -165,6 +156,17 @@ class ODTStateEntry
 /**
  * ODTState: class for maintaining the ODT state stack.
  *
+ * In general this is a setter/getter class for ODT states.
+ * The intention is to get rid of some global state variables.
+ * Especially the global error-prone $in_paragraph which easily causes
+ * a document to become invalid if once set wrong. Now each state/element
+ * can set their own instance of $in_paragraph which hopefully makes it use
+ * a bit safer. E.g. for a new table-cell or list-item it can be set to false
+ * because they allow creation of a new paragraph. On leave() we throw the
+ * current state variables away and are safe back from where we came from.
+ * So we also don't need to worry about correct re-initialization of global
+ * variables anymore.
+ * 
  * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author  LarsDW223
  */
@@ -203,13 +205,6 @@ class ODTState
         return $this->stack [$this->index]->getStyleName();
     }
 
-    public function setTempStyleName($value) {
-        $this->stack [$this->index]->setTempStyleName($value);
-    }
-    public function getTempStyleName() {
-        return $this->stack [$this->index]->getTempStyleName();
-    }
-
     public function setInList($value) {
         $this->stack [$this->index]->setInList($value);
     }
@@ -222,13 +217,6 @@ class ODTState
     }
     public function getListInterrupted() {
         return $this->stack [$this->index]->getListInterrupted();
-    }
-
-    public function setListInterruptNow($value) {
-        $this->stack [$this->index]->setListInterruptNow($value);
-    }
-    public function getListInterruptNow() {
-        return $this->stack [$this->index]->getListInterruptNow();
     }
 
     public function setInListItem($value) {

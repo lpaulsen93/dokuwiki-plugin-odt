@@ -22,7 +22,7 @@ class ODTStateEntry
     protected $table_autocols = false;
     protected $table_maxcols = 0;
     protected $table_curr_column = 0;
-    protected $cols = NULL;
+    protected $table_column_defs = NULL;
     protected $temp_style_name = NULL;
     // Temp pointer for various use! Can point to different things!
     protected $temp = NULL;
@@ -37,7 +37,7 @@ class ODTStateEntry
         $this->table_autocols = false;
         $this->table_maxcols = 0;
         $this->table_curr_column = 0;
-        $this->cols = NULL;
+        $this->table_column_defs = NULL;
 
         $this->list_interrupted = false;
         $this->list_interrupt_now = false;
@@ -153,6 +153,13 @@ class ODTStateEntry
     }
     public function getTableCurrentColumn() {
         return $this->table_curr_column;
+    }
+
+    public function setTableColumnDefs($value) {
+        $this->table_column_defs = $value;
+    }
+    public function getTableColumnDefs() {
+        return $this->table_column_defs;
     }
 }
 /**
@@ -285,6 +292,13 @@ class ODTState
     }
     public function getTableCurrentColumns() {
         return $this->stack [$this->index]->getTableCurrentColumn();
+    }
+
+    public function setTableColumnDefs($value) {
+        $this->stack [$this->index]->setTableColumnDefs($value);
+    }
+    public function getTableColumnDefs() {
+        return $this->stack [$this->index]->getTableColumnDefs();
     }
 
     public function enter($element, $clazz) {

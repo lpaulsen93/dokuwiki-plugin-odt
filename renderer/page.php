@@ -53,7 +53,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $fields = array(); // set by Fields Plugin
     protected $state = null;
     protected $highlight_style_num = 1;
-    protected $temp_cols = NULL;
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
@@ -2907,7 +2906,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // Try to automatically detect the number of columns.
             $this->state->setTableAutoColumns(true);
             $this->doc .= '<ColumnsPlaceholder>';
-            unset ($this->temp_cols);
         } else {
             $this->state->setTableAutoColumns(false);
 
@@ -2935,7 +2933,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         $table_style = $table->getTableStyle();
-        if ( empty($table_style) || empty($this->temp_cols) ) {
+        $column_defs = $table->getTableColumnDefs();
+        if ( empty($table_style) || empty($column_defs) ) {
             return;
         }
 
@@ -2971,19 +2970,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $table = $this->state->findClosestWithClass('table', 'table');
         if ($table != NULL) {
             $auto_columns = $table->getTableAutoColumns();
+            $column_defs = $table->getTableColumnDefs();
         }
 
         // Writeback temporary table content if this is the first cell in the table body.
-        if ( !empty($this->temp_cols) ) {
+        if ( !empty($column_defs) ) {
             // First replace columns placeholder with created columns, if in auto mode.
             if ( $auto_columns === true ) {
                 $this->doc =
-                    str_replace ('<ColumnsPlaceholder>', $this->temp_cols, $this->doc);
+                    str_replace ('<ColumnsPlaceholder>', $column_defs, $this->doc);
 
                 $this->doc =
                     str_replace ('<MaxColsPlaceholder>', $table->getTableMaxColumns(), $this->doc);
-
-                unset ($this->temp_cols);
             }
         }
         $this->doc .= '</table:table>';
@@ -3047,7 +3045,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ( $auto_columns === true ) {
             if ( $curr_column > $max_columns ) {
                 // Add temp column.
-                $this->temp_cols .= '<table:table-column table:style-name="'.$style_name.'"/>';
+                $column_defs = $table->getTableColumnDefs();
+                $column_defs .= '<table:table-column table:style-name="'.$style_name.'"/>';
+                $table->setTableColumnDefs($column_defs);
                 $table->setTableMaxColumns($max_columns + 1);
             }
         }

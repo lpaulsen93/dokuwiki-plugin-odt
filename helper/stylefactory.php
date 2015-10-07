@@ -138,11 +138,12 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // If the property 'vertical-align' has the value 'sub' or 'super'
         // then for ODT it needs to be converted to the corresponding 'text-position' property.
         // Replace sub and super with text-position.
-        if (!empty($properties ['vertical-align'])) {
-            if ( $odt_valign == 'sub' ) {
+        $valign = $properties ['vertical-align'];
+        if (!empty($valign)) {
+            if ( $valign == 'sub' ) {
                 $properties ['text-position'] = '-33% 100%';
                 unset($properties ['vertical-align']);
-            } elseif ( $odt_valign == 'super' ) {
+            } elseif ( $valign == 'super' ) {
                 $properties ['text-position'] = '33% 100%';
                 unset($properties ['vertical-align']);
             }
@@ -206,11 +207,12 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
         // If the property 'vertical-align' has the value 'sub' or 'super'
         // then for ODT it needs to be converted to the corresponding 'text-position' property.
         // Replace sub and super with text-position.
-        if (!empty($properties ['vertical-align'])) {
-            if ( $odt_valign == 'sub' ) {
+        $valign = $properties ['vertical-align'];
+        if (!empty($valign)) {
+            if ( $valign == 'sub' ) {
                 $properties ['text-position'] = '-33% 100%';
                 unset($properties ['vertical-align']);
-            } elseif ( $odt_valign == 'super' ) {
+            } elseif ( $valign == 'super' ) {
                 $properties ['text-position'] = '33% 100%';
                 unset($properties ['vertical-align']);
             }

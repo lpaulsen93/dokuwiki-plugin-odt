@@ -1642,22 +1642,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             return;
         }
 
-        // from inc/parserutils.php:p_xhtml_cached_geshi()
-        $geshi = new GeSHi($text, $language, DOKU_INC . 'inc/geshi');
-        $geshi->set_encoding('utf-8');
-        // $geshi->enable_classes(); DO NOT WANT !
-        $geshi->set_header_type(GESHI_HEADER_PRE);
-        $geshi->enable_keyword_links(false);
+        // Use cahched geshi
+        $highlighted_code = p_xhtml_cached_geshi($text, $language, '');
 
-        // remove GeSHi's wrapper element (we'll replace it with our own later)
-        // we need to use a GeSHi wrapper to avoid <BR> throughout the highlighted text
-        $highlighted_code = trim(preg_replace('!^<pre[^>]*>|</pre>$!','',$geshi->parse_code()),"\n\r");
         // remove useless leading and trailing whitespace-newlines
         $highlighted_code = preg_replace('/^&nbsp;\n/','',$highlighted_code);
         $highlighted_code = preg_replace('/\n&nbsp;$/','',$highlighted_code);
         // replace styles
         $highlighted_code = str_replace("</span>", "</text:span>", $highlighted_code);
-        $highlighted_code = preg_replace_callback('/<span style="([^"]+)">/', array($this,'_convert_css_styles'), $highlighted_code);
+        $highlighted_code = preg_replace_callback('/<span class="([^"]+)">/', array($this, '_convert_css_styles'), $highlighted_code);
         // cleanup leftover span tags
         $highlighted_code = preg_replace('/<span[^>]*>/', "<text:span>", $highlighted_code);
         $highlighted_code = str_replace("&nbsp;", "&#xA0;", $highlighted_code);
@@ -1669,32 +1662,21 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return string
      */
     function _convert_css_styles($matches) {
-        $all_css_styles = $matches[1];
-        // parse the CSS attribute
-        $css_styles = array();
-        foreach(explode(";", $all_css_styles) as $css_style) {
-            $css_style_array = explode(":", $css_style);
-            if (!trim($css_style_array[0]) or !trim($css_style_array[1])) {
-                continue;
-            }
-            $css_styles[trim($css_style_array[0])] = trim($css_style_array[1]);
+        $class = $matches[1];
+        
+        // Get CSS properties for that geshi class and create
+        // the text style (if not already done)
+        $style_name = 'highlight_'.$class;
+        if (!$this->docHandler->styleExists($style_name)) {
+            $properties = array();
+            $properties ['style-name'] = $style_name;
+            $this->getODTProperties ($properties, NULL, 'code '.$class, NULL, 'screen');
+
+            $style_obj = $this->factory->createTextStyle($properties);
+            $this->docHandler->addAutomaticStyle($style_obj);
         }
         
-        // create the ODT xml style
-        $properties = array();
-        $properties ['style-name'] = "highlight." . $this->highlight_style_num;
-        foreach($css_styles as $style_key=>$style_value) {
-            // Hats off to those who thought out the OpenDocument spec: styling syntax is similar to CSS !
-            $properties [$style_key] = $style_value;
-        }
-        $this->highlight_style_num += 1;
-
-        // Create style and add it to the document
-        $style_obj = $this->factory->createTextStyle($properties);
-        $this->docHandler->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        // now make use of the new style
+        // Now make use of the new style
         return '<text:span text:style-name="'.$style_name.'">';
     }
 
@@ -3710,9 +3692,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param $classString
      * @param $inlineStyle
      */
-    public function getODTProperties (&$dest, $element, $classString, $inlineStyle) {
+    public function getODTProperties (&$dest, $element, $classString, $inlineStyle, $media_sel=NULL) {
+        if ($media_sel === NULL) {
+            $media_sel = $this->config->getParam ('media_sel');
+        }
         // Get properties for our class/element from imported CSS
-        $this->import->getPropertiesForElement($dest, $element, $classString, $this->config->getParam ('media_sel'));
+        $this->import->getPropertiesForElement($dest, $element, $classString, $media_sel);
 
         // Interpret and add values from style to our properties
         $this->_processCSSStyle($dest, $inlineStyle);

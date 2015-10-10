@@ -465,14 +465,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Simple setter to enable creating links
      */
     function enable_links() {
-        $this->setParam ('disable_links', false);
+        $this->config->setParam ('disable_links', false);
     }
 
     /**
      * Simple setter to disable creating links
      */
     function disable_links() {
-        $this->setParam ('disable_links', true);
+        $this->config->setParam ('disable_links', true);
     }
 
     /**

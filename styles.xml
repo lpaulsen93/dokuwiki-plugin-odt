@@ -77,7 +77,7 @@
             <style:paragraph-properties fo:margin-left="1cm" fo:margin-right="1cm" fo:margin-top="0cm" fo:margin-bottom="0.499cm" fo:text-indent="0cm" style:auto-text-indent="false"/>
         </style:style>
         <style:style style:name="Preformatted_20_Text" style:display-name="Preformatted Text" style:family="paragraph" style:parent-style-name="Standard" style:class="html">
-            <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.2cm"/>
+            <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0.2cm" style:join-border="false"/>
             <style:text-properties style:font-name="Bitstream Vera Sans Mono" style:font-name-asian="Bitstream Vera Sans Mono" style:font-name-complex="Bitstream Vera Sans Mono"/>
         </style:style>
         <style:style style:name="Source_20_Code" style:display-name="Source Code" style:family="paragraph" style:parent-style-name="Preformatted_20_Text">

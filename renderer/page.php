@@ -1090,8 +1090,41 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // after the table has been closed! --> tables may not be part of a list item in ODT!
 
         $interrupted = false;
+        $table_style = NULL;
+        
         if ($this->state->getInListItem()) {
-            // Close all open lists and remeber their style (may be nested!)
+            // We are in a list item. Query indentation settings.
+            $list = $this->state->findClosestWithClass('list');
+            if ($list != NULL) {
+                $list_style_name = $list->getStyleName();
+                $list_style = $this->docHandler->getStyle($list_style_name);
+                if ($list_style != NULL) {
+                    // The list level stored in the list item/from the parser
+                    // might not be correct. Count 'list' states to get level.
+                    $level = $this->state->countClass('list');
+
+                    // Create a table style for indenting the table.
+                    // We try to achieve this by substracting the list indentation
+                    // from the width of the table and right align it!
+                    // (if not done yet, the name must be unique!)
+                    $style_name = 'Table_Indentation_Level'.$level;
+                    if (!$this->docHandler->styleExists($style_name)) {
+                        $properties = array();
+                        $properties ['style-name'] = $style_name;
+                        $style_obj = $this->factory->createTableTableStyle($properties);
+                        if ($style_obj != NULL) {
+                            $max = $this->page->getAbsWidthMindMargins();
+                            $indent = 0 + $this->units->getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));
+                            $style_obj->setProperty('width', ($max-$indent).'cm');
+                            $style_obj->setProperty('align', 'right');
+                            $this->docHandler->addAutomaticStyle($style_obj);
+                        }
+                    }
+                    $table_style = $style_name;
+                }
+            }
+
+            // Close all open lists and remember their style (may be nested!)
             $lists = array();
             $first = true;
             $iterations = 0;
@@ -1137,7 +1170,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->state->setTemp($lists);
         }
         
-        $this->doc .= '<table:table>';
+        if ($table_style == NULL) {
+            $this->doc .= '<table:table>';
+        } else {
+            $this->doc .= '<table:table table:style-name="'.$table_style.'">';
+        }
         for($i=0; $i<$maxcols; $i++){
             $this->doc .= '<table:table-column />';
         }
@@ -1363,6 +1400,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ($this->state != NULL ) {
             $this->state->enter('text:list-item', 'list-item');
             $this->state->setInListItem(true);
+            // Attention:
+            // we save the list level here but it might be wrong.
+            // Someone can start a list with level 2 without having created
+            // a list with level 1 before.
+            // When the correct list level is needed better use
+            // $this->state->countClass('list'), see table_open().
+            $this->state->setListItemLevel($level);
 
             // A new list items allows opening of a new paragraph
             $this->state->setInParagraph(false);

@@ -16,6 +16,7 @@ class ODTStateEntry
     // List state data
     protected $in_list = false;
     protected $in_list_item = false;
+    protected $list_item_level = 0;
     protected $list_interrupted = false;
 
     // Paragraph or frame entered?
@@ -160,6 +161,24 @@ class ODTStateEntry
      */
     public function getInListItem() {
         return $this->in_list_item;
+    }
+
+    /**
+     * Set the level for an list item
+     * 
+     * @param integer $value
+     */
+    public function setListItemLevel($value) {
+        $this->list_item_level = $value;
+    }
+
+    /**
+     * Get level of a list item
+     * 
+     * @return integer
+     */
+    public function getListItemLevel() {
+        return $this->list_item_level;
     }
 
     /**
@@ -454,6 +473,22 @@ class ODTState
     }
 
     /**
+     * Calls setListItemLevel for the current state.
+     * See ODTStateEntry::setListItemLevel.
+     */
+    public function setListItemLevel($value) {
+        $this->stack [$this->index]->setListItemLevel($value);
+    }
+
+    /**
+     * Calls getListItemLevel for the current state.
+     * See ODTStateEntry::getListItemLevel.
+     */
+    public function getListItemLevel() {
+        return $this->stack [$this->index]->getListItemLevel();
+    }
+
+    /**
      * Calls setInParagraph for the current state.
      * See ODTStateEntry::setInParagraph.
      */
@@ -674,5 +709,21 @@ class ODTState
             $indent .= '    ';
         }
         return $string;
+    }
+
+    /**
+     * Find the closest state with class $clazz.
+     *
+     * @param string $clazz
+     * @return ODTStateEntry|NULL
+     */
+    public function countClass($clazz) {
+        $count = 0;
+        for ($search = $this->index ; $search > 0 ; $search--) {
+            if ($this->stack [$search]->getClass() == $clazz) {
+                $count++;
+            }
+        }
+        return $count;
     }
 }

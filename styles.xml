@@ -165,6 +165,9 @@
                 <style:list-level-properties text:min-label-distance="0.381cm"/>
             </text:outline-level-style>
         </text:outline-style>
+        <style:style style:name="List_First_Paragraph" style:display-name="List First Paragraph" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
+            <style:paragraph-properties fo:margin-top="0.5cm"/>
+        </style:style>
         <text:list-style style:name="Numbering_20_1" style:display-name="Numbering 1">
             <text:list-level-style-number text:level="1" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">

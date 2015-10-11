@@ -18,6 +18,7 @@ class ODTStateEntry
     protected $in_list_item = false;
     protected $list_item_level = 0;
     protected $list_interrupted = false;
+    protected $list_first_paragraph = true;
 
     // Paragraph or frame entered?
     protected $in_paragraph = false;
@@ -179,6 +180,24 @@ class ODTStateEntry
      */
     public function getListItemLevel() {
         return $this->list_item_level;
+    }
+
+    /**
+     * Set flag if the next paragraph will be the first in the list
+     * 
+     * @param boolean $value
+     */
+    public function setListFirstParagraph($value) {
+        $this->list_first_paragraph = $value;
+    }
+
+    /**
+     * Get flag if the next paragraph will be the first in the list
+     * 
+     * @return boolean
+     */
+    public function getListFirstParagraph() {
+        return $this->list_first_paragraph;
     }
 
     /**
@@ -486,6 +505,22 @@ class ODTState
      */
     public function getListItemLevel() {
         return $this->stack [$this->index]->getListItemLevel();
+    }
+
+    /**
+     * Calls setListFirstParagraph for the current state.
+     * See ODTStateEntry::setListFirstParagraph.
+     */
+    public function setListFirstParagraph($value) {
+        $this->stack [$this->index]->setListFirstParagraph($value);
+    }
+
+    /**
+     * Calls getListFirstParagraph for the current state.
+     * See ODTStateEntry::getListFirstParagraph.
+     */
+    public function getListFirstParagraph() {
+        return $this->stack [$this->index]->getListFirstParagraph();
     }
 
     /**

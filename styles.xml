@@ -171,47 +171,47 @@
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="0.499cm" fo:text-indent="-0.499cm" fo:margin-left="0.499cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="2" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="2" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="a">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="1cm" fo:text-indent="-0.499cm" fo:margin-left="1cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="3" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="3" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="I">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="1.499cm" fo:text-indent="-0.499cm" fo:margin-left="1.499cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="4" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="4" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="A">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="2cm" fo:text-indent="-0.499cm" fo:margin-left="2cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="5" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="5" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="i">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="2.499cm" fo:text-indent="-0.499cm" fo:margin-left="2.499cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="6" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="6" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="i">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="3cm" fo:text-indent="-0.499cm" fo:margin-left="3cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="7" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="7" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="i">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="3.5cm" fo:text-indent="-0.499cm" fo:margin-left="3.5cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="8" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="8" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="i">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="4.001cm" fo:text-indent="-0.499cm" fo:margin-left="4.001cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="9" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="9" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="i">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="4.5cm" fo:text-indent="-0.499cm" fo:margin-left="4.5cm"/>
                 </style:list-level-properties>
             </text:list-level-style-number>
-            <text:list-level-style-number text:level="10" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="1">
+            <text:list-level-style-number text:level="10" text:style-name="Numbering_20_Symbols" style:num-suffix="." style:num-format="i">
                 <style:list-level-properties text:list-level-position-and-space-mode="label-alignment">
                     <style:list-level-label-alignment text:label-followed-by="listtab" text:list-tab-stop-position="5.001cm" fo:text-indent="-0.499cm" fo:margin-left="5.001cm"/>
                 </style:list-level-properties>

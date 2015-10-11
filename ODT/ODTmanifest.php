@@ -18,12 +18,13 @@ class ODTManifest
      */
     function getContent(){
         $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
-        $value .=   '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0">';
-        $value .=   '<manifest:file-entry manifest:media-type="application/vnd.oasis.opendocument.text" manifest:full-path="/"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="settings.xml"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="meta.xml"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="content.xml"/>';
-        $value .=   '<manifest:file-entry manifest:media-type="text/xml" manifest:full-path="styles.xml"/>';
+        
+        $value .=   '<manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">';
+        $value .=   '<manifest:file-entry manifest:full-path="/" manifest:version="1.2" manifest:media-type="application/vnd.oasis.opendocument.text"/>';
+        $value .=   '<manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>';
+        $value .=   '<manifest:file-entry manifest:full-path="settings.xml" manifest:media-type="text/xml"/>';
+        $value .=   '<manifest:file-entry manifest:full-path="meta.xml" manifest:media-type="text/xml"/>';
+        $value .=   '<manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>';
         $value .= $this->getExtraContent();
         $value .=   '</manifest:manifest>';
         return $value;

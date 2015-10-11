@@ -46,7 +46,9 @@ class ODTMeta
         $value .=       'xmlns:xlink="http://www.w3.org/1999/xlink" ';
         $value .=       'xmlns:dc="http://purl.org/dc/elements/1.1/" ';
         $value .=       'xmlns:meta="urn:oasis:names:tc:opendocument:xmlns:meta:1.0" ';
-        $value .=   'office:version="1.0">';
+        $value .=       'xmlns:ooo="http://openoffice.org/2004/office" ';
+        $value .=       'xmlns:grddl="http://www.w3.org/2003/g/data-view#" ';
+        $value .=       'office:version="1.2">';
         $value .=       '<office:meta>';
         # FIXME
         foreach($this->meta as $meta_key => $meta_value) {

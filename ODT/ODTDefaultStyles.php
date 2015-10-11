@@ -145,11 +145,11 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'legend center':     return 'legendcenter';
             case 'graphics':          return 'Graphics';
             case 'monospace':         return 'Source_20_Text';
-            case 'quotation1':        return 'Quotation 1';
-            case 'quotation2':        return 'Quotation 2';
-            case 'quotation3':        return 'Quotation 3';
-            case 'quotation4':        return 'Quotation 4';
-            case 'quotation5':        return 'Quotation 5';
+            case 'quotation1':        return 'Quotation_20_1';
+            case 'quotation2':        return 'Quotation_20_2';
+            case 'quotation3':        return 'Quotation_20_3';
+            case 'quotation4':        return 'Quotation_20_4';
+            case 'quotation5':        return 'Quotation_20_5';
         }
         // Not supported basic style.
         return NULL;

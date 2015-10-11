@@ -9,6 +9,7 @@
 require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTUnknownStyle.php';
 require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTStyleStyle.php';
 require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTextOutlineStyle.php';
+require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTextListStyle.php';
 
 /**
  * The ODTStyle class
@@ -115,6 +116,9 @@ abstract class ODTStyle
                 break;
             case 'text:outline-style':
                 $style = ODTTextOutlineStyle::importODTStyle($xmlCode);
+                break;
+            case 'text:list-style':
+                $style = ODTTextListStyle::importODTStyle($xmlCode);
                 break;
             default:
                 break;

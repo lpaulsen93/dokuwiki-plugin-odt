@@ -6,8 +6,8 @@
  * @author LarsDW223
  */
 
-require_once DOKU_INC.'lib/plugins/odt/ODT/XMLUtil.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyleStyle.php';
+require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTStyleStyle.php';
+require_once DOKU_PLUGIN . 'odt/ODT/XMLUtil.php';
 
 /**
  * The ODTTextStyle class

@@ -1120,7 +1120,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // after the table has been closed! --> tables may not be part of a list item in ODT!
 
         $interrupted = false;
-        $table_style = NULL;
+        $table_style_name = $this->docHandler->getStyleName('table');
         
         if ($this->state->getInListItem()) {
             // We are in a list item. Query indentation settings.
@@ -1150,7 +1150,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                             $this->docHandler->addAutomaticStyle($style_obj);
                         }
                     }
-                    $table_style = $style_name;
+                    $table_style_name = $style_name;
                 }
             }
 
@@ -1200,10 +1200,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->state->setTemp($lists);
         }
         
-        if ($table_style == NULL) {
+        if ($table_style_name == NULL) {
             $this->doc .= '<table:table>';
         } else {
-            $this->doc .= '<table:table table:style-name="'.$table_style.'">';
+            $this->doc .= '<table:table table:style-name="'.$table_style_name.'">';
         }
         for($i=0; $i<$maxcols; $i++){
             $this->doc .= '<table:table-column />';

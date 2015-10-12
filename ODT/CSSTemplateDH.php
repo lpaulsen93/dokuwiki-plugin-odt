@@ -52,6 +52,34 @@ class CSSTemplateDH extends docHandler
                 $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
             }
 
+            // If the style imported is a table adjust some properties
+            if ($style->getFamily() == 'table') {
+                // Move 'width' to 'rel-width' if it is relative
+                $width = $properties ['width'];
+                if ($width != NULL) {
+                    if ($properties ['align'] == NULL) {
+                        // If width is set but align not, changing the width
+                        // will not work. So we set it here if not done by the user.
+                        $properties ['align'] = 'center';
+                    }
+                }
+                if ($width [strlen($width)-1] == '%') {
+                    $properties ['rel-width'] = $width;
+                    unset ($properties ['width']);
+                }
+
+                // Convert property 'border-model' to ODT
+                if ( !empty ($properties ['border-collapse']) ) {
+                    $properties ['border-model'] = $properties ['border-collapse'];
+                    unset ($properties ['border-collapse']);
+                    if ( $properties ['border-model'] == 'collapse' ) {
+                        $properties ['border-model'] = 'collapsing';
+                    } else {
+                        $properties ['border-model'] = 'separating';
+                    }
+                }
+            }
+
             $style->importProperties($properties, NULL);
         }
     }
@@ -90,6 +118,7 @@ class CSSTemplateDH extends docHandler
         $this->importStyle($import, 'quotation4',      'quotation4', $media_sel);
         $this->importStyle($import, 'quotation5',      'quotation5', $media_sel);
 
+        $this->importStyle($import, 'table',           'table',      $media_sel);
         $this->importStyle($import, 'table header',    'thead',      $media_sel);
         $this->importStyle($import, 'table heading',   'th',         $media_sel);
         $this->importStyle($import, 'table cell',      'td',         $media_sel);

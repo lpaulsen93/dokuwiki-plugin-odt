@@ -55,6 +55,9 @@ class ODTDefaultStyles extends ODTStyleSet
                <style:graphic-properties style:run-through="foreground" style:wrap="none" style:horizontal-pos="center"
                   style:horizontal-rel="paragraph"/>
             </style:style>
+            <style:style style:name="Table" style:display-name="Table" style:family="table">
+                <style:table-properties table:border-model="collapsing"/>
+            </style:style>
             <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="Table_20_Contents">
                 <style:paragraph-properties fo:text-align="center"/>
             </style:style>
@@ -120,6 +123,7 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'heading5':             return 'Heading_20_5';
             case 'list':                 return 'List_20_1';
             case 'numbering':            return 'Numbering_20_1';
+            case 'table':                return 'Table';
             case 'table content':        return 'Table_20_Contents';
             case 'table heading':        return 'Table_20_Heading';
             case 'table header':         return 'tableheader';

@@ -15,15 +15,14 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyleStyle.php';
 class ODTTableStyle extends ODTStyleStyle
 {
     static $table_fields = array(
-        'width'                      => array ('style:width',                     'table',  true),
-        'rel-width'                  => array ('style:rel-width',                 'table',  true),
-        'align'                      => array ('table:align',                     'table',  true),
-        'margin-left'                => array ('fo:margin-left',                  'table',  true),
-        'margin-right'               => array ('fo:margin-right',                 'table',  true),
-        'margin-top'                 => array ('fo:margin-top',                   'table',  true),
-        'margin-bottom'              => array ('fo:margin-bottom',                'table',  true),
-        'margin-bottom'              => array ('fo:margin-bottom',                'table',  true),
-        'margin'                     => array ('fo:margin',                'table',  true),
+        'width'                      => array ('style:width',                      'table',  true),
+        'rel-width'                  => array ('style:rel-width',                  'table',  true),
+        'align'                      => array ('table:align',                      'table',  true),
+        'margin-left'                => array ('fo:margin-left',                   'table',  true),
+        'margin-right'               => array ('fo:margin-right',                  'table',  true),
+        'margin-top'                 => array ('fo:margin-top',                    'table',  true),
+        'margin-bottom'              => array ('fo:margin-bottom',                 'table',  true),
+        'margin'                     => array ('fo:margin',                        'table',  true),
         'page-number'                => array ('style:page-number',                'table',  true),
         'break-before'               => array ('fo:break-before',                  'table',  true),
         'break-after'                => array ('fo:break-after',                   'table',  true),

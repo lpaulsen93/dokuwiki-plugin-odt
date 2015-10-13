@@ -16,10 +16,10 @@ $lang['usestyles'] = 'You can give a comma separated list of plugins of which th
 
 $lang['format']                = 'Page format';
 $lang['orientation']           = 'Page orientation';
-$lang['margin_top']            = 'Page margin Top';
-$lang['margin_right']          = 'Page margin Right';
-$lang['margin_bottom']         = 'Page margin Bottom';
-$lang['margin_left']           = 'Page margin Left';
+$lang['margin_top']            = 'Page margin top in cm';
+$lang['margin_right']          = 'Page margin right in cm';
+$lang['margin_bottom']         = 'Page margin bottom in cm';
+$lang['margin_left']           = 'Page margin left in cm';
 
 $lang['disable_links']         = 'Disable link creation?';
 
@@ -27,4 +27,4 @@ $lang['toc_maxlevel']          = 'Maximum depth of the table of contents';
 $lang['toc_leader_sign']       = 'Leader sign for the table of contents';
 $lang['toc_indents']           = 'Table of contents: Indentation per level in cm';
 $lang['toc_pagebreak']         = 'Insert a pagebreak after the table of contents?';
-$lang['toc_style']             = 'Text style for tabel of contents';
+$lang['toc_style']             = 'Text style for table of contents';

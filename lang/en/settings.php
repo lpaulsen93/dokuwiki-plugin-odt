@@ -16,10 +16,10 @@ $lang['usestyles'] = 'You can give a comma separated list of plugins of which th
 
 $lang['format']                = 'Page format';
 $lang['orientation']           = 'Page orientation';
-$lang['margin_top']            = 'Page margin Top';
-$lang['margin_right']          = 'Page margin Right';
-$lang['margin_bottom']         = 'Page margin Bottom';
-$lang['margin_left']           = 'Page margin Left';
+$lang['margin_top']            = 'Page margin Top in cm';
+$lang['margin_right']          = 'Page margin Right in cm';
+$lang['margin_bottom']         = 'Page margin Bottom in cm';
+$lang['margin_left']           = 'Page margin Left in cm';
 
 $lang['disable_links']         = 'Disable link creation?';
 

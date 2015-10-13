@@ -27,4 +27,4 @@ $lang['toc_maxlevel']          = 'Maximum depth of the table of contents';
 $lang['toc_leader_sign']       = 'Leader sign for the table of contents';
 $lang['toc_indents']           = 'Table of contents: Indentation per level in cm';
 $lang['toc_pagebreak']         = 'Insert a pagebreak after the table of contents?';
-$lang['toc_style']             = 'Text style for tabel of contents';
+$lang['toc_style']             = 'Text style for table of contents';

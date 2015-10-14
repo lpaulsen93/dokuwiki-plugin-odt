@@ -184,6 +184,7 @@ hr {
 }
 
 /* Layouts for different list levels.
+ * Un-ordered list.
  * DokuWiki syntax: * list item text
  */
 ul.level1 {
@@ -224,4 +225,48 @@ ul.level9 {
 
 ul.level10 {
     list-style-type: bullet;
+}
+
+/* Layouts for different list levels.
+ * Ordered list.
+ * DokuWiki syntax: - list item text
+ */
+ol.level1 {
+    list-style-type: "1";
+}
+
+ol.level2 {
+    list-style-type: "a";
+}
+
+ol.level3 {
+    list-style-type: "I";
+}
+
+ol.level4 {
+    list-style-type: "A";
+}
+
+ol.level5 {
+    list-style-type: "i";
+}
+
+ol.level6 {
+    list-style-type: "i";
+}
+
+ol.level7 {
+    list-style-type: "i";
+}
+
+ol.level8 {
+    list-style-type: "i";
+}
+
+ol.level9 {
+    list-style-type: "i";
+}
+
+ol.level10 {
+    list-style-type: "i";
 }

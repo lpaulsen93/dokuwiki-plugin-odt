@@ -38,6 +38,62 @@ class CSSTemplateDH extends docHandler
         $this->styleset->import();
     }
 
+    protected function importOrderedListStyles($import, $media_sel) {
+        $name = $this->styleset->getStyleName('numbering');
+        $style = $this->styleset->getStyle($name);
+        if ($style == NULL ) {
+            return;
+        }
+
+        for ($level = 1 ; $level < 11 ; $level++) {
+            $properties = array();
+            $import->getPropertiesForElement($properties, 'ol', 'level'.$level, $media_sel);
+
+            // Adjust values for ODT
+            foreach ($properties as $property => $value) {
+                $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
+            }
+            
+            if ($properties ['list-style-type'] !== NULL) {
+                $prefix = NULL;
+                $suffix = '.';
+                $numbering = trim($properties ['list-style-type'],'"');
+                switch ($numbering) {
+                    case 'decimal':
+                        $numbering = '1';
+                        break;
+                    case 'decimal-leading-zero':
+                        $numbering = '1';
+                        $prefix = '0';
+                        break;
+                    case 'lower-alpha':
+                    case 'lower-latin':
+                        $numbering = 'a';
+                        break;
+                    case 'lower-roman':
+                        $numbering = 'i';
+                        break;
+                    case 'none':
+                        $numbering = '';
+                        $suffix = '';
+                        break;
+                    case 'upper-alpha':
+                    case 'upper-latin':
+                        $numbering = 'A';
+                        break;
+                    case 'upper-roman':
+                        $numbering = 'i';
+                        break;
+                }
+                $style->setPropertyForLevel($level, 'num-format', $numbering);
+                if ($prefix != NULL ) {
+                    $style->setPropertyForLevel($level, 'num-prefix', $prefix);
+                }
+                $style->setPropertyForLevel($level, 'num-suffix', $suffix);
+            }
+        }
+    }
+
     protected function importUnorderedListStyles($import, $media_sel) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
@@ -88,8 +144,8 @@ class CSSTemplateDH extends docHandler
                         $sign = trim($properties ['list-style-type'],'"');
                         break;
                 }
+                $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
             }
-            $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
         }
     }
 
@@ -179,6 +235,7 @@ class CSSTemplateDH extends docHandler
         $this->importStyle($import, 'table cell',      'td',         $media_sel);
 
         $this->importUnorderedListStyles($import, $media_sel);
+        $this->importOrderedListStyles($import, $media_sel);
     }
 
 

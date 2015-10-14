@@ -182,3 +182,46 @@ hr {
     border-line-width-bottom: 0.002cm 0.035cm 0.002cm;
     margin-bottom: 0.5cm;
 }
+
+/* Layouts for different list levels.
+ * DokuWiki syntax: * list item text
+ */
+ul.level1 {
+    list-style-type: disc;
+}
+
+ul.level2 {
+    list-style-type: circle;
+}
+
+ul.level3 {
+    list-style-type: square;
+}
+
+ul.level4 {
+    list-style-type: blackcircle;
+}
+
+ul.level5 {
+    list-style-type: heavycheckmark;
+}
+
+ul.level6 {
+    list-style-type: ballotx;
+}
+
+ul.level7 {
+    list-style-type: heavyrightarrow;
+}
+
+ul.level8 {
+    list-style-type: lightedrightarrow;
+}
+
+ul.level9 {
+    list-style-type: none;
+}
+
+ul.level10 {
+    list-style-type: bullet;
+}

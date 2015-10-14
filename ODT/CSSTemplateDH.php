@@ -38,6 +38,61 @@ class CSSTemplateDH extends docHandler
         $this->styleset->import();
     }
 
+    protected function importUnorderedListStyles($import, $media_sel) {
+        $name = $this->styleset->getStyleName('list');
+        $style = $this->styleset->getStyle($name);
+        if ($style == NULL ) {
+            return;
+        }
+
+        for ($level = 1 ; $level < 11 ; $level++) {
+            $properties = array();
+            $import->getPropertiesForElement($properties, 'ul', 'level'.$level, $media_sel);
+
+            // Adjust values for ODT
+            foreach ($properties as $property => $value) {
+                $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
+            }
+            
+            if ($properties ['list-style-type'] !== NULL) {
+                switch ($properties ['list-style-type']) {
+                    case 'disc':
+                    case 'bullet':
+                        $sign = '•';
+                        break;
+                    case 'circle':
+                        $sign = '∘';
+                        break;
+                    case 'square':
+                        $sign = '▪';
+                        break;
+                    case 'none':
+                        $sign = ' ';
+                        break;
+                    case 'blackcircle':
+                        $sign = '●';
+                        break;
+                    case 'heavycheckmark':
+                        $sign = '✔';
+                        break;
+                    case 'ballotx':
+                        $sign = '✗';
+                        break;
+                    case 'heavyrightarrow':
+                        $sign = '➔';
+                        break;
+                    case 'lightedrightarrow':
+                        $sign = '➢';
+                        break;
+                    default:
+                        $sign = $properties ['list-style-type'][0];
+                        break;
+                }
+            }
+            $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
+        }
+    }
+
     protected function importStyle($import, $style_type, $element, $media_sel) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
@@ -122,6 +177,8 @@ class CSSTemplateDH extends docHandler
         $this->importStyle($import, 'table header',    'thead',      $media_sel);
         $this->importStyle($import, 'table heading',   'th',         $media_sel);
         $this->importStyle($import, 'table cell',      'td',         $media_sel);
+
+        $this->importUnorderedListStyles($import, $media_sel);
     }
 
 

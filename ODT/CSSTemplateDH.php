@@ -85,7 +85,7 @@ class CSSTemplateDH extends docHandler
                         $sign = '➢';
                         break;
                     default:
-                        $sign = $properties ['list-style-type'][0];
+                        $sign = trim($properties ['list-style-type'],'"');
                         break;
                 }
             }

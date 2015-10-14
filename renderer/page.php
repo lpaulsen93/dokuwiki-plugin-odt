@@ -875,25 +875,30 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $list_count = $this->state->countClass('list');
                 $first = $list->getListFirstParagraph();
                 $list->setListFirstParagraph(false);
+
+                // Create a style for putting a top margin for this first paragraph of the list
+                // (if not done yet, the name must be unique!)
+                $style_name = 'FirstListParagraph_'.$style;
+                $style_first = $this->docHandler->getStyle($this->docHandler->getStyleName('list first paragraph'));
                 if ($list_count == 1 && $first) {
-                    // Create a style for putting a top margin for this first paragraph of the list
-                    // (if not done yet, the name must be unique!)
-                    $style_name = 'FirstListParagraph_'.$style;
                     if (!$this->docHandler->styleExists($style_name)) {
-                        $style_first = $this->docHandler->getStyle($this->docHandler->getStyleName('list first paragraph'));
-                        $style_body = $this->docHandler->getStyle($style);
-                        $style_obj = clone $style_first;
-                        if ($style_obj != NULL) {
-                            $style_obj->setProperty('style-name', $style_name);
-                            $style_obj->setProperty('style-parent', $style);
-                            $bottom = $style_first->getProperty('margin-bottom');
-                            if ($bottom === NULL) {
-                                $style_obj->setProperty('margin-bottom', $style_body->getProperty('margin-bottom'));
+                        if ($style_first != NULL) {
+                            $style_body = $this->docHandler->getStyle($style);
+                            $style_obj = clone $style_first;
+                            if ($style_obj != NULL) {
+                                $style_obj->setProperty('style-name', $style_name);
+                                $style_obj->setProperty('style-parent', $style);
+                                $bottom = $style_first->getProperty('margin-bottom');
+                                if ($bottom === NULL) {
+                                    $style_obj->setProperty('margin-bottom', $style_body->getProperty('margin-bottom'));
+                                }
+                                $this->docHandler->addAutomaticStyle($style_obj);
+                                $style = $style_name;
                             }
-                            $this->docHandler->addAutomaticStyle($style_obj);
                         }
+                    } else {
+                        $style = $style_name;
                     }
-                    $style = $style_name;
                 }
             }
         }

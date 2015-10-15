@@ -97,8 +97,8 @@ class ODTTemplateDH extends docHandler
 
 
         // Import styles from ODT template        
-        //$this->styleset->importFromODTFile($temp_dir.'/content.xml', 'office:automatic-styles');
-        //$this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:styles');
+        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:automatic-styles');
+        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:styles');
 
         $autostyles = $this->styleset->export('office:automatic-styles');
         $commonstyles = $this->styleset->export('office:styles');
@@ -129,7 +129,7 @@ class ODTTemplateDH extends docHandler
         } else {
             $this->_odtReplaceInFile('</text:user-field-decls>', substr($userfields,23), $temp_dir.'/content.xml');
         }
-
+        
         // Insert styles & fonts
         $value = io_readFile($temp_dir.'/content.xml');
         $original = XMLUtil::getElement('office:automatic-styles', $value);
@@ -218,6 +218,6 @@ class ODTTemplateDH extends docHandler
      * The function returns the style names used for the basic syntax.
      */
     public function getStyleName($style) {
-        return $this->styleset->getStyleName($name);
+        return $this->styleset->getStyleName($style);
     }
 }

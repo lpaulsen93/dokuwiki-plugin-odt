@@ -70,7 +70,7 @@ abstract class ODTStyleSet
     /**
      * @param null $source
      */
-    protected function importFromODTFile($sourceFile, $root_element) {
+    public function importFromODTFile($sourceFile, $root_element) {
         if (empty($sourceFile) || empty($root_element)) {
             return false;
         }
@@ -84,7 +84,7 @@ abstract class ODTStyleSet
         return $this->importFromODT($styles_xml_content, $root_element);
     }
 
-    protected function importFromODT($styles_xml_content, $root_element) {
+    public function importFromODT($styles_xml_content, $root_element) {
         if (empty($styles_xml_content) || empty($root_element)) {
             return false;
         }
@@ -130,6 +130,7 @@ abstract class ODTStyleSet
      * @param null $destination
      */
     public function exportToODT($root_element) {
+        $export = NULL;
         switch ($root_element) {
             case 'office:styles':
                 $export = &$this->styles;
@@ -138,12 +139,15 @@ abstract class ODTStyleSet
                 $export = &$this->auto_styles;
                 break;
         }
-        $office_styles = "<".$root_element.">\n";
-        foreach ($export as $style) {
-            $office_styles .= $style->toString();
+        if ($export != NULL) {
+            $office_styles = "<".$root_element.">\n";
+            foreach ($export as $style) {
+                $office_styles .= $style->toString();
+            }
+            $office_styles .= "</".$root_element.">\n";
+            return $office_styles;
         }
-        $office_styles .= "</".$root_element.">\n";
-        return $office_styles;
+        return NULL;
     }
 
     /**

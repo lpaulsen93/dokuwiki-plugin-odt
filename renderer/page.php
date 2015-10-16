@@ -883,15 +883,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     if (!$this->docHandler->styleExists($style_name)) {
                         if ($style_first != NULL) {
                             $style_body = $this->docHandler->getStyle($style);
+                            $style_display_name = 'First '.$style_body->getProperty('style-display-name');
                             $style_obj = clone $style_first;
                             if ($style_obj != NULL) {
                                 $style_obj->setProperty('style-name', $style_name);
                                 $style_obj->setProperty('style-parent', $style);
+                                $style_obj->setProperty('style-display-name', $style_display_name);
                                 $bottom = $style_first->getProperty('margin-bottom');
                                 if ($bottom === NULL) {
                                     $style_obj->setProperty('margin-bottom', $style_body->getProperty('margin-bottom'));
                                 }
-                                $this->docHandler->addAutomaticStyle($style_obj);
+                                $this->docHandler->addStyle($style_obj);
                                 $style = $style_name;
                             }
                         }

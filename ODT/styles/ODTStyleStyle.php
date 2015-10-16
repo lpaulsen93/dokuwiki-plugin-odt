@@ -28,7 +28,7 @@ abstract class ODTStyleStyle extends ODTStyle
         'style-family'                     => array ('style:family',                       'style', true),
         'style-next'                       => array ('style:next-style-name',              'style', true),
         'style-list-level'                 => array ('style:list-level',                   'style', true),
-        'style-list-style-name'            => array ('style-list-style-name',              'style', true),
+        'style-list-style-name'            => array ('style:list-style-name',              'style', true),
         'style-master-page-name'           => array ('style:master-page-name',             'style', true),
         'style-auto-update'                => array ('style:auto-update',                  'style', true),
         'style-data-style-name'            => array ('style:data-style-name',              'style', true),

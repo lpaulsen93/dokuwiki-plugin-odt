@@ -1458,7 +1458,22 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function listcontent_open() {
-        $this->p_open($this->docHandler->getStyleName('body'));
+        // The default style for list content is body but it should always be
+        // overwritten. It's just assigned here to guarantee some style name is
+        // always set in case of an error also.
+        $style_name = $this->docHandler->getStyleName('body');
+        $list = $this->state->findClosestWithClass('list');
+        if ($list != NULL) {
+            $list_style_name = $list->getStyleName();
+            if ($list_style_name == $this->docHandler->getStyleName('list')) {
+                $style_name = $this->docHandler->getStyleName('list content');
+            }
+            if ($list_style_name == $this->docHandler->getStyleName('numbering')) {
+                $style_name = $this->docHandler->getStyleName('numbering content');
+            }
+        }
+
+        $this->p_open($style_name);
     }
 
     function listcontent_close() {

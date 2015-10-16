@@ -664,7 +664,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $toc .= '</text:table-of-content>';
 
         // Add a pagebreak if required.
-        $toc_pagebreak = $this->config->getParam('toc_pagebreak');
         if ( $toc_pagebreak ) {
             $style_name = $this->createPagebreakStyle(NULL, false);
             $toc .= '<text:p text:style-name="'.$style_name.'"/>';

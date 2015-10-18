@@ -2002,7 +2002,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 if ( $page == $params [1] ) {
                     $found = true;
                     $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'">';
-                    $link .= $text;
+                    if ( !empty($name) ) {
+                        $link .= $name;
+                    } else {
+                        $link .= $text;
+                    }
                     $link .= '</text:a>';
 
                     $this->doc = str_replace ($match, $link, $this->doc);
@@ -2069,7 +2073,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function locallink($hash, $name = NULL){
         $name  = $this->_getLinkTitle($name, $hash, $isImage);
-        $this->doc .= '<locallink>'.$name.'</locallink>';
+        $this->doc .= '<locallink name="'.$name.'">'.$hash.'</locallink>';
     }
 
     /**

@@ -347,4 +347,34 @@ class XMLUtil
         $element = $found_element;
         return substr ($xmlCode, $start, $end-$start);
     }
+
+    /**
+     * Helper function to replace an XML element with a string.
+     * 
+     * @param  $element     Name of the element ot be replaced.
+     * @param  $xmlCode     The XML code to search through
+     * @param  $replacement The string which shall be inserted
+     * @return string       $xmlCode with replaced element
+     */
+    public static function elementReplace ($element, $xmlCode, $replacement) {
+        $start = strpos ($xmlCode, '<'.$element);
+        $empty = false;
+        if ($start === false) {
+            $empty = strpos ($xmlCode, '<'.$element.'/>');
+            if ($empty === false) {
+                return $xmlCode;
+            }
+        }
+        if ($empty !== false) {
+            // Element has the form '<element/>'. Do a simple string replace.
+            return str_replace('<'.$element.'/>', $replacement, $xmlCode);
+        }
+        $end = strpos ($xmlCode, '</'.$element.'>');
+        if ($end === false) {
+            // $xmlCode not well formed???
+            return $xmlCode;
+        }
+        $end_length = strlen ('</'.$element.'>');
+        return substr_replace ($xmlCode, $replacement, $start, $end-$start+$end_length);
+    }
 }

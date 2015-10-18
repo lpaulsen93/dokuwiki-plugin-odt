@@ -16,6 +16,8 @@ abstract class ODTStyleSet
     protected $styles_by_name = array();
     protected $auto_styles = array();
     protected $auto_styles_by_name = array();
+    protected $master_styles = array();
+    protected $master_styles_by_name = array();
     
     /**
      * Read/import style source.
@@ -70,7 +72,7 @@ abstract class ODTStyleSet
     /**
      * @param null $source
      */
-    public function importFromODTFile($sourceFile, $root_element) {
+    public function importFromODTFile($sourceFile, $root_element, $overwrite=false) {
         if (empty($sourceFile) || empty($root_element)) {
             return false;
         }
@@ -81,10 +83,10 @@ abstract class ODTStyleSet
             return false;
         }
 
-        return $this->importFromODT($styles_xml_content, $root_element);
+        return $this->importFromODT($styles_xml_content, $root_element, $overwrite);
     }
 
-    public function importFromODT($styles_xml_content, $root_element) {
+    public function importFromODT($styles_xml_content, $root_element, $overwrite=false) {
         if (empty($styles_xml_content) || empty($root_element)) {
             return false;
         }
@@ -93,6 +95,7 @@ abstract class ODTStyleSet
         switch ($root_element) {
             case 'office:styles':
             case 'office:automatic-styles':
+            case 'office:master-styles':
                 $style_elements = XMLUtil::getElementContent($root_element, $styles_xml_content, $end);
                 break;
                 
@@ -115,10 +118,13 @@ abstract class ODTStyleSet
                 // Success, add it
                 switch ($root_element) {
                     case 'office:styles':
-                        $this->addStyle($object);
+                        $this->addStyle($object, $overwrite);
                         break;
                     case 'office:automatic-styles':
-                        $this->addAutomaticStyle($object);
+                        $this->addAutomaticStyle($object, $overwrite);
+                        break;
+                    case 'office:master-styles':
+                        $this->addMasterStyle($object, $overwrite);
                         break;
                 }
             }
@@ -138,6 +144,9 @@ abstract class ODTStyleSet
             case 'office:automatic-styles':
                 $export = &$this->auto_styles;
                 break;
+            case 'office:master-styles':
+                $export = &$this->master_styles;
+                break;
         }
         if ($export != NULL) {
             $office_styles = "<".$root_element.">\n";
@@ -153,13 +162,22 @@ abstract class ODTStyleSet
     /**
      * @param null $source
      */
-    public function addStyle(ODTStyle $new) {
+    public function addStyle(ODTStyle $new, $overwrite=false) {
         $name = $new->getProperty('style-name');
         if ($this->styles_by_name [$name] == NULL) {
             $this->styles [] = $new;
             if (!empty($name)) {
                 $this->styles_by_name [$name] = $new;
             }
+            return true;
+        } elseif ($overwrite) {
+            for ($index = 0 ; $index < count($this->styles) ; $index++) {
+                if ($this->styles [$index] == $this->styles_by_name [$name]) {
+                    $this->styles [$index] = $new;
+                    break;
+                }
+            }
+            $this->styles_by_name [$name] = $new;
             return true;
         }
         
@@ -170,13 +188,48 @@ abstract class ODTStyleSet
     /**
      * @param null $source
      */
-    public function addAutomaticStyle(ODTStyle $new) {
+    public function addAutomaticStyle(ODTStyle $new, $overwrite=false) {
         $name = $new->getProperty('style-name');
         if ($this->auto_styles_by_name [$name] == NULL) {
             $this->auto_styles [] = $new;
             if (!empty($name)) {
                 $this->auto_styles_by_name [$name] = $new;
             }
+            return true;
+        } elseif ($overwrite) {
+            for ($index = 0 ; $index < count($this->auto_styles) ; $index++) {
+                if ($this->auto_styles [$index] == $this->auto_styles_by_name [$name]) {
+                    $this->auto_styles [$index] = $new;
+                    break;
+                }
+            }
+            $this->auto_styles_by_name [$name] = $new;
+            return true;
+        }
+        
+        // Do not overwrite an already existing style.
+        return false;
+    }
+
+    /**
+     * @param null $source
+     */
+    public function addMasterStyle(ODTStyle $new, $overwrite=false) {
+        $name = $new->getProperty('style-name');
+        if ($this->master_styles_by_name [$name] == NULL) {
+            $this->master_styles [] = $new;
+            if (!empty($name)) {
+                $this->master_styles_by_name [$name] = $new;
+            }
+            return true;
+        } elseif ($overwrite) {
+            for ($index = 0 ; $index < count($this->auto_styles) ; $index++) {
+                if ($this->master_styles [$index] == $this->master_styles_by_name [$name]) {
+                    $this->master_styles [$index] = $new;
+                    break;
+                }
+            }
+            $this->master_styles_by_name [$name] = $new;
             return true;
         }
         
@@ -197,6 +250,9 @@ abstract class ODTStyleSet
         if ($this->styles_by_name [$name] != NULL) {
             return true;
         }
+        if ($this->master_styles_by_name [$name] != NULL) {
+            return true;
+        }
         return false;
     }
 
@@ -213,6 +269,39 @@ abstract class ODTStyleSet
         if ($this->styles_by_name [$name] != NULL) {
             return $this->styles_by_name [$name];
         }
+        if ($this->master_styles_by_name [$name] != NULL) {
+            return $this->master_styles_by_name [$name];
+        }
         return NULL;
+    }
+
+    /**
+     * The function returns the style at the given index
+     * 
+     * @param $element Element of the style e.g. 'office:styles'
+     * @return ODTStyle or NULL
+     */
+    public function getStyleAtIndex($element, $index) {
+        switch ($element) {
+            case 'office:styles':
+                return $this->styles [$index];
+            case 'office:automatic-styles':
+                return $this->auto_styles [$index];
+            case 'office:master-styles':
+                return $this->master_styles [$index];
+        }
+        return NULL;
+    }
+
+    public function getStyleCount($element) {
+        switch ($element) {
+            case 'office:styles':
+                return count($this->styles);
+            case 'office:automatic-styles':
+                return count($this->auto_styles);
+            case 'office:master-styles':
+                return count($this->master_styles);
+        }
+        return -1;
     }
 }

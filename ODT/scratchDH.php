@@ -58,6 +58,7 @@ class scratchDH extends docHandler
 
         $autostyles = $this->styleset->export('office:automatic-styles');
         $commonstyles = $this->styleset->export('office:styles');
+        $masterstyles = $this->styleset->export('office:master-styles');
 
         $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
         $value .=   '<office:document-content ';
@@ -128,7 +129,7 @@ class scratchDH extends docHandler
         // Edit 'styles.xml'
         $value = io_readFile(DOKU_PLUGIN.'odt/styles.xml');
 
-        // Add page styles
+        // Insert new master page styles
         $page = '';
         foreach ($pagestyles as $name => $layout_name) {
             $page .= '<style:master-page style:name="'.$name.'" style:page-layout-name="'.$layout_name.'"/>';
@@ -188,5 +189,15 @@ class scratchDH extends docHandler
      */
     public function getStyleName($style) {
         return $this->styleset->getStyleName($style);
+    }
+
+    /**
+     * The function returns the style at the given index
+     * 
+     * @param $element Element of the style e.g. 'office:styles'
+     * @return ODTStyle or NULL
+     */
+    public function getStyleAtIndex($element, $index) {
+        return $this->styleset->getStyleAtIndex($element, $index);
     }
 }

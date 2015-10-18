@@ -372,4 +372,14 @@ class CSSTemplateDH extends docHandler
     public function getStyleName($style) {
         return $this->styleset->getStyleName($style);
     }
+
+    /**
+     * The function returns the style at the given index
+     * 
+     * @param $element Element of the style e.g. 'office:styles'
+     * @return ODTStyle or NULL
+     */
+    public function getStyleAtIndex($element, $index) {
+        return $this->styleset->getStyleAtIndex($element, $index);
+    }
 }

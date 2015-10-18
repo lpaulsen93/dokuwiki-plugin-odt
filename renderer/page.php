@@ -205,13 +205,24 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Setup page format.
+        // Set the page format of the current page for calculation ($this->page)
+        // Change the standard page layout style
         $this->page = new pageFormat();
-        $this->setPageFormat($this->config->getParam ('format'),
+        $this->page->setFormat($this->config->getParam ('format'),
                              $this->config->getParam ('orientation'),
                              $this->config->getParam ('margin_top'),
                              $this->config->getParam ('margin_right'),
                              $this->config->getParam ('margin_bottom'),
                              $this->config->getParam ('margin_left'));
+        $first_page = $this->docHandler->getStyle($this->docHandler->getStyleName('first page'));
+        if ($first_page != NULL) {
+            $first_page->setProperty('width', $this->page->getWidth().'cm');
+            $first_page->setProperty('height', $this->page->getHeight().'cm');
+            $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
+            $first_page->setProperty('margin-right', $this->page->getMarginRight().'cm');
+            $first_page->setProperty('margin-bottom', $this->page->getMarginBottom().'cm');
+            $first_page->setProperty('margin-left', $this->page->getMarginLeft().'cm');
+        }
 
         // Set title in meta info.
         $this->meta->setTitle($ID); //FIXME article title != book title  SOLUTION: overwrite at the end for book

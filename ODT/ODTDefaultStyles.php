@@ -90,7 +90,8 @@ class ODTDefaultStyles extends ODTStyleSet
     public function import($source=NULL) {
         $auto_styles_ret = parent::importFromODT($this->automatic, 'office:automatic-styles');
         $styles_ret = parent::importFromODTFile(DOKU_INC.'lib/plugins/odt/styles.xml', 'office:styles');
-        if (!$auto_styles_ret || !$styles_ret) {
+        $master_styles_ret = parent::importFromODTFile(DOKU_INC.'lib/plugins/odt/styles.xml', 'office:master-styles');
+        if (!$auto_styles_ret || !$styles_ret || !$master_styles_ret) {
             return false;
         }
         return true;
@@ -157,6 +158,7 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'quotation4':           return 'Quotation_20_4';
             case 'quotation5':           return 'Quotation_20_5';
             case 'list first paragraph': return 'List_First_Paragraph';
+            case 'first page':           return 'pm1';
         }
         // Not supported basic style.
         return NULL;

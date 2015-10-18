@@ -95,14 +95,34 @@ class ODTTemplateDH extends docHandler
             throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$temp_dir);
         }
 
-
         // Import styles from ODT template        
-        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:automatic-styles');
-        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:styles');
+        $this->styleset->importFromODTFile($temp_dir.'/content.xml', 'office:automatic-styles', true);
+        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:automatic-styles', true);
+        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:styles', true);
+        $test = $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:master-styles', true);
+
+        // Evtl. copy page format of first page to different style
+        $first_master = $this->styleset->getStyleAtIndex ('office:master-styles', 0);
+        if ($first_master != NULL &&
+            $first_master->getProperty('style-page-layout-name') != $this->getStyleName('first page')) {
+            // The master page of the template references a different page layout style
+            // then used by us for the first page. Copy the page format settings.
+            $source = $this->getStyle($this->getStyleName('first page'));
+            $dest = $this->getStyle($first_master->getProperty('style-page-layout-name'));
+            
+            if ($source != NULL && $dest != NULL) {
+                $dest->setProperty('width', $source->getProperty('width'));
+                $dest->setProperty('height', $source->getProperty('height'));
+                $dest->setProperty('margin-top', $source->getProperty('margin-top'));
+                $dest->setProperty('margin-right', $source->getProperty('margin-right'));
+                $dest->setProperty('margin-bottom', $source->getProperty('margin-bottom'));
+                $dest->setProperty('margin-left', $source->getProperty('margin-left'));
+            }
+        }
 
         $autostyles = $this->styleset->export('office:automatic-styles');
         $commonstyles = $this->styleset->export('office:styles');
-
+        $masterstyles = $this->styleset->export('office:master-styles');
 
         // Prepare content
         $missingfonts = $this->styleset->getMissingFonts($temp_dir.'/styles.xml');
@@ -219,5 +239,15 @@ class ODTTemplateDH extends docHandler
      */
     public function getStyleName($style) {
         return $this->styleset->getStyleName($style);
+    }
+
+    /**
+     * The function returns the style at the given index
+     * 
+     * @param $element Element of the style e.g. 'office:styles'
+     * @return ODTStyle or NULL
+     */
+    public function getStyleAtIndex($element, $index) {
+        return $this->styleset->getStyleAtIndex($element, $index);
     }
 }

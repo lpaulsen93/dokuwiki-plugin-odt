@@ -10,6 +10,8 @@ require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTUnknownStyle.php';
 require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTStyleStyle.php';
 require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTextOutlineStyle.php';
 require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTextListStyle.php';
+require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTMasterPageStyle.php';
+require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTPageLayoutStyle.php';
 
 /**
  * The ODTStyle class
@@ -119,6 +121,12 @@ abstract class ODTStyle
                 break;
             case 'text:list-style':
                 $style = ODTTextListStyle::importODTStyle($xmlCode);
+                break;
+            case 'style:master-page':
+                $style = ODTMasterPageStyle::importODTStyle($xmlCode);
+                break;
+            case 'style:page-layout':
+                $style = ODTPageLayoutStyle::importODTStyle($xmlCode);
                 break;
             default:
                 break;

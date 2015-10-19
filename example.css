@@ -270,3 +270,11 @@ ol.level9 {
 ol.level10 {
     list-style-type: "i";
 }
+
+/* Style for first paragraph of a list.
+ * (ordered and unordered)
+ * Can be used to set margin of the list to previous content.
+ */
+.listfirstparagraph {
+    margin-top: 0.5cm;
+}

@@ -226,8 +226,8 @@ class ODTPageLayoutStyle extends ODTStyle
             if (!empty($childs)) {
                 // Get attributes for element 'style:page-layout-properties'
                 $open = XMLUtil::getElementOpenTag('style:page-layout-properties', $childs);
-                $style->content_header = XMLUtil::getElementContent ('style:header-style', $childs);
-                $style->content_footer = XMLUtil::getElementContent ('style:footer-style', $childs);
+                $style->content_header = XMLUtil::getElement ('style:header-style', $childs);
+                $style->content_footer = XMLUtil::getElement ('style:footer-style', $childs);
                 if (!empty($open)) {
                     $style->importODTStyleInternal(self::$layout_props_fields, $open, $style->layout_props);
 
@@ -266,7 +266,7 @@ class ODTPageLayoutStyle extends ODTStyle
      * @return string ODT XML encoded style
      */
     public function toString() {
-        $style = '';
+        $layout_style = '';
         $layout = '';
         $bgi = '';
         $columns = '';
@@ -274,7 +274,7 @@ class ODTPageLayoutStyle extends ODTStyle
 
         // Get page layout style ODT properties
         foreach ($this->page_layout_style as $property => $items) {
-            $style .= $items ['odt_property'].'="'.$items ['value'].'" ';
+            $layout_style .= $items ['odt_property'].'="'.$items ['value'].'" ';
         }
 
         // Get page layout properties ODT properties
@@ -298,7 +298,7 @@ class ODTPageLayoutStyle extends ODTStyle
         }
 
         // Build style.
-        $style  = '<style:page-layout '.$style.">\n";
+        $style  = '<style:page-layout '.$layout_style.">\n";
         if ( !empty($layout) || !empty($bgi) || !empty($columns) || !empty($footnote) ||
              !empty($this->content_bgi) || !empty($this->content_columns) ) {
             $style .= '<style:page-layout-properties '.$layout.">\n";

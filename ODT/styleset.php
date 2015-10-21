@@ -110,7 +110,7 @@ abstract class ODTStyleSet
             if ($xml_code == NULL) {
                 break;
             }
-            $pos += $end+1;
+            $pos += $end;
             
             // Create new ODTStyle
             $object = ODTStyle::importODTStyle($xml_code);

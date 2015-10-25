@@ -118,7 +118,7 @@ class ODTTextOutlineStyle extends ODTStyle
         $end = 0;
         $max = strlen ($xmlCode);
         $level = XMLUtil::getElement('text:outline-level-style', substr($xmlCode, $pos), $end);
-        $pos += $end + 1;
+        $pos += $end;
         $text_fields = ODTTextStyle::getTextProperties ();
 
         $check = 0;
@@ -138,7 +138,7 @@ class ODTTextOutlineStyle extends ODTStyle
 
             // Get XML code for next level.
             $level = XMLUtil::getElement('text:outline-level-style', substr($xmlCode, $pos), $end);
-            $pos += $end + 1;
+            $pos += $end;
             if ($pos >= $max) {
                 break;
             }

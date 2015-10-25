@@ -155,7 +155,7 @@ class ODTTextListStyle extends ODTStyle
         }
         $style->choice = $choice;
         
-        $pos += $end + 1;
+        $pos += $end;
         $text_fields = ODTTextStyle::getTextProperties ();
 
         $check = 0;
@@ -175,7 +175,7 @@ class ODTTextListStyle extends ODTStyle
 
             // Get XML code for next level.
             $level = XMLUtil::getElement($choice, substr($xmlCode, $pos), $end);
-            $pos += $end + 1;
+            $pos += $end;
             if ($pos >= $max) {
                 break;
             }

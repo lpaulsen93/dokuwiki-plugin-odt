@@ -69,8 +69,10 @@ class ODTParagraphStyle extends ODTStyleStyle
         'snap-to-layout-grid'              => array ('style:snap-to-layout-grid',            'paragraph',  true),
         'page-number'                      => array ('style:page-number',                    'paragraph',  true),
         'background-transparency'          => array ('style:background-transparency',        'paragraph',  true),
+    );
 
-        // Additional fields for child element tab-stop.
+    // Additional fields for child element tab-stop.
+    static $tab_stop_fields = array(
         'style-position'                   => array ('style:position',                       'tab-stop',   true),
         'style-type'                       => array ('style:type',                           'tab-stop',   true),
         'style-leader-type'                => array ('style:leader-type',                    'tab-stop',   true),
@@ -79,6 +81,10 @@ class ODTParagraphStyle extends ODTStyleStyle
         'style-leader-color'               => array ('style:leader-color',                   'tab-stop',   true),
         'style-leader-text'                => array ('style:leader-text',                    'tab-stop',   true),
     );
+
+    protected $style_properties = array();
+    protected $text_properties = array();
+    protected $tab_stops = array();
 
     /**
      * Set style properties by importing values from a properties array.
@@ -125,7 +131,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         $style_fields = ODTStyleStyle::getStyleProperties ();
         if (array_key_exists ($property, $style_fields)) {
             $this->setPropertyInternal
-                ($property, $style_fields [$property][0], $value, $style_fields [$property][1]);
+                ($property, $style_fields [$property][0], $value, $style_fields [$property][1], $this->style_properties);
             return;
         }
         // Compare with paragraph fields before text fields first!
@@ -138,7 +144,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         $text_fields = ODTTextStyle::getTextProperties ();
         if (array_key_exists ($property, $text_fields)) {
             $this->setPropertyInternal
-                ($property, $text_fields [$property][0], $value, $text_fields [$property][1]);
+                ($property, $text_fields [$property][0], $value, $text_fields [$property][1], $this->text_properties);
             return;
         }
     }
@@ -155,12 +161,12 @@ class ODTParagraphStyle extends ODTStyleStyle
 
         $open = XMLUtil::getElementOpenTag('style:style', $xmlCode);
         if (!empty($open)) {
-            $attrs += $style->importODTStyleInternal(ODTStyleStyle::getStyleProperties (), $open);
+            $attrs += $style->importODTStyleInternal(ODTStyleStyle::getStyleProperties (), $open, $style->style_properties);
         } else {
             $open = XMLUtil::getElementOpenTag('style:default-style', $xmlCode);
             if (!empty($open)) {
                 $style->setDefault(true);
-                $attrs += $style->importODTStyleInternal(ODTStyleStyle::getStyleProperties (), $open);
+                $attrs += $style->importODTStyleInternal(ODTStyleStyle::getStyleProperties (), $open, $style->style_properties);
             }
         }
 
@@ -171,7 +177,24 @@ class ODTParagraphStyle extends ODTStyleStyle
 
         $open = XMLUtil::getElementOpenTag('style:text-properties', $xmlCode);
         if (!empty($open)) {
-            $attrs += $style->importODTStyleInternal(ODTTextStyle::getTextProperties (), $open);
+            $attrs += $style->importODTStyleInternal(ODTTextStyle::getTextProperties (), $open, $style->text_properties);
+        }
+
+        // Get all tab-stops.
+        $tabs = XMLUtil::getElementContent('style:tab-stops', $xmlCode);
+        if ($tabs != NULL) {
+            $max = strlen($tabs);
+            $pos = 0;
+            $index = 0;
+            $tab = XMLUtil::getElement('style:tab-stop', $tabs, $end);
+            $pos = $end;
+            while ($tab != NULL) {
+                $style->tab_stops [$index] = array();
+                $attrs += $style->importODTStyleInternal(self::$tab_stop_fields, $tab, $style->tab_stops [$index]);
+                $index++;
+                $tab = XMLUtil::getElement('style:tab-stop', substr ($tabs, $pos), $end);
+                $pos += $end;
+            }
         }
 
         // If style has no meaningfull content then throw it away
@@ -184,6 +207,69 @@ class ODTParagraphStyle extends ODTStyleStyle
 
     static public function getParagraphProperties () {
         return self::$paragraph_fields;
+    }
+
+    /**
+     * Encode current style values in a string and return it.
+     *
+     * @return string ODT XML encoded style
+     */
+    public function toString() {
+        $style = '';
+        $para_props = '';
+        $text_props = '';
+        $tab_stops_props = '';
+
+        // Get style contents
+        foreach ($this->style_properties as $property => $items) {
+            $style .= $items ['odt_property'].'="'.$items ['value'].'" ';
+        }
+
+        // Get paragraph properties ODT properties
+        foreach ($this->properties as $property => $items) {
+            $para_props .= $items ['odt_property'].'="'.$items ['value'].'" ';
+        }
+
+        // Get text properties
+        foreach ($this->text_properties as $property => $items) {
+            $text_props .= $items ['odt_property'].'="'.$items ['value'].'" ';
+        }
+
+        // Get tab-stops properties
+        for ($index = 0 ; $index < count($this->tab_stops) ; $index++) {
+            $tab_stops_props .= '<style:tab-stop ';
+            foreach ($this->tab_stops[$index] as $property => $items) {
+                $tab_stops_props .= $items ['odt_property'].'="'.$items ['value'].'" ';
+            }
+            $tab_stops_props .= '/>';
+        }
+
+        // Build style.
+        if (!$this->isDefault()) {
+            $style  = '<style:style '.$style.">\n";
+        } else {
+            $style  = '<style:default-style '.$style.">\n";
+        }
+        if (!empty($para_props) || !empty($tab_stops_props)) {
+            if (empty($tab_stops_props)) {
+                $style .= '<style:paragraph-properties '.$para_props."/>\n";
+            } else {
+                $style .= '<style:paragraph-properties '.$para_props.">\n";
+                $style .= '<style:tab-stops>'."\n";
+                $style .= $tab_stops_props."\n";
+                $style .= '</style:tab-stops>'."\n";
+                $style .= '</style:paragraph-properties>'."\n";
+            }
+        }
+        if (!empty($text_props)) {
+            $style .= '<style:text-properties '.$text_props."/>\n";
+        }
+        if (!$this->isDefault()) {
+            $style  .= '</style:style>'."\n";
+        } else {
+            $style  .= '</style:default-style>'."\n";
+        }
+        return $style;
     }
 }
 

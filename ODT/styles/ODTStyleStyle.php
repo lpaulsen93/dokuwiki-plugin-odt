@@ -62,7 +62,7 @@ abstract class ODTStyleStyle extends ODTStyle
     /**
      * Is this style a default style?
      *
-     * @param  $is_default
+     * @return boolean Is this a default style?
      */
     public function isDefault() {
         return $this->is_default;

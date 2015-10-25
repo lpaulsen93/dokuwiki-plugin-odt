@@ -22,6 +22,7 @@ class ODTUnknownStyle extends ODTStyle
     // At least try to read in a name
     static $unknown_fields = array(
         'style-name'                       => array ('style:name',                         'style', false),
+        'style-family'                     => array ('style:family',                       'style', false),
     );
     protected $element_name = NULL;
     protected $style_content = NULL;
@@ -106,5 +107,26 @@ class ODTUnknownStyle extends ODTStyle
      */
     public function toString() {
         return $this->style_content;
+    }
+
+    /**
+     * Is the style a default style?
+     *
+     * @return boolean Is default.
+     */
+    public function isDefault() {
+        if ($this->element_name == 'style:default-style') {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the style family of a style.
+     *
+     * @return string|NULL Style family
+     */
+    public function getFamily() {
+        return $this->getProperty('style-family');
     }
 }

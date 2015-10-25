@@ -163,74 +163,68 @@ abstract class ODTStyleSet
      * @param null $source
      */
     public function addStyle(ODTStyle $new, $overwrite=false) {
-        $name = $new->getProperty('style-name');
-        if ($this->styles_by_name [$name] == NULL) {
-            $this->styles [] = $new;
-            if (!empty($name)) {
-                $this->styles_by_name [$name] = $new;
-            }
-            return true;
-        } elseif ($overwrite) {
-            for ($index = 0 ; $index < count($this->styles) ; $index++) {
-                if ($this->styles [$index] == $this->styles_by_name [$name]) {
-                    $this->styles [$index] = $new;
-                    break;
-                }
-            }
-            $this->styles_by_name [$name] = $new;
-            return true;
-        }
-        
-        // Do not overwrite an already existing style.
-        return false;
+        return $this->addStyleInternal
+            ($this->styles, $this->styles_by_name, $new, $overwrite);
     }
 
     /**
      * @param null $source
      */
     public function addAutomaticStyle(ODTStyle $new, $overwrite=false) {
-        $name = $new->getProperty('style-name');
-        if ($this->auto_styles_by_name [$name] == NULL) {
-            $this->auto_styles [] = $new;
-            if (!empty($name)) {
-                $this->auto_styles_by_name [$name] = $new;
-            }
-            return true;
-        } elseif ($overwrite) {
-            for ($index = 0 ; $index < count($this->auto_styles) ; $index++) {
-                if ($this->auto_styles [$index] == $this->auto_styles_by_name [$name]) {
-                    $this->auto_styles [$index] = $new;
-                    break;
-                }
-            }
-            $this->auto_styles_by_name [$name] = $new;
-            return true;
-        }
-        
-        // Do not overwrite an already existing style.
-        return false;
+        return $this->addStyleInternal
+            ($this->auto_styles, $this->auto_styles_by_name, $new, $overwrite);
     }
 
     /**
      * @param null $source
      */
     public function addMasterStyle(ODTStyle $new, $overwrite=false) {
-        $name = $new->getProperty('style-name');
-        if ($this->master_styles_by_name [$name] == NULL) {
-            $this->master_styles [] = $new;
-            if (!empty($name)) {
-                $this->master_styles_by_name [$name] = $new;
-            }
-            return true;
-        } elseif ($overwrite) {
-            for ($index = 0 ; $index < count($this->auto_styles) ; $index++) {
-                if ($this->master_styles [$index] == $this->master_styles_by_name [$name]) {
-                    $this->master_styles [$index] = $new;
-                    break;
+        return $this->addStyleInternal
+            ($this->master_styles, $this->master_styles_by_name, $new, $overwrite);
+    }
+
+    /**
+     * @param null $source
+     */
+    public function addStyleInternal(&$dest, &$dest_by_name, ODTStyle $new, $overwrite=false) {
+        if ($new->isDefault()) {
+            // The key for a default style is the family.
+            $family = $new->getFamily();
+            
+            // Search for default style with same family.
+            for ($index = 0 ; $index < count($dest) ; $index++) {
+                if ($dest [$index]->isDefault() &&
+                    $dest [$index]->getFamily() == $family) {
+                    // Only overwrite it if allowed.
+                    if ($overwrite) {
+                        $dest [$index] = $new;
+                    }
+                    return false;
                 }
             }
-            $this->master_styles_by_name [$name] = $new;
-            return true;
+            
+            // Default style for that family does not exist yet, add it.
+            $dest [] = $new;
+        } else {
+            // The key for a normal style is the name.
+            $name = $new->getProperty('style-name');
+
+            if ($dest_by_name [$name] == NULL) {
+                $dest [] = $new;
+                if (!empty($name)) {
+                    $dest_by_name [$name] = $new;
+                }
+                return true;
+            } elseif ($overwrite) {
+                for ($index = 0 ; $index < count($dest) ; $index++) {
+                    if ($dest [$index] == $dest_by_name [$name]) {
+                        $dest [$index] = $new;
+                        break;
+                    }
+                }
+                $dest_by_name [$name] = $new;
+                return true;
+            }
         }
         
         // Do not overwrite an already existing style.

@@ -206,4 +206,14 @@ abstract class ODTStyle
             }
         }
     }
+
+    /**
+     * Is this style a default style?
+     * Needs to be overwritten if a style could also be a default style.
+     *
+     * @return boolean  Always false.
+     */
+    public function isDefault() {
+        return false;
+    }
 }

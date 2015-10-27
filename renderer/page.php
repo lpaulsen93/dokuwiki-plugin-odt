@@ -1760,6 +1760,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // cleanup leftover span tags
         $highlighted_code = preg_replace('/<span[^>]*>/', "<text:span>", $highlighted_code);
         $highlighted_code = str_replace("&nbsp;", "&#xA0;", $highlighted_code);
+        // Replace links with ODT link syntax
+        $highlighted_code = preg_replace_callback('/<a (href="[^"]*">.*)<\/a>/', array($this, '_convert_geshi_links'), $highlighted_code);
+
         $this->_preformatted($highlighted_code, $style_name, false);
     }
 
@@ -1784,6 +1787,26 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         
         // Now make use of the new style
         return '<text:span text:style-name="'.$style_name.'">';
+    }
+
+    /**
+     * Callback function which creates a link from the part 'href="[^"]*">.*'
+     * in the pattern /<a (href="[^"]*">.*)<\/a>/. See function _highlight().
+     * 
+     * @param array $matches
+     * @return string
+     */
+    function _convert_geshi_links($matches) {
+        $content_start = strpos ($matches[1], '>');
+        $content = substr ($matches[1], $content_start+1);
+        preg_match ('/href="[^"]*"/', $matches[1], $urls);
+        $url = substr ($urls[0], 5);
+        $url = trim($url, '"');
+        // Keep '&' and ':' in the link unescaped, otherwise url parameter passing will not work
+        $url = str_replace('&amp;', '&', $url);
+        $url = str_replace('%3A', ':', $url);
+
+        return $this->_doLink($url, $content);
     }
 
     /**

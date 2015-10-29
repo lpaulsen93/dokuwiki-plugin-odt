@@ -196,11 +196,7 @@ abstract class ODTStyleStyle extends ODTStyle
      * @param  $disabled   Properties to be ignored
      */
     protected function importPropertiesInternal(array $fields, $properties, $disabled, &$dest=NULL) {
-        parent::importPropertiesInternal($fields, $properties, $disabled);
-
-        // Make sure that our family is always set and never changed
-        $this->setPropertyInternal
-            ('style-family', self::$style_fields['style-family'][0], $this->getFamily(), self::$style_fields['style-family'][1]);
+        parent::importPropertiesInternal($fields, $properties, $disabled, $dest);
     }
 
     /**

@@ -78,6 +78,7 @@ class ODTTableCellStyle extends ODTStyleStyle
         $this->importPropertiesInternal(ODTTextStyle::getTextProperties (), $properties, $disabled);
         $this->importPropertiesInternal(ODTParagraphStyle::getParagraphProperties (), $properties, $disabled);
         $this->importPropertiesInternal(self::$table_cell_fields, $properties, $disabled);
+        $this->setProperty('style-family', $this->getFamily());
     }
 
     /**

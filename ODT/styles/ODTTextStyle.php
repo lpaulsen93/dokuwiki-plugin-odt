@@ -125,6 +125,7 @@ class ODTTextStyle extends ODTStyleStyle
     public function importProperties($properties, $disabled) {
         $this->importPropertiesInternal(ODTStyleStyle::getStyleProperties (), $properties, $disabled);
         $this->importPropertiesInternal(self::$text_fields, $properties, $disabled);
+        $this->setProperty('style-family', $this->getFamily());
     }
 
     /**

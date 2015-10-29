@@ -49,6 +49,7 @@ class ODTTableRowStyle extends ODTStyleStyle
     public function importProperties($properties, $disabled) {
         $this->importPropertiesInternal(ODTStyleStyle::getStyleProperties (), $properties, $disabled);
         $this->importPropertiesInternal(self::$table_row_fields, $properties, $disabled);
+        $this->setProperty('style-family', $this->getFamily());
     }
 
     /**

@@ -95,12 +95,12 @@ class ODTParagraphStyle extends ODTStyleStyle
      * @param  $disabled Properties to be ignored
      */
     public function importProperties($properties, $disabled) {
-        $this->importPropertiesInternal(ODTStyleStyle::getStyleProperties (), $properties, $disabled);
-        $this->importPropertiesInternal(ODTTextStyle::getTextProperties (), $properties, $disabled);
-        // Some text and paragraph properties have the same name, so we import
-        // the paragraph properties last to eventually overwrite text properties
-        // already set with the same name. So, paragraph properties get precedence.
+        $this->importPropertiesInternal
+            (ODTStyleStyle::getStyleProperties (), $properties, $disabled, $this->style_properties);
+        $this->importPropertiesInternal
+            (ODTTextStyle::getTextProperties (), $properties, $disabled, $this->text_properties);
         $this->importPropertiesInternal(self::$paragraph_fields, $properties, $disabled);
+        $this->setProperty('style-family', $this->getFamily());
     }
 
     /**
@@ -147,6 +147,24 @@ class ODTParagraphStyle extends ODTStyleStyle
                 ($property, $text_fields [$property][0], $value, $text_fields [$property][1], $this->text_properties);
             return;
         }
+    }
+
+    /**
+     * Get the value of a property.
+     * 
+     * @param  $property The property name
+     * @return string The current value of the property
+     */
+    public function getProperty($property) {
+        $style_fields = ODTStyleStyle::getStyleProperties ();
+        if (array_key_exists ($property, $style_fields)) {
+            return $this->style_properties [$property]['value'];
+        }
+        $text_fields = ODTTextStyle::getTextProperties ();
+        if (array_key_exists ($property, $text_fields)) {
+            return $this->text_properties [$property]['value'];
+        }
+        return parent::getProperty($property);
     }
 
     /**

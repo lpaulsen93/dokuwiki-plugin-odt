@@ -2365,6 +2365,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $style = $this->docHandler->getStyleName('media '.$align);
         }
 
+        // Open paragraph if necessary
+        if (!$this->state->getInParagraph()) {
+            $this->p_open();
+        }
+
         // Enter Frame state and allow new paragraph.
         $this->state->enter('frame', 'frame');
         $this->state->setInParagraph(false);
@@ -2448,6 +2453,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         if (!$style or !$this->docHandler->styleExists($style)) {
             $style = $this->docHandler->getStyleName('media '.$align);
+        }
+
+        // Open paragraph if necessary
+        if (!$this->state->getInParagraph()) {
+            $this->p_open();
         }
 
         if ($title) {

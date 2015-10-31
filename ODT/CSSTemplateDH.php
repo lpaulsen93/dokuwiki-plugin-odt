@@ -23,6 +23,7 @@ class CSSTemplateDH extends docHandler
     protected $settings;
     protected $styleset = NULL;
     protected $template = NULL;
+    protected $untis = NULL;
 
     /**
      * Constructor.
@@ -38,7 +39,49 @@ class CSSTemplateDH extends docHandler
         $this->styleset->import();
     }
 
-    protected function importOrderedListStyles($import, $media_sel) {
+    protected function setListStyleImage ($style, $level, $file) {
+        if ($this->units == NULL) {
+            $this->units = plugin_load('helper', 'odt_units');
+        }
+        $odt_file = $this->addFileAsPicture($file);
+
+        if ( $odt_file != NULL ) {
+            $style->setPropertyForLevel($level, 'list-level-style', 'image');
+            $style->setPropertyForLevel($level, 'href', $odt_file);
+            $style->setPropertyForLevel($level, 'type', 'simple');
+            $style->setPropertyForLevel($level, 'show', 'embed');
+            $style->setPropertyForLevel($level, 'actuate', 'onLoad');
+            $style->setPropertyForLevel($level, 'vertical-pos', 'middle');
+            $style->setPropertyForLevel($level, 'vertical-rel', 'line');
+
+            list($width, $height) = renderer_plugin_odt_page::_odtGetImageSize($file);
+            if (empty($width) || empty($height)) {
+                $width = '0.5';
+                $height = $width;
+            }
+            $style->setPropertyForLevel($level, 'width', $width.'cm');
+            $style->setPropertyForLevel($level, 'height', $height.'cm');
+
+            // ??? Wie berechnen...
+            $text_indent = $this->units->getDigits($style->getPropertyFromLevel($level, 'text-indent'));
+            $margin_left = $this->units->getDigits($style->getPropertyFromLevel($level, 'margin_left'));
+            $tab_stop_position =
+                $this->units->getDigits($style->getPropertyFromLevel($level, 'list-tab-stop-position'));
+            $minimum = $margin_left + $text_indent + $width;
+            if ($minimum > $tab_stop_position) {
+                $inc = abs($text_indent);
+                if ($inc == 0 ) {
+                    $inc = 0.5;
+                }
+                while ($minimum > $tab_stop_position) {
+                    $tab_stop_position += $inc;
+                }
+            }
+            $style->setPropertyForLevel($level, 'list-tab-stop-position', $tab_stop_position.'cm');
+        }
+    }
+
+    protected function importOrderedListStyles($import, $media_sel, $media_path) {
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -91,10 +134,21 @@ class CSSTemplateDH extends docHandler
                 }
                 $style->setPropertyForLevel($level, 'num-suffix', $suffix);
             }
+            if ($properties ['list-style-image'] !== NULL) {
+                $file = $properties ['list-style-image'];
+                $file = substr($file, 4);
+                $file = trim($file, "()'");
+                if ($media_path [strlen($media_path)-1] != '/') {
+                    $media_path .= '/';
+                }
+                $file = $media_path.$file;
+                
+                $this->setListStyleImage ($style, $level, $file);
+            }
         }
     }
 
-    protected function importUnorderedListStyles($import, $media_sel) {
+    protected function importUnorderedListStyles($import, $media_sel, $media_path) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -145,6 +199,17 @@ class CSSTemplateDH extends docHandler
                         break;
                 }
                 $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
+            }
+            if ($properties ['list-style-image'] !== NULL) {
+                $file = $properties ['list-style-image'];
+                $file = substr($file, 4);
+                $file = trim($file, "()'");
+                if ($media_path [strlen($media_path)-1] != '/') {
+                    $media_path .= '/';
+                }
+                $file = $media_path.$file;
+                
+                $this->setListStyleImage ($style, $level, $file);
             }
         }
     }
@@ -200,7 +265,7 @@ class CSSTemplateDH extends docHandler
      *
      * @param string $template
      */
-    public function import($template_path, $media_sel=NULL) {
+    public function import($template_path, $media_sel=NULL, $media_path) {
         $import = plugin_load('helper', 'odt_cssimport');
         if ( $import != NULL ) {
             $import->importFromFile ($template_path);
@@ -234,8 +299,8 @@ class CSSTemplateDH extends docHandler
         $this->importStyle($import, 'table heading', 'th',    NULL, $media_sel);
         $this->importStyle($import, 'table cell',    'td',    NULL, $media_sel);
 
-        $this->importUnorderedListStyles($import, $media_sel);
-        $this->importOrderedListStyles($import, $media_sel);
+        $this->importUnorderedListStyles($import, $media_sel, $media_path);
+        $this->importOrderedListStyles($import, $media_sel, $media_path);
         $this->importStyle($import, 'list first paragraph', NULL, 'listfirstparagraph', $media_sel);
     }
 

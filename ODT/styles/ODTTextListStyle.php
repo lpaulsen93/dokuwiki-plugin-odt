@@ -20,13 +20,11 @@ class ODTTextListStyle extends ODTStyle
         'style-name'                         => array ('style:name',                              'style', false),
         'style-display-name'                 => array ('style:display-name',                      'style', false),
         'consecutive-numbering'              => array ('text:consecutive-numbering',              'style', true),
+    );
 
+    static $style_number_fields = array(
         // Fields belonging to "text:list-level-style-number"
-        // Fields belonging to "text:list-level-style-bullet"
-        // Fields belonging to "text:list-level-style-image"
-        'level'                              => array ('text:level',                              'level', true),
-
-        // Fields belonging to "text-list-level-style-number-attr"
+        'level'                              => array ('text:level',                              'style-attr', true),
         'text-style-name'                    => array ('text:style-name',                         'style-attr', true),
         'num-format'                         => array ('style:num-format',                        'style-attr', true),
         'num-letter-sync'                    => array ('style:num-letter-sync',                   'style-attr', true),
@@ -34,36 +32,44 @@ class ODTTextListStyle extends ODTStyle
         'num-suffix'                         => array ('style:num-suffix',                        'style-attr', true),
         'display-levels'                     => array ('text:display-levels',                     'style-attr', true),
         'start-value'                        => array ('text:start-value',                        'style-attr', true),
-
-        // Fields belonging to "text-list-level-style-bullet-attr"
-        //'text-style-name'                    => array ('text:style-name',                         'style-attr', true),
+    );
+    
+    static $style_bullet_fields = array(
+        // Fields belonging to "text:list-level-style-bullet"
+        'level'                              => array ('text:level',                              'style-attr', true),
+        'text-style-name'                    => array ('text:style-name',                         'style-attr', true),
         'text-bullet-char'                   => array ('text:bullet-char',                        'style-attr', true),
-        //'num-prefix'                         => array ('style:num-prefix',                        'style-attr', true),
-        //'num-suffix'                         => array ('style:num-suffix',                        'style-attr', true),
+        'num-prefix'                         => array ('style:num-prefix',                        'style-attr', true),
+        'num-suffix'                         => array ('style:num-suffix',                        'style-attr', true),
         'text-bullet-relative-size'          => array ('text:bullet-relative-size',               'style-attr', true),
+    );
 
-        // Fields belonging to "text-list-level-style-image-attr"
+    static $style_image_fields = array(
+        // Fields belonging to "text:list-level-style-image"
+        'level'                              => array ('text:level',                              'style-attr',  true),
         'type'                               => array ('xlink:type',                              'style-attr',  true),
         'href'                               => array ('xlink:href',                              'style-attr',  true),
         'show'                               => array ('xlink:show',                              'style-attr',  true),
         'actuate'                            => array ('xlink:actuate',                           'style-attr',  true),
         'binary-data'                        => array ('office:binary-data',                      'style-attr',  true),
         'base64Binary'                       => array ('base64Binary',                            'style-attr',  true),
+    );
 
+    static $list_level_props_fields = array(
         // Fields belonging to "style-list-level-properties"
         'text-align'                         => array ('fo:text-align',                           'level-list', true),
         'text-space-before'                  => array ('text:space-before',                       'level-list', true),
         'text-min-label-width'               => array ('text:min-label-width',                    'level-list', true),
         'text-min-label-distance'            => array ('text:min-label-distance',                 'level-list', true),
-        // FIXME: Proper parsing of XML elements.
-        // Ignore font-name here because it is also present in text properties
-        //'font-name'                          => array ('style:font-name',                         'level-list', true),
+        'font-name'                          => array ('style:font-name',                         'level-list', true),
         'width'                              => array ('fo:width',                                'level-list', true),
         'height'                             => array ('fo:height',                               'level-list', true),
         'vertical-rel'                       => array ('style:vertical-rel',                      'level-list', true),
         'vertical-pos'                       => array ('style:vertical-pos',                      'level-list', true),
         'list-level-position-and-space-mode' => array ('text:list-level-position-and-space-mode', 'level-list', true),
+    );
 
+    static $label_align_fields = array(
         // Fields belonging to "style:list-level-label-alignment"
         'label-followed-by'                  => array ('text:label-followed-by',                  'level-label', true),
         'list-tab-stop-position'             => array ('text:list-tab-stop-position',             'level-label', true),
@@ -71,7 +77,6 @@ class ODTTextListStyle extends ODTStyle
         'margin-left'                        => array ('fo:margin-left',                          'level-label', true),
     );
     protected $list_level_styles = array();
-    protected $choice = NULL;
 
     /**
      * Get the element name for the ODT XML encoding of the style.
@@ -104,17 +109,13 @@ class ODTTextListStyle extends ODTStyle
 
     /**
      * Set a property.
+     * For a TextListStyle we can only set the style main properties here.
+     * All properties specific for a level need to be set using setPropertyForLevel().
      * 
      * @param $property The name of the property to set
      * @param $value    New value to set
      */
     public function setProperty($property, $value) {
-        $text_fields = ODTTextStyle::getTextProperties ();
-        if (array_key_exists ($property, $style_fields)) {
-            $this->setPropertyInternal
-                ($property, $text_fields [$property][0], $value, $text_fields [$property][1]);
-            return;
-        }
         if (array_key_exists ($property, self::$list_fields)) {
             $this->setPropertyInternal
                 ($property, self::$list_fields [$property][0], $value, self::$list_fields [$property][1]);
@@ -136,49 +137,49 @@ class ODTTextListStyle extends ODTStyle
         if (!empty($open)) {
             // This properties are stored in the properties of ODTStyle
             $attrs += $style->importODTStyleInternal(self::$list_fields, $open);
+            $content = XMLUtil::getElementContent('text:list-style', $xmlCode);
         }
 
         $pos = 0;
         $end = 0;
-        $max = strlen ($xmlCode);
-
-        // The 'text:list-style' has a choice of three chile elements
-        $choice = 'text:list-level-style-number';
-        $level = XMLUtil::getElement($choice, substr($xmlCode, $pos), $end);
-        if ($level == NULL ) {
-            $choice = 'text:list-level-style-bullet';
-            $level = XMLUtil::getElement($choice, substr($xmlCode, $pos), $end);
-            if ($level == NULL ) {
-                $choice = 'text:list-level-style-image';
-                $level = XMLUtil::getElement($choice, substr($xmlCode, $pos), $end);
-            }
-        }
-        $style->choice = $choice;
-        
-        $pos += $end;
+        $max = strlen ($content);
         $text_fields = ODTTextStyle::getTextProperties ();
-
-        $check = 0;
-        while ($level != NULL)
+        while ($pos < $max)
         {
-            // We can have multiple level definitons with all the same properties.
-            // So we store this in our own array. The "text:level" is the array key.
+            // Get XML code for next level.
+            $level = XMLUtil::getNextElement($element, substr($content, $pos), $end);
+            $level_content = XMLUtil::getNextElementContent($element, $level, $ignore);
             if (!empty($level)) {
                 $properties = array();
-                $attrs += $style->importODTStyleInternal($text_fields, $level, $properties);
-                $attrs += $style->importODTStyleInternal(self::$list_fields, $level, $properties);
-                
+                switch ($element) {
+                    case 'text:list-level-style-number':
+                        $attrs += $style->importODTStyleInternal(self::$style_number_fields, $level, $properties);
+                        $list_level_style = 'number';
+                    break;
+                    case 'text:list-level-style-bullet':
+                        $attrs += $style->importODTStyleInternal(self::$style_bullet_fields, $level, $properties);
+                        $list_level_style = 'bullet';
+                    break;
+                    case 'text:list-level-style-image':
+                        $attrs += $style->importODTStyleInternal(self::$style_image_fields, $level, $properties);
+                        $list_level_style = 'image';
+                    break;
+                }
+
+                $attrs += $style->importODTStyleInternal($text_fields, $level_content, $properties);
+                $attrs += $style->importODTStyleInternal(self::$list_level_props_fields, $level_content, $properties);
+                $attrs += $style->importODTStyleInternal(self::$label_align_fields, $level_content, $properties);
+
                 // Assign properties array to our level array
                 $level_number = $style->getPropertyInternal('level', $properties);
                 $style->list_level_styles [$level_number] = $properties;
+
+                // Set special property 'list-level-style' to remember element to encode
+                // on call to toString()!
+                $style->setPropertyForLevel($level_number, 'list-level-style', $list_level_style);
             }
 
-            // Get XML code for next level.
-            $level = XMLUtil::getElement($choice, substr($xmlCode, $pos), $end);
             $pos += $end;
-            if ($pos >= $max) {
-                break;
-            }
         }
 
         // If style has no meaningfull content then throw it away
@@ -204,19 +205,34 @@ class ODTTextListStyle extends ODTStyle
         }
 
         // The level properties are stored in our level properties
+        $level_number = 0;
         foreach ($this->list_level_styles as $key => $properties) {
-            $level = '';
+            $level_number++;
+            $element = $this->getPropertyFromLevel($level_number, 'list-level-style');
+            switch ($element) {
+                case 'number':
+                    $fields = self::$style_number_fields;
+                break;
+                case 'bullet':
+                    $fields = self::$style_bullet_fields;
+                break;
+                case 'image':
+                    $fields = self::$style_image_fields;
+                break;
+            }
+            $element = 'text:list-level-style-'.$element;
+
             $style_attr = '';
             $level_list = '';
             $level_label = '';
             $text = '';
             foreach ($properties as $property => $items) {
                 switch ($items ['section']) {
-                    case 'level':
-                        $level .= $items ['odt_property'].'="'.$items ['value'].'" ';
-                        break;
                     case 'style-attr':
-                        $style_attr .= $items ['odt_property'].'="'.$items ['value'].'" ';
+                        // Only add fields/properties which are allowed for the specific list-level-style
+                        if ($property != 'list-level-style' && array_key_exists ($property, $fields)) {
+                            $style_attr .= $items ['odt_property'].'="'.$items ['value'].'" ';
+                        }
                         break;
                     case 'level-list':
                         $level_list .= $items ['odt_property'].'="'.$items ['value'].'" ';
@@ -229,11 +245,7 @@ class ODTTextListStyle extends ODTStyle
                         break;
                 }
             }
-            $levels .= '    <'.$this->choice.' '.$level;
-            if (!empty($style_attr)) {
-                $levels .= $style_attr;
-            }
-            $levels .= ">\n";
+            $levels .= '    <'.$element.' '.$style_attr.">\n";
             if (!empty($level_list)) {
                 if (empty($level_label)) {
                     $levels .= '        <style:list-level-properties '.$level_list."/>\n";
@@ -246,7 +258,7 @@ class ODTTextListStyle extends ODTStyle
             if (!empty($text)) {
                 $levels .= '        <style:text-properties '.$text.'/>'."\n";
             }
-            $levels .= "    </".$this->choice.">\n";
+            $levels .= "    </".$element.">\n";
         }
 
         // Build style.
@@ -271,16 +283,55 @@ class ODTTextListStyle extends ODTStyle
     }
 
     /**
-     * Set a property.
+     * Set a property for a specific level.
      * 
+     * @param $level    The level for which to set the property (1 to 10)
      * @param $property The name of the property to set
      * @param $value    New value to set
      */
     public function setPropertyForLevel($level, $property, $value) {
-        if (array_key_exists ($property, self::$list_fields)) {
+        if ($property == 'list-level-style') {
+            // Property 'list-level-style' is a special property just to remember
+            // which element needs to be encoded on a call to toString().
+            // It may not be included in the output of toString()!!!
             $this->setPropertyInternal
-                ($property, self::$list_fields [$property][0], $value, self::$list_fields [$property][1], $this->list_level_styles [$level]);
-            return;
+                ($property, 'list-level-style', $value, 'list-level-style', $this->list_level_styles [$level]);
+        } else {
+            // First check fields/properties common to each list-level-style
+            $text_fields = ODTTextStyle::getTextProperties ();
+            if (array_key_exists ($property, $text_fields)) {
+                $this->setPropertyInternal
+                    ($property, $text_fields [$property][0], $value, $text_fields [$property][1], $this->list_level_styles [$level]);
+                return;
+            }
+            if (array_key_exists ($property, self::$list_level_props_fields)) {
+                $this->setPropertyInternal
+                    ($property, self::$list_level_props_fields [$property][0], $value, self::$list_level_props_fields [$property][1], $this->list_level_styles [$level]);
+                return;
+            }
+            if (array_key_exists ($property, self::$label_align_fields)) {
+                $this->setPropertyInternal
+                    ($property, self::$label_align_fields [$property][0], $value, self::$label_align_fields [$property][1], $this->list_level_styles [$level]);
+                return;
+            }
+
+            // Now check fields specific to the list-level-style.
+            $element = $this->getPropertyFromLevel ($level, 'list-level-style');
+            switch ($element) {
+                case 'number':
+                    $fields = self::$style_number_fields;
+                break;
+                case 'bullet':
+                    $fields = self::$style_bullet_fields;
+                break;
+                case 'image':
+                    $fields = self::$style_image_fields;
+                break;
+            }
+            if (array_key_exists ($property, $fields)) {
+                $this->setPropertyInternal
+                    ($property, $fields [$property][0], $value, $fields [$property][1], $this->list_level_styles [$level]);
+            }
         }
     }
 }

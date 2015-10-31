@@ -195,7 +195,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $template = $this->config->getParam ('odt_template');
                 $directory = $this->config->getParam ('tpl_dir');
                 $template_path = $this->config->getParam('mediadir').'/'.$directory."/".$template;
-                $this->docHandler->import($template_path, $media_sel);
+                $this->docHandler->import($template_path, $media_sel, $this->config->getParam('mediadir'));
                 break;
 
             default:
@@ -2352,7 +2352,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // make sure width and height are available
         if (!$width || !$height) {
-            list($width, $height) = $this->_odtGetImageSize($string, $width, $height);
+            list($width, $height) = $this->_odtGetImageSizeString($string, $width, $height);
         }
 
         if($align){
@@ -2409,13 +2409,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return string
      */
     function _odtAddImageAsFileOnly($src){
-        $name = '';
-        if (file_exists($src)) {
-            list($ext,$mime) = mimetype($src);
-            $name = 'Pictures/'.md5($src).'.'.$ext;
-            $this->docHandler->addFile($name, $mime, io_readfile($src,false));
-        }
-        return $name;
+        return $this->docHandler->addFileAsPicture($src);
     }
 
     /**
@@ -2438,7 +2432,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
         // make sure width and height are available
         if (!$width || !$height) {
-            list($width, $height) = $this->_odtGetImageSize($src, $width, $height);
+            list($width, $height) = $this->_odtGetImageSizeString($src, $width, $height);
         } else {
             // Adjust values for ODT
             $width = $this->adjustXLengthValueForODT ($width);
@@ -2484,12 +2478,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * @param string $src
-     * @param  $width
-     * @param  $height
-     * @return array
+     * The function tries to examine the width and height
+     * of the image stored in file $src.
+     * 
+     * @param  string $src The file name of image
+     * @return array  Width and height of the image in centimeters or
+     *                both 0 if file doesn't exist.
+     *                Just the integer value, no units included.
      */
-    function _odtGetImageSize($src, $width = NULL, $height = NULL){
+    public static function _odtGetImageSize($src){
         if (file_exists($src)) {
             $info  = getimagesize($src);
             if(!$width){
@@ -2498,6 +2495,28 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }else{
                 $height = round(($width * $info[1]) / $info[0]);
             }
+
+            // Convert from pixel to centimeters
+            if ($width) $width = (($width/96.0)*2.54);
+            if ($height) $height = (($height/96.0)*2.54);
+
+            return array($width, $height);
+        }
+
+        return array(0, 0);
+    }
+
+    /**
+     * @param string $src
+     * @param  $width
+     * @param  $height
+     * @return array
+     */
+    function _odtGetImageSizeString($src, $width = NULL, $height = NULL){
+        list($width_file, $height_file) = $this->_odtGetImageSize($src);
+        if ($width_file != 0) {
+            $width  = $width_file;
+            $height = $height_file;
         }
 
         // convert from pixel to centimeters
@@ -2801,7 +2820,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $picture = $import->replaceURLPrefix ($picture, $baseURL);
             }
             $pic_link=$this->_odtAddImageAsFileOnly($picture);
-            list($pic_width, $pic_height) = $this->_odtGetImageSize($picture);
+            list($pic_width, $pic_height) = $this->_odtGetImageSizeString($picture);
         }
 
         $horiz_pos = 'center';
@@ -3639,7 +3658,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
             $pic_link=$this->_odtAddImageAsFileOnly($picture);
-            list($pic_width, $pic_height) = $this->_odtGetImageSize($picture);
+            list($pic_width, $pic_height) = $this->_odtGetImageSizeString($picture);
         }
 
         if ( empty($horiz_pos) ) {

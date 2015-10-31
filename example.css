@@ -184,7 +184,16 @@ hr {
 }
 
 /* Layouts for different list levels.
- * Un-ordered list.
+ * 
+ * You can also use images instead of numbers or bullets by using
+ * 'list-style-image: url('picture.png');' instead of 'list-style-type'.
+ *
+ * The base path is the media directory.
+ * So in this case the picture would be expected in file
+ * 'dokuwiki-installation-directory/data/media/picture.png'.
+ */
+
+/* Un-ordered list.
  * DokuWiki syntax: * list item text
  */
 ul.level1 {
@@ -227,8 +236,7 @@ ul.level10 {
     list-style-type: bullet;
 }
 
-/* Layouts for different list levels.
- * Ordered list.
+/* Ordered list.
  * DokuWiki syntax: - list item text
  */
 ol.level1 {

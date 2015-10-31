@@ -63,6 +63,23 @@ abstract class docHandler
     }
 
     /**
+     * Adds the file $src as a picture file without adding it to the content.
+     * Returns name of the file in the document for reference.
+     *
+     * @param string $src
+     * @return string
+     */
+    function addFileAsPicture($src){
+        $name = '';
+        if (file_exists($src)) {
+            list($ext,$mime) = mimetype($src);
+            $name = 'Pictures/'.md5($src).'.'.$ext;
+            $this->addFile($name, $mime, io_readfile($src,false));
+        }
+        return $name;
+    }
+
+    /**
      * Build ODT document.
      *
      * @param string      $doc

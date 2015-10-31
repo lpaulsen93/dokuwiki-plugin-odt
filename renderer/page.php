@@ -74,6 +74,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $css;
     /** @var  int counter for styles */
     protected $style_count;
+    /** @var  has any text content been added yet (excluding whitespace)? */
+    protected $text_empty = true;
 
     // Only for debugging
     //var $trace_dump;
@@ -329,13 +331,27 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             return;
         }
 
-        // Set marker and save data for pending change format.
-        // The format change istelf will be done on the next call to p_open or header()
-        // to prevent empty lines after the format change.
-        $this->changePageFormat = $data;
+        if ($this->text_empty) {
+            // If the text is still empty, then we change the start page format now.
+            $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+            $first_page = $this->docHandler->getStyle($this->docHandler->getStyleName('first page'));
+            if ($first_page != NULL) {
+                $first_page->setProperty('width', $this->page->getWidth().'cm');
+                $first_page->setProperty('height', $this->page->getHeight().'cm');
+                $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
+                $first_page->setProperty('margin-right', $this->page->getMarginRight().'cm');
+                $first_page->setProperty('margin-bottom', $this->page->getMarginBottom().'cm');
+                $first_page->setProperty('margin-left', $this->page->getMarginLeft().'cm');
+            }
+        } else {
+            // Set marker and save data for pending change format.
+            // The format change istelf will be done on the next call to p_open or header()
+            // to prevent empty lines after the format change.
+            $this->changePageFormat = $data;
 
-        // Close paragraph if open
-        $this->p_close();
+            // Close paragraph if open
+            $this->p_close();
+        }
     }
 
     /**
@@ -866,6 +882,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
         $this->doc .= $this->_xmlEntities($text);
+        if ($this->text_empty && !ctype_space($text)) {
+            $this->text_empty = false;
+        }
     }
 
     /**

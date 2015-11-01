@@ -260,6 +260,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Closes the document
      */
     function document_end(){
+        // Close any open paragraph if not done yet.
+        $this->p_close ();
+        
         // DEBUG: The following puts out the loaded raw CSS code
         //$this->p_open();
         // This line outputs the raw CSS code
@@ -1151,6 +1154,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $numrows NOT IMPLEMENTED
      */
     function table_open($maxcols = NULL, $numrows = NULL){
+        // Close any open paragraph.
+        $this->p_close();
+        
         // Do additional actions if the parent element is a list.
         // In this case we need to finish the list and re-open it later
         // after the table has been closed! --> tables may not be part of a list item in ODT!

@@ -95,12 +95,9 @@ class ODTParagraphStyle extends ODTStyleStyle
      * @param  $disabled Properties to be ignored
      */
     public function importProperties($properties, $disabled) {
-        $this->importPropertiesInternal
-            (ODTStyleStyle::getStyleProperties (), $properties, $disabled, $this->style_properties);
-        $this->importPropertiesInternal
-            (ODTTextStyle::getTextProperties (), $properties, $disabled, $this->text_properties);
-        $this->importPropertiesInternal(self::$paragraph_fields, $properties, $disabled);
-        $this->setProperty('style-family', $this->getFamily());
+        foreach ($properties as $property => $value) {
+            $this->setProperty($property, $value);
+        }
     }
 
     /**

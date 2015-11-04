@@ -168,6 +168,9 @@
         <style:style style:name="List_First_Paragraph" style:display-name="List First Paragraph" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
             <style:paragraph-properties fo:margin-top="0.5cm"/>
         </style:style>
+        <style:style style:name="List_Last_Paragraph" style:display-name="List Last Paragraph" style:family="paragraph" style:parent-style-name="Standard" style:next-style-name="Text_20_body" style:class="html">
+            <style:paragraph-properties fo:margin-bottom="0.5cm"/>
+        </style:style>
         <style:style style:name="Numbering_20_1_Content" style:display-name="Numbering 1 Content" style:family="paragraph" style:parent-style-name="Standard" style:list-style-name="Numbering_20_1">
         </style:style>
         <text:list-style style:name="Numbering_20_1" style:display-name="Numbering 1">

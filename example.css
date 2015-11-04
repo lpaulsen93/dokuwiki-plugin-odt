@@ -286,3 +286,11 @@ ol.level10 {
 .listfirstparagraph {
     margin-top: 0.5cm;
 }
+
+/* Style for last paragraph of a list.
+ * (ordered and unordered)
+ * Can be used to set margin of the list to following content.
+ */
+.listlastparagraph {
+    margin-bottom: 0.5cm;
+}

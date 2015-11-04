@@ -302,6 +302,7 @@ class CSSTemplateDH extends docHandler
         $this->importUnorderedListStyles($import, $media_sel, $media_path);
         $this->importOrderedListStyles($import, $media_sel, $media_path);
         $this->importStyle($import, 'list first paragraph', NULL, 'listfirstparagraph', $media_sel);
+        $this->importStyle($import, 'list last paragraph', NULL, 'listlastparagraph', $media_sel);
     }
 
 

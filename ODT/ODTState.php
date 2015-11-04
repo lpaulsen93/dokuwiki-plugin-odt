@@ -19,6 +19,7 @@ class ODTStateEntry
     protected $list_item_level = 0;
     protected $list_interrupted = false;
     protected $list_first_paragraph = true;
+    protected $list_paragraph_pos = -1;
 
     // Paragraph or frame entered?
     protected $in_paragraph = false;
@@ -54,6 +55,7 @@ class ODTStateEntry
         $this->table_column_defs = NULL;
 
         $this->list_interrupted = false;
+        $list_paragraph_pos = -1;
     }
 
     /**
@@ -198,6 +200,24 @@ class ODTStateEntry
      */
     public function getListFirstParagraph() {
         return $this->list_first_paragraph;
+    }
+
+    /**
+     * Set position of last opened paragraph in the list
+     * 
+     * @param integer $value
+     */
+    public function setListLastParagraphPosition($value) {
+        $this->list_paragraph_pos = $value;
+    }
+
+    /**
+     * Get position of last opened paragraph in the list
+     * 
+     * @return integer
+     */
+    public function getListLastParagraphPosition() {
+        return $this->list_paragraph_pos;
     }
 
     /**
@@ -521,6 +541,22 @@ class ODTState
      */
     public function getListFirstParagraph() {
         return $this->stack [$this->index]->getListFirstParagraph();
+    }
+
+    /**
+     * Calls setListLastParagraphPosition for the current state.
+     * See ODTStateEntry::setListLastParagraphPosition.
+     */
+    public function setListLastParagraphPosition($value) {
+        $this->stack [$this->index]->setListLastParagraphPosition($value);
+    }
+
+    /**
+     * Calls getListLastParagraphPosition for the current state.
+     * See ODTStateEntry::getListLastParagraphPosition.
+     */
+    public function getListLastParagraphPosition() {
+        return $this->stack [$this->index]->getListLastParagraphPosition();
     }
 
     /**

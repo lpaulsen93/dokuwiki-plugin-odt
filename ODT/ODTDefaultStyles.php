@@ -158,6 +158,7 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'quotation4':           return 'Quotation_20_4';
             case 'quotation5':           return 'Quotation_20_5';
             case 'list first paragraph': return 'List_First_Paragraph';
+            case 'list last paragraph':  return 'List_Last_Paragraph';
             case 'first page':           return 'pm1';
         }
         // Not supported basic style.

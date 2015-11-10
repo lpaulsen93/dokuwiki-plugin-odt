@@ -2624,11 +2624,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ($width_file != 0) {
             $width  = $width_file;
             $height = $height_file;
+        } else {
+            // convert from pixel to centimeters
+            if ($width) $width = (($width/96.0)*2.54);
+            if ($height) $height = (($height/96.0)*2.54);
         }
-
-        // convert from pixel to centimeters
-        if ($width) $width = (($width/96.0)*2.54);
-        if ($height) $height = (($height/96.0)*2.54);
 
         if ($width && $height) {
             // Don't be wider than the page

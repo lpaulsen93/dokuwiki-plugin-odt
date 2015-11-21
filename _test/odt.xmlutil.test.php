@@ -135,10 +135,4 @@ class plugin_odt_xmlutil_test extends DokuWikiTest {
         $this->assertEquals(strlen($xmlCode)-strlen('<anotherOne></anotherOne>'), $end);
         $this->assertEquals('unknown', $element);
     }
-
-    public function test_default() {
-        $styles = new ODTDefaultStyles();
-        $styles->import();
-        print "\nExport:\n".$styles->export();
-    }
 }

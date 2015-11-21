@@ -6,18 +6,24 @@
  * @author LarsDW223
  */
 
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTUnknownStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTStyleStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTextOutlineStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTextListStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTMasterPageStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTPageLayoutStyle.php';
+require_once 'ODTUnknownStyle.php';
+require_once 'ODTStyleStyle.php';
+require_once 'ODTTextOutlineStyle.php';
+require_once 'ODTTextListStyle.php';
+require_once 'ODTMasterPageStyle.php';
+require_once 'ODTPageLayoutStyle.php';
+require_once 'ODTTextStyle.php';
+require_once 'ODTParagraphStyle.php';
+require_once 'ODTTableStyle.php';
+require_once 'ODTTableRowStyle.php';
+require_once 'ODTTableColumnStyle.php';
+require_once 'ODTTableCellStyle.php';
 
 /**
  * The ODTStyle class
  */
 abstract class ODTStyle
-{        
+{
     protected $properties = array();
 
     /**

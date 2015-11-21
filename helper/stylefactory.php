@@ -14,6 +14,7 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTParagraphStyle.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTableStyle.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTableRowStyle.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTableColumnStyle.php';
+require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTableCellStyle.php';
 
 /**
  * Class helper_plugin_odt_stylefactory

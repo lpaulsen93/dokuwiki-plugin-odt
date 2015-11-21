@@ -1,7 +1,6 @@
 <?php
 
 require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyle.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTextListStyle.php';
 
 /**
  * Tests to ensure functionality of the ODTTextListStyle class.

@@ -7,7 +7,9 @@
  */
 
 require_once DOKU_INC.'lib/plugins/odt/ODT/XMLUtil.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyleStyle.php';
+require_once 'ODTStyle.php';
+
+ODTStyleStyle::register('ODTTableColumnStyle');
 
 /**
  * The ODTTableColumnStyle class
@@ -22,6 +24,13 @@ class ODTTableColumnStyle extends ODTStyleStyle
         'break-before'               => array ('fo:break-before',                 'table-column',  true),
         'break-after'                => array ('fo:break-after',                  'table-column',  true),
     );
+
+    /**
+     * Constructor.
+     */
+    public function __construct() {
+        parent::__construct();
+    }
 
     /**
      * Set style properties by importing values from a properties array.
@@ -51,7 +60,7 @@ class ODTTableColumnStyle extends ODTStyleStyle
      *
      * @return string Style family
      */
-    public function getFamily() {
+    static public function getFamily() {
         return 'table-column';
     }
 

@@ -6,8 +6,10 @@
  * @author LarsDW223
  */
 
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTStyleStyle.php';
 require_once DOKU_PLUGIN . 'odt/ODT/XMLUtil.php';
+require_once 'ODTStyle.php';
+
+ODTStyleStyle::register('ODTTextStyle');
 
 /**
  * The ODTTextStyle class
@@ -115,6 +117,13 @@ class ODTTextStyle extends ODTStyleStyle
     );
 
     /**
+     * Constructor.
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+
+    /**
      * Set style properties by importing values from a properties array.
      * Properties might be disabled by setting them in $disabled.
      * The style must have been previously created.
@@ -142,7 +151,7 @@ class ODTTextStyle extends ODTStyleStyle
      *
      * @return string Style family
      */
-    public function getFamily() {
+    static public function getFamily() {
         return 'text';
     }
 
@@ -175,7 +184,7 @@ class ODTTextStyle extends ODTStyleStyle
     static public function importODTStyle($xmlCode) {
         $style = new ODTTextStyle();
         $attrs = 0;
-        
+
         $open = XMLUtil::getElementOpenTag('style:style', $xmlCode);
         if (!empty($open)) {
             $attrs += $style->importODTStyleInternal(ODTStyleStyle::getStyleProperties (), $open);

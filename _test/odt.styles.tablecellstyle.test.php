@@ -1,6 +1,5 @@
 <?php
 
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTableCellStyle.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyle.php';
 
 /**

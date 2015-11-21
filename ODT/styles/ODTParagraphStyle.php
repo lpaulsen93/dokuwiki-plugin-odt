@@ -6,9 +6,10 @@
  * @author LarsDW223
  */
 
-require_once DOKU_INC.'lib/plugins/odt/ODT/XMLUtil.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyleStyle.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTextStyle.php';
+require_once DOKU_PLUGIN.'odt/ODT/XMLUtil.php';
+require_once 'ODTStyle.php';
+
+ODTStyleStyle::register('ODTParagraphStyle');
 
 /**
  * The ODTParagraphStyle class
@@ -87,6 +88,13 @@ class ODTParagraphStyle extends ODTStyleStyle
     protected $tab_stops = array();
 
     /**
+     * Constructor.
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+
+    /**
      * Set style properties by importing values from a properties array.
      * Properties might be disabled by setting them in $disabled.
      * The style must have been previously created.
@@ -114,7 +122,7 @@ class ODTParagraphStyle extends ODTStyleStyle
      *
      * @return string Style family
      */
-    public function getFamily() {
+    static public function getFamily() {
         return 'paragraph';
     }
 
@@ -287,4 +295,3 @@ class ODTParagraphStyle extends ODTStyleStyle
         return $style;
     }
 }
-

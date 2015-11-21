@@ -7,7 +7,9 @@
  */
 
 require_once DOKU_INC.'lib/plugins/odt/ODT/XMLUtil.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyleStyle.php';
+require_once 'ODTStyle.php';
+
+ODTStyleStyle::register('ODTTableRowStyle');
 
 /**
  * The ODTTableRowStyle class
@@ -39,6 +41,13 @@ class ODTTableRowStyle extends ODTStyleStyle
     );
 
     /**
+     * Constructor.
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+
+    /**
      * Set style properties by importing values from a properties array.
      * Properties might be disabled by setting them in $disabled.
      * The style must have been previously created.
@@ -66,7 +75,7 @@ class ODTTableRowStyle extends ODTStyleStyle
      *
      * @return string Style family
      */
-    public function getFamily() {
+    static public function getFamily() {
         return 'table-row';
     }
 

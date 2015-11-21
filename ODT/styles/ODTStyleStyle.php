@@ -7,11 +7,17 @@
  * @author LarsDW223
  */
 
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTParagraphStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTableStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTableRowStyle.php';
-require_once DOKU_PLUGIN . 'odt/ODT/styles/ODTTableCellStyle.php';
+require_once DOKU_PLUGIN.'odt/ODT/styles/ODTStyle.php';
+//require_once 'ODTTextStyle.php';
+//require_once 'ODTParagraphStyle.php';
+//require_once 'ODTTableStyle.php';
+//require_once 'ODTTableRowStyle.php';
+//require_once 'ODTTableColumnStyle.php';
+//require_once 'ODTTableCellStyle.php';
+//require_once DOKU_PLUGIN.'odt/ODT/styles/ODTParagraphStyle.php';
+//require_once DOKU_PLUGIN.'odt/ODT/styles/ODTTableStyle.php';
+//require_once DOKU_PLUGIN.'odt/ODT/styles/ODTTableRowStyle.php';
+//require_once DOKU_PLUGIN.'odt/ODT/styles/ODTTableCellStyle.php';
 
 /**
  * The ODTStyleStyle class
@@ -35,7 +41,24 @@ abstract class ODTStyleStyle extends ODTStyle
         'style-percentage-data-style-name' => array ('style:percentage-data-style-name',   'style', true),
         'style-default-outline-level'      => array ('style:default-outline-level',        'style', true),
         );
+    static $get_family_callbacks = NULL;
+    static $import_odt_callbacks = NULL;
     protected $is_default = false;
+
+    /**
+     * Constructor.
+     */
+    public function __construct() {
+        if (self::$get_family_callbacks === NULL)
+            self::$get_family_callbacks = array();
+        if (self::$import_odt_callbacks === NULL)
+            self::$import_odt_callbacks = array();
+    }
+
+    static public function register ($classname) {
+        self::$get_family_callbacks [] = array($classname, 'getFamily');
+        self::$import_odt_callbacks [] = array($classname, 'importODTStyle');
+    }
 
     /**
      * Get the element name for the ODT XML encoding of the style.
@@ -144,13 +167,6 @@ abstract class ODTStyleStyle extends ODTStyle
     }
 
     /**
-     * Get the style family of a style.
-     *
-     * @return string Style family
-     */
-    abstract public function getFamily();
-
-    /**
      * Create new style by importing ODT style definition.
      *
      * @param  $xmlCode Style definition in ODT XML format
@@ -164,19 +180,11 @@ abstract class ODTStyleStyle extends ODTStyle
         $family = substr ($matches [0], strlen('style:family='));
         $family = trim ($family, '"<>');
 
-        switch ($family) {
-            case 'text':
-                return ODTTextStyle::importODTStyle($xmlCode);
-            case 'paragraph':
-                return ODTParagraphStyle::importODTStyle($xmlCode);
-            case 'table':
-                return ODTTableStyle::importODTStyle($xmlCode);
-            case 'table-column':
-                return ODTTableColumnStyle::importODTStyle($xmlCode);
-            case 'table-row':
-                return ODTTableRowStyle::importODTStyle($xmlCode);
-            case 'table-cell':
-                return ODTTableCellStyle::importODTStyle($xmlCode);
+        for ($index = 0 ; $index < count(self::$get_family_callbacks) ; $index++ ) {
+            $curr_family = call_user_func(self::$get_family_callbacks [$index]);
+            if ($curr_family == $family) {
+                return call_user_func(self::$import_odt_callbacks [$index], $xmlCode);
+            }
         }
 
         // Unknown/not implemented style family.

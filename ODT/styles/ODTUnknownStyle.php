@@ -129,4 +129,12 @@ class ODTUnknownStyle extends ODTStyle
     public function getFamily() {
         return $this->getProperty('style-family');
     }
+
+    /**
+     * The function deletes all properties that do not belong to the styles section,
+     * e.g. text properties or paragraph properties.
+     * For unknown styles this is just a dummy doing nothing.
+     */
+    public function clearLayoutProperties() {
+    }
 }

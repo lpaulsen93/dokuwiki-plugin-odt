@@ -5,6 +5,7 @@ require_once DOKU_INC.'lib/plugins/odt/helper/units.php';
 /**
  * Tests to ensure functionality of the units helper class.
  *
+ * @group plugin_odt_units
  * @group plugin_odt
  * @group plugins
  */

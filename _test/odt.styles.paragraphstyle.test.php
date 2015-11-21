@@ -28,11 +28,8 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
 
         $this->assertEquals($style->getFamily(), 'paragraph');
         $this->assertEquals($style->getProperty('style-name'), 'Heading');
-        $this->assertEquals($style->getPropertySection('style-name'), 'style');
         $this->assertEquals($style->getProperty('style-family'), 'paragraph');
-        $this->assertEquals($style->getPropertySection('style-family'), 'style');
         $this->assertEquals($style->getProperty('style-parent'), 'Standard');
-        $this->assertEquals($style->getPropertySection('style-parent'), 'style');
         $this->assertEquals($style->getProperty('style-next'), 'Text_20_body');
         $this->assertEquals($style->getProperty('style-class'), 'text');
         $this->assertEquals($style->getProperty('margin-top'), '0.423cm');
@@ -57,8 +54,8 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
                      </style:style>';
         // The order of attributes will change! This is OK.
         $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:family="paragraph" style:next-style-name="Text_20_body" >'."\n";
-        $expected .= '    <style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
-        $expected .= '    <style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
+        $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
+        $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
         $expected .= '</style:style>'."\n";
 
         $style = ODTStyle::importODTStyle($xml_code);
@@ -107,8 +104,8 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
         $properties ['font-name-complex'] = 'Bitstream Vera Sans2';
         
         $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:family="paragraph" style:next-style-name="Text_20_body" >'."\n";
-        $expected .= '    <style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
-        $expected .= '    <style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
+        $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
+        $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
         $expected .= '</style:style>'."\n";
 
         $style = new ODTParagraphStyle();
@@ -130,8 +127,8 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
                      </style:default-style>';
         // The order of attributes will change! This is OK.
         $expected  = '<style:default-style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:family="paragraph" style:next-style-name="Text_20_body" >'."\n";
-        $expected .= '    <style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
-        $expected .= '    <style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
+        $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
+        $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
         $expected .= '</style:default-style>'."\n";
 
         $style = ODTStyle::importODTStyle($xml_code);

@@ -252,8 +252,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         $this->set_page_bookmark($ID);
-
-        $this->p_open();
     }
 
     /**
@@ -875,10 +873,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      */
     function cdata($text) {
-        // Insert pagebreak or page format change if still pending.
-        // Attention: NOT if $text is empty. This would lead to empty lines before headings
-        //            right after a pagebreak!
-        if ( !empty($text) ) {
+        // Check if there is some content in the text.
+        // Only insert bookmark/pagebreak/format change if text is not empty.
+        // Otherwise a empty paragraph/line would be created!
+        if ( !empty($text) && !ctype_space($text) ) {
+            // Insert page bookmark if requested and not done yet.
+            if ( !empty($this->pageBookmark) ) {
+                $this->insert_bookmark($this->pageBookmark, false);
+                $this->pageBookmark = NULL;
+            }
+
+            // Insert pagebreak or page format change if still pending.
+            // Attention: NOT if $text is empty. This would lead to empty lines before headings
+            //            right after a pagebreak!
             $in_paragraph = $this->state->getInParagraph();
             if ( ($this->pagebreak || $this->changePageFormat != NULL) && !$in_paragraph ) {
                 $this->p_open();
@@ -1022,12 +1029,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
             
             $this->doc .= '<text:p text:style-name="'.$style.'">';
-        }
-
-        // Insert page bookmark if requested and not done yet.
-        if ( !empty($this->pageBookmark) ) {
-            $this->insert_bookmark($this->pageBookmark, false);
-            $this->pageBookmark = NULL;
         }
     }
 

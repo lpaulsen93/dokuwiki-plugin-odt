@@ -53,7 +53,7 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
                          <style:text-properties style:font-name="Bitstream Vera Sans1" fo:font-size="14pt" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="14pt" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="14pt"/>
                      </style:style>';
         // The order of attributes will change! This is OK.
-        $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:family="paragraph" style:next-style-name="Text_20_body" >'."\n";
+        $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:next-style-name="Text_20_body" style:family="paragraph" >'."\n";
         $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
         $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
         $expected .= '</style:style>'."\n";
@@ -103,7 +103,7 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
         $properties ['font-name-asian']   = 'Bitstream Vera Sans2';
         $properties ['font-name-complex'] = 'Bitstream Vera Sans2';
         
-        $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:family="paragraph" style:next-style-name="Text_20_body" >'."\n";
+        $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:next-style-name="Text_20_body" style:family="paragraph" >'."\n";
         $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
         $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
         $expected .= '</style:style>'."\n";
@@ -126,7 +126,7 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
                          <style:text-properties style:font-name="Bitstream Vera Sans1" fo:font-size="14pt" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="14pt" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="14pt"/>
                      </style:default-style>';
         // The order of attributes will change! This is OK.
-        $expected  = '<style:default-style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:family="paragraph" style:next-style-name="Text_20_body" >'."\n";
+        $expected  = '<style:default-style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:next-style-name="Text_20_body" style:family="paragraph" >'."\n";
         $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
         $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
         $expected .= '</style:default-style>'."\n";
@@ -138,5 +138,69 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
 
         $this->assertEquals(true, $style->isDefault());
         $this->assertEquals($expected, $style_string);
+    }
+
+    /**
+     * Test setProperty() and toString().
+     * This is a test case for issue #120.
+     */
+    public function test_set_and_to_string() {
+        $properties = array();
+        $properties ['style-name']        = 'Heading';
+        $properties ['style-parent']      = 'Standard';
+        $properties ['style-class']       = 'text';
+        $properties ['style-next']        = 'Text_20_body';
+        $properties ['margin-top']        = '0.423cm';
+        $properties ['margin-bottom']     = '0.212cm';
+        $properties ['keep-with-next']    = 'always';
+        $properties ['font-size']         = '14pt';
+        $properties ['font-size-asian']   = '14pt';
+        $properties ['font-size-complex'] = '14pt';
+        $properties ['font-name']         = 'Bitstream Vera Sans1';
+        $properties ['font-name-asian']   = 'Bitstream Vera Sans2';
+        $properties ['font-name-complex'] = 'Bitstream Vera Sans2';
+        
+        $expected  = '<style:style style:name="Heading" style:parent-style-name="Standard" style:class="text" style:next-style-name="Text_20_body" style:family="paragraph" >'."\n";
+        $expected .= '<style:paragraph-properties fo:margin-top="0.423cm" fo:margin-bottom="0.212cm" fo:keep-with-next="always" />'."\n";
+        $expected .= '<style:text-properties fo:font-size="14pt" style:font-size-asian="14pt" style:font-size-complex="14pt" style:font-name="Bitstream Vera Sans1" style:font-name-asian="Bitstream Vera Sans2" style:font-name-complex="Bitstream Vera Sans2" />'."\n";
+        $expected .= '</style:style>'."\n";
+
+        $style = new ODTParagraphStyle();
+        $this->assertNotNull($style);
+
+        foreach ($properties as $key => $value) {
+            $style->setProperty($key, $value);
+        }
+        $style_string = $style->toString();
+
+        // We should have the following elements:
+        // style:style, style:paragraph-properties, style:text-properties
+        $style_style = XMLUtil::getElementOpenTag('style:style', $style_string);
+        $this->assertNotNull($style_style);
+        $paragraph_props = XMLUtil::getElement('style:paragraph-properties', $style_string);
+        $this->assertNotNull($paragraph_props);
+        $text_props = XMLUtil::getElement('style:text-properties', $style_string);
+        $this->assertNotNull($text_props);
+
+        // Check attribute values of element "style:style", see $expected
+        // Remark: attribute 'style:family' must always be present even if it was not set
+        $this->assertEquals('Heading', XMLUtil::getAttributeValue('style:name', $style_style));
+        $this->assertEquals('Standard', XMLUtil::getAttributeValue('style:parent-style-name', $style_style));
+        $this->assertEquals('text', XMLUtil::getAttributeValue('style:class', $style_style));
+        $this->assertEquals('Text_20_body', XMLUtil::getAttributeValue('style:next-style-name', $style_style));
+        $this->assertEquals('paragraph', XMLUtil::getAttributeValue('style:family', $style_style));
+
+        // Check attribute values of element "style:paragraph-properties", see $expected
+        $this->assertEquals('0.423cm', XMLUtil::getAttributeValue('fo:margin-top', $paragraph_props));
+        $this->assertEquals('0.212cm', XMLUtil::getAttributeValue('fo:margin-bottom', $paragraph_props));
+        $this->assertEquals('always', XMLUtil::getAttributeValue('fo:keep-with-next', $paragraph_props));
+
+        // Check attribute values of element "style:text-properties", see $expected
+        $this->assertEquals('14pt', XMLUtil::getAttributeValue('fo:font-size', $text_props));
+        $this->assertEquals('14pt', XMLUtil::getAttributeValue('style:font-size-asian', $text_props));
+        $this->assertEquals('14pt', XMLUtil::getAttributeValue('style:font-size-complex', $text_props));
+        $this->assertEquals('Bitstream Vera Sans1', XMLUtil::getAttributeValue('style:font-name', $text_props));
+        $this->assertEquals('Bitstream Vera Sans2', XMLUtil::getAttributeValue('style:font-name-asian', $text_props));
+        $this->assertEquals('Bitstream Vera Sans2', XMLUtil::getAttributeValue('style:font-name-complex', $text_props));
     }
 }

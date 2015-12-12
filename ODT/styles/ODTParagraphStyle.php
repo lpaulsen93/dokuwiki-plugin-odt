@@ -245,8 +245,11 @@ class ODTParagraphStyle extends ODTStyleStyle
 
         // Get style contents
         foreach ($this->style_properties as $property => $items) {
-            $style .= $items ['odt_property'].'="'.$items ['value'].'" ';
+            if ($items ['odt_property'] != 'style:family') {
+                $style .= $items ['odt_property'].'="'.$items ['value'].'" ';
+            }
         }
+        $style .= 'style:family="'.$this->getFamily().'" ';
 
         // Get paragraph properties ODT properties
         foreach ($this->properties as $property => $items) {

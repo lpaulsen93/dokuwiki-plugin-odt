@@ -377,4 +377,22 @@ class XMLUtil
         $end_length = strlen ('</'.$element.'>');
         return substr_replace ($xmlCode, $replacement, $start, $end-$start+$end_length);
     }
+
+    /**
+     * Helper function which returns the value of $attribute
+     * if found in $xml_code. Otherwise it returns NULL.
+     *
+     * @param  $attribute    The name of the attribute
+     * @param  $xmlCode      The XML code to search through
+     * @return string        Found value or NULL
+     */
+    public static function getAttributeValue ($attribute, $xmlCode) {
+        $pattern = '/\s'.$attribute.'="[^"]*"/';
+        if (preg_match ($pattern, $xmlCode, $matches) === 1) {
+            $value = substr($matches [0], strlen($attribute)+2);
+            $value = trim($value, '"');
+            return $value;
+        }
+        return NULL;
+    }
 }

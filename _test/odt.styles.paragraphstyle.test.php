@@ -177,30 +177,39 @@ class plugin_odt_paragraphstyle_test extends DokuWikiTest {
         // style:style, style:paragraph-properties, style:text-properties
         $style_style = XMLUtil::getElementOpenTag('style:style', $style_string);
         $this->assertNotNull($style_style);
-        $paragraph_props = XMLUtil::getElement('style:paragraph-properties', $style_string);
+        $paragraph_props = XMLUtil::getElementOpenTag('style:paragraph-properties', $style_string);
         $this->assertNotNull($paragraph_props);
-        $text_props = XMLUtil::getElement('style:text-properties', $style_string);
+        $text_props = XMLUtil::getElementOpenTag('style:text-properties', $style_string);
         $this->assertNotNull($text_props);
 
         // Check attribute values of element "style:style", see $expected
         // Remark: attribute 'style:family' must always be present even if it was not set
-        $this->assertEquals('Heading', XMLUtil::getAttributeValue('style:name', $style_style));
-        $this->assertEquals('Standard', XMLUtil::getAttributeValue('style:parent-style-name', $style_style));
-        $this->assertEquals('text', XMLUtil::getAttributeValue('style:class', $style_style));
-        $this->assertEquals('Text_20_body', XMLUtil::getAttributeValue('style:next-style-name', $style_style));
-        $this->assertEquals('paragraph', XMLUtil::getAttributeValue('style:family', $style_style));
+        $attributes = array();
+        $found = XMLUtil::getAttributes($attributes, $style_style);
+        $this->assertEquals(5, $found);
+        $this->assertEquals('Heading', $attributes['style:name']);
+        $this->assertEquals('Standard', $attributes['style:parent-style-name']);
+        $this->assertEquals('text', $attributes['style:class']);
+        $this->assertEquals('Text_20_body', $attributes['style:next-style-name']);
+        $this->assertEquals('paragraph', $attributes['style:family']);
 
         // Check attribute values of element "style:paragraph-properties", see $expected
-        $this->assertEquals('0.423cm', XMLUtil::getAttributeValue('fo:margin-top', $paragraph_props));
-        $this->assertEquals('0.212cm', XMLUtil::getAttributeValue('fo:margin-bottom', $paragraph_props));
-        $this->assertEquals('always', XMLUtil::getAttributeValue('fo:keep-with-next', $paragraph_props));
+        $attributes = array();
+        $found = XMLUtil::getAttributes($attributes, $paragraph_props);
+        $this->assertEquals(3, $found);
+        $this->assertEquals('0.423cm', $attributes['fo:margin-top']);
+        $this->assertEquals('0.212cm', $attributes['fo:margin-bottom']);
+        $this->assertEquals('always', $attributes['fo:keep-with-next']);
 
         // Check attribute values of element "style:text-properties", see $expected
-        $this->assertEquals('14pt', XMLUtil::getAttributeValue('fo:font-size', $text_props));
-        $this->assertEquals('14pt', XMLUtil::getAttributeValue('style:font-size-asian', $text_props));
-        $this->assertEquals('14pt', XMLUtil::getAttributeValue('style:font-size-complex', $text_props));
-        $this->assertEquals('Bitstream Vera Sans1', XMLUtil::getAttributeValue('style:font-name', $text_props));
-        $this->assertEquals('Bitstream Vera Sans2', XMLUtil::getAttributeValue('style:font-name-asian', $text_props));
-        $this->assertEquals('Bitstream Vera Sans2', XMLUtil::getAttributeValue('style:font-name-complex', $text_props));
+        $attributes = array();
+        $found = XMLUtil::getAttributes($attributes, $text_props);
+        $this->assertEquals(6, $found);
+        $this->assertEquals('14pt', $attributes['fo:font-size']);
+        $this->assertEquals('14pt', $attributes['style:font-size-asian']);
+        $this->assertEquals('14pt', $attributes['style:font-size-complex']);
+        $this->assertEquals('Bitstream Vera Sans1', $attributes['style:font-name']);
+        $this->assertEquals('Bitstream Vera Sans2', $attributes['style:font-name-asian']);
+        $this->assertEquals('Bitstream Vera Sans2', $attributes['style:font-name-complex']);
     }
 }

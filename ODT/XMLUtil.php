@@ -395,4 +395,28 @@ class XMLUtil
         }
         return NULL;
     }
+
+    /**
+     * Helper function which stores all attributes
+     * in the array $attributes as name => value pairs.
+     *
+     * @param  $attributes    Array to store the attributes in
+     * @param  $xmlCode       The XML code to search through
+     * @return integer        Number of found attributes or 0
+     */
+    public static function getAttributes (&$attributes, $xmlCode) {
+        $pattern = '/\s[-:_.a-zA-Z0-9]+="[^"]*"/';
+        if (preg_match_all ($pattern, $xmlCode, $matches, PREG_SET_ORDER) > 0) {
+            foreach ($matches as $match) {
+                $equal_pos = strpos($match [0], '=');
+                $name = substr($match [0], 0, $equal_pos);
+                $name = trim($name);
+                $value = substr($match [0], $equal_pos+1);
+                $value = trim($value, '"');
+                $attributes [$name] = $value;
+            }
+            return count($attributes);
+        }
+        return 0;
+    }
 }

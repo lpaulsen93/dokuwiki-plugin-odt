@@ -135,4 +135,21 @@ class plugin_odt_xmlutil_test extends DokuWikiTest {
         $this->assertEquals(strlen($xmlCode)-strlen('<anotherOne></anotherOne>'), $end);
         $this->assertEquals('unknown', $element);
     }
+
+    /**
+     * Test function getAttributes()
+     */
+    public function test_getAttributes() {
+        $xmlCode = '<test attr1="1" attr2="22" attr3="333" attr4="4444" attr5="55555"></test>';
+
+        $attributes = array();
+        $found = XMLUtil::getAttributes($attributes, $xmlCode);
+                
+        $this->assertEquals(5, $found);
+        $this->assertEquals('1', $attributes['attr1']);
+        $this->assertEquals('22', $attributes['attr2']);
+        $this->assertEquals('333', $attributes['attr3']);
+        $this->assertEquals('4444', $attributes['attr4']);
+        $this->assertEquals('55555', $attributes['attr5']);
+    }
 }

@@ -20,4 +20,10 @@
 #dokuwiki__pagetools ul li a.export_odt:focus {
     background-position: right -45px;
 }
+/*Keep pagetool icon on left side for rtl languages*/
+[dir=rtl] #dokuwiki__pagetools ul li a.export_odt:hover,
+#dokuwiki__pagetools ul li a.export_odt:active,
+#dokuwiki__pagetools ul li a.export_odt:focus {
+    background-position: left -45px;
+}
 

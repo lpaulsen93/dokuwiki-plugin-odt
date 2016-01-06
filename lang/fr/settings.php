@@ -6,6 +6,7 @@
  * @author NicolasFriedli <nicolas@theologique.ch>
  * @author Schplurtz le Déboulonné <Schplurtz@laposte.net>
  * @author Schplurtz le Déboulonné <schplurtz@laposte.net>
+ * @author Fabrice Dejaigher <fabrice@chtiland.com>
  */
 $lang['tpl_dir']               = 'Sous-répertoire dédié aux modèles dans le gestionnaire de médias';
 $lang['showexportbutton']      = 'Afficher le bouton d\'exportation ODT';
@@ -20,6 +21,7 @@ $lang['margin_bottom']         = 'Marge basse, en cm';
 $lang['margin_left']           = 'Marge gauche, en cm';
 $lang['disable_links']         = 'Désactiver la création de lien ?';
 $lang['toc_maxlevel']          = 'Profondeur maximale de la table des matières';
+$lang['toc_leader_sign']       = 'Caractère de remplissage pour la table des matières';
 $lang['toc_indents']           = 'Table des matières: indentation pour chaque niveau, en cm';
 $lang['toc_pagebreak']         = 'Saut de page après la table des matières ?';
 $lang['toc_style']             = 'Style de texte pour la table des matières';

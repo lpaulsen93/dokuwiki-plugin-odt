@@ -139,6 +139,16 @@ class ODTParagraphStyle extends ODTStyleStyle
                 ($property, $style_fields [$property][0], $value, $style_fields [$property][1], $this->style_properties);
             return;
         }
+        // FIXME: currently with setProperty there always will only be one tab-stop.
+        // Maybe in the future supply a function "add tab stop" or something.
+        if (array_key_exists ($property, self::$tab_stop_fields)) {
+            if ($this->tab_stops [0] == NULL) {
+                $this->tab_stops [0] = array();
+            }
+            $this->setPropertyInternal
+                ($property, self::$tab_stop_fields [$property][0], $value, self::$tab_stop_fields [$property][1], $this->tab_stops[0]);
+            return;
+        }
         // Compare with paragraph fields before text fields first!
         // So, paragraph properties get precedence.
         if (array_key_exists ($property, self::$paragraph_fields)) {

@@ -2126,13 +2126,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $name = substr ($opentag, $length_with_name);
             $name = trim ($name, '">');
 
+            $link_style  = 'text:style-name="'.$this->docHandler->getStyleName('local link').'"';
+            $link_style .= ' text:visited-style-name="'.$this->docHandler->getStyleName('visited local link').'"';
+
             $found = false;
             foreach ($this->toc as $item) {
                 $params = explode (',', $item);
 
                 if ( $page == $params [1] ) {
                     $found = true;
-                    $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'">';
+                    $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" '.$link_style.'>';
                     if ( !empty($name) ) {
                         $link .= $name;
                     } else {
@@ -2150,7 +2153,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 foreach ($this->bookmarks as $item) {
                     if ( $page == $item ) {
                         $found = true;
-                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$item.'">';
+                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$item.'" '.$link_style.'>';
                         if ( !empty($name) ) {
                             $link .= $name;
                         } else {
@@ -2293,7 +2296,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             if($url && !$this->config->getParam ('disable_links')) $doc .= '</draw:a>';
         }else{
             // Text
-            if($url && !$this->config->getParam ('disable_links')) $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'">';
+            if($url && !$this->config->getParam ('disable_links')) {
+                $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'"';
+                $doc .= ' text:style-name="'.$this->docHandler->getStyleName('internet link').'"';
+                $doc .= ' text:visited-style-name="'.$this->docHandler->getStyleName('visited internet link').'"';
+                $doc .= '>';
+            }
             $doc .= $name; // we get the name already XML encoded
             if($url && !$this->config->getParam ('disable_links')) $doc .= '</text:a>';
         }

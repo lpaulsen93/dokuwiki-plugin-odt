@@ -294,3 +294,33 @@ ol.level10 {
 .listlastparagraph {
     margin-bottom: 0.5cm;
 }
+
+/* Internet link
+ */
+internetlink {
+    color: #000080;
+    text-underline-style: solid;
+}
+
+/* Visited internet link
+ */
+visitedinternetlink {
+    color: #800000;
+    text-underline-style: solid;
+}
+
+/* Local link
+ */
+locallink {
+    color: #000000;
+    font-weight: bold;
+    text-underline-style: solid;
+}
+
+/* Visited local link
+ */
+visitedlocallink {
+    color: #000000;
+    font-weight: bold;
+    text-underline-style: solid;
+}

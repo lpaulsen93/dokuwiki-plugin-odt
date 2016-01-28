@@ -105,6 +105,15 @@
         <style:style style:name="Internet_20_link" style:display-name="Internet link" style:family="text">
             <style:text-properties fo:color="#000080" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/>
         </style:style>
+        <style:style style:name="Visited_20_Internet_20_Link" style:display-name="Visited Internet Link" style:family="text">
+            <style:text-properties fo:color="#800000" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/>
+        </style:style>
+        <style:style style:name="Local_20_link" style:display-name="Local link" style:family="text">
+            <style:text-properties fo:color="#000000" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color" fo:font-weight="bold"/>
+        </style:style>
+        <style:style style:name="Visited_20_Local_20_Link" style:display-name="Visited Local Link" style:family="text">
+            <style:text-properties fo:color="#000000" style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color" fo:font-weight="bold"/>
+        </style:style>
         <style:style style:name="Emphasis" style:family="text">
             <style:text-properties fo:font-style="italic" style:font-style-asian="italic" style:font-style-complex="italic"/>
         </style:style>

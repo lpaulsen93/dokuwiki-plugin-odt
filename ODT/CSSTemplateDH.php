@@ -303,6 +303,11 @@ class CSSTemplateDH extends docHandler
         $this->importOrderedListStyles($import, $media_sel, $media_path);
         $this->importStyle($import, 'list first paragraph', NULL, 'listfirstparagraph', $media_sel);
         $this->importStyle($import, 'list last paragraph', NULL, 'listlastparagraph', $media_sel);
+
+        $this->importStyle($import, 'internet link',         'internetlink',        NULL, $media_sel);
+        $this->importStyle($import, 'visited internet link', 'visitedinternetlink', NULL, $media_sel);
+        $this->importStyle($import, 'local link',            'locallink',           NULL, $media_sel);
+        $this->importStyle($import, 'visited local link',    'visitedlocallink',    NULL, $media_sel);
     }
 
 

@@ -80,8 +80,8 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
 
         $this->meta->setTitle($this->title);
 
-        // Insert TOC (if required)
-        $this->insert_TOC();
+        // Insert Indexes (if required), e.g. Table of Contents
+        $this->insert_indexes();
 
         // Replace local link placeholders
         $this->insert_locallinks();

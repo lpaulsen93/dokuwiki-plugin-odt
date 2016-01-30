@@ -124,12 +124,16 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                 case 'toc': // Insert TOC in exported ODT file
                     if($format == 'odt') {
                         /** @var renderer_plugin_odt_page $renderer */
-                        $renderer->toc_settings = $info_value;
-                        $renderer->render_TOC();
-
+                        $renderer->render_index('toc', $info_value);
                     } elseif($format == 'metadata') {
                         /** @var Doku_Renderer_metadata $renderer */
                         $renderer->meta['relation']['odt']['toc'] = $info_value;
+                    }
+                break;
+                case 'chapter-index': // Insert chapter index in exported ODT file
+                    if($format == 'odt') {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $renderer->render_index('chapter', $info_value);
                     }
                 break;
                 case 'disablelinks': // Disable creating links and only show the text instead

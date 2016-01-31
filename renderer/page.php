@@ -821,61 +821,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $page = 0;
         if ($type == 'toc') {
             $content .= $this->get_toc_body ($p_styles_auto, $stylesLNames, $max_outline_level, $links);
-            /*foreach ($this->toc as $item) {
-                $params = explode (',', $item);
-
-                // Only add the heading to the TOC if its <= $max_outline_level
-                if ( $params [3] <= $max_outline_level ) {
-                    $level = $params [3];
-                    $content .= '<text:p text:style-name="'.$p_styles_auto [$level].'">';
-                    if ( $links == true ) {
-                        $content .= '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" text:style-name="'.$stylesLNames [$level].'" text:visited-style-name="'.$stylesLNames [$level].'">';
-                    }
-                    $content .= $params [2];
-                    $content .= '<text:tab/>';
-                    $page++;
-                    $content .= $page;
-                    if ( $links == true ) {
-                        $content .= '</text:a>';
-                    }
-                    $content .= '</text:p>';
-                }
-            }*/
         } else {
             $content .= $this->get_chapter_index_body ($p_styles_auto, $stylesLNames, $max_outline_level, $links, $startRef);
-            /*$start_outline = 1;
-            $in_chapter = false;
-            $first = true;
-            foreach ($this->toc as $item) {
-                $params = explode (',', $item);
-
-                if ($in_chapter == true || $params [0] == $startRef ) {
-                    $in_chapter = true;
-
-                    // Is this the start of a new chapter?
-                    if ( $first == false && $params [3] <= $start_outline ) {
-                        break;
-                    }
-                    
-                    // Only add the heading to the TOC if its <= $max_outline_level
-                    if ( $params [3] <= $max_outline_level ) {
-                        $level = $params [3];
-                        $content .= '<text:p text:style-name="'.$p_styles_auto [$level].'">';
-                        if ( $links == true ) {
-                            $content .= '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" text:style-name="'.$stylesLNames [$level].'" text:visited-style-name="'.$stylesLNames [$level].'">';
-                        }
-                        $content .= $params [2];
-                        $content .= '<text:tab/>';
-                        $page++;
-                        $content .= $page;
-                        if ( $links == true ) {
-                            $content .= '</text:a>';
-                        }
-                        $content .= '</text:p>';
-                    }
-                    $first = false;
-                }
-            }*/
         }
 
         $content .= '</text:index-body>';

@@ -2463,7 +2463,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string|array $name       name for the link, array for media file
      * @param bool         $returnonly whether to return odt or write to doc attribute
      */
-    function windowssharelink($url, $name = NULL,$returnonly) {
+    function windowssharelink($url, $name = NULL, $returnonly = false) {
         $name  = $this->_getLinkTitle($name, $url, $isImage);
         if($returnonly) {
           return $name;

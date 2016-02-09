@@ -128,12 +128,16 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                     } elseif($format == 'metadata') {
                         /** @var Doku_Renderer_metadata $renderer */
                         $renderer->meta['relation']['odt']['toc'] = $info_value;
+                    } elseif($format == 'xhtml') {
+                        $this->insert_index_preview ($renderer, 'toc');
                     }
                 break;
                 case 'chapter-index': // Insert chapter index in exported ODT file
                     if($format == 'odt') {
                         /** @var renderer_plugin_odt_page $renderer */
                         $renderer->render_index('chapter', $info_value);
+                    } elseif($format == 'xhtml') {
+                        $this->insert_index_preview ($renderer, 'chapter');
                     }
                 break;
                 case 'disablelinks': // Disable creating links and only show the text instead
@@ -207,4 +211,29 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         return false;
     }
 
+    /**
+     * Insert a browser preview for an index.
+     *
+     * @param  Doku_Renderer $renderer The current renderer
+     * @param  string        $type     The index type ('toc' or 'chapter)'
+     */
+    function insert_index_preview ($renderer, $type='toc') {
+        if ($this->config->getParam ('index_in_browser') == 'hide') {
+            return;
+        }
+        switch ($type) {
+            case 'toc':
+                $msg = $this->getLang('toc_msg');
+                $reminder = $this->getLang('update_toc_msg');
+            break;
+            case 'chapter':
+                $msg = $this->getLang('chapter_msg');
+                $reminder = $this->getLang('update_chapter_msg');
+            break;
+        }
+        $renderer->doc .= '<p class="index_preview_odt">';
+        $renderer->doc .= '<span id="text" class="index_preview_odt">'.$msg.'</span><br>';
+        $renderer->doc .= '<span id="reminder" class="index_preview_odt">'.$reminder.'</span>';
+        $renderer->doc .= '</p>';
+    }
 }

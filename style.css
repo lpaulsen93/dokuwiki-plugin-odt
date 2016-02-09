@@ -27,3 +27,17 @@
     background-position: left -45px;
 }
 
+/* Style for Table of contents and chapter index preview */
+p.index_preview_odt {
+    border: 2pt dashed gray;
+    background-color: whitesmoke;
+    padding: 10pt;
+}
+
+#text.index_preview_odt {
+    color: black;
+}
+
+#reminder.index_preview_odt {
+    color: red;
+}

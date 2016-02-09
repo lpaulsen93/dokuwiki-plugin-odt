@@ -34,8 +34,9 @@ $meta['margin_left']   = array('numeric');
 
 $meta['disable_links'] = array('multichoice', '_choices' => array('No', 'Yes'));
 
-$meta['toc_maxlevel']    = array('numeric');
-$meta['toc_leader_sign'] = array('string');
-$meta['toc_indents']     = array('string');
-$meta['toc_pagebreak']   = array('multichoice', '_choices' => array('Yes', 'No'));
-$meta['toc_style']       = array('string');
+$meta['toc_maxlevel']     = array('numeric');
+$meta['toc_leader_sign']  = array('string');
+$meta['toc_indents']      = array('string');
+$meta['toc_pagebreak']    = array('multichoice', '_choices' => array('Yes', 'No'));
+$meta['toc_style']        = array('string');
+$meta['index_in_browser'] = array('multichoice', '_choices' => array('hide', 'display placeholder'));

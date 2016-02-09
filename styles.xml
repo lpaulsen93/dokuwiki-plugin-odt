@@ -141,6 +141,10 @@
         <style:style style:name="Quotation_20_5" style:display-name="Quotation 5" style:family="paragraph" style:parent-style-name="Standard">
             <style:paragraph-properties fo:margin-left="5.001cm" fo:margin-right="0cm" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm" loext:contextual-spacing="false" fo:text-indent="0cm" style:auto-text-indent="false" fo:padding="0.049cm" fo:border-left="4.99pt solid #ff9966" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
         </style:style>
+        <style:style style:name="Contents_20_Heading" style:display-name="Contents Heading" style:family="paragraph" style:parent-style-name="Heading" style:class="index">
+            <style:paragraph-properties fo:margin-left="0cm" fo:margin-right="0cm" fo:text-indent="0cm" style:auto-text-indent="false" text:number-lines="false" text:line-number="0"/>
+            <style:text-properties fo:font-size="16pt" fo:font-weight="bold" style:font-size-asian="16pt" style:font-weight-asian="bold" style:font-size-complex="16pt" style:font-weight-complex="bold"/>
+        </style:style>
         <style:style style:name="List_20_Symbols" style:display-name="List Symbols" style:family="text"/>
         <text:outline-style style:name="Outline">
             <text:outline-level-style text:level="1" style:num-format="">

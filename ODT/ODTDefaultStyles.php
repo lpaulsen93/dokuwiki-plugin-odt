@@ -164,6 +164,7 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'visited internet link': return 'Visited_20_Internet_20_Link';
             case 'local link':            return 'Local_20_link';
             case 'visited local link':    return 'Visited_20_Local_20_Link';
+            case 'contents heading':      return 'Contents_20_Heading';
         }
         // Not supported basic style.
         return NULL;

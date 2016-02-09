@@ -766,22 +766,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Generate ODT toc tag and content
+        $title_style = $this->docHandler->getStyleName('contents heading');
         switch ($type) {
             case 'toc':
                 $tag = 'table-of-content';
                 $name = 'Table of Contents';
                 $index_name = 'Table of Contents';
                 $source_attrs = 'text:outline-level="'.$max_outline_level.'" text:use-index-marks="false"';
-                $title_style = $this->docHandler->getStyleName('heading1');
             break;
             case 'chapter':
-                $tag = 'user-index';
-                $name = 'Chapter Index';
-                // Do not change the index name, otherwise index body will be empty after update.
-                // Seems to be a LibreOffice issue.
-                $index_name = 'User-Defined';
-                $source_attrs = 'text:use-index-marks="true" text:copy-outline-levels="true" text:index-name="'.$index_name.'" text:index-scope="chapter"';
-                $title_style = $this->docHandler->getStyleName('standard');
+                $tag = 'table-of-content';
+                $name = 'Table of Contents';
+                $index_name = 'Table of Contents';
+                $source_attrs = 'text:outline-level="'.$max_outline_level.'" text:use-index-marks="false" text:index-scope="chapter"';
             break;
         }
 

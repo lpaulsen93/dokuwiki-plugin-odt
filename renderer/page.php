@@ -955,12 +955,23 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     /**
      * Add an item to the TOC
+     * (Dummy function required by the Doku_Renderer class)
      *
-     * @param string $refID    the reference ID
+     * @param string $id       the hash link
      * @param string $text     the text to display
      * @param int    $level    the nesting level
      */
-    function toc_additem($refID, $hid, $text, $level) {
+    function toc_additem($id, $text, $level) {}
+
+    /**
+     * Add an item to the TOC
+     *
+     * @param string $refID    the reference ID
+     * @param string $hid      the hash link
+     * @param string $text     the text to display
+     * @param int    $level    the nesting level
+     */
+    function toc_additem_internal($refID, $hid, $text, $level) {
         $item = $refID.','.$hid.','.$text.','. $level;
         $this->toc[] = $item;
     }
@@ -1352,7 +1363,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Do not add headings in frames
         if (!$this->state->getInFrame()) {
-            $this->toc_additem($TOCRef, $hid, $text, $level);
+            $this->toc_additem_internal($TOCRef, $hid, $text, $level);
         }
     }
 
@@ -1464,7 +1475,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      */
-    function table_open($maxcols = NULL, $numrows = NULL){
+    function table_open($maxcols = NULL, $numrows = NULL, $pos = NULL){
         // Close any open paragraph.
         $this->p_close();
         
@@ -1563,7 +1574,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
-    function table_close(){
+    function table_close($pos = NULL){
         $interrupted = false;
         if ($this->state->getListInterrupted()) {
             $interrupted = true;
@@ -1787,7 +1798,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @param int $level the nesting level
      */
-    function listitem_open($level) {
+    function listitem_open($level, $node = false) {
         // Set marker that list interruption has stopped!!!
         if ($this->state != NULL ) {
             $this->state->setListInterrupted(false);

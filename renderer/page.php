@@ -651,7 +651,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function builds a TOC or user-defined index (=chapter index).
+     * This function builds a TOC or chapter index.
      * The page numbers are just a counter. Update the TOC e.g. in LibreOffice to get the real page numbers!
      *
      * The layout settings are taken from the configuration and $settings.
@@ -950,26 +950,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Otherwise LibreOffice will display $ref instead of the heading
         // name when moving the mouse over the link in the TOC.
         $ref = '__RefHeading___'.$title.'_'.$this->refIDCount;
-        return $ref;
-    }
-
-    /**
-     * Creates a reference ID for the user-index (chapter index)
-     *
-     * @param string $title The headline/item title
-     * @return string
-     *
-     * @author LarsDW223
-     */
-    protected function _buildUserIndexReferenceID($title) {
-        $title = str_replace(':','',cleanID($title));
-        $title = ltrim($title,'0123456789._-');
-        if(empty($title)) {
-            $title='NoTitle';
-        }
-
-        $this->refUserIndexIDCount++;
-        $ref = $title.'_'.$this->refUserIndexIDCount;
         return $ref;
     }
 
@@ -1342,7 +1322,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->p_close();
         $hid = $this->_headerToLink($text,true);
         $TOCRef = $this->_buildTOCReferenceID($text);
-        $UIRef = $this->_buildUserIndexReferenceID($text);
         $style = $this->docHandler->getStyleName('heading'.$level);
         if ( $this->changePageFormat != NULL ) {
             $page_style = $this->doPageFormatChange($style);
@@ -1365,17 +1344,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         $this->doc .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
-        if (!$this->state->getInFrame()) {
-            // User index marks in frames can cause ODT documents to become unreadable
-            // in LibreOffice (bug?). As a workaround do not include them in frames.
-            $this->doc .= '<text:user-index-mark-start text:id="'.$UIRef.'" text:index-name="User-Defined" text:outline-level="'.$level.'"/>';
-        }
         $this->doc .= '<text:bookmark-start text:name="'.$hid.'"/>';
         $this->doc .= $this->_xmlEntities($text);
         $this->doc .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
-        if (!$this->state->getInFrame()) {
-            $this->doc .= '<text:user-index-mark-end text:id="'.$UIRef.'"/>';
-        }
         $this->doc .= '<text:bookmark-end text:name="'.$hid.'"/>';
         $this->doc .= '</text:h>';
 

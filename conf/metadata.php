@@ -40,3 +40,5 @@ $meta['toc_indents']      = array('string');
 $meta['toc_pagebreak']    = array('multichoice', '_choices' => array('Yes', 'No'));
 $meta['toc_style']        = array('string');
 $meta['index_in_browser'] = array('multichoice', '_choices' => array('hide', 'display placeholder'));
+
+$meta['outline_list_style'] = array('multichoice', '_choices' => array('Normal', 'Numbers'));

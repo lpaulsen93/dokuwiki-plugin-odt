@@ -170,6 +170,27 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Change outline style to configured value.
+     */
+    protected function set_outline_style () {
+        $outline_style = $this->docHandler->getStyle('Outline');
+        if ($outline_style == NULL) {
+            // Outline style not found!
+            return;
+        }
+        switch ($this->config->getParam('outline_list_style')) {
+            case 'Numbers':
+                for ($level = 1 ; $level < 11 ; $level++) {
+                    $outline_style->setPropertyForLevel($level, 'num-format', '1');
+                    $outline_style->setPropertyForLevel($level, 'num-suffix', '.');
+                    $outline_style->setPropertyForLevel($level, 'num-prefix', ' ');
+                    $outline_style->setPropertyForLevel($level, 'display-levels', $level);
+                }
+                break;
+        }
+    }
+    
+    /**
      * Initialize the rendering
      */
     function document_start() {
@@ -192,6 +213,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $this->docHandler = new ODTTemplateDH ();
                 $this->docHandler->setTemplate($this->config->getParam ('odt_template'));
                 $this->docHandler->setDirectory($this->config->getParam ('tpl_dir'));
+
+                // Do NOT overwrite outline style of ODT template.
                 break;
 
             case 'CSS template':
@@ -202,11 +225,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $directory = $this->config->getParam ('tpl_dir');
                 $template_path = $this->config->getParam('mediadir').'/'.$directory."/".$template;
                 $this->docHandler->import($template_path, $media_sel, $this->config->getParam('mediadir'));
+
+                // Set outline style.
+                $this->set_outline_style();
                 break;
 
             default:
                 // Document from scratch.
                 $this->docHandler = new scratchDH ();
+
+                // Set outline style.
+                $this->set_outline_style();
                 break;
         }
 

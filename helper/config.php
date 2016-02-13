@@ -361,6 +361,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // Index display in browser
+        $this->config ['outline_list_style'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
     }
 
     /**

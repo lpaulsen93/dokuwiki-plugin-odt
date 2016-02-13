@@ -265,6 +265,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Close any open paragraph if not done yet.
         $this->p_close ();
         
+        // Insert Indexes (if required), e.g. Table of Contents
+        $this->insert_indexes();
+
+        // Replace local link placeholders
+        $this->insert_locallinks();
+
         // DEBUG: The following puts out the loaded raw CSS code
         //$this->p_open();
         // This line outputs the raw CSS code
@@ -275,12 +281,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$this->p_open();
         //$this->doc .= 'Tracedump: '.$this->trace_dump;
         //$this->p_close();
-
-        // Insert Indexes (if required), e.g. Table of Contents
-        $this->insert_indexes();
-
-        // Replace local link placeholders
-        $this->insert_locallinks();
 
         // Build the document
         $this->finalize_ODTfile();
@@ -703,6 +703,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
+        // Determine text style for the index heading.
+        if ( preg_match('/styleH="[^"]+";/', $settings, $matches) === 1 ) {
+            $quote = strpos ($matches [0], '"');
+            $temp = substr ($matches [0], $quote+1);
+            $temp = trim ($temp, '";');
+            $styleH = $temp.';';
+        }
+
         // Determine text styles per level.
         // Syntax for a style level 1 is "styleL1="color:black;"".
         // The default style is just 'color:black;'.
@@ -716,6 +724,22 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
+        // Create Heading style if not empty.
+        // Default index heading style is taken from styles.xml
+        $title_style = $this->docHandler->getStyleName('contents heading');
+        if (!empty($styleH)) {
+            $properties = array();
+            $this->_processCSSStyle ($properties, $styleH);
+            $properties ['style-parent'] = 'Heading';
+            $properties ['style-class'] = 'index';
+            $this->style_count++;
+            $properties ['style-name'] = 'Contents_20_Heading_'.$this->style_count;
+            $properties ['style-display-name'] = 'Contents Heading '.$this->style_count;
+            $style_obj = $this->factory->createParagraphStyle($properties);
+            $this->docHandler->addStyle($style_obj);
+            $title_style = $style_obj->getProperty('style-name');
+        }
+        
         // Create paragraph styles
         $p_styles = array();
         $p_styles_auto = array();
@@ -766,7 +790,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Generate ODT toc tag and content
-        $title_style = $this->docHandler->getStyleName('contents heading');
         switch ($type) {
             case 'toc':
                 $tag = 'table-of-content';

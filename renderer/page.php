@@ -4400,7 +4400,26 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         return $value;
     }
 
+    /**
+     * This function read the template page and imports all cdata and code content
+     * as additional CSS. ATTENTION: this might overwrite already imported styles
+     * from an ODT or CSS template file.
+     *
+     * @param $pagename The name of the template page
+     */
+    public function read_templatepage ($pagename) {
+        $instructions = p_cached_instructions(wikiFN($pagename));
+        $text = '';
+        foreach($instructions as $instruction) {
+            if($instruction[0] == 'code') {
+                $text .= $instruction[1][0];
+            } elseif ($instruction[0] == 'cdata') {
+                $text .= $instruction[1][0];
+            }
+        }
 
+        $this->docHandler->import_css_from_string ($text, $media_sel, $this->config->getParam('mediadir'));
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

@@ -206,6 +206,15 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                         $renderer->setPageFormat(NULL,NULL,NULL,NULL,NULL,$margin);
                     }
                 break;
+                case 'templatepage': // Take wiki page content as additional CSS input
+                    if($format == 'odt' || $format == 'xhtml' ) {
+                        if ($this->check_templatepage ($info_value, $format) == true &&
+                            $format == 'odt' ) {
+                            /** @var renderer_plugin_odt_page $renderer */
+                            $renderer->read_templatepage($info_value);
+                        }
+                    }
+                break;
             }
         }
         return false;
@@ -235,5 +244,30 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         $renderer->doc .= '<span id="text" class="index_preview_odt">'.$msg.'</span><br>';
         $renderer->doc .= '<span id="reminder" class="index_preview_odt">'.$reminder.'</span>';
         $renderer->doc .= '</p>';
+    }
+
+    /**
+     * Checl existance of the template page and display error
+     * message in case of xhtml rendering.
+     *
+     * @param  string $pagename The page to check
+     * @param  string $format   The render format ('xhtml' or 'odt')
+     */
+    protected function check_templatepage ($pagename, $format) {
+        $exists = false;
+        if (empty($pagename)) {
+            if ($format == 'xhtml') {
+                msg(sprintf("No page specified!", html_wikilink($pagename)), -1);
+            }
+            return (false);
+        }
+        resolve_pageid($INFO['namespace'], $pagename, $exists);
+        if(!$exists) {
+            if ($format == 'xhtml') {
+                msg(sprintf("Page not found!", html_wikilink($pagename)), -1);
+            }
+            return (false);
+        }
+        return (true);
     }
 }

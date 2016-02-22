@@ -136,6 +136,17 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * @return ODTTextStyle or NULL
      */
     public static function createTextStyle(array $properties, array $disabled_props = NULL){
+        // Convert 'text-decoration'.
+        if ( $properties ['text-decoration'] == 'line-through' ) {
+            $properties ['text-line-through-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'underline' ) {
+            $properties ['text-underline-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'overline' ) {
+            $properties ['text-overline-style'] = 'solid';
+        }
+
         // If the property 'vertical-align' has the value 'sub' or 'super'
         // then for ODT it needs to be converted to the corresponding 'text-position' property.
         // Replace sub and super with text-position.
@@ -205,6 +216,17 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * @return ODTParagraphStyle or NULL
      */
     public static function createParagraphStyle(array $properties, array $disabled_props = NULL){
+        // Convert 'text-decoration'.
+        if ( $properties ['text-decoration'] == 'line-through' ) {
+            $properties ['text-line-through-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'underline' ) {
+            $properties ['text-underline-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'overline' ) {
+            $properties ['text-overline-style'] = 'solid';
+        }
+        
         // If the property 'vertical-align' has the value 'sub' or 'super'
         // then for ODT it needs to be converted to the corresponding 'text-position' property.
         // Replace sub and super with text-position.

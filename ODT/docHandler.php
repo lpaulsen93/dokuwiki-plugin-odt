@@ -330,6 +330,17 @@ abstract class docHandler
                 $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
             }
 
+            // Convert 'text-decoration'.
+            if ( $properties ['text-decoration'] == 'line-through' ) {
+                $properties ['text-line-through-style'] = 'solid';
+            }
+            if ( $properties ['text-decoration'] == 'underline' ) {
+                $properties ['text-underline-style'] = 'solid';
+            }
+            if ( $properties ['text-decoration'] == 'overline' ) {
+                $properties ['text-overline-style'] = 'solid';
+            }
+
             // If the style imported is a table adjust some properties
             if ($style->getFamily() == 'table') {
                 // Move 'width' to 'rel-width' if it is relative

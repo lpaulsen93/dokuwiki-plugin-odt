@@ -1141,7 +1141,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // Attention: NOT if $text is empty. This would lead to empty lines before headings
             //            right after a pagebreak!
             $in_paragraph = $this->state->getInParagraph();
-            if ( ($this->pagebreak || $this->changePageFormat != NULL) && !$in_paragraph ) {
+            if ( ($this->pagebreak || $this->changePageFormat != NULL) || !$in_paragraph ) {
                 $this->p_open();
             }
         }

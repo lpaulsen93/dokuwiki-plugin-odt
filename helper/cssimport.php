@@ -943,7 +943,7 @@ class css_rule {
      * @param null $media
      * @return bool|int
      */
-    public function matches ($element, $classString, $media = NULL) {
+    public function matches ($element, $classString, $media = NULL, $cssId=NULL) {
 
         $media = trim ($media);
         if ( !empty($this->media) && $media != $this->media ) {
@@ -961,15 +961,18 @@ class css_rule {
                     if ( $selector [0] == '.' && $selector == '.'.$class ) {
                         $matches++;
                         break;
-                    } else {
-                        if ( $selector == $element || $selector == $element.'.'.$class ) {
-                            $matches++;
-                            break;
-                        }
+                    } else if ( $selector [0] == '#' && $selector == '#'.$cssId ) {
+                        $matches++;
+                        break;
+                    } else if ( $selector == $element || $selector == $element.'.'.$class ) {
+                        $matches++;
+                        break;
                     }
                 }
             } else {
-                if ( $selector == $element ) {
+                if ( $selector [0] == '#' && $selector == '#'.$cssId ) {
+                    $matches++;
+                } else if ( $selector == $element ) {
                     $matches++;
                 }
             }
@@ -1335,13 +1338,13 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
      * @param $classString
      * @param null $media
      */
-    public function getPropertiesForElement (&$dest, $element, $classString, $media = NULL) {
-        if ( empty ($element) && empty ($classString) ) {
+    public function getPropertiesForElement (&$dest, $element, $classString, $media = NULL, $cssId=NULL) {
+        if ( empty ($element) && empty ($classString) && empty ($cssId) ) {
             return;
         }
 
         foreach ($this->rules as $rule) {
-            $matched = $rule->matches ($element, $classString, $media);
+            $matched = $rule->matches ($element, $classString, $media, $cssId);
             if ( $matched !== false ) {
                 $rule->getProperties ($dest);
             }

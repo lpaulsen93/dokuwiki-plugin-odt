@@ -215,6 +215,18 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
                         }
                     }
                 break;
+                case 'frame-open': // Insert/Open ODT frame
+                    if($format == 'odt' ) {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $this->frame_open($renderer, $info_value);
+                    }
+                break;
+                case 'frame-close': // Close ODT frame
+                    if($format == 'odt' ) {
+                        /** @var renderer_plugin_odt_page $renderer */
+                        $this->frame_close($renderer);
+                    }
+                break;
             }
         }
         return false;
@@ -269,5 +281,45 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
             return (false);
         }
         return (true);
+    }
+
+    /**
+     * Open a frame with a text box.
+     *
+     * @param  Doku_Renderer $renderer The current renderer object
+     * @param  string        $params   Parameters for the frame
+     */
+    protected function frame_open ($renderer, $params) {
+        // Get inline CSS for ODT frame
+        $odt_css = '';
+        if ( preg_match('/odt-css="[^"]+";/', $params, $matches) === 1 ) {
+            $quote = strpos ($matches [0], '"');
+            $temp = substr ($matches [0], $quote+1);
+            $temp = trim ($temp, '";');
+            $odt_css = $temp.';';
+        }
+        $odt_css_id = '';
+        if ( preg_match('/odt-css-id="[^"]+";/', $params, $matches) === 1 ) {
+            $quote = strpos ($matches [0], '"');
+            $temp = substr ($matches [0], $quote+1);
+            $temp = trim ($temp, '";');
+            $odt_css_id = $temp;
+        }
+        
+        $properties = array();
+        $renderer->getODTProperties ($properties, NULL, NULL, $odt_css, NULL, $odt_css_id);
+                
+        $renderer->_odtOpenTextBoxUseProperties2 ($properties);
+        $renderer->p_open();
+    }
+
+    /**
+     * Close a frame with a text box.
+     *
+     * @param  Doku_Renderer $renderer The current renderer object
+     */
+    protected function frame_close ($renderer) {        
+        $renderer->p_close();
+        $renderer->_odtCloseTextBox ();
     }
 }

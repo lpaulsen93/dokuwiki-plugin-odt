@@ -451,7 +451,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Such paragraphs may not be deleted!
      */
     protected function deleteUselessElements() {
-        $length_open = strlen ('<text:p>');
+        $length_open = strlen ('<text:p');
         $length_close = strlen ('</text:p>');
         $max = strlen ($this->doc);
         $pos = 0;
@@ -500,7 +500,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
 
             if ( $deleted == false ) {
-                $pos = $start_open + $length;
+                $pos = $start_close;
             }
         }
     }

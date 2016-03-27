@@ -4209,6 +4209,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->div_z_index += 5;
         $this->style_count++;
 
+        $valign = $properties ['vertical-align'];
         $top = $properties ['top'];
         $left = $properties ['left'];
         $position = $properties ['position'];
@@ -4316,6 +4317,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 break;
         }
 
+        if ( !empty($valign) ) {
+            $style .= 'draw:textarea-vertical-align="'.$valign.'" ';
+        }
         if ( !empty($bg_color) ) {
             $style .= 'fo:background-color="'.$bg_color.'" ';
             $style .= 'draw:fill="solid" draw:fill-color="'.$bg_color.'" ';

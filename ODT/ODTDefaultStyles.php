@@ -56,7 +56,7 @@ class ODTDefaultStyles extends ODTStyleSet
                   style:horizontal-rel="paragraph"/>
             </style:style>
             <style:style style:name="Table" style:family="table">
-                <style:table-properties table:border-model="collapsing"/>
+                <style:table-properties table:border-model="collapsing" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"/>
             </style:style>
             <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="Table_20_Contents">
                 <style:paragraph-properties fo:text-align="center"/>

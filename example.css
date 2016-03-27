@@ -149,6 +149,8 @@ quotation5 {
  */
 table {
     border-collapse: collapse;
+    margin-top: 0.25cm;
+    margin-bottom: 0.25cm;
 }
 
 /* Table header

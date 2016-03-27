@@ -32,7 +32,7 @@
             <style:text-properties style:use-window-font-color="true" style:font-name="Bitstream Vera Sans" fo:font-size="12pt" fo:language="en" fo:country="US" style:font-name-asian="Bitstream Vera Sans2" style:font-size-asian="12pt" style:language-asian="en" style:country-asian="US" style:font-name-complex="Bitstream Vera Sans2" style:font-size-complex="12pt" style:language-complex="en" style:country-complex="US" fo:hyphenate="false" fo:hyphenation-remain-char-count="2" fo:hyphenation-push-char-count="2"/>
         </style:default-style>
         <style:default-style style:family="table">
-            <style:table-properties table:border-model="collapsing"/>
+            <style:table-properties table:border-model="collapsing" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"/>
         </style:default-style>
         <style:default-style style:family="table-row">
             <style:table-row-properties fo:keep-together="auto"/>

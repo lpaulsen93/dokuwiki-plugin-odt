@@ -1503,9 +1503,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     // (if not done yet, the name must be unique!)
                     $style_name = 'Table_Indentation_Level'.$level;
                     if (!$this->docHandler->styleExists($style_name)) {
-                        $properties = array();
-                        $properties ['style-name'] = $style_name;
-                        $style_obj = $this->factory->createTableTableStyle($properties);
+                        $style_obj = clone $this->docHandler->getStyle($table_style_name);
+                        $style_obj->setProperty('style-name', $style_name);
                         if ($style_obj != NULL) {
                             $max = $this->page->getAbsWidthMindMargins();
                             $indent = 0 + $this->units->getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));

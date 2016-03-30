@@ -104,7 +104,9 @@ class ODTParagraphStyle extends ODTStyleStyle
      */
     public function importProperties($properties, $disabled) {
         foreach ($properties as $property => $value) {
-            $this->setProperty($property, $value);
+            if ($disabled [$property] == 0) {
+                $this->setProperty($property, $value);
+            }
         }
     }
 

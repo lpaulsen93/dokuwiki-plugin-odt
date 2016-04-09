@@ -41,3 +41,6 @@ $conf['index_in_browser'] = 'hide';
 
 // Outline settings
 $conf['outline_list_style'] = 'Normal';
+
+// Conversion options
+$conf['convert_to_pdf'] = 'libreoffice --headless --convert-to pdf --outdir %outdir% %sourcefile%';

@@ -74,13 +74,26 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
     public function convert(Doku_Event $event) {
         global $ACT;
         global $ID;
+        $format = NULL;
+
+        // Any kind of ODT export?
+        $odt_export = false;
+        if (strncmp($ACT, 'export_odt', strlen('export_odt')) == 0) {
+            $odt_export = true;
+        }
+
+        // check conversion format and adjust $ACT
+        if ($odt_export && strpos($ACT, '_pdf') !== false) {
+            $format = 'pdf';
+            $ACT = str_replace ('_pdf', '', $ACT);
+        }
 
         // single page export: rename to the actual renderer component
         if($ACT == 'export_odt') {
             $ACT = 'export_odt_page';
         }
 
-        if( !is_array($ACT) && strncmp($ACT, 'export_odt', strlen('export_odt')) == 0 ) {
+        if( !is_array($ACT) && $odt_export ) {
             // On export to ODT load config helper if not done yet
             // and stop on errors.
             if ( $this->config == NULL ) {
@@ -92,6 +105,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
                     return false;
                 }
             }
+            $this->config->setConvertTo($format);
         }
 
         // the book export?

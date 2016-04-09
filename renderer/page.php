@@ -271,18 +271,28 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         //$headers = array('Content-Type'=>'text/plain'); p_set_metadata($ID,array('format' => array('odt' => $headers) )); return ; // DEBUG
         // send the content type header, new method after 2007-06-26 (handles caching)
-        $output_filename = str_replace(':','-',$ID).".odt";
-        if (version_compare($dw_version, "20070626")) {
-            // store the content type headers in metadata
-            $headers = array(
-                'Content-Type' => 'application/vnd.oasis.opendocument.text',
-                'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
-            );
-            p_set_metadata($ID,array('format' => array('odt_page' => $headers) ));
-        } else { // older method FIXME DEPRECATED
-            header('Content-Type: application/vnd.oasis.opendocument.text');
-            header('Content-Disposition: attachment; filename="'.$output_filename.'";');
+        $format = $this->config->getConvertTo ();
+        switch ($format) {
+            case 'pdf':
+                $output_filename = str_replace(':','-',$ID).'.pdf';
+                $headers = array(
+                    'Content-Type' => 'application/pdf',
+                    'Cache-Control' => 'must-revalidate, no-transform, post-check=0, pre-check=0',
+                    'Pragma' => 'public',
+                    'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
+                );
+                break;
+            case 'odt':
+            default:
+                $output_filename = str_replace(':','-',$ID).'.odt';
+                $headers = array(
+                    'Content-Type' => 'application/vnd.oasis.opendocument.text',
+                    'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
+                );
+                break;
         }
+        // store the content type headers in metadata
+        p_set_metadata($ID,array('format' => array('odt_page' => $headers) ));
 
         $this->set_page_bookmark($ID);
     }
@@ -505,6 +515,34 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
+    protected function convert () {
+        global $ID;
+                
+        $format = $this->config->getConvertTo ();
+        if ($format == 'pdf') {
+            // Prepare temp directory
+            $temp_dir = $this->config->getParam('tmpdir');
+            $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
+            if (is_dir($temp_dir)) { io_rmdir($temp_dir,true); }
+            io_mkdir_p($temp_dir);
+
+            // Set source and dest file path
+            $file = $temp_dir.'/convert.odt';
+            $pdf_file = $temp_dir.'/convert.pdf';
+
+            // Prepare command line
+            $command = $this->config->getParam('convert_to_pdf');
+            $command = str_replace('%outdir%', $temp_dir, $command);
+            $command = str_replace('%sourcefile%', $file, $command);
+
+            // Convert file
+            io_saveFile($file, $this->doc);
+            $result = exec ($command);
+            $this->doc = io_readFile($pdf_file);
+            //io_rmdir($temp_dir,true);
+        }
+    }
+
     /**
      * Completes the ODT file
      */
@@ -520,6 +558,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Assign document
         $this->doc = $this->docHandler->get();
+
+        $this->convert();
     }
 
     /**

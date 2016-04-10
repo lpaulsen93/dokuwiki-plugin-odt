@@ -538,8 +538,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // Convert file
             io_saveFile($file, $this->doc);
             $result = exec ($command);
-            $this->doc = io_readFile($pdf_file);
-            //io_rmdir($temp_dir,true);
+            $this->doc = io_readFile($pdf_file, false);
+            io_rmdir($temp_dir,true);
         }
     }
 

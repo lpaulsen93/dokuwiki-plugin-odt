@@ -22,3 +22,23 @@ $lang['update_chapter_msg'] = 'Please remember to update the Chapter Index after
 $lang['needtitle']         = "Please provide a title.";
 $lang['needns']            = "Please provide an existing namespace.";
 $lang['empty']             = "You don't have pages selected yet.";
+
+// Error message for failed conversion.
+// The following replacments are supported:
+// %command%      = the complete command line which was executed
+// %errorcode%    = the error code reported after executing the command
+// %errormessage% = the detailed error message reported after executing the command
+$lang['conversion_failed_msg'] =
+'====== An error occured during conversion of the ODT document: ======
+
+Executed command line:
+
+<code>%command%</code>
+
+Error code: %errorcode%
+
+Error message:
+
+<code>%errormessage%</code>
+
+[[%pageid%|Back to previous page]]';

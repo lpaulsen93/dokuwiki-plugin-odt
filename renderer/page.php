@@ -542,7 +542,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // Convert file
             io_saveFile($file, $this->doc);
             exec ($command, $output, $result);
-            if (!$result) {
+            if ($result) {
                 $errormessage = '';
                 foreach ($output as $line) {
                     $errormessage .= $this->_xmlEntities($line);

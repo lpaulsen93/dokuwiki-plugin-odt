@@ -515,6 +515,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
+    /**
+     * Convert exported ODT file if required.
+     * Supported formats: pdf
+     */
     protected function convert () {
         global $ID;
                 
@@ -537,8 +541,28 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
             // Convert file
             io_saveFile($file, $this->doc);
-            $result = exec ($command);
-            $this->doc = io_readFile($pdf_file, false);
+            exec ($command, $output, $result);
+            if (!$result) {
+                $errormessage = '';
+                foreach ($output as $line) {
+                    $errormessage .= $this->_xmlEntities($line);
+                }
+                $message = $this->getLang('conversion_failed_msg');
+                $message = str_replace('%command%', $command, $message);
+                $message = str_replace('%errorcode%', $result, $message);
+                $message = str_replace('%errormessage%', $errormessage, $message);
+                $message = str_replace('%pageid%', $ID, $message);
+                
+                $instructions = p_get_instructions($message);
+                $this->doc = p_render('xhtml', $instructions, $info);
+
+                $headers = array(
+                    'Content-Type' =>  'text/html; charset=utf-8',
+                );
+                p_set_metadata($ID,array('format' => array('odt_page' => $headers) ));
+            } else {
+                $this->doc = io_readFile($pdf_file, false);
+            }
             io_rmdir($temp_dir,true);
         }
     }

@@ -75,6 +75,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         global $ACT;
         global $ID;
         $format = NULL;
+        $ACT = act_clean($ACT);
 
         // Any kind of ODT export?
         $odt_export = false;

@@ -2333,7 +2333,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param bool   $returnonly whether to return odt or write to doc attribute
      * @see http://en.wikipedia.org/wiki/CamelCase
      */
-    function camelcaselink($link, $returnonly) {
+    function camelcaselink($link, $returnonly = false) {
         if($returnonly) {
           return $this->internallink($link,$link, null, true);
         } else {
@@ -2575,7 +2575,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string|array $name       name for the link, array for media file
      * @param bool         $returnonly whether to return odt or write to doc attribute
      */
-    function emaillink($address, $name = NULL, $returnonly) {
+    function emaillink($address, $name = NULL, $returnonly = false) {
         $name  = $this->_getLinkTitle($name, $address, $isImage);
         if($returnonly) {
           return $this->_doLink("mailto:".$address,$name);

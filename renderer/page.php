@@ -2857,6 +2857,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param  $returnonly
      */
     function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
+        static $z = 0;
+
         $doc = '';
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
@@ -2880,8 +2882,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $anchor = 'as-char';
         }
 
-        if (!$style or !$this->docHandler->styleExists($style)) {
-            $style = $this->docHandler->getStyleName('media '.$align);
+        if (empty($style) || !$this->docHandler->styleExists($style)) {
+            if (!empty($align)) {
+                $style = $this->docHandler->getStyleName('media '.$align);
+            } else {
+                $style = $this->docHandler->getStyleName('media');
+            }
         }
 
         // Open paragraph if necessary
@@ -2895,9 +2901,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $doc .= '<draw:text-box>';
             $doc .= '<text:p text:style-name="'.$this->docHandler->getStyleName('legend center').'">';
         }
-        $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
-                        text:anchor-type="'.$anchor.'" draw:z-index="0"
-                        svg:width="'.$width.'" svg:height="'.$height.'" >';
+        if (!empty($title)) {
+            $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
+                            text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
+                            svg:width="'.$width.'" svg:height="'.$height.'" >';
+        } else {
+            $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$z.'"
+                            text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
+                            svg:width="'.$width.'" svg:height="'.$height.'" >';
+        }
         $doc .= '<draw:image xlink:href="'.$this->_xmlEntities($name).'"
                         xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
         $doc .= '</draw:frame>';
@@ -2910,6 +2922,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         } else {
           $this->doc .= $doc;
         }
+
+        $z++;
     }
 
     /**

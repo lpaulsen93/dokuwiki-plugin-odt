@@ -1809,6 +1809,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '<text:list text:style-name="'.$style.'"';
         if ($continue) {
             $this->doc .= ' text:continue-numbering="true" ';
+        } else {
+            $this->doc .= ' text:continue-numbering="false" ';
         }
         $this->doc .= '>';
 

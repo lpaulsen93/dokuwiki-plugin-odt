@@ -1810,7 +1810,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ($continue) {
             $this->doc .= ' text:continue-numbering="true" ';
         } else {
-            $this->doc .= ' text:continue-numbering="false" ';
+            if ($this->state->getInList() === false) {
+                $this->doc .= ' text:continue-numbering="false" ';
+            }
         }
         $this->doc .= '>';
 

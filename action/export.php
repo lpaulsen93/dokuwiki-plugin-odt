@@ -359,10 +359,14 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         $cnt = count($this->list);
         for($n = 0; $n < $cnt; $n++) {
             $page = $this->list[$n];
+            $filename = wikiFN($page, $REV);
 
+            if(!file_exists($filename)) {
+                continue;
+            }
             // set global pageid to the rendered page
             $ID = $page;
-            $xmlcontent .= p_render('odt_book', p_cached_instructions(wikiFN($page, $REV),false,$page), $info);
+            $xmlcontent .= p_render('odt_book', p_cached_instructions($filename, false, $page), $info);
         }
 
         //restore ID

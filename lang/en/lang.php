@@ -22,6 +22,7 @@ $lang['update_chapter_msg'] = 'Please remember to update the Chapter Index after
 $lang['needtitle']         = "Please provide a title.";
 $lang['needns']            = "Please provide an existing namespace.";
 $lang['empty']             = "You don't have pages selected yet.";
+$lang['forbidden']         = "You have no access to these pages: %s. Use option 'Skip Forbidden Pages' or add '&book_skipforbiddenpages=1' to your export-url";
 
 // Error message for failed conversion.
 // The following replacments are supported:

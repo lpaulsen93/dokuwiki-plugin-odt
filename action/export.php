@@ -213,12 +213,38 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         } elseif(isset($_COOKIE['list-pagelist']) && !empty($_COOKIE['list-pagelist'])) {
             // Here is $ACT == 'export_odtbook'
 
+            /** @deprecated  April 2016 replaced by localStorage version of Bookcreator*/
+
             //is in Bookmanager of bookcreator plugin a title given?
             if(!$title = $INPUT->str('book_title')) {
                 $this->showPageWithErrorMsg($event, 'needtitle');
                 return false;
             } else {
                 $list = explode("|", $_COOKIE['list-pagelist']);
+            }
+
+        } elseif($INPUT->has('selection')) {
+            //handle Bookcreator requests based at localStorage
+//            if(!checkSecurityToken()) {
+//                http_status(403);
+//                print $this->getLang('empty');
+//                exit();
+//            }
+
+            $json = new JSON(JSON_LOOSE_TYPE);
+            $list = $json->decode($INPUT->post->str('selection', '', true));
+            if(!is_array($list) || empty($list)) {
+                http_status(400);
+                print $this->getLang('empty');
+                exit();
+            }
+
+            $title = $INPUT->str('pdfbook_title'); //DEPRECATED
+            $title = $INPUT->str('book_title', $title, true);
+            if(empty($title)) {
+                http_status(400);
+                print $this->getLang('needtitle');
+                exit();
             }
 
         } else {
@@ -333,10 +359,14 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         $cnt = count($this->list);
         for($n = 0; $n < $cnt; $n++) {
             $page = $this->list[$n];
+            $filename = wikiFN($page, $REV);
 
+            if(!file_exists($filename)) {
+                continue;
+            }
             // set global pageid to the rendered page
             $ID = $page;
-            $xmlcontent .= p_render('odt_book', p_cached_instructions(wikiFN($page, $REV),false,$page), $info);
+            $xmlcontent .= p_render('odt_book', p_cached_instructions($filename, false, $page), $info);
         }
 
         //restore ID
@@ -366,6 +396,9 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         } else {
             header('Content-Disposition: inline; filename="' . $filename . '.odt";');
         }
+
+        //Bookcreator uses jQuery.fileDownload.js, which requires a cookie.
+        header('Set-Cookie: fileDownload=true; path=/');
 
         //try to send file, and exit if done
         http_sendfile($cachefile);

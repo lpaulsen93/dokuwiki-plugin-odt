@@ -66,6 +66,7 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             )
         );
         $css = '';
+        $css .= $this->get_css_for_filetypes();
         foreach($files as $file => $location) {
             $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
             $css_content = "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
@@ -130,5 +131,46 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             }
         }
         return $list;
+    }
+
+    /**
+     * Returns classes for file download links
+     * (Adjusted from lib/exe/css.php: function css_filetypes())
+     * 
+     * @author Andreas Gohr <andi@splitbrain.org>
+     */
+    protected function get_css_for_filetypes() {
+        $css = '';
+
+        // default style
+        $css .= '.mediafile {';
+        $css .= ' background: transparent url('.DOKU_BASE.'lib/images/fileicons/file.png) 0px 1px no-repeat;';
+        $css .= ' padding-left: 18px;';
+        $css .= ' padding-bottom: 1px;';
+        $css .= '}';
+
+        // additional styles when icon available
+        // scan directory for all icons
+        $exts = array();
+        if($dh = opendir(DOKU_INC.'lib/images/fileicons')){
+            while(false !== ($file = readdir($dh))){
+                if(preg_match('/([_\-a-z0-9]+(?:\.[_\-a-z0-9]+)*?)\.(png|gif)/i',$file,$match)){
+                    $ext = strtolower($match[1]);
+                    $type = '.'.strtolower($match[2]);
+                    if($ext!='file' && (!isset($exts[$ext]) || $type=='.png')){
+                        $exts[$ext] = $type;
+                    }
+                }
+            }
+            closedir($dh);
+        }
+        foreach($exts as $ext=>$type){
+            $class = preg_replace('/[^_\-a-z0-9]+/','_',$ext);
+            $css .= ".mf_$class {";
+            $css .= '  background-image: url('.DOKU_BASE.'lib/images/fileicons/'.$ext.$type.')';
+            $css .= '}';
+        }
+
+        return $css;
     }
 }

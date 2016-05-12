@@ -2939,7 +2939,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *                both 0 if file doesn't exist.
      *                Just the integer value, no units included.
      */
-    public static function _odtGetImageSize($src, $maxwidth, $maxheight){
+    public static function _odtGetImageSize($src, $maxwidth=NULL, $maxheight=NULL){
         if (file_exists($src)) {
             $info  = getimagesize($src);
             if(!$width){

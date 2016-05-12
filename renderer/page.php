@@ -2933,11 +2933,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * of the image stored in file $src.
      * 
      * @param  string $src The file name of image
+     * @param  int    $maxwidth The maximum width the image shall have
+     * @param  int    $maxheight The maximum height the image shall have
      * @return array  Width and height of the image in centimeters or
      *                both 0 if file doesn't exist.
      *                Just the integer value, no units included.
      */
-    public static function _odtGetImageSize($src){
+    public static function _odtGetImageSize($src, $maxwidth, $maxheight){
         if (file_exists($src)) {
             $info  = getimagesize($src);
             if(!$width){
@@ -2945,6 +2947,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $height = $info[1];
             }else{
                 $height = round(($width * $info[1]) / $info[0]);
+            }
+
+            if ($maxwidth && $width > $maxwidth) {
+                $height = $height * ($maxwidth/$width);
+                $width = $maxwidth;
+            }
+            if ($maxheight && $height > $maxheight) {
+                $width = $width * ($maxheight/$height);
+                $height = $maxheight;
             }
 
             // Convert from pixel to centimeters

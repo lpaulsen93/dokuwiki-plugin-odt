@@ -119,12 +119,18 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             $usestyle [] = trim ($entry);
         }
         foreach($plugins as $p) {
-            if(in_array($p, $usestyle)) {
+            // Do $format.css (e.g. odt.css) or print.css exists?
+            $format_css = file_exists(DOKU_PLUGIN . $p ."/". $format .".css");
+            $print_css = file_exists(DOKU_PLUGIN . $p ."/print.css");
+            
+            // If plugin is in usestyles list or if it has not got a $format.css or print.css
+            // then additionally load the screen or style.css.
+            if(in_array($p, $usestyle) || ($format_css == false && $print_css == false)) {
                 $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
                 $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
             }
 
-            if(file_exists(DOKU_PLUGIN . $p ."/". $format .".css")) {
+            if($format_css) {
                 $list[DOKU_PLUGIN . $p ."/". $format .".css"] = DOKU_BASE . "lib/plugins/". $p ."/";
             } else {
                 $list[DOKU_PLUGIN . $p ."/print.css"] = DOKU_BASE . "lib/plugins/". $p ."/";

@@ -3128,6 +3128,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->doc .= '<text:span text:style-name="'.$style_name.'">';
     }
 
+    function _odtSpanOpen($style_name){
+        // Open span
+        $this->doc .= '<text:span text:style-name="'.$style_name.'">';
+    }
+
     /**
      * This function closes a span (previously opened with _odtSpanOpenUseCSS).
      *

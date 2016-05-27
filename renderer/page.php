@@ -2834,6 +2834,29 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Adds the content of $string as a SVG picture file to the document.
+     * The link name which can be used for the ODT draw:image xlink:href
+     * is returned. The caller is responsible for creating the frame and image tag
+     * but therefore has full control over it. This means he can also set parameters
+     * in the odt frame and image tag which can not be changed using the function _odtAddImage.
+     *
+     * @author LarsDW223
+     *
+     * @param string $string SVG code to add
+     * @return string
+     */
+    function _addStringAsSVGImageFile($string) {
+
+        if ( empty($string) ) { return; }
+
+        $ext  = '.svg';
+        $mime = '.image/svg+xml';
+        $name = 'Pictures/'.md5($string).'.'.$ext;
+        $this->docHandler->addFile($name, $mime, $string);
+        return $name;
+    }
+
+    /**
      * Adds the image $src as a picture file without adding it to the content
      * of the document. The link name which can be used for the ODT draw:image xlink:href
      * is returned. The caller is responsible for creating the frame and image tag

@@ -747,7 +747,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * It is allowed to use defaults for all settings by omitting $settings.
      * Multiple settings can be combined, e.g. 'leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;'.
      */
-    protected function build_index($type='toc', $settings=NULL, $links=true, $startRef=NULL) {
+    protected function build_index($type='toc', $settings=NULL, $links=true, $startRef=NULL, $indexNo) {
         $matches = array();
         $stylesL = array();
         $stylesLNames = array();
@@ -862,6 +862,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $properties ['margin-left'] = $indent.'cm';
             $properties ['margin-right'] = '0cm';
             $properties ['text-indent'] = '0cm';
+            $properties ['style-name'] = 'ToC '.$indexNo.'- Level '.($count+1);
+            $properties ['style-display-name'] = 'ToC '.$indexNo.', Level '.($count+1);
             $style_obj = $this->factory->createParagraphStyle($properties);
 
             // Add paragraph style to common styles.
@@ -874,6 +876,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // and no class
             $properties ['style-parent'] = $style_obj->getProperty('style-name');
             $properties ['style-class'] = NULL;
+            $properties ['style-name'] = 'ToC Auto '.$indexNo.'- Level '.($count+1);
+            $properties ['style-display-name'] = NULL;
             $style_obj_auto = $this->factory->createParagraphStyle($properties);
             
             // Add paragraph style to automatic styles.
@@ -888,6 +892,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
             $properties = array();
             $this->_processCSSStyle ($properties, $stylesL [$count+1]);
+            $properties ['style-name'] = 'ToC '.$indexNo.'- Text Level '.($count+1);
+            $properties ['style-display-name'] = 'ToC '.$indexNo.', Level '.($count+1);
             $style_obj = $this->factory->createTextStyle($properties);
             $stylesLNames [$count+1] = $style_obj->getProperty('style-name');
             $this->docHandler->addStyle($style_obj);
@@ -998,7 +1004,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
             // At the moment it does not make sense to disable links for the TOC
             // because LibreOffice will insert links on updating the TOC.
-            $content = $this->build_index($this->all_index_types [$index_no], $index_settings, true, $start_ref);
+            $content = $this->build_index($this->all_index_types [$index_no], $index_settings, true, $start_ref, $index_no+1);
 
             // Replace placeholder with TOC content.
             $this->doc = str_replace ('<index-placeholder no="'.($index_no+1).'"/>', $content, $this->doc);

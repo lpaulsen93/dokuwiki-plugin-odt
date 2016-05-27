@@ -42,6 +42,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $factory = null;
     /** @var helper_plugin_odt_cssimport */
     protected $import = null;
+    /** @var helper_plugin_odt_cssimportnew */
+    protected $importnew = null;
     /** @var helper_plugin_odt_units */
     protected $units = null;
     /** @var ODTMeta */
@@ -146,15 +148,23 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 ('odt', 'odt', $this->config->getParam('css_template'), $this->config->getParam('usestyles'));
         }
 
+        // Import CSS (old API, deprecated)
         $this->import = plugin_load('helper', 'odt_cssimport');
         if ( $this->import != NULL ) {
             $this->import->importFromString ($this->css);
+        }
+
+        // Import CSS (new API)
+        $this->importnew = plugin_load('helper', 'odt_cssimportnew');
+        if ( $this->importnew != NULL ) {
+            $this->importnew->importFromString ($this->css);
         }
 
         // Call adjustLengthValues to make our callback function being called for every
         // length value imported. This gives us the chance to convert it once from
         // pixel to points.
         $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
+        $this->importnew->adjustLengthValues (array($this, 'adjustLengthCallback'));
     }
 
     /**
@@ -316,6 +326,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$test = 'CSS: '.$this->css;
         // The next two lines output the parsed CSS rules with linebreaks
         //$test = $this->import->rulesToString();
+        //$test = $this->importnew->rulesToString();
         //$this->doc .= preg_replace ('/\n/', '<text:line-break/>', $test);
         //$this->p_open();
         //$this->doc .= 'Tracedump: '.$this->trace_dump;
@@ -4785,6 +4796,31 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         $this->docHandler->import_css_from_string ($text, $media_sel, $this->config->getParam('mediadir'));
+    }
+
+    /**
+     * @param array $dest
+     * @param $element
+     * @param $classString
+     * @param $inlineStyle
+     */
+    public function getODTPropertiesNew (&$dest, iElementCSSMatchable $element, $media_sel=NULL) {
+        if ($media_sel === NULL) {
+            $media_sel = $this->config->getParam ('media_sel');
+        }
+
+        $save = $this->importnew->getMedia();
+        $this->importnew->setMedia($media_sel);
+        
+        // Get properties for our class/element from imported CSS
+        $this->importnew->getPropertiesForElement($dest, $element);
+
+        // Adjust values for ODT
+        foreach ($dest as $property => $value) {
+            $dest [$property] = $this->adjustValueForODT ($property, $value, 14);
+        }
+
+        $this->importnew->setMedia($save);
     }
 
     /**

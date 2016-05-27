@@ -106,6 +106,7 @@ abstract class ODTStyleStyle extends ODTStyle
         $table_row = '';
         $table_cell = '';
         $tab_stop = '';
+        $image = '';
         foreach ($this->properties as $property => $items) {
             switch ($items ['section']) {
                 case 'style':
@@ -131,6 +132,9 @@ abstract class ODTStyleStyle extends ODTStyle
                     break;
                 case 'tab-stop':
                     $tab_stop .= $items ['odt_property'].'="'.$items ['value'].'" ';
+                    break;
+                case 'table-cell-background-image':
+                    $image .= $items ['odt_property'].'="'.$items ['value'].'" ';
                     break;
             }
         }
@@ -160,7 +164,13 @@ abstract class ODTStyleStyle extends ODTStyle
             $style .= '    <style:table-row-properties '.$table_row.'/>'."\n";
         }
         if ( !empty($table_cell) ) {
-            $style .= '    <style:table-cell-properties '.$table_cell.'/>'."\n";
+            if (empty($image)) {
+                $style .= '    <style:table-cell-properties '.$table_cell.'/>'."\n";
+            } else {
+                $style .= '    <style:table-cell-properties '.$table_cell.'>'."\n";
+                $style .='         <style:background-image '.$image.'/>'."\n";
+                $style .= '    </style:table-cell-properties>';
+            }
         }
         $style .= '</'.$element.'>'."\n";
         return $style;

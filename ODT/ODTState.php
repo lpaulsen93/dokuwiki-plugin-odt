@@ -12,6 +12,7 @@ class ODTStateEntry
     protected $element = NULL;
     protected $clazz = NULL;
     protected $style_name = NULL;
+    protected $count = 0;
 
     // List state data
     protected $in_list = false;
@@ -92,6 +93,26 @@ class ODTStateEntry
      */
     public function getClass() {
         return $this->clazz;
+    }
+
+    /**
+     * Set the element count to $value.
+     * If e.g. the element is 'table', then the count specifies
+     * that this element is table number '$value'.
+     * 
+     * @param string $value Count
+     */
+    public function setCount($value) {
+        $this->count = $value;
+    }
+
+    /**
+     * Get the element count.
+     * 
+     * @return integer Count.
+     */
+    public function getCount() {
+        return $this->count;
     }
 
     /**
@@ -405,6 +426,7 @@ class ODTState
 {
     protected $stack = array();
     protected $index = 0;
+    protected $element_counter = array();
 
     /**
      * Constructor. Set initial 'root' state.
@@ -445,6 +467,17 @@ class ODTState
      */
     public function getClass() {
         return $this->stack [$this->index]->getClass();
+    }
+
+    /**
+     * Calls getCount for the current state.
+     * See ODTStateEntry::getCount.
+     * 
+     * There is no setCount for the current state because
+     * setCount is automatically called on enter().
+     */
+    public function getCount() {
+        return $this->stack [$this->index]->getCount();
     }
 
     /**
@@ -711,6 +744,13 @@ class ODTState
      * @param string $clazz
      */
     public function enter($element, $clazz) {
+        // Increase the counter for that element
+        if ($this->element_counter [$element] == NULL ) {
+            $this->element_counter [$element] = 1;
+        } else {
+            $this->element_counter [$element]++;
+        }
+
         // We enter a new state by making a copy (clone) of the previous state.
         // The clone() function of ODTStateEntry needs to insure that all params
         // which SHALL NOT be inherited from the previous state are initialized.
@@ -718,6 +758,7 @@ class ODTState
         $this->stack [$this->index] = clone $this->stack[$this->index-1];
         $this->stack [$this->index]->setElement($element);
         $this->stack [$this->index]->setClass($clazz);
+        $this->stack [$this->index]->setCount($this->element_counter [$element]);
     }
 
     /**

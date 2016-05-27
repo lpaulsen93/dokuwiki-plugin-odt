@@ -3518,6 +3518,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Open the table referencing our style.
         $this->doc .= '<table:table table:style-name="'.$style_name.'">';
         $this->state->enter('table', 'table');
+        $count = $this->state->getCount();
         if ( empty ($properties ['width']) ) {
             // If the caller did not specify a table width, save the style name
             // to eventually later replace the table width set in createTableTableStyle()
@@ -3529,7 +3530,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ( empty ($maxcols) ) {
             // Try to automatically detect the number of columns.
             $this->state->setTableAutoColumns(true);
-            $this->doc .= '<ColumnsPlaceholder>';
+            $this->doc .= '<ColumnsPlaceholder'.$count.'>';
         } else {
             $this->state->setTableAutoColumns(false);
 
@@ -3595,6 +3596,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ($table != NULL) {
             $auto_columns = $table->getTableAutoColumns();
             $column_defs = $table->getTableColumnDefs();
+            $count = $table->getCount();
         }
 
         // Writeback temporary table content if this is the first cell in the table body.
@@ -3602,10 +3604,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // First replace columns placeholder with created columns, if in auto mode.
             if ( $auto_columns === true ) {
                 $this->doc =
-                    str_replace ('<ColumnsPlaceholder>', $column_defs, $this->doc);
+                    str_replace ('<ColumnsPlaceholder'.$count.'>', $column_defs, $this->doc);
 
                 $this->doc =
-                    str_replace ('<MaxColsPlaceholder>', $table->getTableMaxColumns(), $this->doc);
+                    str_replace ('<MaxColsPlaceholder'.$count.'>', $table->getTableMaxColumns(), $this->doc);
             }
         }
         $this->doc .= '</table:table>';
@@ -3812,6 +3814,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $table = $this->state->findClosestWithClass('table', 'table');
         if ($table != NULL) {
             $auto_columns = $table->getTableAutoColumns();
+            $count = $table->getCount();
         }
 
         // Create style name. (Re-enable background-color!)
@@ -3837,7 +3840,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->doc .= ' table:number-columns-spanned="'.$colspan.'"';
         }
         if ( $inHeader === true && $auto_columns === true && $colspan == 0 ) {
-            $this->doc .= ' table:number-columns-spanned="<MaxColsPlaceholder>"';
+            $this->doc .= ' table:number-columns-spanned="<MaxColsPlaceholder'.$count.'>"';
         }
         if ( $rowspan > 1 ) {
             $this->doc .= ' table:number-rows-spanned="'.$rowspan.'"';

@@ -4786,6 +4786,136 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         $this->docHandler->import_css_from_string ($text, $media_sel, $this->config->getParam('mediadir'));
     }
+
+    /**
+     * This function creates a text style for spans with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTextStyle ($properties, $common=true) {
+        $style_obj = $this->factory->createTextStyle($properties);
+        if ($common == true) {
+            $this->docHandler->addStyle($style_obj);
+        } else {
+            $this->docHandler->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a paragraph style for paragraphs with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createParagraphStyle ($properties, $common=true) {
+        $style_obj = $this->factory->createParagraphStyle($properties);
+        if ($common == true) {
+            $this->docHandler->addStyle($style_obj);
+        } else {
+            $this->docHandler->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table style for tables with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableStyle ($properties, $common=true) {
+        $style_obj = $this->factory->createTableTableStyle($properties);
+        if ($common == true) {
+            $this->docHandler->addStyle($style_obj);
+        } else {
+            $this->docHandler->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table row style for table rows with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableRowStyle ($properties, $common=true) {
+        $style_obj = $this->factory->createTableRowStyle($properties);
+        if ($common == true) {
+            $this->docHandler->addStyle($style_obj);
+        } else {
+            $this->docHandler->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table cell style for table cells with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableCellStyle ($properties, $common=true) {
+        $style_obj = $this->factory->createTableCellStyle($properties);
+        if ($common == true) {
+            $this->docHandler->addStyle($style_obj);
+        } else {
+            $this->docHandler->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table column style for table columns with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableColumnStyle ($properties, $common=true) {
+        $style_obj = $this->factory->createTableColumnStyle($properties);
+        if ($common == true) {
+            $this->docHandler->addStyle($style_obj);
+        } else {
+            $this->docHandler->addAutomaticStyle($style_obj);
+        }
+    }
+
+    public function styleExists ($style_name) {
+        return $this->docHandler->styleExists($style_name);
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

@@ -322,14 +322,14 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
             // If width has a percentage value we need to use the rel-width attribute,
             // otherwise the width attribute
             $width = $properties ['width'];
-            if ( $width [strlen($width)-1] != '%' ) {
-                $properties ['width'] = $table_width;
-            } else {
+            if ( $width [strlen($width)-1] == '%' ) {
                 // Better calculate absolute width and use it instead of relative width.
                 // Some applications might not support relative width.
                 $table_width = (($max_width_cm * trim($width, '%'))/100).'cm';
                 $properties ['width'] = $table_width;
             }
+        } else {
+            $properties ['width'] = $table_width;
         }
         
         // Convert property 'border-model' to ODT

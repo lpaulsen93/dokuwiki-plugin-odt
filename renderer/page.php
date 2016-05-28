@@ -3554,6 +3554,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _odtTableOpenUseProperties ($properties, $maxcols = NULL, $numrows = NULL){
         $this->p_close();
+
+        // Eventually adjust table width.
+        if ( !empty ($properties ['width']) ) {
+            if ( $properties ['width'] [$properties ['width']-1] != '%' ) {
+                // Width has got an absolute value.
+                // Some units are not supported by ODT for table width (e.g. 'px').
+                // So we better convert it to points.
+                $properties ['width'] = $this->units->toPoints($properties ['width'], 'x');
+            }
+        }
         
         // Create style.
         $style_obj = $this->factory->createTableTableStyle ($properties, NULL, $this->_getAbsWidthMindMargins (100));

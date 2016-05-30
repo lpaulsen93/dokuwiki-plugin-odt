@@ -1489,73 +1489,59 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function strong_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('strong'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('strong'), $this->doc);
     }
 
     function strong_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     function emphasis_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('emphasis'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('emphasis'), $this->doc);
     }
 
     function emphasis_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     function underline_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('underline'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('underline'), $this->doc);
     }
 
     function underline_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     function monospace_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('monospace'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('monospace'), $this->doc);
     }
 
     function monospace_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     function subscript_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('sub'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('sub'), $this->doc);
     }
 
     function subscript_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     function superscript_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('sup'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('sup'), $this->doc);
     }
 
     function superscript_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     function deleted_open() {
-        $span = new ODTElementSpan ($this->docHandler->getStyleName('del'));
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($this->docHandler->getStyleName('del'), $this->doc);
     }
 
     function deleted_close() {
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     /*
@@ -3131,10 +3117,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function _odtSpanOpen($style_name){
-        // Open span
-        $span = new ODTElementSpan($style_name);
-        $this->document->state->enter($span);
-        $this->doc .= $span->getOpeningTag();
+        $this->document->spanOpen($style_name, $this->doc);
     }
 
     /**
@@ -3143,7 +3126,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtSpanClose(){
-        $this->closeCurrentElement();
+        $this->document->spanClose($this->doc);
     }
 
     /**

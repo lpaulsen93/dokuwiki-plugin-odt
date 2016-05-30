@@ -30,4 +30,43 @@ class ODTDocument
     public function __construct() {
         $this->state = new ODTState();
     }
+
+    // Functions generating content for now will have to be passed
+    // $renderer->doc. Later this will be removed and an internal doc
+    // variable will be maintained. This will break backwards compatibility
+    // with plugins writing to $renderer->doc directly (instead of calling cdata).
+
+    /**
+     * Open a text span.
+     *
+     * @param string $style_name The style to use.
+     */
+    function spanOpen($style_name, &$content){
+        $span = new ODTElementSpan ($style_name);
+        $this->state->enter($span);
+        $content .= $span->getOpeningTag();
+    }
+
+    /**
+     * Close a text span.
+     *
+     * @param string $style_name The style to use.
+     */    
+    function spanClose(&$content) {
+        $this->closeCurrentElement($content);
+    }
+
+    /**
+     * General internal function for closing an element.
+     * Can always be used to close any open element if no more actions
+     * are required apart from generating the closing tag and
+     * removing the element from the state stack.
+     */
+    protected function closeCurrentElement(&$content) {
+        $current = $this->state->getCurrent();
+        if ($current != NULL) {
+            $content .= $current->getClosingTag($content);
+            $this->state->leave();
+        }
+    }
 }

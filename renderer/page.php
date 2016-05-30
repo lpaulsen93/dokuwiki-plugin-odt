@@ -1495,11 +1495,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function strong_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function emphasis_open() {
@@ -1509,11 +1505,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function emphasis_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function underline_open() {
@@ -1523,11 +1515,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function underline_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function monospace_open() {
@@ -1537,11 +1525,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function monospace_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function subscript_open() {
@@ -1551,11 +1535,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function subscript_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function superscript_open() {
@@ -1565,11 +1545,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function superscript_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function deleted_open() {
@@ -1579,11 +1555,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function deleted_close() {
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     /*
@@ -1740,11 +1712,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function tablerow_close(){
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     /**
@@ -1771,11 +1739,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function tableheader_close(){
         $this->p_close();
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     /**
@@ -1801,11 +1765,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function tablecell_close(){
         $this->p_close();
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     /**
@@ -1943,11 +1903,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // Do not do anything as long as list is interrupted
             return;
         }
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     function listcontent_open() {
@@ -3187,11 +3143,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtSpanClose(){
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
     }
 
     /**
@@ -3661,11 +3613,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Eventually replace table width.
         $this->_replaceTableWidth ();
 
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag($this->doc);
-            $this->state->leave();
-        }
+        $this->closeCurrentElement($this->doc);
     }
 
     /**
@@ -4091,19 +4039,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtCloseMultiColumnFrame () {
-        //$this->doc .= '</draw:text-box></draw:frame>';
         // Close text box
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
         // Close frame
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
+
         $this->p_close();
 
         $this->div_z_index -= 5;
@@ -4592,17 +4532,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _odtCloseTextBox () {
         // Close text box
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
         // Close frame
-        $current = $this->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag();
-            $this->state->leave();
-        }
+        $this->closeCurrentElement();
+
         $this->doc .= '</draw:g>';
         $this->p_close();
 
@@ -4980,6 +4913,21 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function styleExists ($style_name) {
         return $this->docHandler->styleExists($style_name);
     }
+
+    /**
+     * General internal function for closing an element.
+     * Can always be used to close any open element if no more actions
+     * are required apart from generating the closing tag and
+     * removing the element from the state stack.
+     */
+    protected function closeCurrentElement(&$content=NULL) {
+        $current = $this->state->getCurrent();
+        if ($current != NULL) {
+            $this->doc .= $current->getClosingTag($content);
+            $this->state->leave();
+        }
+    }
+
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

@@ -1,5 +1,6 @@
 <?php
 
+require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 
 /**
@@ -23,12 +24,45 @@ class ODTDocument
     // Will become protected as soon as all stuff using state
     // has been moved.
     public $state;
+    /** @var docHandler */
+    public $docHandler = null;
 
     /**
-     * Constructor.
+     * Constructor:
+     * - initializes the state
+     * - creates the default docHandler
      */
     public function __construct() {
+        // Initialize state
         $this->state = new ODTState();
+
+        // Use standard handler, document from scratch.
+        $this->docHandler = new scratchDH ();
+    }
+
+    /**
+     * Set ODT template file.
+     *
+     * @param string $style_name The style to use.
+     */
+    public function setODTTemplate ($file, $directory) {
+        // Document based on ODT template.
+        $this->docHandler = new ODTTemplateDH ();
+        $this->docHandler->setTemplate($file);
+        $this->docHandler->setDirectory($directory);
+
+        // Do NOT overwrite outline style of ODT template.
+    }
+
+    /**
+     * Set CSS template file.
+     *
+     * @param string $style_name The style to use.
+     */
+    public function setCSSTemplate ($template_path, $media_sel, $mediadir) {
+        // Document based on CSS template.
+        $this->docHandler = new CSSTemplateDH ();
+        $this->docHandler->import($template_path, $media_sel, $mediadir);
     }
 
     // Functions generating content for now will have to be passed

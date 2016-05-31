@@ -1,6 +1,9 @@
 <?php
 
 require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
+require_once DOKU_PLUGIN . 'odt/ODT/scratchDH.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
+require_once DOKU_PLUGIN . 'odt/ODT/CSSTemplateDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 
 /**
@@ -25,7 +28,7 @@ class ODTDocument
     // has been moved.
     public $state;
     /** @var docHandler */
-    public $docHandler = null;
+    protected $docHandler = null;
 
     /**
      * Constructor:
@@ -88,6 +91,130 @@ class ODTDocument
      */    
     function spanClose(&$content) {
         $this->closeCurrentElement($content);
+    }
+
+    /**
+     * Get the style name for a style alias.
+     *
+     * @param string $alias The alias for the style.
+     * @return string The style name used in the ODT document
+     */    
+    public function getStyleName($alias) {
+        return $this->docHandler->getStyleName($alias);
+    }
+
+    /**
+     * Get the style object with style name $styleName.
+     *
+     * @param string $styleName The style name ofthe style style.
+     * @return ODTStyle The style object
+     */    
+    public function getStyle($styleName) {
+        return $this->docHandler->getStyle($styleName);
+    }
+
+    /**
+     * Get the style object by $alias.
+     *
+     * @param string $alias The alias for the style.
+     * @return ODTStyle The style object
+     */    
+    public function getStyleByAlias($alias) {
+        return $this->docHandler->getStyle($this->docHandler->getStyleName($alias));
+    }
+
+    /**
+     * Add style object to the document as a common style.
+     *
+     * @param ODTStyle $style_obj Object to add
+     */
+    public function addStyle(ODTStyle $style_obj) {
+        $this->docHandler->addStyle($style_obj);
+    }
+
+    /**
+     * Add style object to the document as an automatic style.
+     *
+     * @param ODTStyle $style_obj Object to add
+     */
+    public function addAutomaticStyle(ODTStyle $style_obj) {
+        $this->docHandler->addAutomaticStyle($style_obj);
+    }
+
+    /**
+     * Check if a style with $styleName already exists.
+     *
+     * @param string $styleName The style name ofthe style style.
+     * @return bool
+     */    
+    public function styleExists($styleName) {
+        return $this->docHandler->styleExists($styleName);
+    }
+
+    /**
+     * Add a file to the document.
+     *
+     * @param string $fileName Full file name in the document
+     *                         e.g. 'Pictures/myimage.png'
+     * @param string $mime Mime type
+     * @param string $content The content of the file
+     */    
+    public function addFile($fileName, $mime, $content) {
+        $this->docHandler->addFile($fileName, $mime, $content);
+    }
+
+    /**
+     * Adds the image $fileName as a picture file without adding it to
+     * the content of the document. The link name which can be used for
+     * the ODT draw:image xlink:href is returned.
+     *
+     * @param string $fileName
+     * @return string
+     */
+    function addFileAsPicture($fileName){
+        return $this->docHandler->addFileAsPicture($fileName);
+    }
+
+    /**
+     * Check if a file already exists in the document.
+     *
+     * @param string $fileName Full file name in the document
+     *                         e.g. 'Pictures/myimage.png'
+     * @return bool
+     */    
+    public function fileExists($fileName) {
+        return $this->docHandler->fileExists($fileName);
+    }
+
+    /**
+     * Get ODT file as string (ZIP archive).
+     *
+     * @param string $content The content
+     * @param string $metaContent The content of the meta file
+     * @param string $userFieldDecls The user field declarations
+     * @param array $pageStyles Array of all page styles
+     * @return string String containing ODT ZIP stream
+     */
+    public function getODTFileAsString($content, $metaContent, $userFieldDecls, array $pageStyles) {
+        // Build the document
+        $this->docHandler->build($content,
+                                 $metaContent,
+                                 $userFieldDecls,
+                                 $pageStyles);
+
+        // Return document
+        return $this->docHandler->get();
+    }
+
+    /**
+     * Import CSS code for styles from a string.
+     *
+     * @param string $cssCode The CSS code to import
+     * @param string $mediaSel The media selector to use e.g. 'print'
+     * @param string $mediaPath Local path to media files
+     */
+    public function importCSSFromString($cssCode, $mediaSel=NULL, $mediaPath) {
+        $this->docHandler->import_css_from_string ($cssCode, $mediaSel, $mediaPath);
     }
 
     /**

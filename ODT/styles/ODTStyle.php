@@ -24,6 +24,8 @@ require_once 'ODTTableCellStyle.php';
  */
 abstract class ODTStyle
 {
+    protected static $style_base_name = 'PluginODTAutoStyle_';
+    protected static $style_count = 0;
     protected $properties = array();
 
     /**
@@ -221,5 +223,18 @@ abstract class ODTStyle
      */
     public function isDefault() {
         return false;
+    }
+
+    /**
+     * This function creates a new style name. All functions of this class which create a new
+     * style/style name shall use this function to create the style name. By doing so it is
+     * guaranteed that all style names created by this class are unique.
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     */
+    protected static function getNewStylename ($type = '') {
+        self::$style_count++;
+        $style_name = self::$style_base_name.$type.'_'.self::$style_count;
+        return $style_name;
     }
 }

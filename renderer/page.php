@@ -55,12 +55,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
-    /** @var Current pageFormat */
-    protected $page = null;
-    /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
-    protected $page_styles = array ();
-    /** @var Array of paragraph style names that prevent an empty paragraph from being deleted */
-    protected $preventDeletetionStyles = array ();
     /** @var refIDCount */
     protected $refIDCount = 0;
     protected $refUserIndexIDCount = 0;
@@ -68,8 +62,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $pageBookmark = NULL;
     /** @var pagebreak */
     protected $pagebreak = false;
-    /** @var changePageFormat */
-    protected $changePageFormat = NULL;
     /** @var string */
     protected $css;
     /** @var  int counter for styles */
@@ -239,10 +231,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Setup page format.
-        // Set the page format of the current page for calculation ($this->page)
+        // Set the page format of the current page for calculation ($this->document->page)
         // Change the standard page layout style
-        $this->page = new pageFormat();
-        $this->page->setFormat($this->config->getParam ('format'),
+        $this->document->page = new pageFormat();
+        $this->document->page->setFormat($this->config->getParam ('format'),
                              $this->config->getParam ('orientation'),
                              $this->config->getParam ('margin_top'),
                              $this->config->getParam ('margin_right'),
@@ -250,12 +242,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                              $this->config->getParam ('margin_left'));
         $first_page = $this->document->getStyleByAlias('first page');
         if ($first_page != NULL) {
-            $first_page->setProperty('width', $this->page->getWidth().'cm');
-            $first_page->setProperty('height', $this->page->getHeight().'cm');
-            $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
-            $first_page->setProperty('margin-right', $this->page->getMarginRight().'cm');
-            $first_page->setProperty('margin-bottom', $this->page->getMarginBottom().'cm');
-            $first_page->setProperty('margin-left', $this->page->getMarginLeft().'cm');
+            $first_page->setProperty('width', $this->document->page->getWidth().'cm');
+            $first_page->setProperty('height', $this->document->page->getHeight().'cm');
+            $first_page->setProperty('margin-top', $this->document->page->getMarginTop().'cm');
+            $first_page->setProperty('margin-right', $this->document->page->getMarginRight().'cm');
+            $first_page->setProperty('margin-bottom', $this->document->page->getMarginBottom().'cm');
+            $first_page->setProperty('margin-left', $this->document->page->getMarginLeft().'cm');
         }
 
         // Set title in meta info.
@@ -348,170 +340,53 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Fill missing values with current settings
         if ( empty($format) ) {
-            $format = $this->page->getFormat();
+            $format = $this->document->page->getFormat();
         }
         if ( empty($orientation) ) {
-            $orientation = $this->page->getOrientation();
+            $orientation = $this->document->page->getOrientation();
         }
         if ( empty($margin_top) ) {
-            $margin_top = $this->page->getMarginTop();
+            $margin_top = $this->document->page->getMarginTop();
         }
         if ( empty($margin_right) ) {
-            $margin_right = $this->page->getMarginRight();
+            $margin_right = $this->document->page->getMarginRight();
         }
         if ( empty($margin_bottom) ) {
-            $margin_bottom = $this->page->getMarginBottom();
+            $margin_bottom = $this->document->page->getMarginBottom();
         }
         if ( empty($margin_left) ) {
-            $margin_left = $this->page->getMarginLeft();
+            $margin_left = $this->document->page->getMarginLeft();
         }
 
         // Adjust given parameters, query resulting format data and get format-string
-        $this->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
-        $format_string = $this->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+        $this->document->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
+        $format_string = $this->document->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
 
-        if ( $format_string == $this->page->toString () ) {
+        if ( $format_string == $this->document->page->toString () ) {
             // Current page already uses this format, no need to do anything...
             return;
         }
 
         if ($this->text_empty) {
             // If the text is still empty, then we change the start page format now.
-            $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+            $this->document->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
             $first_page = $this->document->getStyleByAlias('first page');
             if ($first_page != NULL) {
-                $first_page->setProperty('width', $this->page->getWidth().'cm');
-                $first_page->setProperty('height', $this->page->getHeight().'cm');
-                $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
-                $first_page->setProperty('margin-right', $this->page->getMarginRight().'cm');
-                $first_page->setProperty('margin-bottom', $this->page->getMarginBottom().'cm');
-                $first_page->setProperty('margin-left', $this->page->getMarginLeft().'cm');
+                $first_page->setProperty('width', $this->document->page->getWidth().'cm');
+                $first_page->setProperty('height', $this->document->page->getHeight().'cm');
+                $first_page->setProperty('margin-top', $this->document->page->getMarginTop().'cm');
+                $first_page->setProperty('margin-right', $this->document->page->getMarginRight().'cm');
+                $first_page->setProperty('margin-bottom', $this->document->page->getMarginBottom().'cm');
+                $first_page->setProperty('margin-left', $this->document->page->getMarginLeft().'cm');
             }
         } else {
             // Set marker and save data for pending change format.
             // The format change istelf will be done on the next call to p_open or header()
             // to prevent empty lines after the format change.
-            $this->changePageFormat = $data;
+            $this->document->changePageFormat = $data;
 
             // Close paragraph if open
             $this->p_close();
-        }
-    }
-
-    /**
-     * This function creates a style for changin the page format if required.
-     * It returns NULL if no page format change is pending or if the current
-     * page format is equal to the required page format.
-     *
-     * @param string  $parent Parent style name.
-     * @return string Name of the style to be used for changing page format
-     */
-    protected function doPageFormatChange ($parent = NULL) {
-        if ( $this->changePageFormat == NULL ) {
-            // Error.
-            return NULL;
-        }
-        $data = $this->changePageFormat;
-        $this->changePageFormat = NULL;
-
-        if ( empty($parent) ) {
-            $parent = 'Standard';
-        }
-
-        // Create page layout style
-        $format_string = $this->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
-        $properties ['style-name']    = 'Style-Page-'.$format_string;
-        $properties ['width']         = $data ['width'];
-        $properties ['height']        = $data ['height'];
-        $properties ['margin-top']    = $data ['margin-top'];
-        $properties ['margin-bottom'] = $data ['margin-bottom'];
-        $properties ['margin-left']   = $data ['margin-left'];
-        $properties ['margin-right']  = $data ['margin-right'];
-        $style_obj = $this->factory->createPageLayoutStyle($properties);
-        $style_name = $style_obj->getProperty('style-name');
-
-        // Save style data in page style array, in common styles and set current page format
-        $master_page_style_name = $format_string;
-        $this->page_styles [$master_page_style_name] = $style_name;
-        $this->document->addAutomaticStyle($style_obj);
-        $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
-
-        // Create paragraph style.
-        $properties = array();
-        $properties ['style-name']             = 'Style-'.$format_string;
-        $properties ['style-parent']           = $parent;
-        $properties ['style-master-page-name'] = $master_page_style_name;
-        $properties ['page-number']            = 'auto';
-        $style_obj = $this->factory->createParagraphStyle($properties);
-        $style_name = $style_obj->getProperty('style-name');
-        $this->document->addAutomaticStyle($style_obj);
-
-        // Save paragraph style name in 'Do not delete array'!
-        $this->preventDeletetionStyles [] = $style_name;
-
-        return $style_name;
-    }
-
-    /**
-     * This function deletes the useless elements. Right now, these are empty paragraphs
-     * or paragraphs that only include whitespace.
-     *
-     * IMPORTANT:
-     * Paragraphs can be used for pagebreaks/changing page format.
-     * Such paragraphs may not be deleted!
-     */
-    protected function deleteUselessElements() {
-        $length_open = strlen ('<text:p');
-        $length_close = strlen ('</text:p>');
-        $max = strlen ($this->doc);
-        $pos = 0;
-
-        while ($pos < $max) {
-            $start_open = strpos ($this->doc, '<text:p', $pos);
-            if ( $start_open === false ) {
-                break;
-            }
-            $start_close = strpos ($this->doc, '>', $start_open + $length_open);
-            if ( $start_close === false ) {
-                break;
-            }
-            $end = strpos ($this->doc, '</text:p>', $start_close + 1);
-            if ( $end === false ) {
-                break;
-            }
-
-            $deleted = false;
-            $length = $end - $start_open + $length_close;
-            $content = substr ($this->doc, $start_close + 1, $end - ($start_close + 1));
-
-            if ( empty($content) || ctype_space ($content) ) {
-                // Paragraph is empty or consists of whitespace only. Check style name.
-                $style_start = strpos ($this->doc, '"', $start_open);
-                if ( $style_start === false ) {
-                    // No '"' found??? Ignore this paragraph.
-                    break;
-                }
-                $style_end = strpos ($this->doc, '"', $style_start+1);
-                if ( $style_end === false ) {
-                    // No '"' found??? Ignore this paragraph.
-                    break;
-                }
-                $style_name = substr ($this->doc, $style_start+1, $style_end - ($style_start+1));
-
-                // Only delete empty paragraph if not listed in 'Do not delete' array!
-                if ( !in_array($style_name, $this->preventDeletetionStyles) )
-                {
-                    $this->doc = substr_replace($this->doc, '', $start_open, $length);
-
-                    $deleted = true;
-                    $max -= $length;
-                    $pos = $start_open;
-                }
-            }
-
-            if ( $deleted == false ) {
-                $pos = $start_close;
-            }
         }
     }
 
@@ -571,12 +446,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Completes the ODT file
      */
     public function finalize_ODTfile() {
-        // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
-        $this->deleteUselessElements();
-
         // Build/assign the document
         $this->doc = $this->document->getODTFileAsString
-            ($this->doc, $this->meta->getContent(), $this->_odtUserFields(), $this->page_styles);
+            ($this->doc, $this->meta->getContent(), $this->_odtUserFields(), $this->document->page_styles);
 
         $this->convert();
     }
@@ -944,7 +816,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Add a pagebreak if required.
         if ( $pagebreak ) {
-            $style_name = $this->createPagebreakStyle(NULL, false);
+            $style_name = $this->document->createPagebreakStyle(NULL, false);
             $content .= '<text:p text:style-name="'.$style_name.'"/>';
         }
 
@@ -1068,7 +940,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getPageWidth(){
-        return $this->page->getWidth();
+        return $this->document->page->getWidth();
     }
 
     /**
@@ -1078,7 +950,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getPageHeight(){
-        return $this->page->getHeight();
+        return $this->document->page->getHeight();
     }
 
     /**
@@ -1087,7 +959,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getLeftMargin(){
-        return $this->page->getMarginLeft();
+        return $this->document->page->getMarginLeft();
     }
 
     /**
@@ -1096,7 +968,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getRightMargin(){
-        return $this->page->getMarginRight();
+        return $this->document->page->getMarginRight();
     }
 
     /**
@@ -1105,7 +977,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getTopMargin(){
-        return $this->page->getMarginTop();
+        return $this->document->page->getMarginTop();
     }
 
     /**
@@ -1114,7 +986,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getBottomMargin(){
-        return $this->page->getMarginBottom();
+        return $this->document->page->getMarginBottom();
     }
 
     /**
@@ -1130,7 +1002,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return int|string
      */
     function _getRelWidthMindMargins ($percentage = '100'){
-        return $this->page->getRelWidthMindMargins($percentage);
+        return $this->document->page->getRelWidthMindMargins($percentage);
     }
 
     /**
@@ -1142,7 +1014,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     function _getAbsWidthMindMargins ($percentage = '100'){
-        return $this->page->getAbsWidthMindMargins($percentage);
+        return $this->document->page->getAbsWidthMindMargins($percentage);
     }
 
     /**
@@ -1158,7 +1030,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float|string
      */
     function _getRelHeightMindMargins ($percentage = '100'){
-        return $this->page->getRelHeightMindMargins($percentage);
+        return $this->document->page->getRelHeightMindMargins($percentage);
     }
 
     /**
@@ -1171,7 +1043,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     function _getAbsHeightMindMargins ($percentage = '100'){
-        return $this->page->getAbsHeightMindMargins($percentage);
+        return $this->document->page->getAbsHeightMindMargins($percentage);
     }
 
     /**
@@ -1206,7 +1078,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // Attention: NOT if $text is empty. This would lead to empty lines before headings
             //            right after a pagebreak!
             $in_paragraph = $this->document->state->getInParagraph();
-            if ( ($this->pagebreak || $this->changePageFormat != NULL) || !$in_paragraph ) {
+            if ( ($this->document->pagebreak || $this->document->changePageFormat != NULL) || !$in_paragraph ) {
                 $this->p_open();
             }
         }
@@ -1278,82 +1150,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $style
      */
     function p_open($style=NULL){
-        if ( empty($style) ) {
-            $style = $this->document->getStyleName('body');
-        }
-
-        $list = NULL;
-        $list_item = $this->document->state->getCurrentListItem();
-        if ($list_item != NULL) {
-            // We are in a list item. Is this the list start?
-            $list = $list_item->getList();
-            if ($list != NULL) {
-                $list_count = $this->document->state->countClass('list');
-                $first = $list->getListFirstParagraph();
-                $list->setListFirstParagraph(false);
-
-                // Create a style for putting a top margin for this first paragraph of the list
-                // (if not done yet, the name must be unique!)
-                $style_name = 'FirstListParagraph_'.$style;
-                $style_first = $this->document->getStyleByAlias('list first paragraph');
-                if ($list_count == 1 && $first) {
-                    if (!$this->document->styleExists($style_name)) {
-                        if ($style_first != NULL) {
-                            $style_body = $this->document->getStyle($style);
-                            $style_display_name = 'First '.$style_body->getProperty('style-display-name');
-                            $style_obj = clone $style_first;
-                            if ($style_obj != NULL) {
-                                $style_obj->setProperty('style-name', $style_name);
-                                $style_obj->setProperty('style-parent', $style);
-                                $style_obj->setProperty('style-display-name', $style_display_name);
-                                $bottom = $style_first->getProperty('margin-bottom');
-                                if ($bottom === NULL) {
-                                    $style_obj->setProperty('margin-bottom', $style_body->getProperty('margin-bottom'));
-                                }
-                                $this->document->addStyle($style_obj);
-                                $style = $style_name;
-                            }
-                        }
-                    } else {
-                        $style = $style_name;
-                    }
-                }
-            }
-        }
-        
-        // Opening a paragraph inside another paragraph is illegal
-        $in_paragraph = $this->document->state->getInParagraph();
-        if (!$in_paragraph) {
-            if ( $this->changePageFormat != NULL ) {
-                $page_style = $this->doPageFormatChange($style);
-                if ( $page_style != NULL ) {
-                    $style = $page_style;
-                    // Delete pagebreak, the format change will also introduce a pagebreak.
-                    $this->pagebreak = false;
-                }
-            }
-            if ( $this->pagebreak ) {
-                $style = $this->createPagebreakStyle ($style);
-                $this->pagebreak = false;
-            }
-            
-            // If we are in a list remember paragraph position
-            if ($list != NULL) {
-                $list->setListLastParagraphPosition(strlen($this->doc));
-            }
-
-            $paragraph = new ODTElementParagraph($style);
-            $this->document->state->enter($paragraph);
-            $this->doc .= $paragraph->getOpeningTag();
-        }
+        $this->document->paragraphOpen($style, $this->doc);
     }
 
     function p_close(){
-        $paragraph = $this->document->state->getCurrentParagraph();
-        if ($paragraph != NULL) {
-            $this->doc .= $paragraph->getClosingTag();
-            $this->document->state->leave();
-        }
+        $this->document->paragraphClose($this->doc);
     }
 
     /**
@@ -1397,16 +1198,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $TOCRef = $this->_buildTOCReferenceID($text);
         $style = $this->document->getStyleName('heading'.$level);
         if ( $this->changePageFormat != NULL ) {
-            $page_style = $this->doPageFormatChange($style);
+            $page_style = $this->document->doPageFormatChange($style);
             if ( $page_style != NULL ) {
                 $style = $page_style;
                 // Delete pagebreak, the format change will also introduce a pagebreak.
-                $this->pagebreak = false;
+                $this->document->pagebreak = false;
             }
         }
-        if ( $this->pagebreak ) {
-            $style = $this->createPagebreakStyle ($style);
-            $this->pagebreak = false;
+        if ( $this->document->pagebreak ) {
+            $style = $this->document->createPagebreakStyle ($style);
+            $this->document->pagebreak = false;
         }
         $this->doc .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
 
@@ -1437,30 +1238,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->p_close();
 
         // Save paragraph style name in 'Do not delete array'!
-        $this->preventDeletetionStyles [] = $style_name;
+        $this->document->preventDeletetionStyles [] = $style_name;
     }
 
     function linebreak() {
         $this->doc .= '<text:line-break/>';
-    }
-
-    protected function createPagebreakStyle($parent=NULL,$before=true) {
-        $style_name = 'pagebreak';
-        if ( !$before ) {
-            $style_name .= '_after';
-        }
-        if ( !empty($parent) ) {
-            $style_name .= '_'.$parent;
-        }
-        if ( !$this->document->styleExists($style_name) ) {
-            $style_obj = $this->factory->createPagebreakStyle($style_name, $parent, $before);
-            $this->document->addAutomaticStyle($style_obj);
-
-            // Save paragraph style name in 'Do not delete array'!
-            $this->preventDeletetionStyles [] = $style_name;
-        }
-        
-        return $style_name;
     }
 
     function pagebreak() {
@@ -1469,7 +1251,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // The style will be a "pagebreak" style with the paragraph or header style as the parent.
         // This prevents extra empty lines after the pagebreak.
         $this->p_close();
-        $this->pagebreak = true;
+        $this->document->pagebreak = true;
     }
 
     function strong_open() {
@@ -1570,7 +1352,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                         $style_obj = clone $this->document->getStyle($table_style_name);
                         $style_obj->setProperty('style-name', $style_name);
                         if ($style_obj != NULL) {
-                            $max = $this->page->getAbsWidthMindMargins();
+                            $max = $this->document->page->getAbsWidthMindMargins();
                             $indent = 0 + $this->units->getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));
                             $style_obj->setProperty('width', ($max-$indent).'cm');
                             $style_obj->setProperty('align', 'right');

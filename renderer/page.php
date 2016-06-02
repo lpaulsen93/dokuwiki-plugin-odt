@@ -60,8 +60,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $refUserIndexIDCount = 0;
     /** @var pageBookmark */
     protected $pageBookmark = NULL;
-    /** @var pagebreak */
-    protected $pagebreak = false;
     /** @var string */
     protected $css;
     /** @var  int counter for styles */
@@ -1242,7 +1240,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function linebreak() {
-        $this->doc .= '<text:line-break/>';
+        $this->document->linebreak($this->doc);
     }
 
     function pagebreak() {

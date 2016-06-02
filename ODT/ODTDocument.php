@@ -37,6 +37,8 @@ class ODTDocument
     public $page_styles = array ();
     /** @var Array of paragraph style names that prevent an empty paragraph from being deleted */
     public $preventDeletetionStyles = array ();
+    /** @var pagebreak */
+    public $pagebreak = false;
 
     /**
      * Constructor:
@@ -192,6 +194,13 @@ class ODTDocument
             $content .= $paragraph->getClosingTag();
             $this->state->leave();
         }
+    }
+
+    /**
+     * Add a linebreak
+     */
+    function linebreak(&$content) {
+        $content .= '<text:line-break/>';
     }
 
     /**

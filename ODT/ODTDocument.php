@@ -27,18 +27,29 @@ class ODTDocument
     // Will become protected as soon as all stuff using state
     // has been moved.
     public $state;
-    /** @var docHandler */
-    protected $docHandler = null;
-    /** @var changePageFormat */
-    public $changePageFormat = NULL;
+    /** @var array store the table of contents */
+    public $toc = array();
     /** @var Current pageFormat */
     public $page = null;
+    /** @var changePageFormat */
+    public $changePageFormat = NULL;
+
+    /** @var docHandler */
+    protected $docHandler = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
-    public $page_styles = array ();
+    protected $pageStyles = array ();
     /** @var Array of paragraph style names that prevent an empty paragraph from being deleted */
-    public $preventDeletetionStyles = array ();
+    protected $preventDeletetionStyles = array ();
     /** @var pagebreak */
-    public $pagebreak = false;
+    protected $pagebreak = false;
+    /** @var headers */
+    protected $headers = array();
+    /** @var refIDCount */
+    protected $refIDCount = 0;
+    /** @var pageBookmark */
+    protected $pageBookmark = NULL;
+    /** @var array store the bookmarks */
+    protected $bookmarks = array();
 
     /**
      * Constructor:
@@ -229,6 +240,176 @@ class ODTDocument
     }
 
     /**
+     * Check if a pagebreak is pending
+     * 
+     * @return bool
+     */
+    function pagebreakIsPending() {
+        return $this->pagebreak;
+    }
+
+    /**
+     * Creates a linkid from a headline
+     *
+     * @param string $title The headline title
+     * @param boolean $create Create a new unique ID?
+     * @return string
+     *
+     * @author Andreas Gohr <andi@splitbrain.org>
+     */
+    function headerToLink($title,$create=false) {
+        // FIXME: not DokuWiki dependant function woud be nicer...
+        $title = str_replace(':','',cleanID($title));
+        $title = ltrim($title,'0123456789._-');
+        if(empty($title)) {
+            $title='section';
+        }
+
+        if($create){
+            // Make sure tiles are unique
+            $num = '';
+            while(in_array($title.$num,$this->headers)){
+                ($num) ? $num++ : $num = 1;
+            }
+            $title = $title.$num;
+            $this->headers[] = $title;
+        }
+
+        return $title;
+    }
+
+    /**
+     * Creates a reference ID for the TOC
+     *
+     * @param string $title The headline/item title
+     * @return string
+     *
+     * @author LarsDW223
+     */
+    protected function buildTOCReferenceID($title) {
+        // FIXME: not DokuWiki dependant function woud be nicer...
+        $title = str_replace(':','',cleanID($title));
+        $title = ltrim($title,'0123456789._-');
+        if(empty($title)) {
+            $title='NoTitle';
+        }
+
+        $this->refIDCount++;
+
+        // The reference ID needs to start with '__RefHeading___'.
+        // Otherwise LibreOffice will display $ref instead of the heading
+        // name when moving the mouse over the link in the TOC.
+        $ref = '__RefHeading___'.$title.'_'.$this->refIDCount;
+        return $ref;
+    }
+
+    /**
+     * Add an item to the TOC
+     *
+     * @param string $refID    the reference ID
+     * @param string $hid      the hash link
+     * @param string $text     the text to display
+     * @param int    $level    the nesting level
+     */
+    function tocAddItemInternal($refID, $hid, $text, $level) {
+        $item = $refID.','.$hid.','.$text.','. $level;
+        $this->toc[] = $item;
+    }
+
+    /**
+     * Set bookmark for the start of the page. This just saves the title temporarily.
+     * It is then to be inserted in the first header or paragraph.
+     *
+     * @param string $id    ID of the bookmark
+     */
+    function setPageBookmark($id, $content){
+        $inParagraph = $this->state->getInParagraph();
+        if ($inParagraph) {
+            $this->insertBookmarkInternal($id, true, $content);
+        } else {
+            $this->pageBookmark = $id;
+        }
+    }
+
+    /**
+     * Insert a bookmark.
+     *
+     * @param string $id    ID of the bookmark
+     */
+    protected function insertBookmarkInternal($id, $openParagraph=true, &$content){
+        if ($openParagraph) {
+            $this->paragraphOpen(NULL, $content);
+        }
+        $content .= '<text:bookmark text:name="'.$id.'"/>';
+        $this->bookmarks [] = $id;
+    }
+
+    /**
+     * Insert a pending page bookmark
+     *
+     * @param string $text  the text to display
+     * @param int    $level header level
+     * @param int    $pos   byte position in the original source
+     */
+    function insertPendingPageBookmark(&$content){
+        // Insert page bookmark if requested and not done yet.
+        if ( !empty($this->pageBookmark) ) {
+            $this->insertBookmarkInternal($this->pageBookmark, false, $content);
+            $this->pageBookmark = NULL;
+        }
+    }
+
+    /**
+     * Render a heading
+     *
+     * @param string $text  the text to display
+     * @param int    $level header level
+     * @param int    $pos   byte position in the original source
+     */
+    function heading($text, $level, &$content){
+        // Close any open paragraph first
+        $this->paragraphClose($content);
+
+        $hid = $this->headerToLink($text,true);
+        $TOCRef = $this->buildTOCReferenceID($text);
+        $style = $this->getStyleName('heading'.$level);
+
+        // Change page format if pending
+        if ( $this->changePageFormat != NULL ) {
+            $pageStyle = $this->doPageFormatChange($style);
+            if ( $pageStyle != NULL ) {
+                $style = $pageStyle;
+
+                // Delete pagebreak, the format change will also introduce a pagebreak.
+                $this->pagebreak = false;
+            }
+        }
+
+        // Insert pagebreak if pending
+        if ( $this->pagebreak ) {
+            $style = $this->createPagebreakStyle ($style);
+            $this->pagebreak = false;
+        }
+        $content .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
+
+        // Insert page bookmark if requested and not done yet.
+        $this->insertPendingPageBookmark($content);
+
+        $content .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
+        $content .= '<text:bookmark-start text:name="'.$hid.'"/>';
+        $content .= $this->replaceXMLEntities($text);
+        $content .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
+        $content .= '<text:bookmark-end text:name="'.$hid.'"/>';
+        $content .= '</text:h>';
+
+        // Do not add headings in frames
+        $frame = $this->state->getCurrentFrame();
+        if ($frame == NULL) {
+            $this->tocAddItemInternal($TOCRef, $hid, $text, $level);
+        }
+    }
+
+    /**
      * Get the style name for a style alias.
      *
      * @param string $alias The alias for the style.
@@ -327,10 +508,12 @@ class ODTDocument
      * @param string $content The content
      * @param string $metaContent The content of the meta file
      * @param string $userFieldDecls The user field declarations
-     * @param array $pageStyles Array of all page styles
      * @return string String containing ODT ZIP stream
      */
-    public function getODTFileAsString(&$content, $metaContent, $userFieldDecls, array $pageStyles) {
+    public function getODTFileAsString(&$content, $metaContent, $userFieldDecls) {
+        // Replace local link placeholders with links to headings or bookmarks
+        $this->replaceLocalLinkPlaceholders($content);
+
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
         $this->deleteUselessElements($content);
 
@@ -338,7 +521,7 @@ class ODTDocument
         $this->docHandler->build($content,
                                  $metaContent,
                                  $userFieldDecls,
-                                 $pageStyles);
+                                 $this->pageStyles);
 
         // Return document
         return $this->docHandler->get();
@@ -405,7 +588,7 @@ class ODTDocument
 
         // Save style data in page style array, in common styles and set current page format
         $master_page_style_name = $format_string;
-        $this->page_styles [$master_page_style_name] = $style_name;
+        $this->pageStyles [$master_page_style_name] = $style_name;
         $this->addAutomaticStyle($style_obj);
         $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
 
@@ -505,5 +688,105 @@ class ODTDocument
         }
         
         return $style_name;
+    }
+
+    /**
+     * Replace local links with bookmark references or text
+     */
+    //protected function insert_locallinks() {
+    protected function replaceLocalLinkPlaceholders(&$content) {
+        $matches = array();
+        $position = 0;
+        $max = strlen ($content);
+        $length = strlen ('<locallink>');
+        $lengthWithName = strlen ('<locallink name=');
+        while ( $position < $max ) {
+            $first = strpos ($content, '<locallink', $position);
+            if ( $first === false ) {
+                break;
+            }
+            $endFirst = strpos ($content, '>', $first);
+            if ( $endFirst === false ) {
+                break;
+            }
+            $second = strpos ($content, '</locallink>', $endFirst);
+            if ( $second === false ) {
+                break;
+            }
+
+            // $match includes the whole tag '<locallink name="...">text</locallink>'
+            // The attribute 'name' is optional!
+            $match = substr ($content, $first, $second - $first + $length + 1);
+            $text = substr ($match, $endFirst-$first+1, -($length + 1));
+            $text = trim ($text, ' ');
+            $text = strtolower ($text);
+            $page = str_replace (' ', '_', $text);
+            $opentag = substr ($match, 0, $endFirst-$first);
+            $name = substr ($opentag, $lengthWithName);
+            $name = trim ($name, '">');
+
+            $linkStyle  = 'text:style-name="'.$this->getStyleName('local link').'"';
+            $linkStyle .= ' text:visited-style-name="'.$this->getStyleName('visited local link').'"';
+
+            $found = false;
+            foreach ($this->toc as $item) {
+                $params = explode (',', $item);
+
+                if ( $page == $params [1] ) {
+                    $found = true;
+                    $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" '.$linkStyle.'>';
+                    if ( !empty($name) ) {
+                        $link .= $name;
+                    } else {
+                        $link .= $text;
+                    }
+                    $link .= '</text:a>';
+
+                    $content = str_replace ($match, $link, $content);
+                    $position = $first + strlen ($link);
+                }
+            }
+
+            if ( $found == false ) {
+                // Nothing found yet, check the bookmarks too.
+                foreach ($this->bookmarks as $item) {
+                    if ( $page == $item ) {
+                        $found = true;
+                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$item.'" '.$linkStyle.'>';
+                        if ( !empty($name) ) {
+                            $link .= $name;
+                        } else {
+                            $link .= $text;
+                        }
+                        $link .= '</text:a>';
+
+                        $content = str_replace ($match, $link, $content);
+                        $position = $first + strlen ($link);
+                    }
+                }
+            }
+
+            if ( $found == false ) {
+                // If we get here, then the referenced target was not found.
+                // There must be a bug manging the bookmarks or links!
+                // At least remove the locallink element and insert text.
+                if ( !empty($name) ) {
+                    $content = str_replace ($match, $name, $content);
+                } else {
+                    $content = str_replace ($match, $text, $content);
+                }
+                $position = $first + strlen ($text);
+            }
+        }
+    }
+
+    /**
+     * Replace XML entities
+     * 
+     * @param string $value
+     * @return string
+     */
+    function replaceXMLEntities($value) {
+        return str_replace( array('&','"',"'",'<','>'), array('&#38;','&#34;','&#39;','&#60;','&#62;'), $value);
     }
 }

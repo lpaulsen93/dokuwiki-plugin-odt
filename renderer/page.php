@@ -21,10 +21,6 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
  * The Renderer
  */
 class renderer_plugin_odt_page extends Doku_Renderer {
-    /** @var array store the table of contents */
-    protected $toc = array();
-    /** @var array store the bookmarks */
-    protected $bookmarks = array();
     /** @var array store the index info e.g. for table of contents */
     protected $all_index_settings = array();
     protected $all_index_types = array();
@@ -46,7 +42,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $store = '';
     /** @var array */
     protected $footnotes = array();
-    protected $headers = array();
     /** @var helper_plugin_odt_config */
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
@@ -55,11 +50,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $div_z_index = 0;
-    /** @var refIDCount */
-    protected $refIDCount = 0;
     protected $refUserIndexIDCount = 0;
-    /** @var pageBookmark */
-    protected $pageBookmark = NULL;
     /** @var string */
     protected $css;
     /** @var  int counter for styles */
@@ -191,7 +182,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         global $ID;
 
         // Reset TOC.
-        $this->toc = array();
+        $this->document->toc = array();
 
         // First, get export mode.
         $warning = '';
@@ -295,9 +286,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         
         // Insert Indexes (if required), e.g. Table of Contents
         $this->insert_indexes();
-
-        // Replace local link placeholders
-        $this->insert_locallinks();
 
         // DEBUG: The following puts out the loaded raw CSS code
         //$this->p_open();
@@ -446,7 +434,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function finalize_ODTfile() {
         // Build/assign the document
         $this->doc = $this->document->getODTFileAsString
-            ($this->doc, $this->meta->getContent(), $this->_odtUserFields(), $this->document->page_styles);
+            ($this->doc, $this->meta->getContent(), $this->_odtUserFields());
 
         $this->convert();
     }
@@ -507,7 +495,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected function get_toc_body($p_styles, $stylesLNames, $max_outline_level, $links) {
         $page = 0;
         $content = '';
-        foreach ($this->toc as $item) {
+        foreach ($this->document->toc as $item) {
             $params = explode (',', $item);
 
             // Only add the heading to the TOC if its <= $max_outline_level
@@ -546,7 +534,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $in_chapter = false;
         $first = true;
         $content = '';
-        foreach ($this->toc as $item) {
+        foreach ($this->document->toc as $item) {
             $params = explode (',', $item);
 
             if ($in_chapter == true || $params [0] == $startRef ) {
@@ -819,7 +807,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Only for debugging
-        //foreach ($this->toc as $item) {
+        //foreach ($this->document->toc as $item) {
         //    $params = explode (',', $item);
         //    $content .= '<text:p>'.$params [0].'€'.$params [1].'€'.$params [2].'€'.$params [3].'</text:p>';
         //}
@@ -866,29 +854,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Creates a reference ID for the TOC
-     *
-     * @param string $title The headline/item title
-     * @return string
-     *
-     * @author LarsDW223
-     */
-    protected function _buildTOCReferenceID($title) {
-        $title = str_replace(':','',cleanID($title));
-        $title = ltrim($title,'0123456789._-');
-        if(empty($title)) {
-            $title='NoTitle';
-        }
-
-        $this->refIDCount++;
-        // The reference ID needs to start with '__RefHeading___'.
-        // Otherwise LibreOffice will display $ref instead of the heading
-        // name when moving the mouse over the link in the TOC.
-        $ref = '__RefHeading___'.$title.'_'.$this->refIDCount;
-        return $ref;
-    }
-
-    /**
      * Add an item to the TOC
      * (Dummy function required by the Doku_Renderer class)
      *
@@ -899,19 +864,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function toc_additem($id, $text, $level) {}
 
     /**
-     * Add an item to the TOC
-     *
-     * @param string $refID    the reference ID
-     * @param string $hid      the hash link
-     * @param string $text     the text to display
-     * @param int    $level    the nesting level
-     */
-    function toc_additem_internal($refID, $hid, $text, $level) {
-        $item = $refID.','.$hid.','.$text.','. $level;
-        $this->toc[] = $item;
-    }
-
-    /**
      * Get closest previous TOC entry with $level.
      * The function search backwards (previous) in the TOC entries
      * for the next entry with level $level and retunrs it reference ID.
@@ -920,9 +872,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return string The reference ID or NULL
      */
     function toc_getPreviousItem($level) {
-        $index = count($this->toc);
+        $index = count($this->document->toc);
         for (; $index >= 0 ; $index--) {
-            $item = $this->toc[$index];
+            $item = $this->document->toc[$index];
             $params = explode (',', $item);
             if ($params [3] == $level) {
                 return $params [0];
@@ -1067,16 +1019,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Otherwise a empty paragraph/line would be created!
         if ( !empty($text) && !ctype_space($text) ) {
             // Insert page bookmark if requested and not done yet.
-            if ( !empty($this->pageBookmark) ) {
-                $this->insert_bookmark($this->pageBookmark, false);
-                $this->pageBookmark = NULL;
-            }
+            $this->document->insertPendingPageBookmark($this->doc);
 
             // Insert pagebreak or page format change if still pending.
             // Attention: NOT if $text is empty. This would lead to empty lines before headings
             //            right after a pagebreak!
             $in_paragraph = $this->document->state->getInParagraph();
-            if ( ($this->document->pagebreak || $this->document->changePageFormat != NULL) || !$in_paragraph ) {
+            if ( ($this->document->pagebreakIsPending() || $this->document->changePageFormat != NULL) ||
+                  !$in_paragraph ) {
                 $this->p_open();
             }
         }
@@ -1156,31 +1106,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Insert a bookmark.
-     *
-     * @param string $id    ID of the bookmark
-     */
-    function insert_bookmark($id,$open_paragraph=true){
-        if ($open_paragraph) {
-            $this->p_open();
-        }
-        $this->doc .= '<text:bookmark text:name="'.$id.'"/>';
-        $this->bookmarks [] = $id;
-    }
-
-    /**
      * Set bookmark for the start of the page. This just saves the title temporarily.
      * It is then to be inserted in the first header or paragraph.
      *
      * @param string $id    ID of the bookmark
      */
     function set_page_bookmark($id){
-        $in_paragraph = $this->document->state->getInParagraph();
-        if ( $in_paragraph ) {
-            $this->insert_bookmark($id);
-        } else {
-            $this->pageBookmark = $id;
-        }
+        $this->document->setPageBookmark($id, $this->doc);
     }
 
     /**
@@ -1191,42 +1123,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $pos   byte position in the original source
      */
     function header($text, $level, $pos){
-        $this->p_close();
-        $hid = $this->_headerToLink($text,true);
-        $TOCRef = $this->_buildTOCReferenceID($text);
-        $style = $this->document->getStyleName('heading'.$level);
-        if ( $this->changePageFormat != NULL ) {
-            $page_style = $this->document->doPageFormatChange($style);
-            if ( $page_style != NULL ) {
-                $style = $page_style;
-                // Delete pagebreak, the format change will also introduce a pagebreak.
-                $this->document->pagebreak = false;
-            }
-        }
-        if ( $this->document->pagebreak ) {
-            $style = $this->document->createPagebreakStyle ($style);
-            $this->document->pagebreak = false;
-        }
-        $this->doc .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
-
-        // Insert page bookmark if requested and not done yet.
-        if ( !empty($this->pageBookmark) ) {
-            $this->insert_bookmark($this->pageBookmark, false);
-            $this->pageBookmark = NULL;
-        }
-
-        $this->doc .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
-        $this->doc .= '<text:bookmark-start text:name="'.$hid.'"/>';
-        $this->doc .= $this->_xmlEntities($text);
-        $this->doc .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
-        $this->doc .= '<text:bookmark-end text:name="'.$hid.'"/>';
-        $this->doc .= '</text:h>';
-
-        // Do not add headings in frames
-        $frame = $this->document->state->getCurrentFrame();
-        if ($frame == NULL) {
-            $this->toc_additem_internal($TOCRef, $hid, $text, $level);
-        }
+        $this->document->heading($text, $level, $this->doc);
     }
 
     function hr() {
@@ -2162,97 +2059,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Replace local links with bookmark references or text
-     */
-    protected function insert_locallinks() {
-        $matches = array();
-        $position = 0;
-        $max = strlen ($this->doc);
-        $length = strlen ('<locallink>');
-        $length_with_name = strlen ('<locallink name=');
-        while ( $position < $max ) {
-            $first = strpos ($this->doc, '<locallink', $position);
-            if ( $first === false ) {
-                break;
-            }
-            $end_first = strpos ($this->doc, '>', $first);
-            if ( $end_first === false ) {
-                break;
-            }
-            $second = strpos ($this->doc, '</locallink>', $end_first);
-            if ( $second === false ) {
-                break;
-            }
-
-            // $match includes the whole tag '<locallink name="...">text</locallink>'
-            // The attribute 'name' is optional!
-            $match = substr ($this->doc, $first, $second - $first + $length + 1);
-            $text = substr ($match, $end_first-$first+1, -($length + 1));
-            $text = trim ($text, ' ');
-            $text = strtolower ($text);
-            $page = str_replace (' ', '_', $text);
-            $opentag = substr ($match, 0, $end_first-$first);
-            $name = substr ($opentag, $length_with_name);
-            $name = trim ($name, '">');
-
-            $link_style  = 'text:style-name="'.$this->document->getStyleName('local link').'"';
-            $link_style .= ' text:visited-style-name="'.$this->document->getStyleName('visited local link').'"';
-
-            $found = false;
-            foreach ($this->toc as $item) {
-                $params = explode (',', $item);
-
-                if ( $page == $params [1] ) {
-                    $found = true;
-                    $link  = '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" '.$link_style.'>';
-                    if ( !empty($name) ) {
-                        $link .= $name;
-                    } else {
-                        $link .= $text;
-                    }
-                    $link .= '</text:a>';
-
-                    $this->doc = str_replace ($match, $link, $this->doc);
-                    $position = $first + strlen ($link);
-                }
-            }
-
-            if ( $found == false ) {
-                // Nothing found yet, check the bookmarks too.
-                foreach ($this->bookmarks as $item) {
-                    if ( $page == $item ) {
-                        $found = true;
-                        $link  = '<text:a xlink:type="simple" xlink:href="#'.$item.'" '.$link_style.'>';
-                        if ( !empty($name) ) {
-                            $link .= $name;
-                        } else {
-                            $link .= $text;
-                        }
-                        $link .= '</text:a>';
-
-                        $this->doc = str_replace ($match, $link, $this->doc);
-                        $position = $first + strlen ($link);
-                    }
-                }
-            }
-
-            if ( $found == false ) {
-                // If we get here, then the referenced target was not found.
-                // There must be a bug manging the bookmarks or links!
-                // At least remove the locallink element and insert text.
-                if ( !empty($name) ) {
-                    $this->doc = str_replace ($match, $name, $this->doc);
-                } else {
-                    $this->doc = str_replace ($match, $text, $this->doc);
-                }
-                $position = $first + strlen ($text);
-            }
-        }
-    }
-
-    /**
      * Insert local link placeholder with name.
-     * The reference will be resolved on calling insert_locallinks();
+     * The reference will be resolved on calling replaceLocalLinkPlaceholders();
      *
      * @fixme add image handling
      *
@@ -2267,7 +2075,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     /**
      * Insert local link placeholder.
-     * The reference will be resolved on calling insert_locallinks();
+     * The reference will be resolved on calling replaceLocalLinkPlaceholders();
      *
      * @fixme add image handling
      *
@@ -2404,35 +2212,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         } else {
             return $this->_xmlEntities($title);
         }
-    }
-
-    /**
-     * Creates a linkid from a headline
-     *
-     * @param string $title The headline title
-     * @param boolean $create Create a new unique ID?
-     * @return string
-     *
-     * @author Andreas Gohr <andi@splitbrain.org>
-     */
-    function _headerToLink($title,$create=false) {
-        $title = str_replace(':','',cleanID($title));
-        $title = ltrim($title,'0123456789._-');
-        if(empty($title)) {
-            $title='section';
-        }
-
-        if($create){
-            // make sure tiles are unique
-            $num = '';
-            while(in_array($title.$num,$this->headers)){
-                ($num) ? $num++ : $num = 1;
-            }
-            $title = $title.$num;
-            $this->headers[] = $title;
-        }
-
-        return $title;
     }
 
     /**

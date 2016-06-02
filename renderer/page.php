@@ -1244,12 +1244,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function pagebreak() {
-        // Only set marker to insert a pagebreak on "next occasion".
-        // The pagebreak will then be inserted in the next call to p_open() or header().
-        // The style will be a "pagebreak" style with the paragraph or header style as the parent.
-        // This prevents extra empty lines after the pagebreak.
-        $this->p_close();
-        $this->document->pagebreak = true;
+        $this->document->pagebreak($this->doc);
     }
 
     function strong_open() {

@@ -204,6 +204,18 @@ class ODTDocument
     }
 
     /**
+     * Add a pagebreak
+     */
+    function pagebreak(&$content) {
+        // Only set marker to insert a pagebreak on "next occasion".
+        // The pagebreak will then be inserted in the next call to p_open() or header().
+        // The style will be a "pagebreak" style with the paragraph or header style as the parent.
+        // This prevents extra empty lines after the pagebreak.
+        $this->paragraphClose($content);
+        $this->pagebreak = true;
+    }
+
+    /**
      * Get the style name for a style alias.
      *
      * @param string $alias The alias for the style.

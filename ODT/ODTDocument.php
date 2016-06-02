@@ -197,6 +197,19 @@ class ODTDocument
     }
 
     /**
+     * Insert a horizontal rule
+     */
+    function horizontalRule(&$content) {
+        $this->paragraphClose($content);
+        $styleName = $this->getStyleName('horizontal line');
+        $this->paragraphOpen($styleName, $content);
+        $this->paragraphClose($content);
+
+        // Save paragraph style name in 'Do not delete array'!
+        $this->preventDeletetionStyles [] = $styleName;
+    }
+
+    /**
      * Add a linebreak
      */
     function linebreak(&$content) {

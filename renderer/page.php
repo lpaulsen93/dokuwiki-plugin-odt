@@ -1230,13 +1230,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function hr() {
-        $this->p_close();
-        $style_name = $this->document->getStyleName('horizontal line');
-        $this->p_open($style_name);
-        $this->p_close();
-
-        // Save paragraph style name in 'Do not delete array'!
-        $this->document->preventDeletetionStyles [] = $style_name;
+        $this->document->horizontalRule($this->doc);
     }
 
     function linebreak() {

@@ -1037,62 +1037,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * The function replaces the last paragraph of a list
-     * with a style having the properties of 'List_Last_Paragraph'.
-     *
-     * The function does NOT change the last paragraph of nested lists.
-     */
-    protected function replaceLastListParagraph() {
-        $list = $this->document->state->getCurrentList();
-        if ($list != NULL) {
-            // We are in a list.
-            $list_count = $this->document->state->countClass('list');
-            $position = $list->getListLastParagraphPosition();
-
-            if ($list_count != 1 || $position == -1) {
-                // Do nothing if this is a nested list or the position was not saved
-                return;
-            }
-
-            $last_p_style = NULL;
-            if (preg_match('/<text:p text:style-name="[^"]*">/', $this->doc, $matches, 0, $position) === 1) {
-                $last_p_style = substr($matches [0], strlen('<text:p text:style-name='));
-                $last_p_style = trim($last_p_style, '">');
-            } else {
-                // Nothing found???
-                return;
-            }
-
-            // Create a style for putting a bottom margin for this last paragraph of the list
-            // (if not done yet, the name must be unique!)
-            $style_name = 'LastListParagraph_'.$last_p_style;
-            $style_last = $this->document->getStyleByAlias('list last paragraph');
-            if (!$this->document->styleExists($style_name)) {
-                if ($style_last != NULL) {
-                    $style_body = $this->document->getStyle($last_p_style);
-                    $style_display_name = 'Last '.$style_body->getProperty('style-display-name');
-                    $style_obj = clone $style_last;
-                    if ($style_obj != NULL) {
-                        $style_obj->setProperty('style-name', $style_name);
-                        $style_obj->setProperty('style-parent', $last_p_style);
-                        $style_obj->setProperty('style-display-name', $style_display_name);
-                        $top = $style_last->getProperty('margin-top');
-                        if ($top === NULL) {
-                            $style_obj->setProperty('margin-top', $style_body->getProperty('margin-top'));
-                        }
-                        $this->document->addStyle($style_obj);
-                    }
-                }
-            }
-            
-            // Finally replace style name of last paragraph.
-            $this->doc = substr_replace ($this->doc, 
-                '<text:p text:style-name="'.$style_name.'">',
-                $position, strlen($matches[0]));
-        }
-    }
-
-    /**
      * Open a paragraph
      *
      * @param string $style
@@ -1472,7 +1416,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Eventually modify last list paragraph first
-        $this->replaceLastListParagraph();
+        $this->document->replaceLastListParagraph();
 
         $list = $this->document->state->getCurrent();
         $this->doc .= $list->getClosingTag();

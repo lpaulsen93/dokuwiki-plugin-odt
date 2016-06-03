@@ -1421,36 +1421,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $level the nesting level
      */
     function listitem_open($level, $node = false) {
-        if ($this->document->state == NULL ) {
-            // ??? Can't be...
-            return;
-        }
-
-        // Set marker that list interruption has stopped!!!
-        $table = $this->document->state->getCurrentTable();
-        if ($table != NULL) {
-            $table->setListInterrupted(false);
-        }
-
-        // Attention:
-        // we save the list level here but it might be wrong.
-        // Someone can start a list with level 2 without having created
-        // a list with level 1 before.
-        // When the correct list level is needed better use
-        // $this->document->state->countClass('list'), see table_open().
-        $list_item = new ODTElementListItem($level);
-        $this->document->state->enter($list_item);
-
-        $this->doc .= $list_item->getOpeningTag();
+        $this->document->listItemOpen($level, $this->doc);
     }
 
     function listitem_close() {
-        $table = $this->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
-            // Do not do anything as long as list is interrupted
-            return;
-        }
-        $this->closeCurrentElement();
+        $this->document->listItemClose($this->doc);
+
     }
 
     function listcontent_open() {

@@ -684,6 +684,47 @@ class ODTDocument
     }
 
     /**
+     * Open a list item
+     *
+     * @param int $level The nesting level
+     */
+    function listItemOpen($level, &$content) {
+        if ($this->state == NULL ) {
+            // ??? Can't be...
+            return;
+        }
+
+        // Set marker that list interruption has stopped!!!
+        $table = $this->state->getCurrentTable();
+        if ($table != NULL) {
+            $table->setListInterrupted(false);
+        }
+
+        // Attention:
+        // we save the list level here but it might be wrong.
+        // Someone can start a list with level 2 without having created
+        // a list with level 1 before.
+        // When the correct list level is needed better use
+        // $this->document->state->countClass('list'), see table_open().
+        $list_item = new ODTElementListItem($level);
+        $this->state->enter($list_item);
+
+        $content .= $list_item->getOpeningTag();
+    }
+
+    /**
+     * Close a list item
+     */
+    function listItemClose(&$content) {
+        $table = $this->state->getCurrentTable();
+        if ($table != NULL && $table->getListInterrupted()) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
+        $this->closeCurrentElement($content);
+    }
+
+    /**
      * The function replaces the last paragraph of a list
      * with a style having the properties of 'List_Last_Paragraph'.
      *

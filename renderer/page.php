@@ -1201,9 +1201,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 // Close list items
                 if ($first == true) {
                     $first = false;
-                    $this->listcontent_close();
+                    $this->document->listContentClose($this->doc);
                 }
-                $this->listitem_close();
+                $this->document->listItemClose($this->doc);
                 
                 // Now we are in the list state!
                 // Get the lists style name before closing it.
@@ -1274,7 +1274,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 // If this is not the most inner list then we need to open
                 // a list item too!
                 if ($index > 0) {
-                    $this->listitem_open($max-$index);
+                    $this->document->listItemOpen($max-$index, $this->doc);
                 }
             }
 
@@ -1426,35 +1426,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function listitem_close() {
         $this->document->listItemClose($this->doc);
-
     }
 
     function listcontent_open() {
-        // The default style for list content is body but it should always be
-        // overwritten. It's just assigned here to guarantee some style name is
-        // always set in case of an error also.
-        $style_name = $this->document->getStyleName('body');
-        $list = $this->document->state->getCurrentList();
-        if ($list != NULL) {
-            $list_style_name = $list->getStyleName();
-            if ($list_style_name == $this->document->getStyleName('list')) {
-                $style_name = $this->document->getStyleName('list content');
-            }
-            if ($list_style_name == $this->document->getStyleName('numbering')) {
-                $style_name = $this->document->getStyleName('numbering content');
-            }
-        }
-
-        $this->p_open($style_name);
+        $this->document->listContentOpen($this->doc);
     }
 
     function listcontent_close() {
-        $table = $this->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
-            // Do not do anything as long as list is interrupted
-            return;
-        }
-        $this->p_close();
+        $this->document->listContentClose($this->doc);
     }
 
     /**
@@ -2145,8 +2124,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if($rc){
             for ($x = $start; $x != $end; $x += $mod) {
                 $item = $feed->get_item($x);
-                $this->listitem_open(0);
-                $this->listcontent_open();
+                $this->document->listItemOpen(0, $this->doc);
+                $this->document->listContentOpen($this->doc);
+
                 $this->externallink($item->get_permalink(),
                                     $item->get_title());
                 if($params['author']){
@@ -2163,18 +2143,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 if($params['details']){
                     $this->cdata(strip_tags($item->get_description()));
                 }
-                $this->listcontent_close();
-                $this->listitem_close();
+                $this->document->listContentClose($this->doc);
+                $this->document->listItemClose($this->doc);
             }
         }else{
-            $this->listitem_open(0);
-            $this->listcontent_open();
+            $this->document->listItemOpen(0, $this->doc);
+            $this->document->listContentOpen($this->doc);
             $this->emphasis_open();
             $this->cdata($lang['rssfailed']);
             $this->emphasis_close();
             $this->externallink($url);
-            $this->listcontent_close();
-            $this->listitem_close();
+            $this->document->listContentClose($this->doc);
+            $this->document->listItemClose($this->doc);
         }
         $this->listu_close();
     }

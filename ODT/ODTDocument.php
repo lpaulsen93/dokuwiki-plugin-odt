@@ -725,6 +725,40 @@ class ODTDocument
     }
 
     /**
+     * Open list content/a paragraph in a list item
+     */
+    function listContentOpen(&$content) {
+        // The default style for list content is body but it should always be
+        // overwritten. It's just assigned here to guarantee some style name is
+        // always set in case of an error also.
+        $styleName = $this->getStyleName('body');
+        $list = $this->state->getCurrentList();
+        if ($list != NULL) {
+            $listStyleName = $list->getStyleName();
+            if ($listStyleName == $this->getStyleName('list')) {
+                $styleName = $this->getStyleName('list content');
+            }
+            if ($listStyleName == $this->getStyleName('numbering')) {
+                $styleName = $this->getStyleName('numbering content');
+            }
+        }
+
+        $this->paragraphOpen($styleName, $content);
+    }
+
+    /**
+     * Close list content/a paragraph in a list item
+     */
+    function listContentClose(&$content) {
+        $table = $this->state->getCurrentTable();
+        if ($table != NULL && $table->getListInterrupted()) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
+        $this->paragraphClose($content);
+    }
+
+    /**
      * The function replaces the last paragraph of a list
      * with a style having the properties of 'List_Last_Paragraph'.
      *

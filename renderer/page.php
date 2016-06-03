@@ -1208,7 +1208,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 // Now we are in the list state!
                 // Get the lists style name before closing it.
                 $lists [] = $this->document->state->getStyleName();
-                $this->list_close();
+                $this->document->listClose($this->doc);
                 
                 if ($this->document->state == NULL || $this->document->state->getElement() == 'root') {
                     break;
@@ -1269,7 +1269,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // (in revers order of lists array)
             $max = count($lists);
             for ($index = $max ; $index > 0 ; $index--) {
-                $this->list_open(true, $lists [$index-1]);
+                $this->document->listOpen(true, $lists [$index-1], $this->doc);
                 
                 // If this is not the most inner list then we need to open
                 // a list item too!
@@ -1399,53 +1399,20 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
-    function list_open($continue=false, $style) {
-        $this->p_close();
-
-        $list = new ODTElementList($style, $continue);
-        $this->document->state->enter($list);
-
-        $this->doc .= $list->getOpeningTag();
-    }
-
-    function list_close() {
-        $table = $this->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
-            // Do not do anything as long as list is interrupted
-            return;
-        }
-
-        // Eventually modify last list paragraph first
-        $this->document->replaceLastListParagraph($this->doc);
-
-        $list = $this->document->state->getCurrent();
-        $this->doc .= $list->getClosingTag();
-
-        $position = $list->getListLastParagraphPosition();
-        $this->document->state->leave();
-        
-        // If we are still in a list save the last paragraph position
-        // in the current list (needed for nested lists!).
-        $list = $this->document->state->getCurrentList();
-        if ($list != NULL) {
-            $list->setListLastParagraphPosition($position);
-        }
-    }
-
     function listu_open($continue=false) {
-        $this->list_open($continue, $this->document->getStyleName('list'));
+        $this->document->listOpen($continue, $this->document->getStyleName('list'), $this->doc);
     }
 
     function listu_close() {
-        $this->list_close();
+        $this->document->listClose($this->doc);
     }
 
     function listo_open($continue=false) {
-        $this->list_open($continue, $this->document->getStyleName('numbering'));
+        $this->document->listOpen($continue, $this->document->getStyleName('numbering'), $this->doc);
     }
 
     function listo_close() {
-        $this->list_close();
+        $this->document->listClose($this->doc);
     }
 
     /**

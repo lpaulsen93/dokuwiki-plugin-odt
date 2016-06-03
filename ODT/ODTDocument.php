@@ -641,12 +641,55 @@ class ODTDocument
     }
 
     /**
+     * Opens a list.
+     * The list style specifies if the list is an ordered or unordered list.
+     * 
+     * @param bool $continue Continue numbering?
+     * @param string $styleName Name of style to use for the list
+     */
+    function listOpen($continue=false, $styleName, &$content) {
+        $this->paragraphClose($content);
+
+        $list = new ODTElementList($styleName, $continue);
+        $this->state->enter($list);
+
+        $content .= $list->getOpeningTag();
+    }
+
+    /**
+     * Close a list
+     */
+    function listClose(&$content) {
+        $table = $this->state->getCurrentTable();
+        if ($table != NULL && $table->getListInterrupted()) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
+
+        // Eventually modify last list paragraph first
+        $this->replaceLastListParagraph($content);
+
+        $list = $this->state->getCurrent();
+        $content .= $list->getClosingTag();
+
+        $position = $list->getListLastParagraphPosition();
+        $this->state->leave();
+        
+        // If we are still in a list save the last paragraph position
+        // in the current list (needed for nested lists!).
+        $list = $this->state->getCurrentList();
+        if ($list != NULL) {
+            $list->setListLastParagraphPosition($position);
+        }
+    }
+
+    /**
      * The function replaces the last paragraph of a list
      * with a style having the properties of 'List_Last_Paragraph'.
      *
      * The function does NOT change the last paragraph of nested lists.
      */
-    public function replaceLastListParagraph(&$content) {
+    protected function replaceLastListParagraph(&$content) {
         $list = $this->state->getCurrentList();
         if ($list != NULL) {
             // We are in a list.

@@ -1416,7 +1416,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Eventually modify last list paragraph first
-        $this->document->replaceLastListParagraph();
+        $this->document->replaceLastListParagraph($this->doc);
 
         $list = $this->document->state->getCurrent();
         $this->doc .= $list->getClosingTag();

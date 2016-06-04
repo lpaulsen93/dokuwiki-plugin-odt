@@ -6,6 +6,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/CSSTemplateDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUtility.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTList.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -551,7 +552,7 @@ class ODTDocument
      * are required apart from generating the closing tag and
      * removing the element from the state stack.
      */
-    protected function closeCurrentElement(&$content) {
+    public function closeCurrentElement(&$content) {
         $current = $this->state->getCurrent();
         if ($current != NULL) {
             $content .= $current->getClosingTag($content);
@@ -703,39 +704,14 @@ class ODTDocument
      * @param string $styleName Name of style to use for the list
      */
     function listOpen($continue=false, $styleName, &$content) {
-        $this->paragraphClose($content);
-
-        $list = new ODTElementList($styleName, $continue);
-        $this->state->enter($list);
-
-        $content .= $list->getOpeningTag();
+        ODTList::listOpen($this, $continue, $styleName, $content);
     }
 
     /**
      * Close a list
      */
     function listClose(&$content) {
-        $table = $this->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
-            // Do not do anything as long as list is interrupted
-            return;
-        }
-
-        // Eventually modify last list paragraph first
-        $this->replaceLastListParagraph($content);
-
-        $list = $this->state->getCurrent();
-        $content .= $list->getClosingTag();
-
-        $position = $list->getListLastParagraphPosition();
-        $this->state->leave();
-        
-        // If we are still in a list save the last paragraph position
-        // in the current list (needed for nested lists!).
-        $list = $this->state->getCurrentList();
-        if ($list != NULL) {
-            $list->setListLastParagraphPosition($position);
-        }
+        ODTList::listClose($this, $content);
     }
 
     /**
@@ -744,128 +720,27 @@ class ODTDocument
      * @param int $level The nesting level
      */
     function listItemOpen($level, &$content) {
-        if ($this->state == NULL ) {
-            // ??? Can't be...
-            return;
-        }
-
-        // Set marker that list interruption has stopped!!!
-        $table = $this->state->getCurrentTable();
-        if ($table != NULL) {
-            $table->setListInterrupted(false);
-        }
-
-        // Attention:
-        // we save the list level here but it might be wrong.
-        // Someone can start a list with level 2 without having created
-        // a list with level 1 before.
-        // When the correct list level is needed better use
-        // $this->document->state->countClass('list'), see table_open().
-        $list_item = new ODTElementListItem($level);
-        $this->state->enter($list_item);
-
-        $content .= $list_item->getOpeningTag();
+        ODTList::listItemOpen($this, $level, $content);
     }
 
     /**
      * Close a list item
      */
     function listItemClose(&$content) {
-        $table = $this->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
-            // Do not do anything as long as list is interrupted
-            return;
-        }
-        $this->closeCurrentElement($content);
+        ODTList::listItemClose($this, $content);
     }
 
     /**
      * Open list content/a paragraph in a list item
      */
     function listContentOpen(&$content) {
-        // The default style for list content is body but it should always be
-        // overwritten. It's just assigned here to guarantee some style name is
-        // always set in case of an error also.
-        $styleName = $this->getStyleName('body');
-        $list = $this->state->getCurrentList();
-        if ($list != NULL) {
-            $listStyleName = $list->getStyleName();
-            if ($listStyleName == $this->getStyleName('list')) {
-                $styleName = $this->getStyleName('list content');
-            }
-            if ($listStyleName == $this->getStyleName('numbering')) {
-                $styleName = $this->getStyleName('numbering content');
-            }
-        }
-
-        $this->paragraphOpen($styleName, $content);
+        ODTList::listContentOpen($this, $content);
     }
 
     /**
      * Close list content/a paragraph in a list item
      */
     function listContentClose(&$content) {
-        $table = $this->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
-            // Do not do anything as long as list is interrupted
-            return;
-        }
-        $this->paragraphClose($content);
-    }
-
-    /**
-     * The function replaces the last paragraph of a list
-     * with a style having the properties of 'List_Last_Paragraph'.
-     *
-     * The function does NOT change the last paragraph of nested lists.
-     */
-    protected function replaceLastListParagraph(&$content) {
-        $list = $this->state->getCurrentList();
-        if ($list != NULL) {
-            // We are in a list.
-            $list_count = $this->state->countClass('list');
-            $position = $list->getListLastParagraphPosition();
-
-            if ($list_count != 1 || $position == -1) {
-                // Do nothing if this is a nested list or the position was not saved
-                return;
-            }
-
-            $last_p_style = NULL;
-            if (preg_match('/<text:p text:style-name="[^"]*">/', $content, $matches, 0, $position) === 1) {
-                $last_p_style = substr($matches [0], strlen('<text:p text:style-name='));
-                $last_p_style = trim($last_p_style, '">');
-            } else {
-                // Nothing found???
-                return;
-            }
-
-            // Create a style for putting a bottom margin for this last paragraph of the list
-            // (if not done yet, the name must be unique!)
-            $style_name = 'LastListParagraph_'.$last_p_style;
-            $style_last = $this->getStyleByAlias('list last paragraph');
-            if (!$this->styleExists($style_name)) {
-                if ($style_last != NULL) {
-                    $style_body = $this->getStyle($last_p_style);
-                    $style_display_name = 'Last '.$style_body->getProperty('style-display-name');
-                    $style_obj = clone $style_last;
-                    if ($style_obj != NULL) {
-                        $style_obj->setProperty('style-name', $style_name);
-                        $style_obj->setProperty('style-parent', $last_p_style);
-                        $style_obj->setProperty('style-display-name', $style_display_name);
-                        $top = $style_last->getProperty('margin-top');
-                        if ($top === NULL) {
-                            $style_obj->setProperty('margin-top', $style_body->getProperty('margin-top'));
-                        }
-                        $this->addStyle($style_obj);
-                    }
-                }
-            }
-            
-            // Finally replace style name of last paragraph.
-            $content = substr_replace ($content, 
-                '<text:p text:style-name="'.$style_name.'">',
-                $position, strlen($matches[0]));
-        }
+        ODTList::listContentClose($this, $content);
     }
 }

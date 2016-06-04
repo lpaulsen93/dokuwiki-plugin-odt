@@ -1145,150 +1145,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $numrows NOT IMPLEMENTED
      */
     function table_open($maxcols = NULL, $numrows = NULL, $pos = NULL){
-        // Close any open paragraph.
-        $this->p_close();
-        
-        // Do additional actions if the parent element is a list.
-        // In this case we need to finish the list and re-open it later
-        // after the table has been closed! --> tables may not be part of a list item in ODT!
-
-        $interrupted = false;
-        $table_style_name = $this->document->getStyleName('table');
-
-        $list_item = $this->document->state->getCurrentListItem();
-        if ($list_item != NULL) {
-            // We are in a list item. Query indentation settings.
-            $list = $list_item->getList();
-            if ($list != NULL) {
-                $list_style_name = $list->getStyleName();
-                $list_style = $this->document->getStyle($list_style_name);
-                if ($list_style != NULL) {
-                    // The list level stored in the list item/from the parser
-                    // might not be correct. Count 'list' states to get level.
-                    $level = $this->document->state->countClass('list');
-
-                    // Create a table style for indenting the table.
-                    // We try to achieve this by substracting the list indentation
-                    // from the width of the table and right align it!
-                    // (if not done yet, the name must be unique!)
-                    $style_name = 'Table_Indentation_Level'.$level;
-                    if (!$this->document->styleExists($style_name)) {
-                        $style_obj = clone $this->document->getStyle($table_style_name);
-                        $style_obj->setProperty('style-name', $style_name);
-                        if ($style_obj != NULL) {
-                            $max = $this->document->page->getAbsWidthMindMargins();
-                            $indent = 0 + $this->units->getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));
-                            $style_obj->setProperty('width', ($max-$indent).'cm');
-                            $style_obj->setProperty('align', 'right');
-                            $this->document->addAutomaticStyle($style_obj);
-                        }
-                    }
-                    $table_style_name = $style_name;
-                }
-            }
-
-            // Close all open lists and remember their style (may be nested!)
-            $lists = array();
-            $first = true;
-            $iterations = 0;
-            $list = $this->document->state->getCurrentList();
-            while ($list != NULL)
-            {
-                // Close list items
-                if ($first == true) {
-                    $first = false;
-                    $this->document->listContentClose($this->doc);
-                }
-                $this->document->listItemClose($this->doc);
-                
-                // Now we are in the list state!
-                // Get the lists style name before closing it.
-                $lists [] = $this->document->state->getStyleName();
-                $this->document->listClose($this->doc);
-                
-                if ($this->document->state == NULL || $this->document->state->getElement() == 'root') {
-                    break;
-                }
-
-                // List has been closed (and removed from stack). Get next.
-                $list = $this->document->state->getCurrentList();
-
-                // Just to prevent endless loops in case of an error!
-                $iterations++;
-                if ($iterations == 50) {
-                    $this->doc .= 'Error: ENDLESS LOOP!';
-                    break;
-                }
-            }
-
-            $interrupted = true;
-        }
-
-        $table = new ODTElementTable($table_style_name, $maxcols, $numrows);
-        $this->document->state->enter($table);
-        if ($interrupted == true) {
-            // Set marker that list has been interrupted
-            $table->setListInterrupted(true);
-
-            // Save the lists array as temporary data
-            // in THIS state because this is the state that we get back
-            // to in table_close!!!
-            // (we closed the ODT list, we can't access its state info anymore!
-            //  So we use the table state to save the style name!)
-            $table->setTemp($lists);
-        }
-        
-        $this->doc .= $table->getOpeningTag();
+        $this->document->tableOpen($maxcols, $numrows, $this->doc);
     }
 
     function table_close($pos = NULL){
-        $table = $this->document->state->getCurrentTable();
-        if ($table == NULL) {
-            // ??? Error. Not table found.
-            return;
-        }
-
-        $interrupted = $table->getListInterrupted();
-        $lists = NULL;
-        if ($interrupted) {
-            $lists = $table->getTemp();
-        }
-
-        // Close the table.
-        $this->doc .= $table->getClosingTag($this->doc);
-        $this->document->state->leave();
-
-        // Do additional actions required if we interrupted a list,
-        // see table_open()
-        if ($interrupted) {
-            // Re-open list(s) with original style!
-            // (in revers order of lists array)
-            $max = count($lists);
-            for ($index = $max ; $index > 0 ; $index--) {
-                $this->document->listOpen(true, $lists [$index-1], $this->doc);
-                
-                // If this is not the most inner list then we need to open
-                // a list item too!
-                if ($index > 0) {
-                    $this->document->listItemOpen($max-$index, $this->doc);
-                }
-            }
-
-            // DO NOT set marker that list is not interrupted anymore, yet!
-            // The renderer will still call listcontent_close and listitem_close!
-            // The marker will only be reset on the next call from the renderer to listitem_open!!!
-            //$table->setListInterrupted(false);
-        }
+        $this->document->tableClose($this->doc);
     }
 
     function tablerow_open(){
-        $row = new ODTElementTableRow();
-        $this->document->state->enter($row);
-        $this->doc .= $row->getOpeningTag();
+        $this->document->tableRowOpen($this->doc);
     }
 
     function tablerow_close(){
-        $this->closeCurrentElement();
+        $this->document->tableRowClose($this->doc);
     }
 
     /**
@@ -1299,23 +1168,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $rowspan
      */
     function tableheader_open($colspan = 1, $align = "left", $rowspan = 1){
-        // ODT has no element for the table header.
-        // We mark the state with a differnt class to be able
-        // to differ between a normal cell and a header cell.
-        $header_cell = new ODTElementTableHeaderCell
-            ($this->document->getStyleName('table header'), $colspan, $rowspan);
-        $this->document->state->enter($header_cell);
-
-        // Encode table (header) cell.
-        $this->doc .= $header_cell->getOpeningTag();
-
-        // Open new paragraph with table heading style.
-        $this->p_open($this->document->getStyleName('table heading'));
+        $this->document->tableHeaderOpen($colspan, $rowspan, $align, $this->doc);
     }
 
     function tableheader_close(){
-        $this->p_close();
-        $this->closeCurrentElement();
+        $this->document->tableHeaderClose($this->doc);
     }
 
     /**
@@ -1326,22 +1183,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $rowspan
      */
     function tablecell_open($colspan = 1, $align = "left", $rowspan = 1){
-        $cell = new ODTElementTableCell
-            ($this->document->getStyleName('table cell'), $colspan, $rowspan);
-        $this->document->state->enter($cell);
-
-        // Encode table cell.
-        $this->doc .= $cell->getOpeningTag();
-
-        // Open paragraph with required alignment.
-        if (!$align) $align = "left";
-        $style = $this->document->getStyleName('tablealign '.$align);
-        $this->p_open($style);
+        $this->document->tableCellOpen($colspan, $rowspan, $align, $this->doc);
     }
 
     function tablecell_close(){
-        $this->p_close();
-        $this->closeCurrentElement();
+        $this->document->tableCellClose($this->doc);
     }
 
     /**

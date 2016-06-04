@@ -10,6 +10,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTList.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTFootnote.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTHeading.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTParagraph.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTTable.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -593,5 +594,67 @@ class ODTDocument
      */
     function listContentClose(&$content) {
         ODTList::listContentClose($this, $content);
+    }
+
+    /**
+     * Open/start a table
+     *
+     * @param int $maxcols maximum number of columns
+     * @param int $numrows NOT IMPLEMENTED
+     */
+    function tableOpen($maxcols = NULL, $numrows = NULL, &$content){
+        ODTTable::tableOpen($this, $maxcols, $numrows, $content);
+    }
+
+    /**
+     * Close/finish a table
+     *
+     * @param int $maxcols maximum number of columns
+     * @param int $numrows NOT IMPLEMENTED
+     */
+    function tableClose(&$content){
+        ODTTable::tableClose($this, $content);
+    }
+
+    /**
+     * Open a table row
+     */
+    function tableRowOpen(&$content){
+        ODTTable::tableRowOpen($this, $content);
+    }
+
+    /**
+     * Close a table row
+     */
+    function tableRowClose(&$content){
+        ODTTable::tableRowClose($this, $content);
+    }
+
+    /**
+     * Open a table header cell
+     */
+    function tableHeaderOpen($colspan = 1, $rowspan = 1, $align, &$content){
+        ODTTable::tableHeaderOpen($this, $colspan = 1, $rowspan = 1, $align, $content);
+    }
+
+    /**
+     * Close a table header cell
+     */
+    function tableHeaderClose(&$content){
+        ODTTable::tableHeaderClose($this, $content);
+    }
+
+    /**
+     * Open a table cell
+     */
+    function tableCellOpen($colspan, $rowspan, $align, &$content){
+        ODTTable::tableCellOpen($this, $colspan, $rowspan, $align, $content);
+    }
+
+    /**
+     * Close a table cell
+     */
+    function tableCellClose(&$content){
+        ODTTable::tableCellClose($this, $content);
     }
 }

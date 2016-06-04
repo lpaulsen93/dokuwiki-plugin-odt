@@ -8,6 +8,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUtility.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTList.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTFootnote.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTHeading.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -256,33 +257,30 @@ class ODTDocument
     }
 
     /**
-     * Creates a linkid from a headline
-     *
-     * @param string $title The headline title
-     * @param boolean $create Create a new unique ID?
-     * @return string
-     *
-     * @author Andreas Gohr <andi@splitbrain.org>
+     * Set pagebreak pending.
+     * 
+     * @return bool
      */
-    function headerToLink($title,$create=false) {
-        // FIXME: not DokuWiki dependant function woud be nicer...
-        $title = str_replace(':','',cleanID($title));
-        $title = ltrim($title,'0123456789._-');
-        if(empty($title)) {
-            $title='section';
-        }
+    function setPagebreakPending($value) {
+        return $this->pagebreak = $value;
+    }
 
-        if($create){
-            // Make sure tiles are unique
-            $num = '';
-            while(in_array($title.$num,$this->headers)){
-                ($num) ? $num++ : $num = 1;
-            }
-            $title = $title.$num;
-            $this->headers[] = $title;
-        }
+    /**
+     * Check if a header with $title exists.
+     * 
+     * @return bool
+     */
+    function headerExists($title) {
+        return in_array($title, $this->headers);
+    }
 
-        return $title;
+    /**
+     * Add $title to headers.
+     * 
+     * @return bool
+     */
+    function addHeader($title) {
+        $this->headers[] = $title;
     }
 
     /**
@@ -293,7 +291,7 @@ class ODTDocument
      *
      * @author LarsDW223
      */
-    protected function buildTOCReferenceID($title) {
+    public function buildTOCReferenceID($title) {
         // FIXME: not DokuWiki dependant function woud be nicer...
         $title = str_replace(':','',cleanID($title));
         $title = ltrim($title,'0123456789._-');
@@ -374,46 +372,7 @@ class ODTDocument
      * @param int    $pos   byte position in the original source
      */
     function heading($text, $level, &$content){
-        // Close any open paragraph first
-        $this->paragraphClose($content);
-
-        $hid = $this->headerToLink($text,true);
-        $TOCRef = $this->buildTOCReferenceID($text);
-        $style = $this->getStyleName('heading'.$level);
-
-        // Change page format if pending
-        if ( $this->changePageFormat != NULL ) {
-            $pageStyle = $this->doPageFormatChange($style);
-            if ( $pageStyle != NULL ) {
-                $style = $pageStyle;
-
-                // Delete pagebreak, the format change will also introduce a pagebreak.
-                $this->pagebreak = false;
-            }
-        }
-
-        // Insert pagebreak if pending
-        if ( $this->pagebreak ) {
-            $style = $this->createPagebreakStyle ($style);
-            $this->pagebreak = false;
-        }
-        $content .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
-
-        // Insert page bookmark if requested and not done yet.
-        $this->insertPendingPageBookmark($content);
-
-        $content .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
-        $content .= '<text:bookmark-start text:name="'.$hid.'"/>';
-        $content .= $this->replaceXMLEntities($text);
-        $content .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
-        $content .= '<text:bookmark-end text:name="'.$hid.'"/>';
-        $content .= '</text:h>';
-
-        // Do not add headings in frames
-        $frame = $this->state->getCurrentFrame();
-        if ($frame == NULL) {
-            $this->tocAddItemInternal($TOCRef, $hid, $text, $level);
-        }
+        ODTHeading::heading($this, $text, $level, $content);
     }
 
     /**

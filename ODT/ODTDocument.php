@@ -9,6 +9,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTUtility.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTList.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTFootnote.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTHeading.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTParagraph.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -128,91 +129,14 @@ class ODTDocument
      * @param string $styleName The style to use.
      */
     function paragraphOpen($styleName=NULL, &$content){
-        if ( empty($styleName) ) {
-            $styleName = $this->getStyleName('body');
-        }
-
-        $list = NULL;
-        $listItem = $this->state->getCurrentListItem();
-        if ($listItem != NULL) {
-            // We are in a list item. Is this the list start?
-            $list = $listItem->getList();
-            if ($list != NULL) {
-                // Get list count and Flag if this is the first paragraph in the list
-                $listCount = $this->state->countClass('list');
-                $isFirst = $list->getListFirstParagraph();
-                $list->setListFirstParagraph(false);
-
-                // Create a style for putting a top margin for this first paragraph of the list
-                // (if not done yet, the name must be unique!)
-                if ($listCount == 1 && $isFirst) {
-                    
-                    // Has the style already been created...
-                    $styleNameFirst = 'FirstListParagraph_'.$styleName;
-                    if (!$this->styleExists($styleNameFirst)) {
-
-                        // ...no, create style as copy of style 'list first paragraph'
-                        $styleFirstTemplate = $this->getStyleByAlias('list first paragraph');
-                        if ($styleFirstTemplate != NULL) {
-                            $styleBody = $this->getStyle($styleName);
-                            $styleDisplayName = 'First '.$styleBody->getProperty('style-display-name');
-                            $styleObj = clone $styleFirstTemplate;
-                            if ($styleObj != NULL) {
-                                $styleObj->setProperty('style-name', $styleNameFirst);
-                                $styleObj->setProperty('style-parent', $styleName);
-                                $styleObj->setProperty('style-display-name', $styleDisplayName);
-                                $bottom = $styleFirstTemplate->getProperty('margin-bottom');
-                                if ($bottom === NULL) {
-                                    $styleObj->setProperty('margin-bottom', $styleBody->getProperty('margin-bottom'));
-                                }
-                                $this->addStyle($styleObj);
-                                $styleName = $styleNameFirst;
-                            }
-                        }
-                    } else {
-                        // ...yes, just use the name
-                        $styleName = $styleNameFirst;
-                    }
-                }
-            }
-        }
-        
-        // Opening a paragraph inside another paragraph is illegal
-        $inParagraph = $this->state->getInParagraph();
-        if (!$inParagraph) {
-            if ( $this->changePageFormat != NULL ) {
-                $pageStyle = $this->doPageFormatChange($styleName);
-                if ( $pageStyle != NULL ) {
-                    $styleName = $pageStyle;
-                    // Delete pagebreak, the format change will also introduce a pagebreak.
-                    $this->pagebreak = false;
-                }
-            }
-            if ( $this->pagebreak ) {
-                $styleName = $this->createPagebreakStyle ($styleName);
-                $this->pagebreak = false;
-            }
-            
-            // If we are in a list remember paragraph position
-            if ($list != NULL) {
-                $list->setListLastParagraphPosition(strlen($content));
-            }
-
-            $paragraph = new ODTElementParagraph($styleName);
-            $this->state->enter($paragraph);
-            $content .= $paragraph->getOpeningTag();
-        }
+        ODTParagraph::paragraphOpen($this, $styleName, $content);
     }
 
     /**
      * Close a paragraph
      */
     function paragraphClose(&$content){
-        $paragraph = $this->state->getCurrentParagraph();
-        if ($paragraph != NULL) {
-            $content .= $paragraph->getClosingTag();
-            $this->state->leave();
-        }
+        ODTParagraph::paragraphClose($this, $content);
     }
 
     /**

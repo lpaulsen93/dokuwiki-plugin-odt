@@ -657,4 +657,29 @@ class ODTDocument
     function tableCellClose(&$content){
         ODTTable::tableCellClose($this, $content);
     }
+
+    /**
+     * Change outline style to given value.
+     * Currently only 'Numbers' is supported. Any other value will
+     * not change anything.
+     * 
+     * @param string $type Type of outline style to set
+     */
+    public function setOutlineStyle ($type) {
+        $outline_style = $this->getStyle('Outline');
+        if ($outline_style == NULL) {
+            // Outline style not found!
+            return;
+        }
+        switch ($type) {
+            case 'Numbers':
+                for ($level = 1 ; $level < 11 ; $level++) {
+                    $outline_style->setPropertyForLevel($level, 'num-format', '1');
+                    $outline_style->setPropertyForLevel($level, 'num-suffix', '.');
+                    $outline_style->setPropertyForLevel($level, 'num-prefix', ' ');
+                    $outline_style->setPropertyForLevel($level, 'display-levels', $level);
+                }
+                break;
+        }
+    }
 }

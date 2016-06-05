@@ -617,6 +617,13 @@ class ODTDocument
     }
 
     /**
+     * Add a column to a table.
+     */
+    function tableAddColumn (){
+        ODTTable::tableAddColumn ($this);
+    }
+
+    /**
      * Open a table row
      */
     function tableRowOpen(&$content){
@@ -658,6 +665,76 @@ class ODTDocument
         ODTTable::tableCellClose($this, $content);
     }
 
+    /**
+     * Open a table using CSS
+     */
+    function tableOpenUseCSS(&$content, $maxcols=NULL, $numrows=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableOpenUseCSS($this, $content, $maxcols, $numrows, $attributes, $import);
+    }
+
+    /**
+     * Open a table using properties
+     */
+    function tableOpenUseProperties (&$content, $properties, $maxcols = 0, $numrows = 0){
+        ODTTable::tableOpenUseProperties($this, $content, $properties, $maxcols, $numrows);
+    }
+
+    /**
+     * Add a table column using CSS
+     */
+    function tableAddColumnUseCSS ($attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableAddColumnUseCSS($this, $attributes, $import);
+    }
+
+    /**
+     * Add a table column using properties
+     */
+    function tableAddColumnUseProperties ($properties){
+        ODTTable::tableAddColumnUseProperties($this, $properties);
+    }
+
+    /**
+     * Open a table header using CSS
+     */
+    function tableHeaderOpenUseCSS(&$content, $colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableHeaderOpenUseCSS($this, $content, $colspan, $rowspan, $attributes, $import);
+    }
+
+    /**
+     * Open a table header using properties
+     */
+    function tableHeaderOpenUseProperties(&$content, $properties, $colspan = 1, $rowspan = 1){
+        ODTTable::tableHeaderOpenUseProperties($this, $content, $properties, $colspan, $rowspan);
+    }
+
+    /**
+     * Open a table row using CSS
+     */
+    function tableRowOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableRowOpenUseCSS($this, $content, $attributes, $import);
+    }
+
+    /**
+     * Open a table row using properties
+     */
+    function tableRowOpenUseProperties(&$content, $properties){
+        ODTTable::tableRowOpenUseProperties($this, $content, $properties);
+    }
+
+    /**
+     * Open a table cell using CSS
+     */
+    function tableCellOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+        ODTTable::tableCellOpenUseCSS($this, $content, $attributes, $import, $colspan, $rowspan);
+    }
+
+    /**
+     * Open a table cell using properties
+     */
+    function tableCellOpenUseProperties(&$content, $properties, $colspan = 1, $rowspan = 1){
+        ODTTable::tableCellOpenUseProperties($this, $content, $properties, $colspan, $rowspan);
+    }
+    
     /**
      * Change outline style to given value.
      * Currently only 'Numbers' is supported. Any other value will

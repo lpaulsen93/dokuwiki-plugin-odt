@@ -17,7 +17,6 @@ class ODTElementTable extends ODTStateElement
     protected $table_autocols = false;
     protected $table_maxcols = 0;
     protected $table_curr_column = 0;
-    protected $table_column_defs = NULL;
 
     // Flag indicating that a table was created inside of a list
     protected $list_interrupted = false;
@@ -61,23 +60,16 @@ class ODTElementTable extends ODTStateElement
         }
         $maxcols = $this->getTableMaxColumns();
         $count = $this->getCount();
-        //for($i=0; $i<$maxcols; $i++){
-        //    $encoded .= '<table:table-column/>';
-        //}        
         if ($maxcols == 0) {
             // Try to automatically detect the number of columns.
             $this->setTableAutoColumns(true);
-            $encoded .= '<ColumnsPlaceholder'.$count.'>';
         } else {
             $this->setTableAutoColumns(false);
-
-            for ( $column = 0 ; $column < $maxcols ; $column++ ) {
-                $style_name = 'odt_auto_style_table_column_'.$count.'_'.($column+1);
-                $this->setTableColumnStyleName($column, $style_name);
-
-                $encoded .= '<table:table-column table:style-name="'.$style_name.'"/>';
-            }
         }
+        
+        // Add column definitions placeholder.
+        // This will be replaced on tabelClose()/getClosingTag()
+        $encoded .= '<ColumnsPlaceholder'.$count.'>';
 
         // We start with the first column
         $this->setTableCurrentColumn(0);
@@ -91,21 +83,23 @@ class ODTElementTable extends ODTStateElement
      * @return string The ODT XML code to close this element.
      */
     public function getClosingTag (&$content = NULL) {
-        $auto_columns = $this->getTableAutoColumns();
-        $column_defs = $this->getTableColumnDefs();
+        // Generate table column definitions and replace the placeholder with it
         $count = $this->getCount();
-
-        // Writeback temporary table content if not empty
-        if (!empty($column_defs) && $content != NULL) {
-            // First replace columns placeholder with created columns, if in auto mode.
-            if ( $auto_columns === true ) {
-                $content =
-                    str_replace ('<ColumnsPlaceholder'.$count.'>', $column_defs, $content);
-
-                $content =
-                    str_replace ('<MaxColsPlaceholder'.$count.'>', $this->getTableMaxColumns(), $content);
+        $max = $this->getTableMaxColumns();
+        if ($max > 0 && $content != NULL) {
+            $column_defs = '';
+            for ($index = 0 ; $index < $max ; $index++) {
+                $styleName = $this->getTableColumnStyleName($index);
+                if (!empty($styleName)) {
+                    $column_defs .= '<table:table-column table:style-name="'.$styleName.'"/>';
+                } else {
+                    $column_defs .= '<table:table-column/>';
+                }
             }
+            $content =
+                str_replace ('<ColumnsPlaceholder'.$count.'>', $column_defs, $content);
         }
+
         return '</table:table>';
     }
 
@@ -219,24 +213,6 @@ class ODTElementTable extends ODTStateElement
      */
     public function getTableCurrentColumn() {
         return $this->table_curr_column;
-    }
-
-    /**
-     * Set column definitions content.
-     * 
-     * @param string $value
-     */
-    public function setTableColumnDefs($value) {
-        $this->table_column_defs = $value;
-    }
-
-    /**
-     * Get column definitions content.
-     * 
-     * @return string
-     */
-    public function getTableColumnDefs() {
-        return $this->table_column_defs;
     }
 
     /**

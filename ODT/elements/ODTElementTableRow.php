@@ -39,7 +39,7 @@ class ODTElementTableRow extends ODTStateElement
     public function getOpeningTag () {
         $style_name = $this->getStyleName();
         if ($style_name != NULL) {
-            return '<table:table-row table:style-name="'.$this->getStyleName().'">';
+            return '<table:table-row table:style-name="'.$style_name.'">';
         }
         return '<table:table-row>';
     }

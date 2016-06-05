@@ -1131,6 +1131,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->tableClose($this->doc);
     }
 
+    function tablecolumn_add(){
+        $this->document->tableAddColumn();
+    }
+
     function tablerow_open(){
         $this->document->tableRowOpen($this->doc);
     }
@@ -2662,40 +2666,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @author LarsDW223
      *
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param null $baseURL
-     * @param null $element
      * @param null $maxcols
      * @param null $numrows
+     * @param string $attributes HTML attributes for the table element
+     * @param cssimportnew $import Imported CSS code to use.
+     *                             If NULL then internal CSS code will be used (if present/loaded).
      */
-    function _odtTableOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $maxcols = NULL, $numrows = NULL){
-        $properties = array();
-        if ( empty($element) ) {
-            $element = 'table';
-        }
-        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        $this->_odtTableOpenUseProperties($properties, $maxcols, $numrows);
-    }
-
-    /**
-     * This function opens a new table using the style as specified in $style.
-     *
-     * This function calls _odtTableOpenUseProperties. See the function description for supported properties.
-     *
-     * The table should be closed by calling 'table_close()'.
-     *
-     * @author LarsDW223
-     *
-     * @param $style
-     * @param null $baseURL
-     * @param null $maxcols
-     * @param null $numrows
-     */
-    function _odtTableOpenUseCSSStyle($style, $baseURL = NULL, $maxcols = NULL, $numrows = NULL){
-        $properties = array();
-        $this->_processCSSStyle ($properties, $style, $baseURL);
-        $this->_odtTableOpenUseProperties($properties, $maxcols, $numrows);
+    function _odtTableOpenUseCSS($maxcols = NULL, $numrows = NULL, $attributes = NULL, cssimportnew $import = NULL){
+        $this->document->tableOpenUseCSS($this->doc, $maxcols, $numrows, $attributes, $import);
     }
 
     /**
@@ -2714,76 +2692,25 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $numrows
      */
     function _odtTableOpenUseProperties ($properties, $maxcols = 0, $numrows = 0){
-        $this->p_close();
-
-        // Eventually adjust table width.
-        if ( !empty ($properties ['width']) ) {
-            if ( $properties ['width'] [$properties ['width']-1] != '%' ) {
-                // Width has got an absolute value.
-                // Some units are not supported by ODT for table width (e.g. 'px').
-                // So we better convert it to points.
-                $properties ['width'] = $this->units->toPoints($properties ['width'], 'x');
-            }
-        }
-        
-        // Create style.
-        $style_obj = $this->factory->createTableTableStyle ($properties, NULL, $this->_getAbsWidthMindMargins (100));
-        $this->document->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        // Open the table referencing our style.
-        $table = new ODTElementTable ($style_name, $maxcols, $numrows);
-        $this->document->state->enter($table);
-
-        // Encode table.
-        $this->doc .= $table->getOpeningTag();
-    }
-
-    protected function _replaceTableWidth () {
-        $matches = array ();
-
-        $table = $this->document->state->getCurrentTable();
-        if ($table == NULL) {
-            // ??? Should not happen.
-            return;
-        }
-
-        $table_style_name = $table->getStyleName();
-        $column_defs = $table->getTableColumnDefs();
-        if ( empty($table_style_name) || empty($column_defs) ) {
-            return;
-        }
-
-        // Search through all column styles for the column width ('style:width="..."').
-        // If every column has a absolute width set, add them all and replace the table
-        // width with the result.
-        // Abort if a column has a percentage width or no width.
-        $sum = 0;
-        $table_column_styles = $table->getTableColumnStyles();
-        for ($index = 0 ; $index < $table->getTableMaxColumns() ; $index++ ) {
-            $style_name = $table_column_styles [$index];
-            $style_obj = $this->document->getStyle($style_name);
-            if ($style_obj != NULL && $style_obj->getProperty('column-width') != NULL) {
-                $width = $style_obj->getProperty('column-width');
-                $length = strlen ($width);
-                $width = $this->units->toPoints($width, 'x');
-                $sum += (float) trim ($width, 'pt');
-            } else {
-                return;
-            }
-        }
-
-        $style_obj = $this->document->getStyle($table_style_name);
-        if ($style_obj != NULL) {
-            $style_obj->setProperty('width', $sum.'pt');
-        }
+        $this->document->tableOpenUseProperties ($this->doc, $properties, $maxcols, $numrows);
     }
 
     function _odtTableClose () {
-        // Eventually replace table width.
-        $this->_replaceTableWidth ();
+        $this->document->tableClose($this->doc);
+    }
 
-        $this->closeCurrentElement($this->doc);
+    /**
+     * @param array $properties
+     */
+    function _odtTableAddColumnUseCSS ($attributes=NULL, cssimportnew $import=NULL){
+        $this->document->tableAddColumnUseCSS ($attributes, $import);
+    }
+
+    /**
+     * @param array $properties
+     */
+    function _odtTableAddColumnUseProperties (array $properties = NULL){
+        $this->document->tableAddColumnUseProperties($properties);
     }
 
     /**
@@ -2794,46 +2721,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $colspan
      * @param int $rowspan
      */
-    function _odtTableHeaderOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL, $colspan = 1, $rowspan = 1){
-        $properties = array();
-        if ( empty($element) ) {
-            $element = 'th';
-        }
-        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        $this->_odtTableHeaderOpenUseProperties($properties, $colspan, $rowspan);
-    }
-
-    /**
-     * @param $style
-     * @param null $baseURL
-     * @param int $colspan
-     * @param int $rowspan
-     */
-    function _odtTableHeaderOpenUseCSSStyle($style, $baseURL = NULL, $colspan = 1, $rowspan = 1){
-        $properties = array();
-        $this->_processCSSStyle ($properties, $style, $baseURL);
-        $this->_odtTableHeaderOpenUseProperties($properties, $colspan, $rowspan);
-    }
-
-    /**
-     * @param array $properties
-     */
-    function _odtTableAddColumnUseProperties (array $properties = NULL){
-        // Create new column
-        $column = new ODTElementTableColumn();
-        $this->document->state->enter($column);
-
-        // Overwrite/Create column style for actual column
-        $style_name = $column->getStyleName();
-        $properties ['style-name'] = $style_name;
-        $style_obj = $this->factory->createTableColumnStyle ($properties);
-        $this->document->addAutomaticStyle($style_obj);
-
-        // Never create any new document content here!!!
-        // Columns have already been added on table open or are
-        // re-written on table close.
-
-        $this->document->state->leave();
+    function _odtTableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
+        $this->document->tableHeaderOpenUseCSS($this->doc, $colspan, $rowspan, $attributes, $import);
     }
 
     /**
@@ -2842,8 +2731,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $rowspan
      */
     function _odtTableHeaderOpenUseProperties ($properties = NULL, $colspan = 1, $rowspan = 1){
-        // Open cell, second parameter MUST BE true to indicate we are in the header.
-        $this->_odtTableCellOpenUsePropertiesInternal ($properties, true, $colspan, $rowspan);
+        $this->document->tableHeaderOpenUseProperties($this->doc, $properties, $colspan = 1, $rowspan = 1);
     }
 
     /**
@@ -2861,46 +2749,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $baseURL
      * @param null $element
      */
-    function _odtTableRowOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
-        $properties = array();
-        if ( empty($element) ) {
-            $element = 'tr';
-        }
-        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        $this->_odtTableRowOpenUseProperties($properties);
-    }
-
-    /**
-     * This function opens a new table row using the style as specified in $style.
-     *
-     * This function calls _odtTableRowOpenUseProperties. See the function description for supported properties.
-     *
-     * The row should be closed by calling 'tablerow_close()'.
-     *
-     * @author LarsDW223
-     *
-     * @param $style
-     * @param null $baseURL
-     */
-    function _odtTableRowOpenUseCSSStyle($style, $baseURL = NULL){
-        $properties = array();
-        $this->_processCSSStyle ($properties, $style, $baseURL);
-        $this->_odtTableRowOpenUseProperties($properties);
+    function _odtTableRowOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
+        $this->document->tableRowOpenUseCSS($this->doc, $attributes, $import);
     }
 
     /**
      * @param array $properties
      */
     function _odtTableRowOpenUseProperties ($properties){
-        // Create style.
-        $style_obj = $this->factory->createTableRowStyle ($properties);
-        $this->document->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        // Open table row.
-        $row = new ODTElementTableRow ($style_name);
-        $this->document->state->enter($row);
-        $this->doc .= $row->getOpeningTag();
+        $this->document->tableRowOpenUseProperties($this->doc, $properties);
     }
 
     /**
@@ -2919,84 +2776,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $baseURL
      * @param null $element
      */
-    function _odtTableCellOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
-        $properties = array();
-        if ( empty($element) ) {
-            $element = 'td';
-        }
-        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        $this->_odtTableCellOpenUseProperties($properties);
-    }
-
-    /**
-     * This function opens a new table cell using the style as specified in $style.
-     *
-     * This function calls _odtTableCellOpenUseProperties. See the function description for supported properties.
-     *
-     * The cell should be closed by calling 'tablecell_close()'.
-     *
-     * @author LarsDW223
-     *
-     * @param $style
-     * @param null $baseURL
-     */
-    function _odtTableCellOpenUseCSSStyle($style, $baseURL = NULL){
-        $properties = array();
-        $this->_processCSSStyle ($properties, $style, $baseURL);
-        $this->_odtTableCellOpenUseProperties($properties);
+    function _odtTableCellOpenUseCSS($attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+        $this->document->tableCellOpenUseCSS($this->doc, $attributes, $import);
     }
 
     /**
      * @param $properties
      */
-    function _odtTableCellOpenUseProperties ($properties){
-        $this->_odtTableCellOpenUsePropertiesInternal ($properties);
-    }
-
-    /**
-     * @param $properties
-     * @param bool $inHeader
-     * @param int $colspan
-     * @param int $rowspan
-     */
-    protected function _odtTableCellOpenUsePropertiesInternal ($properties, $inHeader = false, $colspan = 1, $rowspan = 1){
-        $disabled = array ();
-
-        // Create style name. (Re-enable background-color!)
-        $style_obj = $this->factory->createTableCellStyle ($properties);
-        $this->document->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        // Create a paragraph style for the paragraph within the cell.
-        // Disable properties that belong to the table cell style.
-        $disabled ['border'] = 1;
-        $disabled ['border-left'] = 1;
-        $disabled ['border-right'] = 1;
-        $disabled ['border-top'] = 1;
-        $disabled ['border-bottom'] = 1;
-        $disabled ['background-color'] = 1;
-        $disabled ['background-image'] = 1;
-        $disabled ['vertical-align'] = 1;
-        $style_name_paragraph = $this->_createParagraphStyle ($properties, $disabled);
-
-        // Open cell.
-        if ($inHeader) {
-            $cell = new ODTElementTableHeaderCell ($style_name, $colspan, $rowspan);
-        } else {
-            $cell = new ODTElementTableCell ($style_name, $colspan, $rowspan);
-        }
-        $this->document->state->enter($cell);
-
-        // Encode cell.
-        $this->doc .= $cell->getOpeningTag();
-        
-        // If a paragraph style was created, means text properties were set,
-        // then we open a paragraph with our own style. Otherwise we use the standard style.
-        if ( $style_name_paragraph != NULL ) {
-            $this->p_open($style_name_paragraph);
-        } else {
-            $this->p_open();
-        }
+    function _odtTableCellOpenUseProperties ($properties, $colspan = 1, $rowspan = 1){
+        $this->document->tableCellOpenUseProperties($this->doc, $properties, $colspan, $rowspan);
     }
 
     /**

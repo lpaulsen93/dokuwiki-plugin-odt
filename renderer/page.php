@@ -2193,103 +2193,25 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function opens a new paragraph using the style as set in the imported CSS $import.
-     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
-     * The CSS style is selected by the element type 'p' and the specified classes in $classes.
-     * The property 'background-image' is emulated by inserting an image manually in the paragraph.
-     * If the url from the CSS should be converted to a local path, then the caller can specify a $baseURL.
-     * The full path will then be $baseURL/background-image.
-     *
-     * This function calls _odtParagraphOpenUseProperties. See the function description for supported properties.
-     *
-     * The span should be closed by calling '_odtParagraphClose'.
-     *
+     * Open a paragraph using CSS.
+     * 
+     * @see ODTDocument::paragraphOpenUseCSS for API wrapper function
+     * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
      * @author LarsDW223
-     *
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param $baseURL
-     * @param $element
      */
-    function _odtParagraphOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
-        $properties = array();
-        if ( empty($element) ) {
-            $element = 'p';
-        }
-        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        $this->_odtParagraphOpenUseProperties($properties);
+    function _odtParagraphOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
+        $this->document->paragraphOpenUseCSS($this->doc, $attributes, $import);
     }
 
     /**
-     * This function opens a new paragraph using the style as specified in $style.
-     * The property 'background-image' is emulated by inserting an image manually in the paragraph.
-     * If the url from the CSS should be converted to a local path, then the caller can specify a $baseURL.
-     * The full path will then be $baseURL/background-image.
-     *
-     * This function calls _odtParagraphOpenUseProperties. See the function description for supported properties.
-     *
-     * The paragraph must be closed by calling 'p_close'.
-     *
+     * Open a paragraph using properties.
+     * 
+     * @see ODTDocument::paragraphOpenUseProperties for API wrapper function
+     * @see ODTParagraph::paragraphOpenUseProperties for detailed documentation
      * @author LarsDW223
-     *
-     * @param $style
-     * @param $baseURL
-     */
-    function _odtParagraphOpenUseCSSStyle($style, $baseURL = NULL){
-        $properties = array();
-        $this->_processCSSStyle ($properties, $style, $baseURL);
-        $this->_odtParagraphOpenUseProperties($properties);
-    }
-
-    /**
-     * This function opens a new paragraph using the style as set in the assoziative array $properties.
-     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
-     * The property 'background-image' is emulated by inserting an image manually in the paragraph.
-     *
-     * The currently supported properties are:
-     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
-     * vertical-align, line-height, background-image (emulated)
-     *
-     * The paragraph must be closed by calling 'p_close'.
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
      */
     function _odtParagraphOpenUseProperties($properties){
-        $disabled = array ();
-
-        $in_paragraph = $this->document->state->getInParagraph();
-        if ($in_paragraph) {
-            // opening a paragraph inside another paragraph is illegal
-            return;
-        }
-
-        $odt_bg = $properties ['background-color'];
-        $picture = $properties ['background-image'];
-
-        if ( !empty ($picture) ) {
-            // If a picture/background-image is set, than we insert it manually here.
-            // This is a workaround because ODT background-image works different than in CSS.
-
-            // Define graphic style for picture
-            $this->style_count++;
-            $style_name = 'odt_auto_style_span_graphic_'.$this->style_count;
-            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$this->document->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
-
-            // Add style and image to our document
-            // (as unknown style because style-family graphic is not supported)
-            $style_obj = ODTUnknownStyle::importODTStyle($image_style);
-            $this->document->addAutomaticStyle($style_obj);
-            $this->_odtAddImage ($picture,NULL,NULL,NULL,NULL,$style_name);
-        }
-
-        // Create the style for the paragraph.
-        $disabled ['background-image'] = 1;
-        $style_name = $this->_createParagraphStyle ($properties, $disabled);
-
-        // Open a paragraph
-        $this->p_open($style_name);
+        $this->document->paragraphOpenUseProperties($this->doc, $properties);
     }
 
     /**

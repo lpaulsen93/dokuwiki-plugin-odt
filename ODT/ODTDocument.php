@@ -144,6 +144,24 @@ class ODTDocument
     }
 
     /**
+     * Open a paragraph using CSS.
+     * 
+     * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
+     */
+    function paragraphOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL){
+        ODTParagraph::paragraphOpenUseCSS($this, $content, $attributes, $import);
+    }
+
+    /**
+     * Open a paragraph using properties.
+     * 
+     * @see ODTParagraph::paragraphOpenUseProperties for detailed documentation
+     */
+    function paragraphOpenUseProperties(&$content, $properties){
+        ODTParagraph::paragraphOpenUseProperties($this, $content, $properties);
+    }
+
+    /**
      * Insert a horizontal rule
      */
     function horizontalRule(&$content) {

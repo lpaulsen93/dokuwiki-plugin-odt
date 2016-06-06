@@ -327,7 +327,7 @@ class ODTParagraphStyle extends ODTStyleStyle
      * @param null $disabled_props
      * @return ODTParagraphStyle or NULL
      */
-    public static function createParagraphStyle(array $properties, array $disabled_props = NULL){
+    public static function createParagraphStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
         if ( $properties ['text-decoration'] == 'line-through' ) {
             $properties ['text-line-through-style'] = 'solid';
@@ -375,8 +375,36 @@ class ODTParagraphStyle extends ODTStyleStyle
         // Always set 'auto-text-indent = false' if 'text-indent' is set.
         if (!empty($properties ['text-indent'])) {
             $properties ['auto-text-indent'] = 'false';
+        
+            $length = strlen ($properties ['text-indent']);
+            if ( $length > 0 && $properties ['text-indent'] [$length-1] == '%' && $doc != NULL ) {
+                // Percentage value needs to be converted to absolute value.
+                // ODT standard says that percentage value should work if used in a common style.
+                // This did not work with LibreOffice 4.4.3.2.
+                $value = trim ($properties ['text-indent'], '%');
+                $properties ['text-indent'] = $doc->page->getAbsWidthMindMargins ($value).'cm';
+            }
         }
 
+        // Eventually create parent for font-size
+        $save = $disabled_props ['font-size'];
+        $odt_fo_size = '';
+        if ( empty ($disabled_props ['font-size']) ) {
+            $odt_fo_size = $properties ['font-size'];
+        }
+        $parent = '';
+        $length = strlen ($odt_fo_size);
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && $doc != NULL) {
+            // A font-size in percent is only supported in common style definitions, not in automatic
+            // styles. Create a common style and set it as parent for this automatic style.
+            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
+            $style_obj = ODTTextStyle::createSizeOnlyTextStyle ($name, $odt_fo_size);
+            $doc->addStyle($style_obj);
+            $parent = $style_obj->getProperty('style-name');
+            if (!empty($parent)) {
+                $properties ['style-parent'] = $parent;
+            }
+        }
 
         // Create style name (if not given).
         $style_name = $properties ['style-name'];
@@ -399,6 +427,9 @@ class ODTParagraphStyle extends ODTStyleStyle
         
         // Import our properties
         $object->importProperties($properties, $disabled_props);
+
+        // Restore $disabled_props
+        $disabled_props ['font-size'] = $save;
         return $object;
     }
 

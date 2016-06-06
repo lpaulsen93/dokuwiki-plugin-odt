@@ -2362,58 +2362,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function creates a paragraph style using. It uses the createParagraphStyle function
-     * from the stylefactory helper class but takes care of the extra handling required for the
-     * font-size attribute.
-     *
-     * The function returns the name of the new style or NULL if all relevant properties are empty.
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
-     * @param array $disabled_props
-     * @return string|null
-     */
-    protected function _createParagraphStyle($properties, $disabled_props = NULL){
-        $save = $disabled_props ['font-size'];
-
-        $odt_fo_size = '';
-        if ( empty ($disabled_props ['font-size']) ) {
-            $odt_fo_size = $properties ['font-size'];
-        }
-        $parent = '';
-        $length = strlen ($odt_fo_size);
-        if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
-            // A font-size in percent is only supported in common style definitions, not in automatic
-            // styles. Create a common style and set it as parent for this automatic style.
-            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
-            $style_obj = $this->factory->createSizeOnlyTextStyle ($name, $odt_fo_size);
-            $this->document->addStyle($style_obj);
-            $parent = $style_obj->getProperty('style-name');
-        }
-
-        $length = strlen ($properties ['text-indent']);
-        if ( $length > 0 && $properties ['text-indent'] [$length-1] == '%' ) {
-            // Percentage value needs to be converted to absolute value.
-            // ODT standard says that percentage value should work if used in a common style.
-            // This did not work with LibreOffice 4.4.3.2.
-            $value = trim ($properties ['text-indent'], '%');
-            $properties ['text-indent'] = $this->_getAbsWidthMindMargins ($value).'cm';
-        }
-
-        if (!empty($parent)) {
-            $properties ['style-parent'] = $parent;
-        }
-        $style_obj = $this->factory->createParagraphStyle($properties, $disabled_props);
-        $this->document->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        $disabled_props ['font-size'] = $save;
-
-        return $style_name;
-    }
-
-    /**
      * This function processes the CSS declarations in $style and saves them in $properties
      * as key - value pairs, e.g. $properties ['color'] = 'red'. It also adjusts the values
      * for the ODT format and changes URLs to local paths if required, using $baseURL).

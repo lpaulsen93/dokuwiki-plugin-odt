@@ -877,7 +877,7 @@ class ODTDocument
      * @param $common Add style to common or automatic styles?
      */
     public function createParagraphStyle ($properties, $common=true) {
-        $style_obj = ODTParagraphStyle::createParagraphStyle($properties);
+        $style_obj = ODTParagraphStyle::createParagraphStyle($properties, NULL, $this);
         if ($common == true) {
             $this->addStyle($style_obj);
         } else {

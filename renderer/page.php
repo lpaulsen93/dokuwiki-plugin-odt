@@ -2495,20 +2495,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param $classString
      * @param $inlineStyle
      */
-    public function getCSSProperties (&$dest, $element, $classString, $inlineStyle) {
-        // Get properties for our class/element from imported CSS
-        $this->import->getPropertiesForElement($dest, $element, $classString);
-
-        // Interpret and add values from style to our properties
-        $this->_processCSSStyle($dest, $inlineStyle);
-    }
-
-    /**
-     * @param array $dest
-     * @param $element
-     * @param $classString
-     * @param $inlineStyle
-     */
     public function getODTProperties (&$dest, $element, $classString, $inlineStyle, $media_sel=NULL, $cssId=NULL) {
         if ($media_sel === NULL) {
             $media_sel = $this->config->getParam ('media_sel');

@@ -86,7 +86,14 @@ class ODTState
      * @return ODTStateElement|NULL
      */
     public function getCurrentParagraph() {
-        return $this->findClosestWithClass ('paragraph');
+        // Only search for the paragraph if the current element tells
+        // us that we are in one. Otherwise we may find the paragraph
+        // around this current element which might lead to double
+        // closing of a paragraph == invalid/broken ODT document!
+        if ($this->getInParagraph()) {
+            return $this->findClosestWithClass ('paragraph');
+        }
+        return NULL;
     }
 
     /**

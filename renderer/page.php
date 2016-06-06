@@ -45,7 +45,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $highlight_style_num = 1;
     protected $quote_depth = 0;
     protected $quote_pos = 0;
-    protected $div_z_index = 0;
     protected $refUserIndexIDCount = 0;
     /** @var string */
     protected $css;
@@ -2134,40 +2133,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * The function tries to examine the width and height
      * of the image stored in file $src.
      * 
-     * @param  string $src The file name of image
-     * @param  int    $maxwidth The maximum width the image shall have
-     * @param  int    $maxheight The maximum height the image shall have
-     * @return array  Width and height of the image in centimeters or
-     *                both 0 if file doesn't exist.
-     *                Just the integer value, no units included.
+     * @see ODTDocument::getImageSize for API wrapper function
+     * @see ODTUtility::getImageSize for a detailed description
      */
     public static function _odtGetImageSize($src, $maxwidth=NULL, $maxheight=NULL){
-        if (file_exists($src)) {
-            $info  = getimagesize($src);
-            if(!$width){
-                $width  = $info[0];
-                $height = $info[1];
-            }else{
-                $height = round(($width * $info[1]) / $info[0]);
-            }
-
-            if ($maxwidth && $width > $maxwidth) {
-                $height = $height * ($maxwidth/$width);
-                $width = $maxwidth;
-            }
-            if ($maxheight && $height > $maxheight) {
-                $width = $width * ($maxheight/$height);
-                $height = $maxheight;
-            }
-
-            // Convert from pixel to centimeters
-            if ($width) $width = (($width/96.0)*2.54);
-            if ($height) $height = (($height/96.0)*2.54);
-
-            return array($width, $height);
-        }
-
-        return array(0, 0);
+        $this->document->getImageSize($src, $maxwidth, $maxheight);
     }
 
     /**
@@ -2177,39 +2147,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return array
      */
     function _odtGetImageSizeString($src, $width = NULL, $height = NULL){
-        list($width_file, $height_file) = $this->_odtGetImageSize($src);
-        if ($width_file != 0) {
-            $width  = $width_file;
-            $height = $height_file;
-        } else {
-            // convert from pixel to centimeters
-            if ($width) $width = (($width/96.0)*2.54);
-            if ($height) $height = (($height/96.0)*2.54);
-        }
-
-        if ($width && $height) {
-            // Don't be wider than the page
-            if ($width >= 17){ // FIXME : this assumes A4 page format with 2cm margins
-                $width = $width.'cm"  style:rel-width="100%';
-                $height = $height.'cm"  style:rel-height="scale';
-            } else {
-                $width = $width.'cm';
-                $height = $height.'cm';
-            }
-        } else {
-            // external image and unable to download, fallback
-            if ($width) {
-                $width = $width."cm";
-            } else {
-                $width = '" svg:rel-width="100%';
-            }
-            if ($height) {
-                $height = $height."cm";
-            } else {
-                $height = '" svg:rel-height="100%';
-            }
-        }
-        return array($width, $height);
+        return $this->document->getImageSizeString($src, $width, $height);
     }
 
     /**
@@ -2421,208 +2359,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function opens a div. As divs are not supported by ODT, it will be exported as a frame.
-     * To be more precise, to frames will be created. One including a picture nad the other including the text.
-     * A picture frame will only be created if a 'background-image' is set in the CSS style.
-     *
-     * The currently supported CSS properties are:
-     * background-color, color, padding, margin, display, border-radius, min-height.
-     * The background-image is simulated using a picture frame.
-     * FIXME: Find a way to successfuly use the background-image in the graphic style (see comments).
-     *
-     * The div should be closed by calling '_odtDivCloseAsFrame'.
-     *
-     * @author LarsDW223
-     *
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param null $baseURL
-     * @param null $element
+     * Open a text box using CSS.
+     * 
+     * @see ODTDocument::openTextBoxUseCSS for API wrapper function
+     * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
-    function _odtDivOpenAsFrameUseCSS (helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL) {
-        $frame = $this->document->state->getCurrentFrame();
-        if ($frame != NULL) {
-            // Do not open a nested frame as this will make the content ofthe nested frame disappear.
-            return;
-        }
-
-        $properties = array();
-
-        $this->div_z_index += 5;
-        $this->style_count++;
-
-        if ( empty($element) ) {
-            $element = 'div';
-        }
-
-        $import->getPropertiesForElement($properties, $element, $classes);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $this->adjustValueForODT ($value, 14);
-        }
-        $odt_bg = $properties ['background-color'];
-        $odt_fo = $properties ['color'];
-        $padding_left = $properties ['padding-left'];
-        $padding_right = $properties ['padding-right'];
-        $padding_top = $properties ['padding-top'];
-        $padding_bottom = $properties ['padding-bottom'];
-        $margin_left = $properties ['margin-left'];
-        $margin_right = $properties ['margin-right'];
-        $margin_top = $properties ['margin-top'];
-        $margin_bottom = $properties ['margin-bottom'];
-        $display = $properties ['display'];
-        $fo_border = $properties ['border'];
-        $radius = $properties ['border-radius'];
-        $picture = $properties ['background-image'];
-        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
-
-        $min_height = $properties ['min-height'];
-
-        $pic_link = '';
-        $pic_width = '';
-        $pic_height = '';
-        if ( !empty ($picture) ) {
-            // If a picture/background-image is set in the CSS, than we insert it manually here.
-            // This is a workaround because ODT does not support the background-image attribute in a span.
-
-            if ( !empty ($baseURL) ) {
-                // Replace 'url(...)' with $baseURL
-                $picture = $import->replaceURLPrefix ($picture, $baseURL);
-            }
-            $pic_link=$this->_odtAddImageAsFileOnly($picture);
-            list($pic_width, $pic_height) = $this->_odtGetImageSizeString($picture);
-        }
-
-        $horiz_pos = 'center';
-
-        if ( empty ($width) ) {
-            $width = '100%';
-        }
-
-        // Different handling for relative and absolute size...
-        if ( $width [strlen($width)-1] == '%' ) {
-            // Convert percentage values to absolute size, respecting page margins
-            $width = trim($width, '%');
-            $width_abs = $this->_getAbsWidthMindMargins ($width).'cm';
-        } else {
-            // Absolute values may include not supported units.
-            // Adjust.
-            $width_abs = $this->adjustXLengthValueForODT($width);
-        }
-
-        // Add our styles.
-        $style_name = 'odt_auto_style_div_'.$this->style_count;
-
-        $style =
-         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-             <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
-                 draw:fill="solid" draw:fill-color="'.$odt_bg.'"
-                 draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
-                 style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
-        if ( !empty($padding_left) ) {
-            $style .= 'fo:padding-left="'.$padding_left.'" ';
-        }
-        if ( !empty($padding_right) ) {
-            $style .= 'fo:padding-right="'.$padding_right.'" ';
-        }
-        if ( !empty($padding_top) ) {
-            $style .= 'fo:padding-top="'.$padding_top.'" ';
-        }
-        if ( !empty($padding_bottom) ) {
-            $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
-        }
-        if ( !empty($margin_left) ) {
-            $style .= 'fo:margin-left="'.$margin_left.'" ';
-        }
-        if ( !empty($margin_right) ) {
-            $style .= 'fo:margin-right="'.$margin_right.'" ';
-        }
-        if ( !empty($margin_top) ) {
-            $style .= 'fo:margin-top="'.$margin_top.'" ';
-        }
-        if ( !empty($margin_bottom) ) {
-            $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
-        }
-        if ( !empty ($fo_border) ) {
-            $style .= 'fo:border="'.$fo_border.'" ';
-        }
-        $style .= 'fo:min-height="'.$min_height.'"
-                 style:wrap="none"';
-        $style .= '>';
-
-        // FIXME: Delete the part below 'if ( $picture != NULL ) {...}'
-        // and use this background-image definition. For some reason the background-image is not displayed.
-        // Help is welcome.
-        /*$style .= '<style:background-image ';
-        $style .= 'xlink:href="'.$pic_link.'" xlink:type="simple" xlink:actuate="onLoad"
-                   style:position="center center" style:repeat="no-repeat" draw:opacity="100%"/>';*/
-        $style .= '</style:graphic-properties>';
-        $style .= '</style:style>';
-        $style .= '<style:style style:name="'.$style_name.'_image_frame" style:family="graphic">
-             <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
-                 draw:fill="none" draw:fill-color="'.$odt_bg.'"
-                 draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
-                 style:wrap="none"/>
-         </style:style>
-         <style:style style:name="'.$style_name.'_text_box" style:family="paragraph">
-             <style:text-properties fo:color="'.$odt_fo.'"/>
-             <style:paragraph-properties
-              fo:margin-left="'.$padding_left.'pt" fo:margin-right="10pt" fo:text-indent="0cm"/>
-         </style:style>';
-                
-        // Add style to our document
-        // (as unknown style because style-family graphic is not supported)
-        $style_obj = ODTUnknownStyle::importODTStyle($style);
-        $this->document->addAutomaticStyle($style_obj);
-
-        // Group the frame so that they are stacked one on each other.
-        $this->p_close();
-        $this->p_open();
-        if ( $display == NULL ) {
-            $this->doc .= '<draw:g>';
-        } else {
-            $this->doc .= '<draw:g draw:display="' . $display . '">';
-        }
-
-        // Draw a frame with the image in it, if required.
-        // FIXME: delete this part if 'background-image' in graphic style is working.
-        if ( $picture != NULL )
-        {
-            $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
-                                text:anchor-type="paragraph"
-                                svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
-                                svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                draw:z-index="'.($this->div_z_index + 1).'">
-                               <draw:image xlink:href="'.$pic_link.'"
-                                xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-                                </draw:frame>';
-        }
-
-        // Draw a frame with a text box in it. the text box will be left opened
-        // to grow with the content (requires fo:min-height in $style_name).
-
-        // Open frame.
-        $frame_attrs = 'draw:name="Bild1"
-                            text:anchor-type="paragraph"
-                            svg:x="0cm" svg:y="0cm"
-                            svg:width="'.$width_abs.'cm" svg:height="'.$min_height.'" ';
-        $frame_attrs .= 'draw:z-index="'.($this->div_z_index + 0).'"';
-        $frame = new ODTElementFrame($style_name.'_text_frame');
-        $frame->setAttributes($frame_attrs);
-        $this->document->state->enter($frame);
-        $this->doc .= $frame->getOpeningTag();
-        
-        // Open text box.
-        $box_attrs = '';
-        if ( !empty($radius) )
-            $box_attrs .= 'draw:corner-radius="'.$radius.'"';
-        $box = new ODTElementTextBox();
-        $box->setAttributes($box_attrs);
-        $this->document->state->enter($box);
-        $this->doc .= $box->getOpeningTag();
-        
-        $this->p_open($style_name.'_text_box');
+    function _odtOpenTextBoxUseCSS ($attributes=NULL, cssimportnew $import=NULL) {
+        $this->document->openTextBoxUseCSS ($this->doc, $attributes, $import);
     }
 
     /**
@@ -2949,555 +2692,45 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function opens a multi column frame according to the parameters in $properties.
-     * See function createMultiColumnFrameStyle of helper class stylefactory.php for more
-     * information about the supported properties/CSS styles.
-     *
-     * @author LarsDW223
-     *
-     * @param $properties
+     * Open a multi column text box in a frame using properties.
+     * 
+     * @see ODTDocument::openMultiColumnTextBoxUseProperties for API wrapper function
+     * @see ODTFrame::openMultiColumnTextBoxUseProperties for detailed documentation
      */
     function _odtOpenMultiColumnFrame ($properties) {
-        // Create style name.
-        $style_obj = $this->factory->createMultiColumnFrameStyle ($properties);
-        $this->document->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        $width_abs = $this->_getAbsWidthMindMargins (100);
-
-        // Group the frame so that they are stacked one on each other.
-        $this->p_close();
-        $this->p_open();
-
-        // Draw a frame with a text box in it. the text box will be left opened
-        // to grow with the content (requires fo:min-height in $style_name).
-
-        // Create frame
-        $frame = new ODTElementFrame($style_name);
-        $frame_attrs = 'draw:name="Frame1" text:anchor-type="paragraph" svg:width="'.$width_abs.'cm" draw:z-index="0">';
-        $frame->setAttributes($frame_attrs);
-        $this->document->state->enter($frame);
-
-        // Encode frame
-        $this->doc .= $frame->getOpeningTag();
-        
-        // Create text box
-        $box = new ODTElementTextBox();
-        $box_attrs = 'fo:min-height="1pt"';
-        $box->setAttributes($box_attrs);
-        $this->document->state->enter($box);
-
-        // Encode box
-        $this->doc .= $box->getOpeningTag();
+        $this->document->openMultiColumnTextBoxUseProperties($this->doc, $properties);
     }
 
     /**
      * This function closes a multi column frame (previously opened with _odtOpenMultiColumnFrame).
      *
+     * @see ODTDocument::closeTextBox for API wrapper function
+     * @see ODTFrame::closeTextBox for detailed documentation
      * @author LarsDW223
      */
     function _odtCloseMultiColumnFrame () {
-        // Close text box
-        $this->closeCurrentElement();
-        // Close frame
-        $this->closeCurrentElement();
-
-        $this->p_close();
-
-        $this->div_z_index -= 5;
-
-        $this->document->state->leave();
+        $this->document->closeMultiColumnTextBox($this->doc);
     }
 
     /**
-     * This function opens a textbox in a frame.
-     *
-     * The currently supported CSS properties are:
-     * background-color, color, padding, margin, display, border-radius, min-height.
-     * The background-image is simulated using a picture frame.
-     * FIXME: Find a way to successfuly use the background-image in the graphic style (see comments).
-     *
-     * The div should be closed by calling '_odtDivCloseAsFrame'.
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
+     * Open a text box in a frame using properties.
+     * 
+     * @see ODTDocument::openTextBoxUseProperties for API wrapper function
+     * @see ODTFrame::openTextBoxUseProperties for detailed documentation
      */
     function _odtOpenTextBoxUseProperties ($properties) {
-        $frame = $this->document->state->getCurrentFrame();
-        if ($frame != NULL) {
-            // Do not open a nested frame as this will make the content ofthe nested frame disappear.
-            //return;
-        }
-
-        $this->div_z_index += 5;
-        $this->style_count++;
-
-        $odt_bg = $properties ['background-color'];
-        $odt_fo = $properties ['color'];
-        $padding_left = $properties ['padding-left'];
-        $padding_right = $properties ['padding-right'];
-        $padding_top = $properties ['padding-top'];
-        $padding_bottom = $properties ['padding-bottom'];
-        $margin_left = $properties ['margin-left'];
-        $margin_right = $properties ['margin-right'];
-        $margin_top = $properties ['margin-top'];
-        $margin_bottom = $properties ['margin-bottom'];
-        $display = $properties ['display'];
-        $fo_border = $properties ['border'];
-        $border_color = $properties ['border-color'];
-        $border_width = $properties ['border-width'];
-        $radius = $properties ['border-radius'];
-        $picture = $properties ['background-image'];
-        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
-
-        $min_height = $properties ['min-height'];
-        $width = $properties ['width'];
-        $horiz_pos = $properties ['float'];
-
-        $pic_link = '';
-        $pic_width = '';
-        $pic_height = '';
-        if ( !empty ($picture) ) {
-            // If a picture/background-image is set in the CSS, than we insert it manually here.
-            // This is a workaround because ODT does not support the background-image attribute in a span.
-            $pic_link=$this->_odtAddImageAsFileOnly($picture);
-            list($pic_width, $pic_height) = $this->_odtGetImageSizeString($picture);
-        }
-
-        if ( empty($horiz_pos) ) {
-            $horiz_pos = 'center';
-        }
-        if ( empty ($width) ) {
-            $width = '100%';
-        }
-        if ( empty($border_color) ) {
-            $border_color = $odt_bg;
-        }
-        if ( !empty($pic_positions [0]) ) {
-            $pic_positions [0] = $this->adjustXLengthValueForODT ($pic_positions [0]);
-        }
-        if ( empty($min_height) ) {
-            $min_height = '1pt';
-        }
-
-        // Different handling for relative and absolute size...
-        if ( $width [strlen($width)-1] == '%' ) {
-            // Convert percentage values to absolute size, respecting page margins
-            $width = trim($width, '%');
-            $width_abs = $this->_getAbsWidthMindMargins ($width).'cm';
-        } else {
-            // Absolute values may include not supported units.
-            // Adjust.
-            $width_abs = $this->adjustXLengthValueForODT($width);
-        }
-
-
-        // Add our styles.
-        $style_name = 'odt_auto_style_div_'.$this->style_count;
-
-        $style =
-         '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-             <style:graphic-properties
-                 draw:textarea-horizontal-align="left"
-                 style:horizontal-pos="'.$horiz_pos.'" fo:background-color="'.$odt_bg.'" style:background-transparency="100%" ';
-        if ( !empty($odt_bg) ) {
-            $style .= 'draw:fill="solid" draw:fill-color="'.$odt_bg.'" ';
-        } else {
-            $style .= 'draw:fill="none" ';
-        }
-        if ( !empty($border_color) ) {
-            $style .= 'svg:stroke-color="'.$border_color.'" ';
-        }
-        if ( !empty($border_width) ) {
-            $style .= 'svg:stroke-width="'.$border_width.'" ';
-        }
-        if ( !empty($padding_left) ) {
-            $style .= 'fo:padding-left="'.$padding_left.'" ';
-        }
-        if ( !empty($padding_right) ) {
-            $style .= 'fo:padding-right="'.$padding_right.'" ';
-        }
-        if ( !empty($padding_top) ) {
-            $style .= 'fo:padding-top="'.$padding_top.'" ';
-        }
-        if ( !empty($padding_bottom) ) {
-            $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
-        }
-        if ( !empty($margin_left) ) {
-            $style .= 'fo:margin-left="'.$margin_left.'" ';
-        }
-        if ( !empty($margin_right) ) {
-            $style .= 'fo:margin-right="'.$margin_right.'" ';
-        }
-        if ( !empty($margin_top) ) {
-            $style .= 'fo:margin-top="'.$margin_top.'" ';
-        }
-        if ( !empty($margin_bottom) ) {
-            $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
-        }
-        if ( !empty ($fo_border) ) {
-            $style .= 'fo:border="'.$fo_border.'" ';
-        }
-        $style .= 'fo:min-height="'.$min_height.'"
-                 style:wrap="none"';
-        $style .= '>';
-
-        // FIXME: Delete the part below 'if ( $picture != NULL ) {...}'
-        // and use this background-image definition. For some reason the background-image is not displayed.
-        // Help is welcome.
-        /*$style .= '<style:background-image ';
-        $style .= 'xlink:href="'.$pic_link.'" xlink:type="simple" xlink:actuate="onLoad"
-                   style:position="center center" style:repeat="no-repeat" draw:opacity="100%"/>';*/
-        $style .= '</style:graphic-properties>';
-        $style .= '</style:style>';
-        $style .= '<style:style style:name="'.$style_name.'_image_frame" style:family="graphic">
-             <style:graphic-properties svg:stroke-color="'.$odt_bg.'"
-                 draw:fill="none" draw:fill-color="'.$odt_bg.'"
-                 draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
-                 style:wrap="none"/>
-         </style:style>
-         <style:style style:name="'.$style_name.'_text_box" style:family="paragraph">
-             <style:text-properties fo:color="'.$odt_fo.'"/>
-             <style:paragraph-properties
-              fo:margin-left="'.$padding_left.'" fo:margin-right="10pt" fo:text-indent="0cm"/>
-         </style:style>';
-
-        // Add style to our document
-        // (as unknown style because style-family graphic is not supported)
-        $style_obj = ODTUnknownStyle::importODTStyle($style);
-        $this->document->addAutomaticStyle($style_obj);
-
-        // Group the frame so that they are stacked one on each other.
-        $this->p_close();
-        $this->p_open();
-        $this->linebreak();
-        if ( $display == NULL ) {
-            $this->doc .= '<draw:g>';
-        } else {
-            $this->doc .= '<draw:g draw:display="' . $display . '">';
-        }
-
-        $anchor_type = 'paragraph';
-        // FIXME: Later try to get nested frames working - probably with anchor = as-char
-        $frame = $this->document->state->getCurrentFrame();
-        if ($frame != NULL) {
-            $anchor_type = 'as-char';
-        }
-
-        // Draw a frame with the image in it, if required.
-        // FIXME: delete this part if 'background-image' in graphic style is working.
-        if ( $picture != NULL )
-        {
-            $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
-                                text:anchor-type="paragraph"
-                                svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
-                                svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                draw:z-index="'.($this->div_z_index + 1).'">
-                               <draw:image xlink:href="'.$pic_link.'"
-                                xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-                                </draw:frame>';
-        }
-
-        // Draw a frame with a text box in it. the text box will be left opened
-        // to grow with the content (requires fo:min-height in $style_name).
-
-        // Create frame
-        $frame = new ODTElementFrame($style_name.'_text_frame');
-        $frame_attrs = 'draw:name="Bild1" text:anchor-type="'.$anchor_type.'"
-                        svg:x="0cm" svg:y="0cm"
-                        svg:width="'.$width_abs.'" svg:height="'.$min_height.'"
-                        draw:z-index="'.($this->div_z_index + 0).'">';
-        $frame->setAttributes($frame_attrs);
-        $this->document->state->enter($frame);
-
-        // Encode frame
-        $this->doc .= $frame->getOpeningTag();
-        
-        // Create text box
-        $box = new ODTElementTextBox();
-        $box_attrs = '';
-        // If required use round corners.
-        if ( !empty($radius) )
-            $box_attrs .= 'draw:corner-radius="'.$radius.'"';
-        $box->setAttributes($box_attrs);
-        $this->document->state->enter($box);
-
-        // Encode box
-        $this->doc .= $box->getOpeningTag();
+        $this->document->openTextBoxUseProperties ($this->doc, $properties);
     }
 
     /**
-     * This function opens a textbox in a frame.
-     * This function uses the properties in a different way than
-     *  _odtOpenTextBoxUseProperties.
+     * This function closes a textbox.
      *
-     * The currently supported CSS properties are:
-     * background-color, color, padding, margin, display, border-radius, min-height.
-     * The background-image is simulated using a picture frame.
-     * FIXME: Find a way to successfuly use the background-image in the graphic style (see comments).
-     *
-     * The div should be closed by calling '_odtDivCloseAsFrame'.
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
-     */
-    function _odtOpenTextBoxUseProperties2 ($properties) {
-        $frame = $this->document->state->getCurrentFrame();
-        if ($frame != NULL) {
-            // Do not open a nested frame as this will make the content ofthe nested frame disappear.
-            //return;
-        }
-
-        $this->div_z_index += 5;
-        $this->style_count++;
-
-        $valign = $properties ['vertical-align'];
-        $top = $properties ['top'];
-        $left = $properties ['left'];
-        $position = $properties ['position'];
-        $bg_color = $properties ['background-color'];
-        $color = $properties ['color'];
-        $padding_left = $properties ['padding-left'];
-        $padding_right = $properties ['padding-right'];
-        $padding_top = $properties ['padding-top'];
-        $padding_bottom = $properties ['padding-bottom'];
-        $margin_left = $properties ['margin-left'];
-        $margin_right = $properties ['margin-right'];
-        $margin_top = $properties ['margin-top'];
-        $margin_bottom = $properties ['margin-bottom'];
-        $display = $properties ['display'];
-        $border = $properties ['border'];
-        $border_color = $properties ['border-color'];
-        $border_width = $properties ['border-width'];
-        $radius = $properties ['border-radius'];
-        $picture = $properties ['background-image'];
-        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
-
-        $min_height = $properties ['min-height'];
-        $width = $properties ['width'];
-        $horiz_pos = $properties ['float'];
-
-        $pic_link = '';
-        $pic_width = '';
-        $pic_height = '';
-        if ( !empty ($picture) ) {
-            // If a picture/background-image is set in the CSS, than we insert it manually here.
-            // This is a workaround because ODT does not support the background-image attribute in a span.
-            $pic_link=$this->_odtAddImageAsFileOnly($picture);
-            list($pic_width, $pic_height) = $this->_odtGetImageSizeString($picture);
-        }
-
-        if ( empty($horiz_pos) ) {
-            $horiz_pos = 'center';
-        }
-        if ( empty ($width) ) {
-            $width = '100%';
-        }
-        if ( !empty($pic_positions [0]) ) {
-            $pic_positions [0] = $this->adjustXLengthValueForODT ($pic_positions [0]);
-        }
-        if ( empty($min_height) ) {
-            $min_height = '1pt';
-        }
-        if ( empty($top) ) {
-            $top = '0cm';
-        }
-        if ( empty($left) ) {
-            $left = '0cm';
-        } else {
-            $horiz_pos = 'from-left';
-        }
-
-        // Different handling for relative and absolute size...
-        if ( $width [strlen($width)-1] == '%' ) {
-            // Convert percentage values to absolute size, respecting page margins
-            $width = trim($width, '%');
-            $width_abs = $this->_getAbsWidthMindMargins ($width).'cm';
-        } else {
-            // Absolute values may include not supported units.
-            // Adjust.
-            $width_abs = $this->adjustXLengthValueForODT($width);
-        }
-
-
-        // Add our styles.
-        $style_name = 'odt_auto_style_div_'.$this->style_count;
-
-        switch ($position) {
-            case 'absolute':
-                $anchor_type = 'page';
-                break;
-            case 'relative':
-                $anchor_type = 'paragraph';
-                break;
-            case 'static':
-            default:
-                $anchor_type = 'paragraph';
-                $top = '0cm';
-                $left = '0cm';
-                break;
-        }
-        // FIXME: Later try to get nested frames working - probably with anchor = as-char
-        //$frame = $this->document->state->getCurrentFrame();
-        //if ($frame != NULL) {
-        //    $anchor_type = 'as-char';
-        //}
-        switch ($anchor_type) {
-            case 'page':
-                $style =
-                '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-                     <style:graphic-properties style:run-through="foreground" style:wrap="run-through"
-                      style:number-wrapped-paragraphs="no-limit" style:vertical-pos="from-top" style:vertical-rel="page"
-                      style:horizontal-pos="from-left" style:horizontal-rel="page"
-                      draw:wrap-influence-on-position="once-concurrent" style:flow-with-text="false" ';
-                break;
-            default:
-                $style =
-                '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-                     <style:graphic-properties
-                      draw:textarea-horizontal-align="left"
-                    style:horizontal-pos="'.$horiz_pos.'" style:background-transparency="100%" style:wrap="none" ';
-                break;
-        }
-
-        if ( !empty($valign) ) {
-            $style .= 'draw:textarea-vertical-align="'.$valign.'" ';
-        }
-        if ( !empty($bg_color) ) {
-            $style .= 'fo:background-color="'.$bg_color.'" ';
-            $style .= 'draw:fill="solid" draw:fill-color="'.$bg_color.'" ';
-        } else {
-            $style .= 'draw:fill="none" ';
-        }
-        if ( !empty($border_color) ) {
-            $style .= 'svg:stroke-color="'.$border_color.'" ';
-        } else {
-            $style .= 'draw:stroke="none" ';
-        }
-        if ( !empty($border_width) ) {
-            $style .= 'svg:stroke-width="'.$border_width.'" ';
-        }
-        if ( !empty($padding_left) ) {
-            $style .= 'fo:padding-left="'.$padding_left.'" ';
-        }
-        if ( !empty($padding_right) ) {
-            $style .= 'fo:padding-right="'.$padding_right.'" ';
-        }
-        if ( !empty($padding_top) ) {
-            $style .= 'fo:padding-top="'.$padding_top.'" ';
-        }
-        if ( !empty($padding_bottom) ) {
-            $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
-        }
-        if ( !empty($margin_left) ) {
-            $style .= 'fo:margin-left="'.$margin_left.'" ';
-        }
-        if ( !empty($margin_right) ) {
-            $style .= 'fo:margin-right="'.$margin_right.'" ';
-        }
-        if ( !empty($margin_top) ) {
-            $style .= 'fo:margin-top="'.$margin_top.'" ';
-        }
-        if ( !empty($margin_bottom) ) {
-            $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
-        }
-        if ( !empty ($fo_border) ) {
-            $style .= 'fo:border="'.$fo_border.'" ';
-        }
-        $style .= 'fo:min-height="'.$min_height.'" ';
-        $style .= '>';
-
-        // FIXME: Delete the part below 'if ( $picture != NULL ) {...}'
-        // and use this background-image definition. For some reason the background-image is not displayed.
-        // Help is welcome.
-        /*$style .= '<style:background-image ';
-        $style .= 'xlink:href="'.$pic_link.'" xlink:type="simple" xlink:actuate="onLoad"
-                   style:position="center center" style:repeat="no-repeat" draw:opacity="100%"/>';*/
-        $style .= '</style:graphic-properties>';
-        $style .= '</style:style>';
-        $style .= '<style:style style:name="'.$style_name.'_image_frame" style:family="graphic">
-             <style:graphic-properties
-                 draw:stroke="none"
-                 draw:fill="none"
-                 draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
-                 style:wrap="none"/>
-         </style:style>';
-
-        // Add style to our document
-        // (as unknown style because style-family graphic is not supported)
-        $style_obj = ODTUnknownStyle::importODTStyle($style);
-        $this->document->addAutomaticStyle($style_obj);
-
-        // Group the frame so that they are stacked one on each other.
-        $this->p_close();
-        $this->p_open();
-        $this->linebreak();
-        if ( $display == NULL ) {
-            $this->doc .= '<draw:g draw:z-index="'.($this->div_z_index + 0).'">';
-        } else {
-            $this->doc .= '<draw:g draw:display="' . $display . '">';
-        }
-
-        // Draw a frame with the image in it, if required.
-        // FIXME: delete this part if 'background-image' in graphic style is working.
-        if ( $picture != NULL )
-        {
-            $this->doc .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
-                                svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
-                                svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                draw:z-index="'.($this->div_z_index + 1).'">
-                               <draw:image xlink:href="'.$pic_link.'"
-                                xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-                                </draw:frame>';
-        }
-
-        // Draw a frame with a text box in it. the text box will be left opened
-        // to grow with the content (requires fo:min-height in $style_name).
-
-        // Create frame
-        $frame = new ODTElementFrame($style_name.'_text_frame');
-        $frame_attrs .= 'draw:name="Bild1"
-                         svg:x="'.$left.'" svg:y="'.$top.'"
-                         svg:width="'.$width_abs.'" svg:height="'.$min_height.'"
-                         draw:z-index="'.($this->div_z_index + 0).'">';
-        $frame->setAttributes($frame_attrs);
-        $this->document->state->enter($frame);
-
-        // Encode frame
-        $this->doc .= $frame->getOpeningTag();
-        
-        // Create text box
-        $box = new ODTElementTextBox();
-        $box_attrs = '';
-        // If required use round corners.
-        if ( !empty($radius) )
-            $box_attrs .= 'draw:corner-radius="'.$radius.'"';
-        $box->setAttributes($box_attrs);
-        $this->document->state->enter($box);
-
-        // Encode box
-        $this->doc .= $box->getOpeningTag();
-    }
-
-    /**
-     * This function closes a textbox (previously opened with _odtOpenTextBoxUseProperties).
-     *
+     * @see ODTDocument::closeTextBox for API wrapper function
+     * @see ODTFrame::closeTextBox for detailed documentation
      * @author LarsDW223
      */
     function _odtCloseTextBox () {
-        // Close text box
-        $this->closeCurrentElement();
-        // Close frame
-        $this->closeCurrentElement();
-
-        $this->doc .= '</draw:g>';
-        $this->p_close();
-
-        $this->div_z_index -= 5;
+        $this->document->closeTextBox($this->doc);
     }
 
     /**
@@ -3785,7 +3018,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->document->state->leave();
         }
     }
-
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

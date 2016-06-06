@@ -11,6 +11,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTFootnote.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTHeading.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTParagraph.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTTable.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTFrame.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -39,6 +40,7 @@ class ODTDocument
     public $page = null;
     /** @var changePageFormat */
     public $changePageFormat = NULL;
+    public $div_z_index = 0;
 
     /** @var docHandler */
     protected $docHandler = null;
@@ -734,7 +736,52 @@ class ODTDocument
     function tableCellOpenUseProperties(&$content, $properties, $colspan = 1, $rowspan = 1){
         ODTTable::tableCellOpenUseProperties($this, $content, $properties, $colspan, $rowspan);
     }
+
+    /**
+     * Open a text box in a frame using CSS.
+     * 
+     * @see ODTFrame::openTextBoxUseCSS for detailed documentation
+     */
+    function openTextBoxUseCSS (&$content, $attributes=NULL, cssimportnew $import=NULL) {
+        ODTFrame::openTextBoxUseCSS($this, $content, $attributes, $import);
+    }
     
+    /**
+     * Open a text box in a frame using properties.
+     * 
+     * @see ODTFrame::openTextBoxUseProperties for detailed documentation
+     */
+    function openTextBoxUseProperties (&$content, $properties) {
+        ODTFrame::openTextBoxUseProperties($this, $content, $properties);
+    }
+
+    /**
+     * This function closes a textbox.
+     * 
+     * @see ODTFrame::closeTextBox for detailed documentation
+     */
+    function closeTextBox (&$content) {
+        ODTFrame::closeTextBox($this, $content);
+    }
+
+    /**
+     * Open a multi column text box in a frame using properties.
+     * 
+     * @see ODTFrame::openMultiColumnTextBoxUseProperties for detailed documentation
+     */
+    function openMultiColumnTextBoxUseProperties (&$content, $properties) {
+        ODTFrame::openMultiColumnTextBoxUseProperties($this, $content, $properties);
+    }
+
+    /**
+     * This function closes a multi column textbox.
+     * 
+     * @see ODTFrame::closeTextBox for detailed documentation
+     */
+    function closeMultiColumnTextBox (&$content) {
+        ODTFrame::closeMultiColumnTextBox($this, $content);
+    }
+
     /**
      * Change outline style to given value.
      * Currently only 'Numbers' is supported. Any other value will
@@ -884,5 +931,25 @@ class ODTDocument
         } else {
             $this->addAutomaticStyle($style_obj);
         }
+    }
+
+    /**
+     * The function tries to examine the width and height
+     * of the image stored in file $src.
+     * 
+     * @see ODTUtility::getImageSize for a detailed description
+     */
+    public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
+        return ODTUtility::getImageSize($src, $maxwidth, $maxheight);
+    }
+
+    /**
+     * @param string $src
+     * @param  $width
+     * @param  $height
+     * @return array
+     */
+    public static function getImageSizeString($src, $width = NULL, $height = NULL){
+        return ODTUtility::getImageSizeString($src, $width, $height);
     }
 }

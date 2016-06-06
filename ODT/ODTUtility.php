@@ -160,4 +160,86 @@ class ODTUtility
             }
         }
     }
+
+    /**
+     * The function tries to examine the width and height
+     * of the image stored in file $src.
+     * 
+     * @param  string $src The file name of image
+     * @param  int    $maxwidth The maximum width the image shall have
+     * @param  int    $maxheight The maximum height the image shall have
+     * @return array  Width and height of the image in centimeters or
+     *                both 0 if file doesn't exist.
+     *                Just the integer value, no units included.
+     */
+    public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
+        if (file_exists($src)) {
+            $info  = getimagesize($src);
+            if(!$width){
+                $width  = $info[0];
+                $height = $info[1];
+            }else{
+                $height = round(($width * $info[1]) / $info[0]);
+            }
+
+            if ($maxwidth && $width > $maxwidth) {
+                $height = $height * ($maxwidth/$width);
+                $width = $maxwidth;
+            }
+            if ($maxheight && $height > $maxheight) {
+                $width = $width * ($maxheight/$height);
+                $height = $maxheight;
+            }
+
+            // Convert from pixel to centimeters
+            if ($width) $width = (($width/96.0)*2.54);
+            if ($height) $height = (($height/96.0)*2.54);
+
+            return array($width, $height);
+        }
+
+        return array(0, 0);
+    }
+
+    /**
+     * @param string $src
+     * @param  $width
+     * @param  $height
+     * @return array
+     */
+    public static function getImageSizeString($src, $width = NULL, $height = NULL){
+        list($width_file, $height_file) = self::getImageSize($src);
+        if ($width_file != 0) {
+            $width  = $width_file;
+            $height = $height_file;
+        } else {
+            // convert from pixel to centimeters
+            if ($width) $width = (($width/96.0)*2.54);
+            if ($height) $height = (($height/96.0)*2.54);
+        }
+
+        if ($width && $height) {
+            // Don't be wider than the page
+            if ($width >= 17){ // FIXME : this assumes A4 page format with 2cm margins
+                $width = $width.'cm"  style:rel-width="100%';
+                $height = $height.'cm"  style:rel-height="scale';
+            } else {
+                $width = $width.'cm';
+                $height = $height.'cm';
+            }
+        } else {
+            // external image and unable to download, fallback
+            if ($width) {
+                $width = $width."cm";
+            } else {
+                $width = '" svg:rel-width="100%';
+            }
+            if ($height) {
+                $height = $height."cm";
+            } else {
+                $height = '" svg:rel-height="100%';
+            }
+        }
+        return array($width, $height);
+    }
 }

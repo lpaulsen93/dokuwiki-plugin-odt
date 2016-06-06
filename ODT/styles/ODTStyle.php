@@ -232,7 +232,7 @@ abstract class ODTStyle
      *
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      */
-    protected static function getNewStylename ($type = '') {
+    public static function getNewStylename ($type = '') {
         self::$style_count++;
         $style_name = self::$style_base_name.$type.'_'.self::$style_count;
         return $style_name;

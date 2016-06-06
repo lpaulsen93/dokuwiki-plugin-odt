@@ -2448,33 +2448,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function examines the CSS properties for $classes and $element based on the data
-     * in $import and saves them in $properties as key - value pairs, e.g. $properties ['color'] = 'red'.
-     * It also adjusts the values for the ODT format and changes URLs to local paths if required, using $baseURL).
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param null $baseURL
-     * @param null $element
-     */
-    public function _processCSSClass(&$properties, helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
-        $import->getPropertiesForElement($properties, $element, $classes);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
-        }
-
-        if ( !empty ($properties ['background-image']) ) {
-            if ( !empty ($baseURL) ) {
-                // Replace 'url(...)' with $baseURL
-                $properties ['background-image'] = $import->replaceURLPrefix ($properties ['background-image'], $baseURL);
-            }
-        }
-    }
-
-    /**
      * Open a multi column text box in a frame using properties.
      * 
      * @see ODTDocument::openMultiColumnTextBoxUseProperties for API wrapper function

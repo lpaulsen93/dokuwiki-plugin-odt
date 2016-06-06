@@ -2561,56 +2561,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function adjust the length string $value for ODT and returns the adjusted string:
-     * If no unit or pixel are specified, then pixel are converted to points using the
-     * configured twips per point (X axis).
-     *
-     * @author LarsDW223
-     *
-     * @param $value
-     * @return string
-     */
-    function adjustXLengthValueForODT ($value) {
-        // If there are only digits or if the unit is pixel,
-        // convert from pixel to point.
-        if ( ctype_digit($value) === true ) {
-            $value = $this->pixelToPointsX($value).'pt';
-        } else {
-            $length = strlen ($value);
-            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
-                $number = trim($value, 'px');
-                $value = $this->pixelToPointsX($number).'pt';
-            }
-        }
-        return $value;
-    }
-
-    /**
-     * This function adjust the length string $value for ODT and returns the adjusted string:
-     * If no unit or pixel are specified, then pixel are converted to points using the
-     * configured twips per point (Y axis).
-     *
-     * @author LarsDW223
-     *
-     * @param $value
-     * @return string
-     */
-    function adjustYLengthValueForODT ($value) {
-        // If there are only digits or if the unit is pixel,
-        // convert from pixel to point.
-        if ( ctype_digit($value) === true ) {
-            $value = $this->pixelToPointsY($value).'pt';
-        } else {
-            $length = strlen ($value);
-            if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
-                $number = trim($value, 'px');
-                $value = $this->pixelToPointsY($number).'pt';
-            }
-        }
-        return $value;
-    }
-
-    /**
      * @param $property
      * @param $value
      * @param $type

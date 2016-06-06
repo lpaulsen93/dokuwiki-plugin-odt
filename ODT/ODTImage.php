@@ -36,9 +36,7 @@ class ODTImage
             list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height);
         } else {
             // Adjust values for ODT
-            //$width = $this->adjustXLengthValueForODT ($width);
             $width = ODTUnits::toPoints($width, 'x');
-            //$height = $this->adjustYLengthValueForODT ($height);
             $height = ODTUnits::toPoints($height, 'y');
         }
 

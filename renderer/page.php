@@ -2060,73 +2060,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param  $returnonly
      */
     function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
-        static $z = 0;
-
-        $doc = '';
-        if (file_exists($src)) {
-            list($ext,$mime) = mimetype($src);
-            $name = 'Pictures/'.md5($src).'.'.$ext;
-            $this->document->addFile($name, $mime, io_readfile($src,false));
-        } else {
-            $name = $src;
-        }
-        // make sure width and height are available
-        if (!$width || !$height) {
-            list($width, $height) = $this->_odtGetImageSizeString($src, $width, $height);
-        } else {
-            // Adjust values for ODT
-            $width = $this->adjustXLengthValueForODT ($width);
-            $height = $this->adjustYLengthValueForODT ($height);
-        }
-
-        if($align){
-            $anchor = 'paragraph';
-        }else{
-            $anchor = 'as-char';
-        }
-
-        if (empty($style) || !$this->document->styleExists($style)) {
-            if (!empty($align)) {
-                $style = $this->document->getStyleName('media '.$align);
-            } else {
-                $style = $this->document->getStyleName('media');
-            }
-        }
-
-        // Open paragraph if necessary
-        if (!$this->document->state->getInParagraph()) {
-            $this->p_open();
-        }
-
-        if ($title) {
-            $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).' Legend"
-                            text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
-            $doc .= '<draw:text-box>';
-            $doc .= '<text:p text:style-name="'.$this->document->getStyleName('legend center').'">';
-        }
-        if (!empty($title)) {
-            $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
-                            text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
-                            svg:width="'.$width.'" svg:height="'.$height.'" >';
-        } else {
-            $doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$z.'"
-                            text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
-                            svg:width="'.$width.'" svg:height="'.$height.'" >';
-        }
-        $doc .= '<draw:image xlink:href="'.$this->_xmlEntities($name).'"
-                        xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
-        $doc .= '</draw:frame>';
-        if ($title) {
-            $doc .= $this->_xmlEntities($title).'</text:p></draw:text-box></draw:frame>';
-        }
-
-        if($returnonly) {
-          return $doc;
-        } else {
-          $this->doc .= $doc;
-        }
-
-        $z++;
+        $this->document->addImage($this->doc, $src, $width, $height, $align, $title, $style, $returnonly);
     }
 
     /**

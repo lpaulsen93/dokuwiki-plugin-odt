@@ -12,6 +12,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTHeading.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTParagraph.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTTable.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTFrame.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTImage.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -951,5 +952,14 @@ class ODTDocument
      */
     public static function getImageSizeString($src, $width = NULL, $height = NULL){
         return ODTUtility::getImageSizeString($src, $width, $height);
+    }
+
+    /**
+     * The function adds an image.
+     * 
+     * @see ODTImage::addImage for a detailed description
+     */
+    public function addImage(&$content, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
+        ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
     }
 }

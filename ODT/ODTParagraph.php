@@ -180,6 +180,7 @@ class ODTParagraph
         //$disabled ['background-image'] = 1;
         //FIXME: pass $disabled
         $style_obj = ODTParagraphStyle::createParagraphStyle ($properties);
+        $doc->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
         // Open a paragraph

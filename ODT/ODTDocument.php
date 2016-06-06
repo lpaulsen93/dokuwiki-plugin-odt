@@ -13,6 +13,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTParagraph.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTTable.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTFrame.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTImage.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTSpan.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -113,9 +114,25 @@ class ODTDocument
      * @param string $styleName The style to use.
      */
     function spanOpen($styleName, &$content){
-        $span = new ODTElementSpan ($styleName);
-        $this->state->enter($span);
-        $content .= $span->getOpeningTag();
+        ODTSpan::spanOpen($this, $content, $styleName);
+    }
+
+    /**
+     * Open a text span using CSS.
+     * 
+     * @see ODTSpan::spanOpenUseCSS for detailed documentation
+     */
+    function spanOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL){
+        ODTSpan::spanOpenUseCSS($this, $content, $attributes, $import);
+    }
+
+    /**
+     * Open a text span using properties.
+     * 
+     * @see ODTSpan::spanOpenUseProperties for detailed documentation
+     */
+    function spanOpenUseProperties(&$content, $properties){
+        ODTSpan::spanOpenUseProperties($this, $content, $properties);
     }
 
     /**
@@ -124,7 +141,7 @@ class ODTDocument
      * @param string $style_name The style to use.
      */    
     function spanClose(&$content) {
-        $this->closeCurrentElement($content);
+        ODTSpan::spanClose($this, $content);
     }
 
     /**

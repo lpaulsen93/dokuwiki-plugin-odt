@@ -2085,98 +2085,25 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function opens a new span using the style as set in the imported CSS $import.
-     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
-     * The CSS style is selected by the element type 'span' and the specified classes in $classes.
-     * The property 'background-image' is not supported by an ODT span. This will be emulated
-     * by inserting an image manually in the span. If the url from the CSS should be converted to
-     * a local path, then the caller can specify a $baseURL. The full path will then be $baseURL/background-image.
-     *
-     * This function calls _odtSpanOpenUseProperties. See the function description for supported properties.
-     *
-     * The span should be closed by calling '_odtSpanClose'.
-     *
+     * Open a span using CSS.
+     * 
+     * @see ODTDocument::spanOpenUseCSS for API wrapper function
+     * @see ODTSpan::spanOpenUseCSS for detailed documentation
      * @author LarsDW223
-     *
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param $baseURL
-     * @param $element
      */
-    function _odtSpanOpenUseCSS(helper_plugin_odt_cssimport $import, $classes, $baseURL = NULL, $element = NULL){
-        $properties = array();
-        if ( empty($element) ) {
-            $element = 'span';
-        }
-        $this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        $this->_odtSpanOpenUseProperties($properties);
+    function _odtSpanOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
+        $this->document->spanOpenUseCSS($this->doc, $attributes, $import);
     }
 
     /**
-     * This function opens a new span using the style as specified in $style.
-     * The property 'background-image' is not supported by an ODT span. This will be emulated
-     * by inserting an image manually in the span. If the url from the CSS should be converted to
-     * a local path, then the caller can specify a $baseURL. The full path will then be $baseURL/background-image.
-     *
-     * This function calls _odtSpanOpenUseProperties. See the function description for supported properties.
-     *
-     * The span should be closed by calling '_odtSpanClose'.
-     *
+     * Open a span using properties.
+     * 
+     * @see ODTDocument::spanOpenUseProperties for API wrapper function
+     * @see ODTSpan::spanOpenUseProperties for detailed documentation
      * @author LarsDW223
-     *
-     * @param $style
-     * @param $baseURL
-     */
-    function _odtSpanOpenUseCSSStyle($style, $baseURL = NULL){
-        $properties = array();
-        $this->_processCSSStyle ($properties, $style, $baseURL);
-        $this->_odtSpanOpenUseProperties($properties);
-    }
-
-    /**
-     * This function opens a new span using the style as set in the assoziative array $properties.
-     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
-     * The property 'background-image' is not supported by an ODT span. This will be emulated
-     * by inserting an image manually in the span.
-     *
-     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
-     * vertical-align, background-image (emulated)
-     *
-     * The span should be closed by calling '_odtSpanClose'.
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
      */
     function _odtSpanOpenUseProperties($properties){
-        $disabled = array ();
-
-        $odt_bg = $properties ['background-color'];
-        $picture = $properties ['background-image'];
-
-        if ( !empty ($picture) ) {
-            $this->style_count++;
-
-            // If a picture/background-image is set, than we insert it manually here.
-            // This is a workaround because ODT does not support the background-image attribute in a span.
-
-            // Define graphic style for picture
-            $style_name = 'odt_auto_style_span_graphic_'.$this->style_count;
-            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$this->document->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
-
-            // Add style and image to our document
-            // (as unknown style because style-family graphic is not supported)
-            $style_obj = ODTUnknownStyle::importODTStyle($image_style);
-            $this->document->addAutomaticStyle($style_obj);
-            $this->_odtAddImage ($picture,NULL,NULL,NULL,NULL,$style_name);
-        }
-
-        // Create a text style for our span
-        $disabled ['background-image'] = 1;
-        $style_name = $this->_createTextStyle ($properties, $disabled);
-
-        // Open span
-        $this->_odtSpanOpen($style_name);
+        $this->document->spanOpenUseProperties($this->doc, $properties);
     }
 
     function _odtSpanOpen($style_name){

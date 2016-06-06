@@ -3743,129 +3743,57 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function creates a text style for spans with the given properties.
-     * If $common is true it will be added to the common styles otherwise it
-     * will be dadded to the automatic styles.
+     * This function creates a text style.
      * 
-     * Common styles are visible for the user after export e.g. in LibreOffice
-     * 'Styles and Formatting' view. Therefore they should have
-     * $properties ['style-display-name'] set to a meaningfull name.
-     * 
-     * @param $properties The properties to use
-     * @param $common Add style to common or automatic styles?
+     * @see ODTDocument::createTextStyle for detailed desciption.
      */
     public function createTextStyle ($properties, $common=true) {
-        $style_obj = $this->factory->createTextStyle($properties);
-        if ($common == true) {
-            $this->document->addStyle($style_obj);
-        } else {
-            $this->document->addAutomaticStyle($style_obj);
-        }
+        $this->document->createTextStyle ($properties, $common);
     }
 
     /**
-     * This function creates a paragraph style for paragraphs with the given properties.
-     * If $common is true it will be added to the common styles otherwise it
-     * will be dadded to the automatic styles.
+     * This function creates a paragraph style.
      * 
-     * Common styles are visible for the user after export e.g. in LibreOffice
-     * 'Styles and Formatting' view. Therefore they should have
-     * $properties ['style-display-name'] set to a meaningfull name.
-     * 
-     * @param $properties The properties to use
-     * @param $common Add style to common or automatic styles?
+     * @see ODTDocument::createParagraphStyle for detailed desciption.
      */
     public function createParagraphStyle ($properties, $common=true) {
-        $style_obj = $this->factory->createParagraphStyle($properties);
-        if ($common == true) {
-            $this->document->addStyle($style_obj);
-        } else {
-            $this->document->addAutomaticStyle($style_obj);
-        }
+        $this->document->createParagraphStyle ($properties, $common);
     }
 
     /**
-     * This function creates a table style for tables with the given properties.
-     * If $common is true it will be added to the common styles otherwise it
-     * will be dadded to the automatic styles.
+     * This function creates a table style.
      * 
-     * Common styles are visible for the user after export e.g. in LibreOffice
-     * 'Styles and Formatting' view. Therefore they should have
-     * $properties ['style-display-name'] set to a meaningfull name.
-     * 
-     * @param $properties The properties to use
-     * @param $common Add style to common or automatic styles?
+     * @see ODTDocument::createTableStyle for detailed desciption.
      */
     public function createTableStyle ($properties, $common=true) {
-        $style_obj = $this->factory->createTableTableStyle($properties);
-        if ($common == true) {
-            $this->document->addStyle($style_obj);
-        } else {
-            $this->document->addAutomaticStyle($style_obj);
-        }
+        $this->document->createTableStyle ($properties, $common);
     }
 
     /**
-     * This function creates a table row style for table rows with the given properties.
-     * If $common is true it will be added to the common styles otherwise it
-     * will be dadded to the automatic styles.
+     * This function creates a table row style.
      * 
-     * Common styles are visible for the user after export e.g. in LibreOffice
-     * 'Styles and Formatting' view. Therefore they should have
-     * $properties ['style-display-name'] set to a meaningfull name.
-     * 
-     * @param $properties The properties to use
-     * @param $common Add style to common or automatic styles?
+     * @see ODTDocument::createTableRowStyle for detailed desciption.
      */
     public function createTableRowStyle ($properties, $common=true) {
-        $style_obj = $this->factory->createTableRowStyle($properties);
-        if ($common == true) {
-            $this->document->addStyle($style_obj);
-        } else {
-            $this->document->addAutomaticStyle($style_obj);
-        }
+        $this->document->createTableRowStyle ($properties, $common);
     }
 
     /**
-     * This function creates a table cell style for table cells with the given properties.
-     * If $common is true it will be added to the common styles otherwise it
-     * will be dadded to the automatic styles.
+     * This function creates a table cell style.
      * 
-     * Common styles are visible for the user after export e.g. in LibreOffice
-     * 'Styles and Formatting' view. Therefore they should have
-     * $properties ['style-display-name'] set to a meaningfull name.
-     * 
-     * @param $properties The properties to use
-     * @param $common Add style to common or automatic styles?
+     * @see ODTDocument::createTableCellStyle for detailed  desciption.
      */
     public function createTableCellStyle ($properties, $common=true) {
-        $style_obj = $this->factory->createTableCellStyle($properties);
-        if ($common == true) {
-            $this->document->addStyle($style_obj);
-        } else {
-            $this->document->addAutomaticStyle($style_obj);
-        }
+        $this->document->createTableCellStyle ($properties, $common);
     }
 
     /**
-     * This function creates a table column style for table columns with the given properties.
-     * If $common is true it will be added to the common styles otherwise it
-     * will be dadded to the automatic styles.
+     * This function creates a table column style.
      * 
-     * Common styles are visible for the user after export e.g. in LibreOffice
-     * 'Styles and Formatting' view. Therefore they should have
-     * $properties ['style-display-name'] set to a meaningfull name.
-     * 
-     * @param $properties The properties to use
-     * @param $common Add style to common or automatic styles?
+     * @see ODTDocument::createTableColumnStyle for detailed desciption.
      */
     public function createTableColumnStyle ($properties, $common=true) {
-        $style_obj = $this->factory->createTableColumnStyle($properties);
-        if ($common == true) {
-            $this->document->addStyle($style_obj);
-        } else {
-            $this->document->addAutomaticStyle($style_obj);
-        }
+        $this->document->createTableColumnStyle ($properties, $common);
     }
 
     public function styleExists ($style_name) {

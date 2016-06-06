@@ -759,4 +759,130 @@ class ODTDocument
                 break;
         }
     }
+
+    /**
+     * This function creates a text style for spans with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTextStyle ($properties, $common=true) {
+        $style_obj = ODTTextStyle::createTextStyle($properties);
+        if ($common == true) {
+            $this->addStyle($style_obj);
+        } else {
+            $this->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a paragraph style for paragraphs with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createParagraphStyle ($properties, $common=true) {
+        $style_obj = ODTParagraphStyle::createParagraphStyle($properties);
+        if ($common == true) {
+            $this->addStyle($style_obj);
+        } else {
+            $this->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table style for tables with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableStyle ($properties, $common=true) {
+        $style_obj = ODTTableStyle::createTableTableStyle($properties);
+        if ($common == true) {
+            $this->addStyle($style_obj);
+        } else {
+            $this->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table row style for table rows with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableRowStyle ($properties, $common=true) {
+        $style_obj = ODTTableRowStyle::createTableRowStyle($properties);
+        if ($common == true) {
+            $this->addStyle($style_obj);
+        } else {
+            $this->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table cell style for table cells with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableCellStyle ($properties, $common=true) {
+        $style_obj = ODTTableCellStyle::createTableCellStyle($properties);
+        if ($common == true) {
+            $this->addStyle($style_obj);
+        } else {
+            $this->addAutomaticStyle($style_obj);
+        }
+    }
+
+    /**
+     * This function creates a table column style for table columns with the given properties.
+     * If $common is true it will be added to the common styles otherwise it
+     * will be dadded to the automatic styles.
+     * 
+     * Common styles are visible for the user after export e.g. in LibreOffice
+     * 'Styles and Formatting' view. Therefore they should have
+     * $properties ['style-display-name'] set to a meaningfull name.
+     * 
+     * @param $properties The properties to use
+     * @param $common Add style to common or automatic styles?
+     */
+    public function createTableColumnStyle ($properties, $common=true) {
+        $style_obj = ODTTableColumnStyle::createTableColumnStyle($properties);
+        if ($common == true) {
+            $this->addStyle($style_obj);
+        } else {
+            $this->addAutomaticStyle($style_obj);
+        }
+    }
 }

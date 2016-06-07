@@ -68,7 +68,7 @@ class ODTParagraph
         // Opening a paragraph inside another paragraph is illegal
         $inParagraph = $doc->state->getInParagraph();
         if (!$inParagraph) {
-            if ( $doc->changePageFormat != NULL ) {
+            if ( $doc->pageFormatChangeIsPending() ) {
                 $pageStyle = $doc->doPageFormatChange($styleName);
                 if ( $pageStyle != NULL ) {
                     $styleName = $pageStyle;

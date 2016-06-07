@@ -41,14 +41,14 @@ class ODTDocument
     public $toc = array();
     /** @var Current pageFormat */
     public $page = null;
-    /** @var changePageFormat */
-    public $changePageFormat = NULL;
     public $div_z_index = 0;
     /** @var  has any text content been added yet (excluding whitespace)? */
     public $text_empty = true;
     /** @var Debug string */
     public $trace_dump = '';
 
+    /** @var changePageFormat */
+    protected $changePageFormat = NULL;
     /** @var indexesData */
     protected $indexesData = array();
     /** @var docHandler */
@@ -132,7 +132,7 @@ class ODTDocument
             // Attention: NOT if $text is empty. This would lead to empty lines before headings
             //            right after a pagebreak!
             $in_paragraph = $this->state->getInParagraph();
-            if ( ($this->pagebreakIsPending() || $this->changePageFormat != NULL) ||
+            if ( ($this->pagebreakIsPending() || $this->pageFormatChangeIsPending()) ||
                   !$in_paragraph ) {
                 $this->paragraphOpen(NULL, $content);
             }
@@ -252,6 +252,18 @@ class ODTDocument
      */
     function pagebreakIsPending() {
         return $this->pagebreak;
+    }
+
+    /**
+     * Check if a page format change is pending
+     * 
+     * @return bool
+     */
+    function pageFormatChangeIsPending() {
+        if ($this->changePageFormat != NULL) {
+            return true;
+        }
+        return false;
     }
 
     /**

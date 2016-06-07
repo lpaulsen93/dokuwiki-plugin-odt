@@ -26,7 +26,7 @@ class ODTHeading
         $style = $doc->getStyleName('heading'.$level);
 
         // Change page format if pending
-        if ( $doc->changePageFormat != NULL ) {
+        if ( $doc->pageFormatChangeIsPending() ) {
             $pageStyle = $doc->doPageFormatChange($style);
             if ( $pageStyle != NULL ) {
                 $style = $pageStyle;

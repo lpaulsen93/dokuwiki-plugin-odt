@@ -83,27 +83,6 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
     }
 
     /**
-     * @param $first_name
-     * @param $value
-     * @return string
-     */
-    protected static function writeExtensionNames ($first_name, $value) {
-        static $names_ext = array (
-              'fo:country'     => array ('style:country-asian', 'style:country-complex'),
-              'fo:language'    => array ('style:language-asian', 'style:language-complex'),
-              'fo:font-size'   => array ('style:font-size-asian', 'style:font-size-complex'),
-              'fo:font-weight' => array ('style:font-weight-asian', 'style:font-weight-complex'),
-              'fo:font-style'  => array ('style:font-style-asian', 'style:font-style-complex'),
-            );
-
-        $text = '';
-        for ($index = 0 ; $index < count($names_ext [$first_name]) ; $index++) {
-            $text .= $names_ext [$first_name][$index].'="'.$value.'" ';
-        }
-        return $text;
-    }
-
-    /**
      * This function creates a text style using the style as set in the assoziative array $properties.
      * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
      * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
@@ -311,37 +290,6 @@ class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
      * @return string  Converted value
      */
     public function adjustValueForODT ($property, $value, $emValue = 0) {
-        $values = preg_split ('/\s+/', $value);
-        $value = '';
-        foreach ($values as $part) {
-            $length = strlen ($part);
-
-            // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
-            // (ODT does not support the short form)
-            if ( $part [0] == '#' && $length == 4 ) {
-                $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
-            } else {
-                // If it is a CSS color name, get it's real color value
-                /** @var helper_plugin_odt_csscolors $odt_colors */
-                $odt_colors = plugin_load('helper', 'odt_csscolors');
-                $color = $odt_colors->getColorValue ($part);
-                if ( $part == 'black' || $color != '#000000' ) {
-                    $part = $color;
-                }
-            }
-
-            if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
-                $number = substr ($part, 0, $length-2);
-                if ( is_numeric ($number) && !empty ($emValue) ) {
-                    $part = ($number * $emValue).'pt';
-                }
-            }
-
-            $value .= ' '.$part;
-        }
-        $value = trim($value);
-        $value = trim($value, '"');
-
-        return $value;
+        return ODTUtility::adjustValueForODT ($property, $value, $emValue);
     }
 }

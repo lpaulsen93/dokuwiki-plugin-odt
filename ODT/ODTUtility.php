@@ -242,4 +242,52 @@ class ODTUtility
         }
         return array($width, $height);
     }
+
+    /**
+     * The function adjusts the property value for ODT:
+     * - 'em' units are converted to 'pt' units
+     * - CSS color names are converted to its RGB value
+     * - short color values like #fff are converted to the long format, e.g #ffffff
+     *
+     * @author LarsDW223
+     *
+     * @param  string  $property The property name
+     * @param  string  $value    The value
+     * @param  integer $emValue  Factor for conversion from 'em' to 'pt'
+     * @return string  Converted value
+     */
+    public static function adjustValueForODT ($property, $value, $emValue = 0) {
+        $values = preg_split ('/\s+/', $value);
+        $value = '';
+        foreach ($values as $part) {
+            $length = strlen ($part);
+
+            // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
+            // (ODT does not support the short form)
+            if ( $part [0] == '#' && $length == 4 ) {
+                $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
+            } else {
+                // If it is a CSS color name, get it's real color value
+                /** @var helper_plugin_odt_csscolors $odt_colors */
+                $odt_colors = plugin_load('helper', 'odt_csscolors');
+                $color = $odt_colors->getColorValue ($part);
+                if ( $part == 'black' || $color != '#000000' ) {
+                    $part = $color;
+                }
+            }
+
+            if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
+                $number = substr ($part, 0, $length-2);
+                if ( is_numeric ($number) && !empty ($emValue) ) {
+                    $part = ($number * $emValue).'pt';
+                }
+            }
+
+            $value .= ' '.$part;
+        }
+        $value = trim($value);
+        $value = trim($value, '"');
+
+        return $value;
+    }
 }

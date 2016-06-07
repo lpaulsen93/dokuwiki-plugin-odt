@@ -28,8 +28,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public $index_count = 0;
     /** @var export mode (scratch or ODT template) */
     protected $mode = 'scratch';
-    /** @var helper_plugin_odt_stylefactory */
-    protected $factory = null;
     /** @var helper_plugin_odt_cssimport */
     protected $import = null;
     /** @var helper_plugin_odt_cssimportnew */
@@ -62,8 +60,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function __construct() {
         // Set up empty array with known config parameters
         $this->config = plugin_load('helper', 'odt_config');
-
-        $this->factory = plugin_load('helper', 'odt_stylefactory');
 
         $this->document = new ODTDocument();
 
@@ -655,7 +651,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->style_count++;
             $properties ['style-name'] = 'Contents_20_Heading_'.$this->style_count;
             $properties ['style-display-name'] = 'Contents Heading '.$this->style_count;
-            $style_obj = $this->factory->createParagraphStyle($properties);
+            $style_obj = ODTParagraphStyle::createParagraphStyle($properties);
             $this->document->addStyle($style_obj);
             $title_style = $style_obj->getProperty('style-name');
         }
@@ -680,7 +676,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $properties ['text-indent'] = '0cm';
             $properties ['style-name'] = 'ToC '.$indexNo.'- Level '.($count+1);
             $properties ['style-display-name'] = 'ToC '.$indexNo.', Level '.($count+1);
-            $style_obj = $this->factory->createParagraphStyle($properties);
+            $style_obj = ODTParagraphStyle::createParagraphStyle($properties);
 
             // Add paragraph style to common styles.
             // (It MUST be added to styles NOT to automatic styles. Otherwise LibreOffice will
@@ -694,7 +690,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $properties ['style-class'] = NULL;
             $properties ['style-name'] = 'ToC Auto '.$indexNo.'- Level '.($count+1);
             $properties ['style-display-name'] = NULL;
-            $style_obj_auto = $this->factory->createParagraphStyle($properties);
+            $style_obj_auto = ODTParagraphStyle::createParagraphStyle($properties);
             
             // Add paragraph style to automatic styles.
             // (It MUST be added to automatic styles NOT to styles. Otherwise LibreOffice will
@@ -710,7 +706,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->_processCSSStyle ($properties, $stylesL [$count+1]);
             $properties ['style-name'] = 'ToC '.$indexNo.'- Text Level '.($count+1);
             $properties ['style-display-name'] = 'ToC '.$indexNo.', Level '.($count+1);
-            $style_obj = $this->factory->createTextStyle($properties);
+            $style_obj = ODTTextStyle::createTextStyle($properties);
             $stylesLNames [$count+1] = $style_obj->getProperty('style-name');
             $this->document->addStyle($style_obj);
         }
@@ -1512,8 +1508,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $properties ['style-name'] = $style_name;
             $this->getODTProperties ($properties, NULL, 'code '.$class, NULL, 'screen');
 
-            $style_obj = $this->factory->createTextStyle($properties);
-            $this->document->addAutomaticStyle($style_obj);
+            // Create automatic style
+            $this->document->createTextStyle($properties, false);
         }
         
         // Now make use of the new style
@@ -2380,7 +2376,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return string
      */
     public function adjustValueForODT ($property, $value, $emValue = 0) {
-        return $this->factory->adjustValueForODT ($property, $value, $emValue);
+        return ODTUtility::adjustValueForODT ($property, $value, $emValue);
     }
 
     /**

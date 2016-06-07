@@ -83,6 +83,10 @@ class ODTDocument
 
         // Use standard handler, document from scratch.
         $this->docHandler = new scratchDH ();
+
+        // Set standard page format: A4, portrait, 2cm margins
+        $this->page = new pageFormat();
+        $this->setStartPageFormat ('A4', 'portrait', 2, 2, 2, 2);
     }
 
     /**
@@ -1087,6 +1091,36 @@ class ODTDocument
      */
     public function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL){
         ODTUtility::getCSSStylePropertiesForODT($properties, $style, $baseURL);
+    }
+
+    /**
+     * This function sets the page format for the FIRST page.
+     * The format, orientation and page margins can be changed.
+     * See function queryFormat() in ODT/page.php for supported formats.
+     *
+     * @param string  $format         e.g. 'A4', 'A3'
+     * @param string  $orientation    e.g. 'portrait' or 'landscape'
+     * @param numeric $margin_top     Top-Margin in cm, default 2
+     * @param numeric $margin_right   Right-Margin in cm, default 2
+     * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
+     * @param numeric $margin_left    Left-Margin in cm, default 2
+     */
+    public function setStartPageFormat ($format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
+        // Setup page format.
+        // Set the page format of the current page for calculation ($this->document->page)
+        $this->page->setFormat
+            ($format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
+
+        // Change the standard page layout style
+        $first_page = $this->getStyleByAlias('first page');
+        if ($first_page != NULL) {
+            $first_page->setProperty('width', $this->page->getWidth().'cm');
+            $first_page->setProperty('height', $this->page->getHeight().'cm');
+            $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
+            $first_page->setProperty('margin-right', $this->page->getMarginRight().'cm');
+            $first_page->setProperty('margin-bottom', $this->page->getMarginBottom().'cm');
+            $first_page->setProperty('margin-left', $this->page->getMarginLeft().'cm');
+        }
     }
 
     /**

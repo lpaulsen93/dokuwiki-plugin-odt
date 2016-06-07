@@ -188,24 +188,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Setup page format.
-        // Set the page format of the current page for calculation ($this->document->page)
-        // Change the standard page layout style
-        $this->document->page = new pageFormat();
-        $this->document->page->setFormat($this->config->getParam ('format'),
-                             $this->config->getParam ('orientation'),
-                             $this->config->getParam ('margin_top'),
-                             $this->config->getParam ('margin_right'),
-                             $this->config->getParam ('margin_bottom'),
-                             $this->config->getParam ('margin_left'));
-        $first_page = $this->document->getStyleByAlias('first page');
-        if ($first_page != NULL) {
-            $first_page->setProperty('width', $this->document->page->getWidth().'cm');
-            $first_page->setProperty('height', $this->document->page->getHeight().'cm');
-            $first_page->setProperty('margin-top', $this->document->page->getMarginTop().'cm');
-            $first_page->setProperty('margin-right', $this->document->page->getMarginRight().'cm');
-            $first_page->setProperty('margin-bottom', $this->document->page->getMarginBottom().'cm');
-            $first_page->setProperty('margin-left', $this->document->page->getMarginLeft().'cm');
-        }
+        $this->document->setStartPageFormat ($this->config->getParam ('format'),
+                                             $this->config->getParam ('orientation'),
+                                             $this->config->getParam ('margin_top'),
+                                             $this->config->getParam ('margin_right'),
+                                             $this->config->getParam ('margin_bottom'),
+                                             $this->config->getParam ('margin_left'));
 
         // Set title in meta info.
         $this->meta->setTitle($ID); //FIXME article title != book title  SOLUTION: overwrite at the end for book

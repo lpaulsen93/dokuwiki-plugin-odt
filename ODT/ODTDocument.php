@@ -1076,4 +1076,71 @@ class ODTDocument
     public function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL){
         ODTUtility::getCSSStylePropertiesForODT($properties, $style, $baseURL);
     }
+
+    /**
+     * This function sets the page format.
+     * The format, orientation and page margins can be changed.
+     * See function queryFormat() in ODT/page.php for supported formats.
+     *
+     * @param string  $format         e.g. 'A4', 'A3'
+     * @param string  $orientation    e.g. 'portrait' or 'landscape'
+     * @param numeric $margin_top     Top-Margin in cm, default 2
+     * @param numeric $margin_right   Right-Margin in cm, default 2
+     * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
+     * @param numeric $margin_left    Left-Margin in cm, default 2
+     */
+    public function setPageFormat (&$content, $format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
+        $data = array ();
+
+        // Fill missing values with current settings
+        if ( empty($format) ) {
+            $format = $this->page->getFormat();
+        }
+        if ( empty($orientation) ) {
+            $orientation = $this->page->getOrientation();
+        }
+        if ( empty($margin_top) ) {
+            $margin_top = $this->page->getMarginTop();
+        }
+        if ( empty($margin_right) ) {
+            $margin_right = $this->page->getMarginRight();
+        }
+        if ( empty($margin_bottom) ) {
+            $margin_bottom = $this->page->getMarginBottom();
+        }
+        if ( empty($margin_left) ) {
+            $margin_left = $this->page->getMarginLeft();
+        }
+
+        // Adjust given parameters, query resulting format data and get format-string
+        $this->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
+        $format_string = $this->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+
+        if ( $format_string == $this->page->toString () ) {
+            // Current page already uses this format, no need to do anything...
+            return;
+        }
+
+        if ($this->text_empty) {
+            // If the text is still empty, then we change the start page format now.
+            $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
+            $first_page = $this->getStyleByAlias('first page');
+            if ($first_page != NULL) {
+                $first_page->setProperty('width', $this->page->getWidth().'cm');
+                $first_page->setProperty('height', $this->page->getHeight().'cm');
+                $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
+                $first_page->setProperty('margin-right', $this->page->getMarginRight().'cm');
+                $first_page->setProperty('margin-bottom', $this->page->getMarginBottom().'cm');
+                $first_page->setProperty('margin-left', $this->page->getMarginLeft().'cm');
+            }
+        } else {
+            // Set marker and save data for pending change format.
+            // The format change istelf will be done on the next call to p_open or header()
+            // to prevent empty lines after the format change.
+            $this->changePageFormat = $data;
+
+            // Close paragraph if open
+            $this->paragraphClose($content);
+        }
+    }
 }

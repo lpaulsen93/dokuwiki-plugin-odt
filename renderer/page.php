@@ -282,60 +282,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param numeric $margin_right   Right-Margin in cm, default 2
      * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
      * @param numeric $margin_left    Left-Margin in cm, default 2
+     * @see ODTDocument::setPageFormat
      */
     public function setPageFormat ($format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
-        $data = array ();
-
-        // Fill missing values with current settings
-        if ( empty($format) ) {
-            $format = $this->document->page->getFormat();
-        }
-        if ( empty($orientation) ) {
-            $orientation = $this->document->page->getOrientation();
-        }
-        if ( empty($margin_top) ) {
-            $margin_top = $this->document->page->getMarginTop();
-        }
-        if ( empty($margin_right) ) {
-            $margin_right = $this->document->page->getMarginRight();
-        }
-        if ( empty($margin_bottom) ) {
-            $margin_bottom = $this->document->page->getMarginBottom();
-        }
-        if ( empty($margin_left) ) {
-            $margin_left = $this->document->page->getMarginLeft();
-        }
-
-        // Adjust given parameters, query resulting format data and get format-string
-        $this->document->page->queryFormat ($data, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
-        $format_string = $this->document->page->formatToString ($data['format'], $data['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
-
-        if ( $format_string == $this->document->page->toString () ) {
-            // Current page already uses this format, no need to do anything...
-            return;
-        }
-
-        if ($this->document->text_empty) {
-            // If the text is still empty, then we change the start page format now.
-            $this->document->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
-            $first_page = $this->document->getStyleByAlias('first page');
-            if ($first_page != NULL) {
-                $first_page->setProperty('width', $this->document->page->getWidth().'cm');
-                $first_page->setProperty('height', $this->document->page->getHeight().'cm');
-                $first_page->setProperty('margin-top', $this->document->page->getMarginTop().'cm');
-                $first_page->setProperty('margin-right', $this->document->page->getMarginRight().'cm');
-                $first_page->setProperty('margin-bottom', $this->document->page->getMarginBottom().'cm');
-                $first_page->setProperty('margin-left', $this->document->page->getMarginLeft().'cm');
-            }
-        } else {
-            // Set marker and save data for pending change format.
-            // The format change istelf will be done on the next call to p_open or header()
-            // to prevent empty lines after the format change.
-            $this->document->changePageFormat = $data;
-
-            // Close paragraph if open
-            $this->p_close();
-        }
+        $this->document->setPageFormat ($this->doc, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
     }
 
     /**

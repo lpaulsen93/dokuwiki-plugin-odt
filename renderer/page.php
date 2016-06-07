@@ -2529,20 +2529,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function styleExists ($style_name) {
         return $this->document->styleExists($style_name);
     }
-
-    /**
-     * General internal function for closing an element.
-     * Can always be used to close any open element if no more actions
-     * are required apart from generating the closing tag and
-     * removing the element from the state stack.
-     */
-    protected function closeCurrentElement(&$content=NULL) {
-        $current = $this->document->state->getCurrent();
-        if ($current != NULL) {
-            $this->doc .= $current->getClosingTag($content);
-            $this->document->state->leave();
-        }
-    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

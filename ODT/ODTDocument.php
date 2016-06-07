@@ -856,7 +856,7 @@ class ODTDocument
      * @param $common Add style to common or automatic styles?
      */
     public function createTextStyle ($properties, $common=true) {
-        $style_obj = ODTTextStyle::createTextStyle($properties);
+        $style_obj = ODTTextStyle::createTextStyle($properties, NULL, $this);
         if ($common == true) {
             $this->addStyle($style_obj);
         } else {

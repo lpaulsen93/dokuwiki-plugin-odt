@@ -230,7 +230,7 @@ class ODTTextStyle extends ODTStyleStyle
      * @param null $disabled_props
      * @return ODTTextStyle or NULL
      */
-    public static function createTextStyle(array $properties, array $disabled_props = NULL){
+    public static function createTextStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
         if ( $properties ['text-decoration'] == 'line-through' ) {
             $properties ['text-line-through-style'] = 'solid';
@@ -275,6 +275,25 @@ class ODTTextStyle extends ODTStyleStyle
             }
         }
 
+        // Extra handling for font-size in '%'
+        $save = $disabled_props ['font-size'];
+        $odt_fo_size = '';
+        if ( empty ($disabled_props ['font-size']) ) {
+            $odt_fo_size = $properties ['font-size'];
+        }
+        $length = strlen ($odt_fo_size);
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && $doc != NULL) {
+            // A font-size in percent is only supported in common style definitions, not in automatic
+            // styles. Create a common style and set it as parent for this automatic style.
+            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
+            $style_obj = self::createSizeOnlyTextStyle ($name, $odt_fo_size);
+            $doc->addStyle($style_obj);
+            $parent = $style_obj->getProperty('style-name');
+            if (!empty($parent)) {
+                $properties ['style-parent'] = $parent;
+            }
+        }
+
         // Create style name (if not given).
         $style_name = $properties ['style-name'];
         if ( empty($style_name) ) {
@@ -290,6 +309,9 @@ class ODTTextStyle extends ODTStyleStyle
         
         // Import our properties
         $object->importProperties($properties, $disabled_props);
+
+        // Restore $disabled_props
+        $disabled_props ['font-size'] = $save;
         return $object;
     }
 

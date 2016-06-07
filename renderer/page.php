@@ -2314,54 +2314,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function creates a text style using the style as set in the assoziative array $properties.
-     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
-     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
-     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
-     *
-     * The currently supported properties are:
-     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
-     * vertical-align, background-image
-     *
-     * The function returns the name of the new style or NULL if all relevant properties are empty.
-     *
-     * @author LarsDW223
-     *
-     * @param array $properties
-     * @param array $disabled_props
-     * @return null|string
-     */
-    protected function _createTextStyle($properties, $disabled_props = NULL){
-        $save = $disabled_props ['font-size'];
-
-        $odt_fo_size = '';
-        if ( empty ($disabled_props ['font-size']) ) {
-            $odt_fo_size = $properties ['font-size'];
-        }
-        $parent = '';
-        $length = strlen ($odt_fo_size);
-        if ( $length > 0 && $odt_fo_size [$length-1] == '%' ) {
-            // A font-size in percent is only supported in common style definitions, not in automatic
-            // styles. Create a common style and set it as parent for this automatic style.
-            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
-            $style_obj = $this->factory->createSizeOnlyTextStyle ($name, $odt_fo_size);
-            $this->document->addStyle($style_obj);
-            $parent = $style_obj->getProperty('style-name');
-        }
-
-        if (!empty($parent)) {
-            $properties ['style-parent'] = $parent;
-        }
-        $style_obj = $this->factory->createTextStyle($properties, $disabled_props);
-        $this->document->addAutomaticStyle($style_obj);
-        $style_name = $style_obj->getProperty('style-name');
-
-        $disabled_props ['font-size'] = $save;
-
-        return $style_name;
-    }
-
-    /**
      * This function processes the CSS declarations in $style and saves them in $properties
      * as key - value pairs, e.g. $properties ['color'] = 'red'. It also adjusts the values
      * for the ODT format and changes URLs to local paths if required, using $baseURL).

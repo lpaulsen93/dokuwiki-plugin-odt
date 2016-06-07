@@ -43,6 +43,8 @@ class ODTDocument
     /** @var changePageFormat */
     public $changePageFormat = NULL;
     public $div_z_index = 0;
+    /** @var  has any text content been added yet (excluding whitespace)? */
+    public $text_empty = true;
 
     /** @var docHandler */
     protected $docHandler = null;
@@ -107,6 +109,34 @@ class ODTDocument
     // $renderer->doc. Later this will be removed and an internal doc
     // variable will be maintained. This will break backwards compatibility
     // with plugins writing to $renderer->doc directly (instead of calling cdata).
+
+    /**
+     * Render plain text data
+     *
+     * @param string $text
+     */
+    function addPlainText($text, &$content) {
+        // Check if there is some content in the text.
+        // Only insert bookmark/pagebreak/format change if text is not empty.
+        // Otherwise a empty paragraph/line would be created!
+        if ( !empty($text) && !ctype_space($text) ) {
+            // Insert page bookmark if requested and not done yet.
+            $this->insertPendingPageBookmark($content);
+
+            // Insert pagebreak or page format change if still pending.
+            // Attention: NOT if $text is empty. This would lead to empty lines before headings
+            //            right after a pagebreak!
+            $in_paragraph = $this->state->getInParagraph();
+            if ( ($this->pagebreakIsPending() || $this->changePageFormat != NULL) ||
+                  !$in_paragraph ) {
+                $this->paragraphOpen(NULL, $content);
+            }
+        }
+        $content .= $this->replaceXMLEntities($text);
+        if ($this->text_empty && !ctype_space($text)) {
+            $this->text_empty = false;
+        }
+    }
 
     /**
      * Open a text span.

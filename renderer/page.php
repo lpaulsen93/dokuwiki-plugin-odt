@@ -48,8 +48,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $css;
     /** @var  int counter for styles */
     protected $style_count;
-    /** @var  has any text content been added yet (excluding whitespace)? */
-    protected $text_empty = true;
 
     // Only for debugging
     //var $trace_dump;
@@ -323,7 +321,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             return;
         }
 
-        if ($this->text_empty) {
+        if ($this->document->text_empty) {
             // If the text is still empty, then we change the start page format now.
             $this->document->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
             $first_page = $this->document->getStyleByAlias('first page');
@@ -984,26 +982,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      */
     function cdata($text) {
-        // Check if there is some content in the text.
-        // Only insert bookmark/pagebreak/format change if text is not empty.
-        // Otherwise a empty paragraph/line would be created!
-        if ( !empty($text) && !ctype_space($text) ) {
-            // Insert page bookmark if requested and not done yet.
-            $this->document->insertPendingPageBookmark($this->doc);
-
-            // Insert pagebreak or page format change if still pending.
-            // Attention: NOT if $text is empty. This would lead to empty lines before headings
-            //            right after a pagebreak!
-            $in_paragraph = $this->document->state->getInParagraph();
-            if ( ($this->document->pagebreakIsPending() || $this->document->changePageFormat != NULL) ||
-                  !$in_paragraph ) {
-                $this->p_open();
-            }
-        }
-        $this->doc .= $this->_xmlEntities($text);
-        if ($this->text_empty && !ctype_space($text)) {
-            $this->text_empty = false;
-        }
+        $this->document->addPlainText($text, $this->doc);
     }
 
     /**

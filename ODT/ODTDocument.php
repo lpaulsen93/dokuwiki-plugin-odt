@@ -997,4 +997,23 @@ class ODTDocument
     public function addImage(&$content, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
     }
+
+    /**
+     * The function adds $string as an SVG image file.
+     * It does NOT insert the image in the document.
+     * 
+     * @see ODTImage::addStringAsSVGImageFile for a detailed description
+     */
+    public function addStringAsSVGImageFile($string) {
+        return ODTImage::addStringAsSVGImageFile($this, $string);
+    }
+
+    /**
+     * Adds the content of $string as a SVG picture to the document.
+     * 
+     * @see ODTImage::addStringAsSVGImage for a detailed description
+     */
+    public function addStringAsSVGImage(&$content, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
+        return ODTImage::addStringAsSVGImage($this, $content, $string, $width, $height, $align, $title, $style);
+    }
 }

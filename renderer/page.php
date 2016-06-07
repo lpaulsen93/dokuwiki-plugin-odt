@@ -1952,86 +1952,23 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     /**
      * Adds the content of $string as a SVG picture to the document.
-     * The other parameters behave in the same way as in _odtAddImage.
-     *
-     * @author LarsDW223
-     *
-     * @param string $string
-     * @param  $width
-     * @param  $height
-     * @param  $align
-     * @param  $title
-     * @param  $style
+     * 
+     * @see ODTDocument::addStringAsSVGImage for API wrapper function
+     * @see ODTImage::addStringAsSVGImage for a detailed description
      */
     function _addStringAsSVGImage($string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
-
-        if ( empty($string) ) { return; }
-
-        $ext  = '.svg';
-        $mime = '.image/svg+xml';
-        $name = 'Pictures/'.md5($string).'.'.$ext;
-        $this->document->addFile($name, $mime, $string);
-
-        // make sure width and height are available
-        if (!$width || !$height) {
-            list($width, $height) = $this->_odtGetImageSizeString($string, $width, $height);
-        }
-
-        if($align){
-            $anchor = 'paragraph';
-        }else{
-            $anchor = 'as-char';
-        }
-
-        if (!$style or !$this->document->styleExists($style)) {
-            $style = $this->document->getStyleName('media '.$align);
-        }
-
-        // Open paragraph if necessary
-        if (!$this->document->state->getInParagraph()) {
-            $this->p_open();
-        }
-
-        if ($title) {
-            $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).' Legend"
-                            text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
-            $this->doc .= '<draw:text-box>';
-            $this->p_open($this->document->getStyleName('legend center'));
-        }
-        $this->doc .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$this->_xmlEntities($title).'"
-                        text:anchor-type="'.$anchor.'" draw:z-index="0"
-                        svg:width="'.$width.'" svg:height="'.$height.'" >';
-        $this->doc .= '<draw:image xlink:href="'.$this->_xmlEntities($name).'"
-                        xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
-        $this->doc .= '</draw:frame>';
-        if ($title) {
-            $this->doc .= $this->_xmlEntities($title);
-            $this->p_close();
-            $this->doc .= '</draw:text-box></draw:frame>';
-        }
+        $this->document->addStringAsSVGImage($this->doc, $string, $width, $height, $align, $title, $style);
     }
 
     /**
-     * Adds the content of $string as a SVG picture file to the document.
-     * The link name which can be used for the ODT draw:image xlink:href
-     * is returned. The caller is responsible for creating the frame and image tag
-     * but therefore has full control over it. This means he can also set parameters
-     * in the odt frame and image tag which can not be changed using the function _odtAddImage.
-     *
-     * @author LarsDW223
-     *
-     * @param string $string SVG code to add
-     * @return string
+     * The function adds $string as an SVG image file.
+     * It does NOT insert the image in the document.
+     * 
+     * @see ODTDocument::addStringAsSVGImageFile for a detailed description
+     * @see ODTImage::addStringAsSVGImageFile for a detailed description
      */
     function _addStringAsSVGImageFile($string) {
-
-        if ( empty($string) ) { return; }
-
-        $ext  = '.svg';
-        $mime = '.image/svg+xml';
-        $name = 'Pictures/'.md5($string).'.'.$ext;
-        $this->document->addFile($name, $mime, $string);
-        return $name;
+        return $this->document->addStringAsSVGImageFile($string);
     }
 
     /**

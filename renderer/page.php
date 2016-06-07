@@ -1928,40 +1928,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function processes the CSS declarations in $style and saves them in $properties
-     * as key - value pairs, e.g. $properties ['color'] = 'red'. It also adjusts the values
-     * for the ODT format and changes URLs to local paths if required, using $baseURL).
-     *
-     * @author LarsDW223
-     * @param array $properties
-     * @param $style
-     * @param null $baseURL
-     */
-    public function _processCSSStyle(&$properties, $style, $baseURL = NULL){
-        if ( $this->import == NULL ) {
-            $this->import = new helper_plugin_odt_cssimport ();
-            if ( $this->import == NULL ) {
-                // Failed to create helper. Can't proceed.
-                return;
-            }
-        }
-
-        // Create rule with selector '*' (doesn't matter) and declarations as set in $style
-        $rule = new css_rule ('*', $style);
-        $rule->getProperties ($properties);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = $this->adjustValueForODT ($property, $value, 14);
-        }
-
-        if ( !empty ($properties ['background-image']) ) {
-            if ( !empty ($baseURL) ) {
-                // Replace 'url(...)' with $baseURL
-                $properties ['background-image'] = $this->import->replaceURLPrefix ($properties ['background-image'], $baseURL);
-            }
-        }
-    }
-
-    /**
      * Open a multi column text box in a frame using properties.
      * 
      * @see ODTDocument::openMultiColumnTextBoxUseProperties for API wrapper function
@@ -2017,7 +1983,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->import->getPropertiesForElement($dest, $element, $classString, $media_sel, $cssId);
 
         // Interpret and add values from style to our properties
-        $this->_processCSSStyle($dest, $inlineStyle);
+        $this->document->getCSSStylePropertiesForODT($dest, $inlineStyle);
 
         // Adjust values for ODT
         foreach ($dest as $property => $value) {

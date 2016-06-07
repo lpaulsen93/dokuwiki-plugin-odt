@@ -1067,4 +1067,13 @@ class ODTDocument
     public function addStringAsSVGImage(&$content, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
         return ODTImage::addStringAsSVGImage($this, $content, $string, $width, $height, $align, $title, $style);
     }
+
+    /**
+     * Get properties defined in a CSS style statement.
+     * 
+     * @see ODTUtility::getCSSStylePropertiesForODT
+     */
+    public function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL){
+        ODTUtility::getCSSStylePropertiesForODT($properties, $style, $baseURL);
+    }
 }

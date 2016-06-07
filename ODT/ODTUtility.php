@@ -1,5 +1,7 @@
 <?php
 
+require_once DOKU_PLUGIN . 'odt/ODT/css/csscolors.php';
+
 /**
  * ODTUtility:
  * Class containing some internal utility functions.
@@ -268,9 +270,7 @@ class ODTUtility
                 $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
             } else {
                 // If it is a CSS color name, get it's real color value
-                /** @var helper_plugin_odt_csscolors $odt_colors */
-                $odt_colors = plugin_load('helper', 'odt_csscolors');
-                $color = $odt_colors->getColorValue ($part);
+                $color = csscolors::getColorValue ($part);
                 if ( $part == 'black' || $color != '#000000' ) {
                     $part = $color;
                 }

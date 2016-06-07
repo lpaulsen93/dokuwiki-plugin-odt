@@ -961,7 +961,7 @@ class cssimportnew {
      * @param $replacement
      * @return string
      */
-    public function replaceURLPrefix ($URL, $replacement) {
+    public static function replaceURLPrefix ($URL, $replacement) {
         if ( !empty ($URL) && !empty ($replacement) ) {
             // Replace 'url(...)' with $replacement
             $URL = substr ($URL, 3);

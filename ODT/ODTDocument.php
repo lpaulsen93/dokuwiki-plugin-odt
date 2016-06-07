@@ -14,6 +14,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTTable.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTFrame.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTImage.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTSpan.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTIndex.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -45,7 +46,11 @@ class ODTDocument
     public $div_z_index = 0;
     /** @var  has any text content been added yet (excluding whitespace)? */
     public $text_empty = true;
+    /** @var Debug string */
+    public $trace_dump = '';
 
+    /** @var indexesData */
+    protected $indexesData = array();
     /** @var docHandler */
     protected $docHandler = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
@@ -276,6 +281,10 @@ class ODTDocument
         $this->headers[] = $title;
     }
 
+    function insertIndex(&$content, $type='toc', array $settings=NULL) {
+        ODTIndex::insertIndex($this, $content, $this->indexesData, $type, $settings);
+    }
+    
     /**
      * Creates a reference ID for the TOC
      *
@@ -470,13 +479,25 @@ class ODTDocument
      * @return string String containing ODT ZIP stream
      */
     public function getODTFileAsString(&$content, $metaContent, $userFieldDecls) {
+        // Close any open paragraph if not done yet.
+        $this->paragraphClose($content);
+
         // Replace local link placeholders with links to headings or bookmarks
         $styleName = $this->getStyleName('local link');
         $visitedStyleName = $this->getStyleName('visited local link');
         ODTUtility::replaceLocalLinkPlaceholders($content, $this->toc, $this->bookmarks, $styleName, $visitedStyleName);
 
+        // Build indexes
+        ODTIndex::replaceIndexesPlaceholders($this, $content, $this->indexesData);
+
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
         ODTUtility::deleteUselessElements($content, $this->preventDeletetionStyles);
+
+        if (!empty($this->trace_dump)) {
+            $this->paragraphOpen(NULL, $content);
+            $content .= 'Tracedump: '.$this->replaceXMLEntities($this->trace_dump);
+            $this->paragraphClose($content);
+        }
            
         // Build the document
         $this->docHandler->build($content,

@@ -290,4 +290,30 @@ class ODTUtility
 
         return $value;
     }
+
+    /**
+     * This function processes the CSS style declarations in $style and saves them in $properties
+     * as key - value pairs, e.g. $properties ['color'] = 'red'. It also adjusts the values
+     * for the ODT format and changes URLs to local paths if required, using $baseURL).
+     *
+     * @author LarsDW223
+     * @param array $properties
+     * @param $style The CSS style e.g. 'color:red;'
+     * @param null $baseURL
+     */
+    public static function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL){
+        // Create rule with selector '*' (doesn't matter) and declarations as set in $style
+        $rule = new css_rule ('*', $style);
+        $rule->getProperties ($properties);
+        foreach ($properties as $property => $value) {
+            $properties [$property] = self::adjustValueForODT ($property, $value, 14);
+        }
+
+        if ( !empty ($properties ['background-image']) ) {
+            if ( !empty ($baseURL) ) {
+                // Replace 'url(...)' with $baseURL
+                $properties ['background-image'] = cssimportnew::replaceURLPrefix ($properties ['background-image'], $baseURL);
+            }
+        }
+    }
 }

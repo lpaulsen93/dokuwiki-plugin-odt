@@ -718,6 +718,37 @@ class ODTDocument
         ODTFootnote::footnoteClose($this, $content);
     }
 
+    function quoteOpen(&$content) {
+        // Do not go higher than 5 because only 5 quotation styles are defined.
+        if ( $this->quote_depth < 5 ) {
+            $this->quote_depth++;
+        }
+        $quotation1 = $this->getStyleName('quotation1');
+        if ($this->quote_depth == 1) {
+            // On quote level 1 open a new paragraph with 'quotation1' style
+            $this->paragraphClose($content);
+            $this->quote_pos = strlen ($content);
+            $this->paragraphOpen($quotation1, $content);
+            $this->quote_pos = strpos ($content, $quotation1, $this->quote_pos);
+            $this->quote_pos += strlen($quotation1) - 1;
+        } else {
+            // Quote level is greater than 1. Set new style by just changing the number.
+            // This is possible because the styles in style.xml are named 'Quotation 1', 'Quotation 2'...
+            // FIXME: Unsafe as we now use freely choosen names per template class
+            $content [$this->quote_pos] = $this->quote_depth;
+        }
+    }
+
+    function quoteClose(&$content) {
+        if ( $this->quote_depth > 0 ) {
+            $this->quote_depth--;
+        }
+        if ($this->quote_depth == 0) {
+            // This will only close the paragraph if we're actually in one
+            $this->paragraphClose($content);
+        }
+    }
+
     /**
      * Opens a list.
      * The list style specifies if the list is an ordered or unordered list.

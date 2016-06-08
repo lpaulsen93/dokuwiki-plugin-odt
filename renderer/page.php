@@ -978,34 +978,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function quote_open() {
-        // Do not go higher than 5 because only 5 quotation styles are defined.
-        if ( $this->quote_depth < 5 ) {
-            $this->quote_depth++;
-        }
-        $quotation1 = $this->document->getStyleName('quotation1');
-        if ($this->quote_depth == 1) {
-            // On quote level 1 open a new paragraph with 'quotation1' style
-            $this->p_close();
-            $this->quote_pos = strlen ($this->doc);
-            $this->p_open($quotation1);
-            $this->quote_pos = strpos ($this->doc, $quotation1, $this->quote_pos);
-            $this->quote_pos += strlen($quotation1) - 1;
-        } else {
-            // Quote level is greater than 1. Set new style by just changing the number.
-            // This is possible because the styles in style.xml are named 'Quotation 1', 'Quotation 2'...
-            // FIXME: Unsafe as we now use freely choosen names per template class
-            $this->doc [$this->quote_pos] = $this->quote_depth;
-        }
+        $this->document->quoteOpen($this->doc);
     }
 
     function quote_close() {
-        if ( $this->quote_depth > 0 ) {
-            $this->quote_depth--;
-        }
-        if ($this->quote_depth == 0) {
-            // This will only close the paragraph if we're actually in one
-            $this->p_close();
-        }
+        $this->document->quoteClose($this->doc);        
     }
 
     /**

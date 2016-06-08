@@ -822,7 +822,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      */
     function unformatted($text) {
-        $this->doc .= $this->_xmlEntities($text);
+        $this->document->addPlainText($text, $this->doc);
     }
 
     /**
@@ -831,7 +831,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $acronym
      */
     function acronym($acronym) {
-        $this->doc .= $this->_xmlEntities($acronym);
+        $this->document->addPlainText($acronym, $this->doc);
     }
 
     /**
@@ -842,7 +842,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $src = DOKU_INC."lib/images/smileys/".$this->smileys[$smiley];
             $this->_odtAddImage($src);
         } else {
-            $this->doc .= $this->_xmlEntities($smiley);
+            $this->document->addPlainText($smiley, $this->doc);
         }
     }
 
@@ -852,18 +852,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $entity
      */
     function entity($entity) {
-        # UTF-8 entity decoding is broken in PHP <5
-        if (version_compare(phpversion(), "5.0.0") and array_key_exists($entity, $this->entities) ) {
-            # decoding may fail for missing Multibyte-Support in entity_decode
-            $dec = @html_entity_decode($this->entities[$entity],ENT_NOQUOTES,'UTF-8');
-            if($dec){
-                $this->doc .= $this->_xmlEntities($dec);
-            }else{
-                $this->doc .= $this->_xmlEntities($entity);
-            }
-        } else {
-            $this->doc .= $this->_xmlEntities($entity);
-        }
+        // Add plain text will replace entities
+        $this->document->addPlainText($entity, $this->doc);
     }
 
     /**
@@ -875,32 +865,38 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string|int $y second value
      */
     function multiplyentity($x, $y) {
-        $this->doc .= $x.'×'.$y;
+        $text .= $x.'×'.$y;
+        $this->document->addPlainText($text, $this->doc);
     }
 
     function singlequoteopening() {
         global $lang;
-        $this->doc .= $lang['singlequoteopening'];
+        $text .= $lang['singlequoteopening'];
+        $this->document->addPlainText($text, $this->doc);
     }
 
     function singlequoteclosing() {
         global $lang;
-        $this->doc .= $lang['singlequoteclosing'];
+        $text .= $lang['singlequoteclosing'];
+        $this->document->addPlainText($text, $this->doc);
     }
 
     function apostrophe() {
         global $lang;
-        $this->doc .= $lang['apostrophe'];
+        $text .= $lang['apostrophe'];
+        $this->document->addPlainText($text, $this->doc);
     }
 
     function doublequoteopening() {
         global $lang;
-        $this->doc .= $lang['doublequoteopening'];
+        $text .= $lang['doublequoteopening'];
+        $this->document->addPlainText($text, $this->doc);
     }
 
     function doublequoteclosing() {
         global $lang;
-        $this->doc .= $lang['doublequoteclosing'];
+        $text .= $lang['doublequoteclosing'];
+        $this->document->addPlainText($text, $this->doc);
     }
 
     /**
@@ -910,7 +906,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function php($text) {
         $this->monospace_open();
-        $this->doc .= $this->_xmlEntities($text);
+        $this->document->addPlainText($text, $this->doc);
         $this->monospace_close();
     }
 
@@ -930,7 +926,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function html($text) {
         $this->monospace_open();
-        $this->doc .= $this->_xmlEntities($text);
+        $this->document->addPlainText($text, $this->doc);
         $this->monospace_close();
     }
 

@@ -39,14 +39,14 @@ class ODTDocument
     public $state;
     /** @var array store the table of contents */
     public $toc = array();
-    /** @var Current pageFormat */
-    public $page = null;
     public $div_z_index = 0;
     /** @var  has any text content been added yet (excluding whitespace)? */
     public $text_empty = true;
     /** @var Debug string */
     public $trace_dump = '';
 
+    /** @var Current pageFormat */
+    protected $page = null;
     /** @var changePageFormat */
     protected $changePageFormat = NULL;
     /** @var indexesData */
@@ -1107,7 +1107,7 @@ class ODTDocument
      */
     public function setStartPageFormat ($format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
         // Setup page format.
-        // Set the page format of the current page for calculation ($this->document->page)
+        // Set the page format of the current page for calculation ($this->page)
         $this->page->setFormat
             ($format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
 
@@ -1188,5 +1188,118 @@ class ODTDocument
             // Close paragraph if open
             $this->paragraphClose($content);
         }
+    }
+
+    /**
+     * Return total page width in centimeters
+     * (margins are included)
+     *
+     * @author LarsDW223
+     */
+    function getPageWidth(){
+        return $this->page->getWidth();
+    }
+
+    /**
+     * Return total page height in centimeters
+     * (margins are included)
+     *
+     * @author LarsDW223
+     */
+    function getPageHeight(){
+        return $this->page->getHeight();
+    }
+
+    /**
+     * Return left margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function getLeftMargin(){
+        return $this->page->getMarginLeft();
+    }
+
+    /**
+     * Return right margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function getRightMargin(){
+        return $this->page->getMarginRight();
+    }
+
+    /**
+     * Return top margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function _getTopMargin(){
+        return $this->page->getMarginTop();
+    }
+
+    /**
+     * Return bottom margin in centimeters
+     *
+     * @author LarsDW223
+     */
+    function _getBottomMargin(){
+        return $this->page->getMarginBottom();
+    }
+
+    /**
+     * Return width percentage value if margins are taken into account.
+     * Usually "100%" means 21cm in case of A4 format.
+     * But usually you like to take care of margins. This function
+     * adjusts the percentage to the value which should be used for margins.
+     * So 100% == 21cm e.g. becomes 80.9% == 17cm (assuming a margin of 2 cm on both sides).
+     *
+     * @author LarsDW223
+     *
+     * @param int|string $percentage
+     * @return int|string
+     */
+    function getRelWidthMindMargins ($percentage = '100'){
+        return $this->page->getRelWidthMindMargins($percentage);
+    }
+
+    /**
+     * Like _getRelWidthMindMargins but returns the absulute width
+     * in centimeters.
+     *
+     * @author LarsDW223
+     * @param string|int|float $percentage
+     * @return float
+     */
+    function getAbsWidthMindMargins ($percentage = '100'){
+        return $this->page->getAbsWidthMindMargins($percentage);
+    }
+
+    /**
+     * Return height percentage value if margins are taken into account.
+     * Usually "100%" means 29.7cm in case of A4 format.
+     * But usually you like to take care of margins. This function
+     * adjusts the percentage to the value which should be used for margins.
+     * So 100% == 29.7cm e.g. becomes 86.5% == 25.7cm (assuming a margin of 2 cm on top and bottom).
+     *
+     * @author LarsDW223
+     *
+     * @param string|float|int $percentage
+     * @return float|string
+     */
+    function getRelHeightMindMargins ($percentage = '100'){
+        return $this->page->getRelHeightMindMargins($percentage);
+    }
+
+    /**
+     * Like _getRelHeightMindMargins but returns the absulute width
+     * in centimeters.
+     *
+     * @author LarsDW223
+     *
+     * @param string|int|float $percentage
+     * @return float
+     */
+    function getAbsHeightMindMargins ($percentage = '100'){
+        return $this->page->getAbsHeightMindMargins($percentage);
     }
 }

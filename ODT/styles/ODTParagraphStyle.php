@@ -382,7 +382,7 @@ class ODTParagraphStyle extends ODTStyleStyle
                 // ODT standard says that percentage value should work if used in a common style.
                 // This did not work with LibreOffice 4.4.3.2.
                 $value = trim ($properties ['text-indent'], '%');
-                $properties ['text-indent'] = $doc->page->getAbsWidthMindMargins ($value).'cm';
+                $properties ['text-indent'] = $doc->getAbsWidthMindMargins ($value).'cm';
             }
         }
 

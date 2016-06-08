@@ -51,7 +51,7 @@ class ODTTable
                         $style_obj = clone $doc->getStyle($tableStyleName);
                         $style_obj->setProperty('style-name', $style_name);
                         if ($style_obj != NULL) {
-                            $max = $doc->page->getAbsWidthMindMargins();
+                            $max = $doc->getAbsWidthMindMargins();
                             $indent = 0 + ODTUnits::getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));
                             $style_obj->setProperty('width', ($max-$indent).'cm');
                             $style_obj->setProperty('align', 'right');

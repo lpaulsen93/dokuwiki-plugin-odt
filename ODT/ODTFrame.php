@@ -131,7 +131,7 @@ class ODTFrame
         if ( $width [strlen($width)-1] == '%' ) {
             // Convert percentage values to absolute size, respecting page margins
             $width = trim($width, '%');
-            $width_abs = $doc->page->getAbsWidthMindMargins($width).'cm';
+            $width_abs = $doc->getAbsWidthMindMargins($width).'cm';
         } else {
             // Absolute values may include not supported units.
             // Adjust.
@@ -331,7 +331,7 @@ class ODTFrame
         $doc->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
-        $width_abs = $doc->page->getAbsWidthMindMargins (100);
+        $width_abs = $doc->getAbsWidthMindMargins (100);
 
         // Group the frame so that they are stacked one on each other.
         $doc->paragraphClose($content);

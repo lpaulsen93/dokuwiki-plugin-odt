@@ -498,7 +498,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getPageWidth(){
-        return $this->document->page->getWidth();
+        return $this->document->getWidth();
     }
 
     /**
@@ -508,7 +508,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getPageHeight(){
-        return $this->document->page->getHeight();
+        return $this->document->getHeight();
     }
 
     /**
@@ -517,7 +517,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getLeftMargin(){
-        return $this->document->page->getMarginLeft();
+        return $this->document->getMarginLeft();
     }
 
     /**
@@ -526,7 +526,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getRightMargin(){
-        return $this->document->page->getMarginRight();
+        return $this->document->getMarginRight();
     }
 
     /**
@@ -535,7 +535,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getTopMargin(){
-        return $this->document->page->getMarginTop();
+        return $this->document->getMarginTop();
     }
 
     /**
@@ -544,7 +544,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _getBottomMargin(){
-        return $this->document->page->getMarginBottom();
+        return $this->document->getMarginBottom();
     }
 
     /**
@@ -560,7 +560,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return int|string
      */
     function _getRelWidthMindMargins ($percentage = '100'){
-        return $this->document->page->getRelWidthMindMargins($percentage);
+        return $this->document->getRelWidthMindMargins($percentage);
     }
 
     /**
@@ -572,7 +572,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     function _getAbsWidthMindMargins ($percentage = '100'){
-        return $this->document->page->getAbsWidthMindMargins($percentage);
+        return $this->document->getAbsWidthMindMargins($percentage);
     }
 
     /**
@@ -588,7 +588,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float|string
      */
     function _getRelHeightMindMargins ($percentage = '100'){
-        return $this->document->page->getRelHeightMindMargins($percentage);
+        return $this->document->getRelHeightMindMargins($percentage);
     }
 
     /**
@@ -601,7 +601,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     function _getAbsHeightMindMargins ($percentage = '100'){
-        return $this->document->page->getAbsHeightMindMargins($percentage);
+        return $this->document->getAbsHeightMindMargins($percentage);
     }
 
     /**

@@ -21,11 +21,6 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
  * The Renderer
  */
 class renderer_plugin_odt_page extends Doku_Renderer {
-    /** @var array store the index info e.g. for table of contents */
-    protected $all_index_settings = array();
-    protected $all_index_types = array();
-    protected $all_index_start_ref = array();
-    public $index_count = 0;
     /** @var export mode (scratch or ODT template) */
     protected $mode = 'scratch';
     /** @var helper_plugin_odt_cssimport */

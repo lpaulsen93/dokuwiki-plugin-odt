@@ -16,6 +16,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTImage.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTSpan.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTIndex.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -46,6 +47,8 @@ class ODTDocument
     /** @var Debug string */
     public $trace_dump = '';
 
+    /** @var ODTMeta */
+    protected $meta;
     /** @var helper_plugin_odt_units */
     protected $units = null;
     /** @var Current pageFormat */
@@ -96,6 +99,9 @@ class ODTDocument
         $this->units->setPixelPerEm(14);
         $this->units->setTwipsPerPixelX(16);
         $this->units->setTwipsPerPixelY(20);
+
+        // Setup meta data store/handler
+        $this->meta = new ODTMeta();
     }
 
     /**
@@ -503,7 +509,7 @@ class ODTDocument
      * @param string $userFieldDecls The user field declarations
      * @return string String containing ODT ZIP stream
      */
-    public function getODTFileAsString(&$content, $metaContent, $userFieldDecls) {
+    public function getODTFileAsString(&$content, $userFieldDecls) {
         // Close any open paragraph if not done yet.
         $this->paragraphClose($content);
 
@@ -523,6 +529,9 @@ class ODTDocument
             $content .= 'Tracedump: '.$this->replaceXMLEntities($this->trace_dump);
             $this->paragraphClose($content);
         }
+
+        // Get meta content
+        $metaContent = $this->meta->getContent();
            
         // Build the document
         $this->docHandler->build($content,
@@ -1349,5 +1358,10 @@ class ODTDocument
      */
     public function toPoints ($value, $axis = 'y') {
         return $this->units->toPoints ($value, $axis);
+    }
+
+    public function setTitle ($title) {
+        // Set title in meta info.
+        $this->meta->setTitle($title);
     }
 }

@@ -78,7 +78,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
         // FIXME remove last pagebreak
         // <text:p text:style-name="pagebreak"/>
 
-        $this->meta->setTitle($this->title);
+        $this->document->setTitle($this->title);
 
         // Insert Indexes (if required), e.g. Table of Contents
         $this->insert_indexes();

@@ -11,7 +11,6 @@ if(!defined('DOKU_INC')) die();
 
 require_once DOKU_PLUGIN . 'odt/helper/cssimport.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDefaultStyles.php';
-require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
 require_once DOKU_PLUGIN . 'odt/ODT/page.php';
 
 // Supported document handlers.
@@ -25,8 +24,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $import = null;
     /** @var helper_plugin_odt_cssimportnew */
     protected $importnew = null;
-    /** @var ODTMeta */
-    protected $meta;
     /** @var helper_plugin_odt_config */
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
@@ -44,8 +41,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->config = plugin_load('helper', 'odt_config');
 
         $this->document = new ODTDocument();
-
-        $this->meta = new ODTMeta();
     }
 
     /**
@@ -179,7 +174,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                              $this->config->getParam ('margin_left'));
 
         // Set title in meta info.
-        $this->meta->setTitle($ID); //FIXME article title != book title  SOLUTION: overwrite at the end for book
+        // FIXME article title != book title  SOLUTION: overwrite at the end for book
+        $this->document->setTitle($ID);
 
         // If older or equal to 2007-06-26, we need to disable caching
         $dw_version = preg_replace('/[^\d]/', '', getversion());  //FIXME DEPRECATED
@@ -317,7 +313,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function finalize_ODTfile() {
         // Build/assign the document
         $this->doc = $this->document->getODTFileAsString
-            ($this->doc, $this->meta->getContent(), $this->_odtUserFields());
+            ($this->doc, $this->_odtUserFields());
 
         $this->convert();
     }

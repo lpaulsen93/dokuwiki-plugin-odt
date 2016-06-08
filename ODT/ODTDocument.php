@@ -39,14 +39,14 @@ class ODTDocument
     // Will become protected as soon as all stuff using state
     // has been moved.
     public $state;
-    /** @var array store the table of contents */
-    public $toc = array();
     public $div_z_index = 0;
     /** @var  has any text content been added yet (excluding whitespace)? */
     public $text_empty = true;
     /** @var Debug string */
     public $trace_dump = '';
 
+    /** @var array store the table of contents */
+    protected $toc = array();
     /** @var ODTMeta */
     protected $meta;
     /** @var helper_plugin_odt_units */
@@ -519,7 +519,7 @@ class ODTDocument
         ODTUtility::replaceLocalLinkPlaceholders($content, $this->toc, $this->bookmarks, $styleName, $visitedStyleName);
 
         // Build indexes
-        ODTIndex::replaceIndexesPlaceholders($this, $content, $this->indexesData);
+        ODTIndex::replaceIndexesPlaceholders($this, $content, $this->indexesData, $this->toc);
 
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
         ODTUtility::deleteUselessElements($content, $this->preventDeletetionStyles);
@@ -1363,5 +1363,25 @@ class ODTDocument
     public function setTitle ($title) {
         // Set title in meta info.
         $this->meta->setTitle($title);
+    }
+
+    /**
+     * Get closest previous TOC entry with $level.
+     * The function search backwards (previous) in the TOC entries
+     * for the next entry with level $level and retunrs it reference ID.
+     *
+     * @param int    $level    the nesting level
+     * @return string The reference ID or NULL
+     */
+    public function getPreviousToCItem($level) {
+        $index = count($this->toc);
+        for (; $index >= 0 ; $index--) {
+            $item = $this->toc[$index];
+            $params = explode (',', $item);
+            if ($params [3] == $level) {
+                return $params [0];
+            }
+        }
+        return NULL;
     }
 }

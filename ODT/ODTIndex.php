@@ -32,7 +32,7 @@ class ODTIndex
         $new ['type'] = $type;
 
         if ($type == 'chapter') {
-            $new ['start_ref'] = self::toc_getPreviousItem($doc->toc, 1);
+            $new ['start_ref'] = $doc->getPreviousToCItem(1);
         } else {
             $new ['start_ref'] = NULL;
         }
@@ -66,7 +66,7 @@ class ODTIndex
      * It is allowed to use defaults for all settings by using '{{odt>toc}}'.
      * Multiple settings can be combined, e.g. '{{odt>toc:leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;}}'.
      */
-    public static function replaceIndexesPlaceholders(ODTDocument $doc, &$content, array $indexesData) {
+    public static function replaceIndexesPlaceholders(ODTDocument $doc, &$content, array $indexesData, array $toc) {
         $index_count = count($indexesData);
         for ($index_no = 0 ; $index_no < $index_count ; $index_no++) {
             $data = $indexesData [$index_no];
@@ -74,7 +74,7 @@ class ODTIndex
             // At the moment it does not make sense to disable links for the TOC
             // because LibreOffice will insert links on updating the TOC.
             $data ['create_links'] = true;
-            $indexContent = self::buildIndex($doc, $data, $index_no+1);
+            $indexContent = self::buildIndex($doc, $toc, $data, $index_no+1);
 
             // Replace placeholder with TOC content.
             $content = str_replace ('<index-placeholder no="'.($index_no+1).'"/>', $indexContent, $content);
@@ -103,7 +103,7 @@ class ODTIndex
      * It is allowed to use defaults for all settings by omitting $settings.
      * Multiple settings can be combined, e.g. 'leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;'.
      */
-    protected static function buildIndex(ODTDocument $doc, array $settings, $indexNo) {
+    protected static function buildIndex(ODTDocument $doc, array $toc, array $settings, $indexNo) {
         $stylesL = array();
         $stylesLNames = array();
 
@@ -292,10 +292,10 @@ class ODTIndex
         $page = 0;
         $links = $settings ['create_links'];
         if ($type == 'toc') {
-            $content .= self::getTOCBody ($doc->toc, $p_styles_auto, $stylesLNames, $max_outline_level, $links);
+            $content .= self::getTOCBody ($toc, $p_styles_auto, $stylesLNames, $max_outline_level, $links);
         } else {
             $startRef = $settings ['start_ref'];
-            $content .= self::getChapterIndexBody ($doc->toc, $p_styles_auto, $stylesLNames, $max_outline_level, $links, $startRef);
+            $content .= self::getChapterIndexBody ($toc, $p_styles_auto, $stylesLNames, $max_outline_level, $links, $startRef);
         }
 
         $content .= '</text:index-body>';
@@ -394,25 +394,5 @@ class ODTIndex
             }
         }
         return $content;
-    }
-
-    /**
-     * Get closest previous TOC entry with $level.
-     * The function search backwards (previous) in the TOC entries
-     * for the next entry with level $level and retunrs it reference ID.
-     *
-     * @param int    $level    the nesting level
-     * @return string The reference ID or NULL
-     */
-    protected function toc_getPreviousItem(array $toc, $level) {
-        $index = count($toc);
-        for (; $index >= 0 ; $index--) {
-            $item = $toc[$index];
-            $params = explode (',', $item);
-            if ($params [3] == $level) {
-                return $params [0];
-            }
-        }
-        return NULL;
     }
 }

@@ -127,9 +127,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function document_start() {
         global $ID;
 
-        // Reset TOC.
-        $this->document->toc = array();
-
         // First, get export mode.
         $warning = '';
         $mode = $this->config->load($warning);

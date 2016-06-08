@@ -40,11 +40,11 @@ class ODTDocument
     // has been moved.
     public $state;
     public $div_z_index = 0;
-    /** @var  has any text content been added yet (excluding whitespace)? */
-    public $text_empty = true;
     /** @var Debug string */
     public $trace_dump = '';
 
+    /** @var  has any text content been added yet (excluding whitespace)? */
+    protected $text_empty = true;
     /** @var array store the table of contents */
     protected $toc = array();
     /** @var ODTMeta */

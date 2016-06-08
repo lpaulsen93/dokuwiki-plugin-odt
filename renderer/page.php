@@ -28,8 +28,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
     protected $document = null;
-    protected $quote_depth = 0;
-    protected $quote_pos = 0;
     /** @var string */
     protected $css;
 
@@ -943,18 +941,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function htmlblock($text) {
         $this->file($text);
-    }
-
-    /**
-     * static call back to replace spaces
-     *
-     * @param array $matches
-     * @return string
-     */
-    function _preserveSpace($matches){
-        $spaces = $matches[1];
-        $len    = strlen($spaces);
-        return '<text:s text:c="'.$len.'"/>';
     }
 
     /**

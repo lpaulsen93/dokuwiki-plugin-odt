@@ -77,6 +77,8 @@ class ODTDocument
     public $store = '';
     /** @var array */
     public $footnotes = array();
+    protected $quote_depth = 0;
+    protected $quote_pos = 0;
 
     /**
      * Constructor:
@@ -243,6 +245,18 @@ class ODTDocument
 
         // Save paragraph style name in 'Do not delete array'!
         $this->preventDeletetionStyles [] = $styleName;
+    }
+
+    /**
+     * static call back to replace spaces
+     *
+     * @param array $matches
+     * @return string
+     */
+    function _preserveSpace($matches){
+        $spaces = $matches[1];
+        $len    = strlen($spaces);
+        return '<text:s text:c="'.$len.'"/>';
     }
 
     /**

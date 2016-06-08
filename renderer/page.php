@@ -1025,35 +1025,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param bool $notescaped
      */
     function _preformatted($text, $style=null, $notescaped=true) {
-        if (empty($style)) {
-            $style = $this->document->getStyleName('preformatted');
-        }
-        if ($notescaped) {
-            $text = $this->_xmlEntities($text);
-        }
-        if (strpos($text, "\n") !== FALSE and strpos($text, "\n") == 0) {
-            // text starts with a newline, remove it
-            $text = substr($text,1);
-        }
-        $text = str_replace("\n",'<text:line-break/>',$text);
-        $text = str_replace("\t",'<text:tab/>',$text);
-        $text = preg_replace_callback('/(  +)/',array($this,'_preserveSpace'),$text);
-
-        $list_item = $this->document->state->getCurrentListItem();
-        if ($list_item != NULL) {
-            // if we're in a list item, we must close the <text:p> tag
-            $this->p_close();
-            $this->p_open($style);
-            $this->doc .= $text;
-            $this->p_close();
-            // FIXME: query previous style before preformatted text was opened and re-use it here
-            $this->p_open();
-        } else {
-            $this->p_close();
-            $this->p_open($style);
-            $this->doc .= $text;
-            $this->p_close();
-        }
+        $this->document->addPreformattedText($this->doc, $text, $style, $notescaped);
     }
 
     /**

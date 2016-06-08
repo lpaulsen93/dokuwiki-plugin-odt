@@ -246,6 +246,53 @@ class ODTDocument
     }
 
     /**
+     * @param string $text
+     * @param string $style
+     * @param bool $notescaped
+     */
+    function addPreformattedText(&$content, $text, $style=null, $notescaped=true) {
+        if (empty($style)) {
+            $style = $this->getStyleName('preformatted');
+        }
+        if ($notescaped) {
+            $text = $this->replaceXMLEntities($text);
+        }
+        
+        // Check newline at start
+        $first_newline = strpos($text, "\n");
+        if ($first_newline !== FALSE and $first_newline == 0) {
+            // text starts with a newline, remove it
+            $text = substr($text,1);
+        }
+        
+        // Check newline at end
+        $length = strlen($text);
+        if ($text[$length-1] == "\n") {
+            $text = substr($text, 0, $length-1);
+        }
+        
+        $text = str_replace("\n",'<text:line-break/>',$text);
+        $text = str_replace("\t",'<text:tab/>',$text);
+        $text = preg_replace_callback('/(  +)/',array($this,'_preserveSpace'),$text);
+
+        $list_item = $this->state->getCurrentListItem();
+        if ($list_item != NULL) {
+            // if we're in a list item, we must close the <text:p> tag
+            $this->paragraphClose($content);
+            $this->paragraphOpen($style, $content);
+            $content .= $text;
+            $this->paragraphClose($content);
+            // FIXME: query previous style before preformatted text was opened and re-use it here
+            $this->paragraphOpen(NULL, $content);
+        } else {
+            $this->paragraphClose($content);
+            $this->paragraphOpen($style, $content);
+            $content .= $text;
+            $this->paragraphClose($content);
+        }
+    }
+
+    /**
      * Add a linebreak
      */
     function linebreak(&$content) {

@@ -1,7 +1,6 @@
 <?php
 
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
-require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 
 /**
  * ODTFrame:
@@ -113,7 +112,7 @@ class ODTFrame
             $width = '100%';
         }
         if ( !empty($pic_positions [0]) ) {
-            $pic_positions [0] = ODTUnits::toPoints($pic_positions [0], 'x');
+            $pic_positions [0] = $doc->toPoints($pic_positions [0], 'x');
         }
         if ( empty($min_height) ) {
             $min_height = '1pt';
@@ -135,7 +134,7 @@ class ODTFrame
         } else {
             // Absolute values may include not supported units.
             // Adjust.
-            $width_abs = ODTUnits::toPoints($width, 'x');
+            $width_abs = $doc->toPoints($width, 'x');
         }
 
 

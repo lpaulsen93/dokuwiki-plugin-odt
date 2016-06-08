@@ -27,8 +27,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $import = null;
     /** @var helper_plugin_odt_cssimportnew */
     protected $importnew = null;
-    /** @var helper_plugin_odt_units */
-    protected $units = null;
     /** @var ODTMeta */
     protected $meta;
     /** @var helper_plugin_odt_config */
@@ -132,10 +130,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected function setupUnits()
     {
         // Load helper class for unit conversion.
-        $this->units = plugin_load('helper', 'odt_units');
-        $this->units->setPixelPerEm(14);
-        $this->units->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
-        $this->units->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
+        $this->document->setPixelPerEm(14);
+        $this->document->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
+        $this->document->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
     }
     
     /**
@@ -1938,7 +1935,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsX ($pixel) {
-        return ($pixel * $this->config->getParam ('twips_per_pixel_x')) / 20;
+        return $this->document->toPoints($pixel, 'x');
     }
 
     /**
@@ -1946,7 +1943,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return float
      */
     public function pixelToPointsY ($pixel) {
-        return ($pixel * $this->config->getParam ('twips_per_pixel_y')) / 20;
+        return $this->document->toPoints($pixel, 'y');
     }
 
     /**

@@ -10,17 +10,20 @@
  * Class helper_plugin_odt_units
  */
 class ODTUnits {
+    // All static variables with fixed values
     // Measure units as defined in "Extensible Stylesheet Language (XSL) Version 1.1"
     protected static $xsl_units = array('cm', 'mm', 'in', 'pt', 'pc', 'px', 'em');
-    protected static $twips_per_pixel_x = 16;
-    protected static $twips_per_pixel_y = 20;
-    protected static $twips_per_point   = 20;
     protected static $point_in_cm = 0.035277778;
     protected static $inch_in_cm = 2.54;
     protected static $inch_in_pt = 0.089605556;
     protected static $pc_in_cm = 0.423333336;
     protected static $pc_in_pt = 12;
-    protected static $px_per_em = 14;
+    protected static $twips_per_point = 20;
+
+    // Non static variables, can be changed
+    protected $px_per_em = 14;
+    protected $twips_per_pixel_x = 16;
+    protected $twips_per_pixel_y = 20;
 
     /**
      * Strips of the leading digits from $value. So left over will be the unit only.
@@ -75,8 +78,8 @@ class ODTUnits {
      *
      * @param int $value The value to be set.
      */
-    static public function setPixelPerEm ($value) {
-        self::$px_per_em = $value;
+    public function setPixelPerEm ($value) {
+        $this->px_per_em = $value;
     }
 
     /**
@@ -84,8 +87,8 @@ class ODTUnits {
      *
      * @return int The current value.
      */
-    static public function getPixelPerEm () {
-        return self::$px_per_em;
+    public function getPixelPerEm () {
+        return $this->px_per_em;
     }
 
     /**
@@ -93,8 +96,8 @@ class ODTUnits {
      *
      * @param int $value The value to be set.
      */
-    static public function setTwipsPerPixelX ($value) {
-        self::$twips_per_pixel_x = $value;
+    public function setTwipsPerPixelX ($value) {
+        $this->twips_per_pixel_x = $value;
     }
 
     /**
@@ -102,8 +105,8 @@ class ODTUnits {
      *
      * @param int $value The value to be set.
      */
-    static public function setTwipsPerPixelY ($value) {
-        self::$twips_per_pixel_y = $value;
+    public function setTwipsPerPixelY ($value) {
+        $this->twips_per_pixel_y = $value;
     }
 
     /**
@@ -111,8 +114,8 @@ class ODTUnits {
      *
      * @return int The current value.
      */
-    static public function getTwipsPerPixelX () {
-        return self::$twips_per_pixel_x;
+    public function getTwipsPerPixelX () {
+        return $this->twips_per_pixel_x;
     }
 
     /**
@@ -120,8 +123,8 @@ class ODTUnits {
      *
      * @return int The current value.
      */
-    static public function getTwipsPerPixelY () {
-        return self::$twips_per_pixel_y;
+    public function getTwipsPerPixelY () {
+        return $this->twips_per_pixel_y;
     }
 
     /**
@@ -130,9 +133,9 @@ class ODTUnits {
      * @param string|int $pixel String with pixel length value, e.g. '20px'
      * @return string The current value.
      */
-    static public function pixelToPointsX ($pixel) {
+    public function pixelToPointsX ($pixel) {
         $pixel = self::getDigits ((string)$pixel);
-        return ($pixel * self::$twips_per_pixel_x / self::$twips_per_point).'pt';
+        return ($pixel * $this->twips_per_pixel_x / self::$twips_per_point).'pt';
     }
 
     /**
@@ -141,9 +144,9 @@ class ODTUnits {
      * @param string|int $pixel String with pixel length value, e.g. '20px'
      * @return string The current value.
      */
-    static public function pixelToPointsY ($pixel) {
+    public function pixelToPointsY ($pixel) {
         $pixel = self::getDigits ((string)$pixel);
-        return ($pixel * self::$twips_per_pixel_y / self::$twips_per_point).'pt';
+        return ($pixel * $this->twips_per_pixel_y / self::$twips_per_point).'pt';
     }
 
     /**
@@ -154,7 +157,7 @@ class ODTUnits {
      *        Only relevant for conversion from 'px' or 'em'.
      * @return string The current value.
      */
-    static public function toPoints ($value, $axis = 'y') {
+    public function toPoints ($value, $axis = 'y') {
         $unit = self::stripDigits ($value);
         if ( $unit == 'pt' ) {
             return $value;
@@ -181,13 +184,13 @@ class ODTUnits {
             break;
             case 'px':
                 if ( $axis == 'x' || $axis == 'X' ) {
-                    $value = self::pixelToPointsX ($value);
+                    $value = $this->pixelToPointsX ($value);
                 } else {
-                    $value = self::pixelToPointsY ($value);
+                    $value = $this->pixelToPointsY ($value);
                 }
             break;
             case 'em':
-                $value = self::pixelToPointsY ($value * self::getPixelPerEm());
+                $value = $this->pixelToPointsY ($value * $this->getPixelPerEm());
             break;
         }
         return $value;

@@ -15,6 +15,7 @@ if(!defined('DOKU_INC')) die();
 
 require_once DOKU_INC.'inc/ZipLib.class.php';
 require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 
 /**
  * The docHandler interface
@@ -142,9 +143,6 @@ abstract class docHandler
     abstract public function getStyleName($style);
 
     protected function setListStyleImage ($style, $level, $file) {
-        if ($this->units == NULL) {
-            $this->units = plugin_load('helper', 'odt_units');
-        }
         $odt_file = $this->addFileAsPicture($file);
 
         if ( $odt_file != NULL ) {
@@ -165,10 +163,10 @@ abstract class docHandler
             $style->setPropertyForLevel($level, 'height', $height.'cm');
 
             // ??? Wie berechnen...
-            $text_indent = $this->units->getDigits($style->getPropertyFromLevel($level, 'text-indent'));
-            $margin_left = $this->units->getDigits($style->getPropertyFromLevel($level, 'margin_left'));
+            $text_indent = ODTUnits::getDigits($style->getPropertyFromLevel($level, 'text-indent'));
+            $margin_left = ODTUnits::getDigits($style->getPropertyFromLevel($level, 'margin_left'));
             $tab_stop_position =
-                $this->units->getDigits($style->getPropertyFromLevel($level, 'list-tab-stop-position'));
+                ODTUnits::getDigits($style->getPropertyFromLevel($level, 'list-tab-stop-position'));
             $minimum = $margin_left + $text_indent + $width;
             if ($minimum > $tab_stop_position) {
                 $inc = abs($text_indent);

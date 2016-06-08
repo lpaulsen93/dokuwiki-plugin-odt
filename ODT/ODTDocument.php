@@ -15,6 +15,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTFrame.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTImage.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTSpan.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTIndex.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -45,6 +46,8 @@ class ODTDocument
     /** @var Debug string */
     public $trace_dump = '';
 
+    /** @var helper_plugin_odt_units */
+    protected $units = null;
     /** @var Current pageFormat */
     protected $page = null;
     /** @var changePageFormat */
@@ -87,6 +90,12 @@ class ODTDocument
         // Set standard page format: A4, portrait, 2cm margins
         $this->page = new pageFormat();
         $this->setStartPageFormat ('A4', 'portrait', 2, 2, 2, 2);
+        
+        // Create units object and set default values
+        $this->units = new ODTUnits();
+        $this->units->setPixelPerEm(14);
+        $this->units->setTwipsPerPixelX(16);
+        $this->units->setTwipsPerPixelY(20);
     }
 
     /**
@@ -1301,5 +1310,44 @@ class ODTDocument
      */
     function getAbsHeightMindMargins ($percentage = '100'){
         return $this->page->getAbsHeightMindMargins($percentage);
+    }
+
+    /**
+     * Sets the twips per pixel (X axis) used for px to pt conversion.
+     *
+     * @param int $value The value to be set.
+     */
+    function setTwipsPerPixelX ($value) {
+        $this->units->setTwipsPerPixelX ($value);
+    }
+
+    /**
+     * Sets the twips per pixel (Y axis) unit used for px to pt conversion.
+     *
+     * @param int $value The value to be set.
+     */
+    function setTwipsPerPixelY ($value) {
+        $this->units->setTwipsPerPixelY ($value);
+    }
+
+    /**
+     * Sets the pixel per em unit used for px to em conversion.
+     *
+     * @param int $value The value to be set.
+     */
+    public function setPixelPerEm ($value) {
+        $this->units->setPixelPerEm ($value);
+    }
+
+    /**
+     * Convert length value with valid XSL unit to points.
+     *
+     * @param string $value  String with length value, e.g. '20px', '20cm'...
+     * @param string $axis   Is the value to be converted a value on the X or Y axis? Default is 'y'.
+     *        Only relevant for conversion from 'px' or 'em'.
+     * @return string The current value.
+     */
+    public function toPoints ($value, $axis = 'y') {
+        return $this->units->toPoints ($value, $axis);
     }
 }

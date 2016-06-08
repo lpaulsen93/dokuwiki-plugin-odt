@@ -1,7 +1,7 @@
 <?php
 
-require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 
 /**
  * ODTTable:
@@ -332,7 +332,7 @@ class ODTTable
                 // Width has got an absolute value.
                 // Some units are not supported by ODT for table width (e.g. 'px').
                 // So we better convert it to points.
-                $properties ['width'] = ODTUnits::toPoints($properties ['width'], 'x');
+                $properties ['width'] = $doc->toPoints($properties ['width'], 'x');
             }
         }
         
@@ -544,7 +544,7 @@ class ODTTable
             if ($style_obj != NULL && $style_obj->getProperty('column-width') != NULL) {
                 $width = $style_obj->getProperty('column-width');
                 $length = strlen ($width);
-                $width = ODTUnits::toPoints($width, 'x');
+                $width = $doc->toPoints($width, 'x');
                 $sum += (float) trim ($width, 'pt');
             } else {
                 return;

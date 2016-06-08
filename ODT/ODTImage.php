@@ -1,7 +1,6 @@
 <?php
 
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
-require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 
 /**
  * ODTFrame:
@@ -36,8 +35,8 @@ class ODTImage
             list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height);
         } else {
             // Adjust values for ODT
-            $width = ODTUnits::toPoints($width, 'x');
-            $height = ODTUnits::toPoints($height, 'y');
+            $width = $doc->toPoints($width, 'x');
+            $height = $doc->toPoints($height, 'y');
         }
 
         if($align){

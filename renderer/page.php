@@ -21,8 +21,6 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
  * The Renderer
  */
 class renderer_plugin_odt_page extends Doku_Renderer {
-    /** @var export mode (scratch or ODT template) */
-    protected $mode = 'scratch';
     /** @var helper_plugin_odt_cssimport */
     protected $import = null;
     /** @var helper_plugin_odt_cssimportnew */
@@ -33,17 +31,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $config = null;
     public $fields = array(); // set by Fields Plugin
     protected $document = null;
-    protected $highlight_style_num = 1;
     protected $quote_depth = 0;
     protected $quote_pos = 0;
-    protected $refUserIndexIDCount = 0;
     /** @var string */
     protected $css;
-    /** @var  int counter for styles */
-    protected $style_count;
-
-    // Only for debugging
-    //var $trace_dump;
 
     /**
      * Constructor. Loads helper plugins.
@@ -146,13 +137,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // First, get export mode.
         $warning = '';
-        $this->mode = $this->config->load($warning);
+        $mode = $this->config->load($warning);
 
         // Load and import CSS files, setup Units
         $this->load_css();
         $this->setupUnits();
 
-        switch($this->mode) {
+        switch($mode) {
             case 'ODT template':
                 // Document based on ODT template.
                 $this->document->setODTTemplate($this->config->getParam ('odt_template'),

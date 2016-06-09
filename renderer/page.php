@@ -26,7 +26,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $importnew = null;
     /** @var helper_plugin_odt_config */
     protected $config = null;
-    public $fields = array(); // set by Fields Plugin
     protected $document = null;
     /** @var string */
     protected $css;
@@ -312,8 +311,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     public function finalize_ODTfile() {
         // Build/assign the document
-        $this->doc = $this->document->getODTFileAsString
-            ($this->doc, $this->_odtUserFields());
+        $this->doc = $this->document->getODTFileAsString ($this->doc);
 
         $this->convert();
     }
@@ -583,18 +581,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _getAbsHeightMindMargins ($percentage = '100'){
         return $this->document->getAbsHeightMindMargins($percentage);
-    }
-
-    /**
-     * @return string
-     */
-    function _odtUserFields() {
-        $value = '<text:user-field-decls>';
-        foreach ($this->fields as $fname=>$fvalue) {
-            $value .= '<text:user-field-decl office:value-type="string" text:name="'.$fname.'" office:string-value="'.$fvalue.'"/>';
-        }
-        $value .= '</text:user-field-decls>';
-        return $value;
     }
 
     /**
@@ -1348,7 +1334,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $doc = '';
         if(is_array($name)){
             // Images
-            // FIXME: ToDo: Option "disable links"
             $doc .= $this->document->openImageLink ($this->doc, $url, $returnonly);
 
             if($name['type'] == 'internalmedia'){
@@ -1362,7 +1347,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      $returnonly);
             }
 
-            // FIXME: ToDo: Option "disable links"
             $doc .= $this->document->closeImageLink ($this->doc, $returnonly);
         }else{
             // Text
@@ -2027,6 +2011,31 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     public function styleExists ($style_name) {
         return $this->document->styleExists($style_name);
+    }
+
+    /**
+     * Add a user field.
+     * (Code has been adopted from the fields plugin)
+     *
+     * @param string $name The name of the field
+     * @param string $value The value of the field
+     * @author Aurelien Bompard <aurelien@bompard.org>
+     * @see ODTDocument::addUserField for detailed desciption.
+     */    
+    public function addUserField($name, $value) {
+        $this->document->addUserField($name, $value);
+    }
+
+    /**
+     * Insert a user field reference.
+     * (Code has been adopted from the fields plugin)
+     *
+     * @param string $name The name of the field
+     * @author Aurelien Bompard <aurelien@bompard.org>
+     * @see ODTDocument::insertUserField for detailed desciption.
+     */    
+    public function insertUserField(&$content, $name) {
+        $this->document->insertUserField($this->doc, $name);
     }
 }
 

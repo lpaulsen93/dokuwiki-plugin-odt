@@ -80,6 +80,8 @@ class ODTDocument
     protected $quote_depth = 0;
     protected $quote_pos = 0;
     protected $linksEnabled = true;
+    // Used by Fields Plugin
+    protected $fields = array();
 
     /**
      * Constructor:
@@ -572,14 +574,67 @@ class ODTDocument
     }
 
     /**
+     * Make sure that a user field name only contains valid sings.
+     * (Code has been adopted from the fields plugin)
+     *
+     * @param string $name The name of the field
+     * @return string The cleaned up $name
+     * @author Aurelien Bompard <aurelien@bompard.org>
+     */    
+    protected function cleanupUserFieldName($name) {
+        // Keep only allowed chars in the name
+        return preg_replace('/[^a-zA-Z0-9_.]/', '', $name);
+    }
+
+    /**
+     * Add a user field.
+     * (Code has been adopted from the fields plugin)
+     *
+     * @param string $name The name of the field
+     * @param string $value The value of the field
+     * @author Aurelien Bompard <aurelien@bompard.org>
+     */    
+    public function addUserField($name, $value) {
+        $name = $this->cleanupUserFieldName($name);
+        $this->fields [$name] = $value;
+    }
+
+    /**
+     * Insert a user field reference.
+     * (Code has been adopted from the fields plugin)
+     *
+     * @param string $name The name of the field
+     * @author Aurelien Bompard <aurelien@bompard.org>
+     */    
+    public function insertUserField(&$content, $name) {
+        $name = $this->cleanupUserFieldName($name);
+        if (array_key_exists($name, $renderer->fields)) {
+            $content .= '<text:user-field-get text:name="'.$name.'">'.$this->fields [$name].'</text:user-field-get>';
+        }
+    }
+
+    /**
+     * This function encodes the <text:user-field-decls> section of a
+     * ODT document.
+     * 
+     * @return string
+     */
+    protected function getUserFieldDecls() {
+        $value = '<text:user-field-decls>';
+        foreach ($this->fields as $fname => $fvalue) {
+            $value .= '<text:user-field-decl office:value-type="string" text:name="'.$fname.'" office:string-value="'.$fvalue.'"/>';
+        }
+        $value .= '</text:user-field-decls>';
+        return $value;
+    }
+
+    /**
      * Get ODT file as string (ZIP archive).
      *
      * @param string $content The content
-     * @param string $metaContent The content of the meta file
-     * @param string $userFieldDecls The user field declarations
      * @return string String containing ODT ZIP stream
      */
-    public function getODTFileAsString(&$content, $userFieldDecls) {
+    public function getODTFileAsString(&$content) {
         // Close any open paragraph if not done yet.
         $this->paragraphClose($content);
 
@@ -602,6 +657,9 @@ class ODTDocument
 
         // Get meta content
         $metaContent = $this->meta->getContent();
+
+        // Get user field declarations
+        $userFieldDecls = $this->getUserFieldDecls();
            
         // Build the document
         $this->docHandler->build($content,

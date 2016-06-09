@@ -82,6 +82,8 @@ class ODTDocument
     protected $linksEnabled = true;
     // Used by Fields Plugin
     protected $fields = array();
+    // The document content
+    protected $content = '';
 
     /**
      * Constructor:
@@ -152,13 +154,13 @@ class ODTDocument
      *
      * @param string $text
      */
-    function addPlainText($text, &$content) {
+    function addPlainText($text) {
         // Check if there is some content in the text.
         // Only insert bookmark/pagebreak/format change if text is not empty.
         // Otherwise a empty paragraph/line would be created!
         if ( !empty($text) && !ctype_space($text) ) {
             // Insert page bookmark if requested and not done yet.
-            $this->insertPendingPageBookmark($content);
+            $this->insertPendingPageBookmark($this->content);
 
             // Insert pagebreak or page format change if still pending.
             // Attention: NOT if $text is empty. This would lead to empty lines before headings
@@ -166,10 +168,10 @@ class ODTDocument
             $in_paragraph = $this->state->getInParagraph();
             if ( ($this->pagebreakIsPending() || $this->pageFormatChangeIsPending()) ||
                   !$in_paragraph ) {
-                $this->paragraphOpen(NULL, $content);
+                $this->paragraphOpen(NULL, $this->content);
             }
         }
-        $content .= $this->replaceXMLEntities($text);
+        $this->content .= $this->replaceXMLEntities($text);
         if ($this->text_empty && !ctype_space($text)) {
             $this->text_empty = false;
         }
@@ -180,8 +182,8 @@ class ODTDocument
      *
      * @param string $styleName The style to use.
      */
-    function spanOpen($styleName, &$content){
-        ODTSpan::spanOpen($this, $content, $styleName);
+    function spanOpen($styleName){
+        ODTSpan::spanOpen($this, $this->content, $styleName);
     }
 
     /**
@@ -189,8 +191,8 @@ class ODTDocument
      * 
      * @see ODTSpan::spanOpenUseCSS for detailed documentation
      */
-    function spanOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL){
-        ODTSpan::spanOpenUseCSS($this, $content, $attributes, $import);
+    function spanOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
+        ODTSpan::spanOpenUseCSS($this, $this->content, $attributes, $import);
     }
 
     /**
@@ -198,8 +200,8 @@ class ODTDocument
      * 
      * @see ODTSpan::spanOpenUseProperties for detailed documentation
      */
-    function spanOpenUseProperties(&$content, $properties){
-        ODTSpan::spanOpenUseProperties($this, $content, $properties);
+    function spanOpenUseProperties($properties){
+        ODTSpan::spanOpenUseProperties($this, $this->content, $properties);
     }
 
     /**
@@ -207,8 +209,8 @@ class ODTDocument
      *
      * @param string $style_name The style to use.
      */    
-    function spanClose(&$content) {
-        ODTSpan::spanClose($this, $content);
+    function spanClose() {
+        ODTSpan::spanClose($this, $this->content);
     }
 
     /**
@@ -216,15 +218,15 @@ class ODTDocument
      *
      * @param string $styleName The style to use.
      */
-    function paragraphOpen($styleName=NULL, &$content){
-        ODTParagraph::paragraphOpen($this, $styleName, $content);
+    function paragraphOpen($styleName=NULL){
+        ODTParagraph::paragraphOpen($this, $styleName, $this->content);
     }
 
     /**
      * Close a paragraph
      */
-    function paragraphClose(&$content){
-        ODTParagraph::paragraphClose($this, $content);
+    function paragraphClose(){
+        ODTParagraph::paragraphClose($this, $this->content);
     }
 
     /**
@@ -232,8 +234,8 @@ class ODTDocument
      * 
      * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
      */
-    function paragraphOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL){
-        ODTParagraph::paragraphOpenUseCSS($this, $content, $attributes, $import);
+    function paragraphOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
+        ODTParagraph::paragraphOpenUseCSS($this, $this->content, $attributes, $import);
     }
 
     /**
@@ -241,18 +243,18 @@ class ODTDocument
      * 
      * @see ODTParagraph::paragraphOpenUseProperties for detailed documentation
      */
-    function paragraphOpenUseProperties(&$content, $properties){
-        ODTParagraph::paragraphOpenUseProperties($this, $content, $properties);
+    function paragraphOpenUseProperties($properties){
+        ODTParagraph::paragraphOpenUseProperties($this, $this->content, $properties);
     }
 
     /**
      * Insert a horizontal rule
      */
-    function horizontalRule(&$content) {
-        $this->paragraphClose($content);
+    function horizontalRule() {
+        $this->paragraphClose($this->content);
         $styleName = $this->getStyleName('horizontal line');
-        $this->paragraphOpen($styleName, $content);
-        $this->paragraphClose($content);
+        $this->paragraphOpen($styleName, $this->content);
+        $this->paragraphClose($this->content);
 
         // Save paragraph style name in 'Do not delete array'!
         $this->preventDeletetionStyles [] = $styleName;
@@ -275,7 +277,7 @@ class ODTDocument
      * @param string $style
      * @param bool $notescaped
      */
-    function addPreformattedText(&$content, $text, $style=null, $notescaped=true) {
+    function addPreformattedText($text, $style=null, $notescaped=true) {
         if (empty($style)) {
             $style = $this->getStyleName('preformatted');
         }
@@ -303,36 +305,36 @@ class ODTDocument
         $list_item = $this->state->getCurrentListItem();
         if ($list_item != NULL) {
             // if we're in a list item, we must close the <text:p> tag
-            $this->paragraphClose($content);
-            $this->paragraphOpen($style, $content);
-            $content .= $text;
-            $this->paragraphClose($content);
+            $this->paragraphClose($this->content);
+            $this->paragraphOpen($style, $this->content);
+            $this->content .= $text;
+            $this->paragraphClose($this->content);
             // FIXME: query previous style before preformatted text was opened and re-use it here
-            $this->paragraphOpen(NULL, $content);
+            $this->paragraphOpen(NULL, $this->content);
         } else {
-            $this->paragraphClose($content);
-            $this->paragraphOpen($style, $content);
-            $content .= $text;
-            $this->paragraphClose($content);
+            $this->paragraphClose($this->content);
+            $this->paragraphOpen($style, $this->content);
+            $this->content .= $text;
+            $this->paragraphClose($this->content);
         }
     }
 
     /**
      * Add a linebreak
      */
-    function linebreak(&$content) {
-        $content .= '<text:line-break/>';
+    function linebreak() {
+        $this->content .= '<text:line-break/>';
     }
 
     /**
      * Add a pagebreak
      */
-    function pagebreak(&$content) {
+    function pagebreak() {
         // Only set marker to insert a pagebreak on "next occasion".
         // The pagebreak will then be inserted in the next call to p_open() or header().
         // The style will be a "pagebreak" style with the paragraph or header style as the parent.
         // This prevents extra empty lines after the pagebreak.
-        $this->paragraphClose($content);
+        $this->paragraphClose($this->content);
         $this->pagebreak = true;
     }
 
@@ -384,8 +386,8 @@ class ODTDocument
         $this->headers[] = $title;
     }
 
-    function insertIndex(&$content, $type='toc', array $settings=NULL) {
-        ODTIndex::insertIndex($this, $content, $this->indexesData, $type, $settings);
+    function insertIndex($type='toc', array $settings=NULL) {
+        ODTIndex::insertIndex($this, $this->content, $this->indexesData, $type, $settings);
     }
     
     /**
@@ -432,10 +434,10 @@ class ODTDocument
      *
      * @param string $id    ID of the bookmark
      */
-    function setPageBookmark($id, $content){
+    function setPageBookmark($id){
         $inParagraph = $this->state->getInParagraph();
         if ($inParagraph) {
-            $this->insertBookmarkInternal($id, true, $content);
+            $this->insertBookmarkInternal($id, true, $this->content);
         } else {
             $this->pageBookmark = $id;
         }
@@ -446,11 +448,11 @@ class ODTDocument
      *
      * @param string $id    ID of the bookmark
      */
-    protected function insertBookmarkInternal($id, $openParagraph=true, &$content){
+    protected function insertBookmarkInternal($id, $openParagraph=true){
         if ($openParagraph) {
-            $this->paragraphOpen(NULL, $content);
+            $this->paragraphOpen(NULL, $this->content);
         }
-        $content .= '<text:bookmark text:name="'.$id.'"/>';
+        $this->content .= '<text:bookmark text:name="'.$id.'"/>';
         $this->bookmarks [] = $id;
     }
 
@@ -461,10 +463,10 @@ class ODTDocument
      * @param int    $level header level
      * @param int    $pos   byte position in the original source
      */
-    function insertPendingPageBookmark(&$content){
+    function insertPendingPageBookmark(){
         // Insert page bookmark if requested and not done yet.
         if ( !empty($this->pageBookmark) ) {
-            $this->insertBookmarkInternal($this->pageBookmark, false, $content);
+            $this->insertBookmarkInternal($this->pageBookmark, false, $this->content);
             $this->pageBookmark = NULL;
         }
     }
@@ -476,8 +478,8 @@ class ODTDocument
      * @param int    $level header level
      * @param int    $pos   byte position in the original source
      */
-    function heading($text, $level, &$content){
-        ODTHeading::heading($this, $text, $level, $content);
+    function heading($text, $level){
+        ODTHeading::heading($this, $text, $level, $this->content);
     }
 
     /**
@@ -606,10 +608,10 @@ class ODTDocument
      * @param string $name The name of the field
      * @author Aurelien Bompard <aurelien@bompard.org>
      */    
-    public function insertUserField(&$content, $name) {
+    public function insertUserField($name) {
         $name = $this->cleanupUserFieldName($name);
         if (array_key_exists($name, $renderer->fields)) {
-            $content .= '<text:user-field-get text:name="'.$name.'">'.$this->fields [$name].'</text:user-field-get>';
+            $this->content .= '<text:user-field-get text:name="'.$name.'">'.$this->fields [$name].'</text:user-field-get>';
         }
     }
 
@@ -634,25 +636,25 @@ class ODTDocument
      * @param string $content The content
      * @return string String containing ODT ZIP stream
      */
-    public function getODTFileAsString(&$content) {
+    public function getODTFileAsString() {
         // Close any open paragraph if not done yet.
-        $this->paragraphClose($content);
+        $this->paragraphClose($this->content);
 
         // Replace local link placeholders with links to headings or bookmarks
         $styleName = $this->getStyleName('local link');
         $visitedStyleName = $this->getStyleName('visited local link');
-        ODTUtility::replaceLocalLinkPlaceholders($content, $this->toc, $this->bookmarks, $styleName, $visitedStyleName);
+        ODTUtility::replaceLocalLinkPlaceholders($this->content, $this->toc, $this->bookmarks, $styleName, $visitedStyleName);
 
         // Build indexes
-        ODTIndex::replaceIndexesPlaceholders($this, $content, $this->indexesData, $this->toc);
+        ODTIndex::replaceIndexesPlaceholders($this, $this->content, $this->indexesData, $this->toc);
 
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
-        ODTUtility::deleteUselessElements($content, $this->preventDeletetionStyles);
+        ODTUtility::deleteUselessElements($this->content, $this->preventDeletetionStyles);
 
         if (!empty($this->trace_dump)) {
-            $this->paragraphOpen(NULL, $content);
-            $content .= 'Tracedump: '.$this->replaceXMLEntities($this->trace_dump);
-            $this->paragraphClose($content);
+            $this->paragraphOpen(NULL, $this->content);
+            $this->content .= 'Tracedump: '.$this->replaceXMLEntities($this->trace_dump);
+            $this->paragraphClose($this->content);
         }
 
         // Get meta content
@@ -662,7 +664,7 @@ class ODTDocument
         $userFieldDecls = $this->getUserFieldDecls();
            
         // Build the document
-        $this->docHandler->build($content,
+        $this->docHandler->build($this->content,
                                  $metaContent,
                                  $userFieldDecls,
                                  $this->pageStyles);
@@ -688,10 +690,10 @@ class ODTDocument
      * are required apart from generating the closing tag and
      * removing the element from the state stack.
      */
-    public function closeCurrentElement(&$content) {
+    public function closeCurrentElement() {
         $current = $this->state->getCurrent();
         if ($current != NULL) {
-            $content .= $current->getClosingTag($content);
+            $this->content .= $current->getClosingTag($this->content);
             $this->state->leave();
         }
     }
@@ -786,8 +788,8 @@ class ODTDocument
      *
      * @author Andreas Gohr <andi@splitbrain.org>
      */
-    function footnoteOpen(&$content) {
-        ODTFootnote::footnoteOpen($this, $content);
+    function footnoteOpen() {
+        ODTFootnote::footnoteOpen($this, $this->content);
     }
 
     /**
@@ -795,11 +797,11 @@ class ODTDocument
      *
      * @author Andreas Gohr
      */
-    function footnoteClose(&$content) {
-        ODTFootnote::footnoteClose($this, $content);
+    function footnoteClose() {
+        ODTFootnote::footnoteClose($this, $this->content);
     }
 
-    function quoteOpen(&$content) {
+    function quoteOpen() {
         // Do not go higher than 5 because only 5 quotation styles are defined.
         if ( $this->quote_depth < 5 ) {
             $this->quote_depth++;
@@ -807,26 +809,26 @@ class ODTDocument
         $quotation1 = $this->getStyleName('quotation1');
         if ($this->quote_depth == 1) {
             // On quote level 1 open a new paragraph with 'quotation1' style
-            $this->paragraphClose($content);
-            $this->quote_pos = strlen ($content);
-            $this->paragraphOpen($quotation1, $content);
-            $this->quote_pos = strpos ($content, $quotation1, $this->quote_pos);
+            $this->paragraphClose($this->content);
+            $this->quote_pos = strlen ($this->content);
+            $this->paragraphOpen($quotation1, $this->content);
+            $this->quote_pos = strpos ($this->content, $quotation1, $this->quote_pos);
             $this->quote_pos += strlen($quotation1) - 1;
         } else {
             // Quote level is greater than 1. Set new style by just changing the number.
             // This is possible because the styles in style.xml are named 'Quotation 1', 'Quotation 2'...
             // FIXME: Unsafe as we now use freely choosen names per template class
-            $content [$this->quote_pos] = $this->quote_depth;
+            $this->content [$this->quote_pos] = $this->quote_depth;
         }
     }
 
-    function quoteClose(&$content) {
+    function quoteClose() {
         if ( $this->quote_depth > 0 ) {
             $this->quote_depth--;
         }
         if ($this->quote_depth == 0) {
             // This will only close the paragraph if we're actually in one
-            $this->paragraphClose($content);
+            $this->paragraphClose($this->content);
         }
     }
 
@@ -837,15 +839,15 @@ class ODTDocument
      * @param bool $continue Continue numbering?
      * @param string $styleName Name of style to use for the list
      */
-    function listOpen($continue=false, $styleName, &$content) {
-        ODTList::listOpen($this, $continue, $styleName, $content);
+    function listOpen($continue=false, $styleName) {
+        ODTList::listOpen($this, $continue, $styleName, $this->content);
     }
 
     /**
      * Close a list
      */
-    function listClose(&$content) {
-        ODTList::listClose($this, $content);
+    function listClose() {
+        ODTList::listClose($this, $this->content);
     }
 
     /**
@@ -853,29 +855,29 @@ class ODTDocument
      *
      * @param int $level The nesting level
      */
-    function listItemOpen($level, &$content) {
-        ODTList::listItemOpen($this, $level, $content);
+    function listItemOpen($level) {
+        ODTList::listItemOpen($this, $level, $this->content);
     }
 
     /**
      * Close a list item
      */
-    function listItemClose(&$content) {
-        ODTList::listItemClose($this, $content);
+    function listItemClose() {
+        ODTList::listItemClose($this, $this->content);
     }
 
     /**
      * Open list content/a paragraph in a list item
      */
-    function listContentOpen(&$content) {
-        ODTList::listContentOpen($this, $content);
+    function listContentOpen() {
+        ODTList::listContentOpen($this, $this->content);
     }
 
     /**
      * Close list content/a paragraph in a list item
      */
-    function listContentClose(&$content) {
-        ODTList::listContentClose($this, $content);
+    function listContentClose() {
+        ODTList::listContentClose($this, $this->content);
     }
 
     /**
@@ -884,8 +886,8 @@ class ODTDocument
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      */
-    function tableOpen($maxcols = NULL, $numrows = NULL, &$content){
-        ODTTable::tableOpen($this, $maxcols, $numrows, $content);
+    function tableOpen($maxcols = NULL, $numrows = NULL){
+        ODTTable::tableOpen($this, $maxcols, $numrows, $this->content);
     }
 
     /**
@@ -894,8 +896,8 @@ class ODTDocument
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      */
-    function tableClose(&$content){
-        ODTTable::tableClose($this, $content);
+    function tableClose(){
+        ODTTable::tableClose($this, $this->content);
     }
 
     /**
@@ -908,57 +910,57 @@ class ODTDocument
     /**
      * Open a table row
      */
-    function tableRowOpen(&$content){
-        ODTTable::tableRowOpen($this, $content);
+    function tableRowOpen(){
+        ODTTable::tableRowOpen($this, $this->content);
     }
 
     /**
      * Close a table row
      */
-    function tableRowClose(&$content){
-        ODTTable::tableRowClose($this, $content);
+    function tableRowClose(){
+        ODTTable::tableRowClose($this, $this->content);
     }
 
     /**
      * Open a table header cell
      */
-    function tableHeaderOpen($colspan = 1, $rowspan = 1, $align, &$content){
-        ODTTable::tableHeaderOpen($this, $colspan = 1, $rowspan = 1, $align, $content);
+    function tableHeaderOpen($colspan = 1, $rowspan = 1, $align){
+        ODTTable::tableHeaderOpen($this, $colspan = 1, $rowspan = 1, $align, $this->content);
     }
 
     /**
      * Close a table header cell
      */
-    function tableHeaderClose(&$content){
-        ODTTable::tableHeaderClose($this, $content);
+    function tableHeaderClose(){
+        ODTTable::tableHeaderClose($this, $this->content);
     }
 
     /**
      * Open a table cell
      */
-    function tableCellOpen($colspan, $rowspan, $align, &$content){
-        ODTTable::tableCellOpen($this, $colspan, $rowspan, $align, $content);
+    function tableCellOpen($colspan, $rowspan, $align){
+        ODTTable::tableCellOpen($this, $colspan, $rowspan, $align, $this->content);
     }
 
     /**
      * Close a table cell
      */
-    function tableCellClose(&$content){
-        ODTTable::tableCellClose($this, $content);
+    function tableCellClose(){
+        ODTTable::tableCellClose($this, $this->content);
     }
 
     /**
      * Open a table using CSS
      */
-    function tableOpenUseCSS(&$content, $maxcols=NULL, $numrows=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableOpenUseCSS($this, $content, $maxcols, $numrows, $attributes, $import);
+    function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableOpenUseCSS($this, $this->content, $maxcols, $numrows, $attributes, $import);
     }
 
     /**
      * Open a table using properties
      */
-    function tableOpenUseProperties (&$content, $properties, $maxcols = 0, $numrows = 0){
-        ODTTable::tableOpenUseProperties($this, $content, $properties, $maxcols, $numrows);
+    function tableOpenUseProperties ($properties, $maxcols = 0, $numrows = 0){
+        ODTTable::tableOpenUseProperties($this, $this->content, $properties, $maxcols, $numrows);
     }
 
     /**
@@ -978,43 +980,43 @@ class ODTDocument
     /**
      * Open a table header using CSS
      */
-    function tableHeaderOpenUseCSS(&$content, $colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableHeaderOpenUseCSS($this, $content, $colspan, $rowspan, $attributes, $import);
+    function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableHeaderOpenUseCSS($this, $this->content, $colspan, $rowspan, $attributes, $import);
     }
 
     /**
      * Open a table header using properties
      */
-    function tableHeaderOpenUseProperties(&$content, $properties, $colspan = 1, $rowspan = 1){
-        ODTTable::tableHeaderOpenUseProperties($this, $content, $properties, $colspan, $rowspan);
+    function tableHeaderOpenUseProperties($properties, $colspan = 1, $rowspan = 1){
+        ODTTable::tableHeaderOpenUseProperties($this, $this->content, $properties, $colspan, $rowspan);
     }
 
     /**
      * Open a table row using CSS
      */
-    function tableRowOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableRowOpenUseCSS($this, $content, $attributes, $import);
+    function tableRowOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableRowOpenUseCSS($this, $this->content, $attributes, $import);
     }
 
     /**
      * Open a table row using properties
      */
-    function tableRowOpenUseProperties(&$content, $properties){
-        ODTTable::tableRowOpenUseProperties($this, $content, $properties);
+    function tableRowOpenUseProperties($properties){
+        ODTTable::tableRowOpenUseProperties($this, $this->content, $properties);
     }
 
     /**
      * Open a table cell using CSS
      */
-    function tableCellOpenUseCSS(&$content, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
-        ODTTable::tableCellOpenUseCSS($this, $content, $attributes, $import, $colspan, $rowspan);
+    function tableCellOpenUseCSS($attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+        ODTTable::tableCellOpenUseCSS($this, $this->content, $attributes, $import, $colspan, $rowspan);
     }
 
     /**
      * Open a table cell using properties
      */
-    function tableCellOpenUseProperties(&$content, $properties, $colspan = 1, $rowspan = 1){
-        ODTTable::tableCellOpenUseProperties($this, $content, $properties, $colspan, $rowspan);
+    function tableCellOpenUseProperties($properties, $colspan = 1, $rowspan = 1){
+        ODTTable::tableCellOpenUseProperties($this, $this->content, $properties, $colspan, $rowspan);
     }
 
     /**
@@ -1022,8 +1024,8 @@ class ODTDocument
      * 
      * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
-    function openTextBoxUseCSS (&$content, $attributes=NULL, cssimportnew $import=NULL) {
-        ODTFrame::openTextBoxUseCSS($this, $content, $attributes, $import);
+    function openTextBoxUseCSS ($attributes=NULL, cssimportnew $import=NULL) {
+        ODTFrame::openTextBoxUseCSS($this, $this->content, $attributes, $import);
     }
     
     /**
@@ -1031,8 +1033,8 @@ class ODTDocument
      * 
      * @see ODTFrame::openTextBoxUseProperties for detailed documentation
      */
-    function openTextBoxUseProperties (&$content, $properties) {
-        ODTFrame::openTextBoxUseProperties($this, $content, $properties);
+    function openTextBoxUseProperties ($properties) {
+        ODTFrame::openTextBoxUseProperties($this, $this->content, $properties);
     }
 
     /**
@@ -1040,8 +1042,8 @@ class ODTDocument
      * 
      * @see ODTFrame::closeTextBox for detailed documentation
      */
-    function closeTextBox (&$content) {
-        ODTFrame::closeTextBox($this, $content);
+    function closeTextBox () {
+        ODTFrame::closeTextBox($this, $this->content);
     }
 
     /**
@@ -1049,8 +1051,8 @@ class ODTDocument
      * 
      * @see ODTFrame::openMultiColumnTextBoxUseProperties for detailed documentation
      */
-    function openMultiColumnTextBoxUseProperties (&$content, $properties) {
-        ODTFrame::openMultiColumnTextBoxUseProperties($this, $content, $properties);
+    function openMultiColumnTextBoxUseProperties ($properties) {
+        ODTFrame::openMultiColumnTextBoxUseProperties($this, $this->content, $properties);
     }
 
     /**
@@ -1058,8 +1060,8 @@ class ODTDocument
      * 
      * @see ODTFrame::closeTextBox for detailed documentation
      */
-    function closeMultiColumnTextBox (&$content) {
-        ODTFrame::closeMultiColumnTextBox($this, $content);
+    function closeMultiColumnTextBox () {
+        ODTFrame::closeMultiColumnTextBox($this, $this->content);
     }
 
     /**
@@ -1238,11 +1240,11 @@ class ODTDocument
      * 
      * @see ODTImage::addImage for a detailed description
      */
-    public function addImage(&$content, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
+    public function addImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         if ($returnonly) {
-            return ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
+            return ODTImage::addImage($this, $this->content, $src, $width, $height, $align, $title, $style, $returnonly);
         } else {
-            ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
+            ODTImage::addImage($this, $this->content, $src, $width, $height, $align, $title, $style, $returnonly);
         }
     }
 
@@ -1261,8 +1263,8 @@ class ODTDocument
      * 
      * @see ODTImage::addStringAsSVGImage for a detailed description
      */
-    public function addStringAsSVGImage(&$content, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
-        return ODTImage::addStringAsSVGImage($this, $content, $string, $width, $height, $align, $title, $style);
+    public function addStringAsSVGImage($string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
+        return ODTImage::addStringAsSVGImage($this, $this->content, $string, $width, $height, $align, $title, $style);
     }
 
     /**
@@ -1316,7 +1318,7 @@ class ODTDocument
      * @param numeric $margin_bottom  Bottom-Margin in cm, default 2
      * @param numeric $margin_left    Left-Margin in cm, default 2
      */
-    public function setPageFormat (&$content, $format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
+    public function setPageFormat ($format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
         $data = array ();
 
         // Fill missing values with current settings
@@ -1367,7 +1369,7 @@ class ODTDocument
             $this->changePageFormat = $data;
 
             // Close paragraph if open
-            $this->paragraphClose($content);
+            $this->paragraphClose($this->content);
         }
     }
 
@@ -1560,11 +1562,11 @@ class ODTDocument
      * @param string $destination The resource to link to (e.g. heading ID)
      * @param string $text Text for the link (text inserted instead of $destination)
      */
-    function insertCrossReference(&$content, $destination, $text){
-        $content .= '<locallink name="'.$text.'">'.$destination.'</locallink>';
+    function insertCrossReference($destination, $text){
+        $this->content .= '<locallink name="'.$text.'">'.$destination.'</locallink>';
     }
 
-    function openImageLink (&$content, $url, $returnonly = false) {
+    function openImageLink ($url, $returnonly = false) {
         $encoded = '';
         if ($this->linksEnabled) {
             $encoded = '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
@@ -1572,10 +1574,10 @@ class ODTDocument
         if ($returnonly) {
             return $encoded;
         }
-        $content .= $encoded;
+        $this->content .= $encoded;
     }
 
-    function closeImageLink (&$content, $returnonly = false) {
+    function closeImageLink ($returnonly = false) {
         $encoded = '';
         if ($this->linksEnabled) {
             $encoded = '</draw:a>';
@@ -1583,10 +1585,10 @@ class ODTDocument
         if ($returnonly) {
             return $encoded;
         }
-        $content .= $encoded;
+        $this->content .= $encoded;
     }
 
-    function insertHyperlink (&$content, $url, $text, $styleName = NULL, $visitedStyleName = NULL, $returnonly = false) {
+    function insertHyperlink ($url, $text, $styleName = NULL, $visitedStyleName = NULL, $returnonly = false) {
         $encoded = '';
         if ($url && $this->linksEnabled) {
             if (empty($styleName)) {
@@ -1608,6 +1610,6 @@ class ODTDocument
         if ($returnonly) {
             return $encoded;
         }
-        $content .= $encoded;
+        $this->content .= $encoded;
     }
 }

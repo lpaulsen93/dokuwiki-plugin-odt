@@ -251,7 +251,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::setPageFormat
      */
     public function setPageFormat ($format=NULL, $orientation=NULL, $margin_top=NULL, $margin_right=NULL, $margin_bottom=NULL, $margin_left=NULL) {
-        $this->document->setPageFormat ($this->doc, $format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
+        $this->document->setPageFormat ($format, $orientation, $margin_top, $margin_right, $margin_bottom, $margin_left);
     }
 
     /**
@@ -311,7 +311,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     public function finalize_ODTfile() {
         // Build/assign the document
-        $this->doc = $this->document->getODTFileAsString ($this->doc);
+        $this->doc = $this->document->getODTFileAsString ();
 
         $this->convert();
     }
@@ -350,7 +350,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function render_index($type='toc', $settings=NULL) {
         $data = array();
         $data = $this->get_index_settings($type, $settings);
-        $this->document->insertIndex($this->doc, $type, $data);
+        $this->document->insertIndex($type, $data);
         return '';
     }
 
@@ -589,7 +589,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      */
     function cdata($text) {
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     /**
@@ -598,11 +598,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $style
      */
     function p_open($style=NULL){
-        $this->document->paragraphOpen($style, $this->doc);
+        $this->document->paragraphOpen($style);
     }
 
     function p_close(){
-        $this->document->paragraphClose($this->doc);
+        $this->document->paragraphClose();
     }
 
     /**
@@ -612,7 +612,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $id    ID of the bookmark
      */
     function set_page_bookmark($id){
-        $this->document->setPageBookmark($id, $this->doc);
+        $this->document->setPageBookmark($id);
     }
 
     /**
@@ -623,75 +623,75 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $pos   byte position in the original source
      */
     function header($text, $level, $pos){
-        $this->document->heading($text, $level, $this->doc);
+        $this->document->heading($text, $level);
     }
 
     function hr() {
-        $this->document->horizontalRule($this->doc);
+        $this->document->horizontalRule();
     }
 
     function linebreak() {
-        $this->document->linebreak($this->doc);
+        $this->document->linebreak();
     }
 
     function pagebreak() {
-        $this->document->pagebreak($this->doc);
+        $this->document->pagebreak();
     }
 
     function strong_open() {
-        $this->document->spanOpen($this->document->getStyleName('strong'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('strong'));
     }
 
     function strong_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     function emphasis_open() {
-        $this->document->spanOpen($this->document->getStyleName('emphasis'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('emphasis'));
     }
 
     function emphasis_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     function underline_open() {
-        $this->document->spanOpen($this->document->getStyleName('underline'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('underline'));
     }
 
     function underline_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     function monospace_open() {
-        $this->document->spanOpen($this->document->getStyleName('monospace'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('monospace'));
     }
 
     function monospace_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     function subscript_open() {
-        $this->document->spanOpen($this->document->getStyleName('sub'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('sub'));
     }
 
     function subscript_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     function superscript_open() {
-        $this->document->spanOpen($this->document->getStyleName('sup'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('sup'));
     }
 
     function superscript_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     function deleted_open() {
-        $this->document->spanOpen($this->document->getStyleName('del'), $this->doc);
+        $this->document->spanOpen($this->document->getStyleName('del'));
     }
 
     function deleted_close() {
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     /*
@@ -705,11 +705,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $numrows NOT IMPLEMENTED
      */
     function table_open($maxcols = NULL, $numrows = NULL, $pos = NULL){
-        $this->document->tableOpen($maxcols, $numrows, $this->doc);
+        $this->document->tableOpen($maxcols, $numrows);
     }
 
     function table_close($pos = NULL){
-        $this->document->tableClose($this->doc);
+        $this->document->tableClose();
     }
 
     function tablecolumn_add(){
@@ -717,11 +717,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function tablerow_open(){
-        $this->document->tableRowOpen($this->doc);
+        $this->document->tableRowOpen();
     }
 
     function tablerow_close(){
-        $this->document->tableRowClose($this->doc);
+        $this->document->tableRowClose();
     }
 
     /**
@@ -732,11 +732,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $rowspan
      */
     function tableheader_open($colspan = 1, $align = "left", $rowspan = 1){
-        $this->document->tableHeaderOpen($colspan, $rowspan, $align, $this->doc);
+        $this->document->tableHeaderOpen($colspan, $rowspan, $align);
     }
 
     function tableheader_close(){
-        $this->document->tableHeaderClose($this->doc);
+        $this->document->tableHeaderClose();
     }
 
     /**
@@ -747,11 +747,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int    $rowspan
      */
     function tablecell_open($colspan = 1, $align = "left", $rowspan = 1){
-        $this->document->tableCellOpen($colspan, $rowspan, $align, $this->doc);
+        $this->document->tableCellOpen($colspan, $rowspan, $align);
     }
 
     function tablecell_close(){
-        $this->document->tableCellClose($this->doc);
+        $this->document->tableCellClose();
     }
 
     /**
@@ -760,7 +760,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author Andreas Gohr <andi@splitbrain.org>
      */
     function footnote_open() {
-        $this->document->footnoteOpen($this->doc);
+        $this->document->footnoteOpen();
     }
 
     /**
@@ -769,23 +769,23 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author Andreas Gohr
      */
     function footnote_close() {
-        $this->document->footnoteClose($this->doc);
+        $this->document->footnoteClose();
     }
 
     function listu_open($continue=false) {
-        $this->document->listOpen($continue, $this->document->getStyleName('list'), $this->doc);
+        $this->document->listOpen($continue, $this->document->getStyleName('list'));
     }
 
     function listu_close() {
-        $this->document->listClose($this->doc);
+        $this->document->listClose();
     }
 
     function listo_open($continue=false) {
-        $this->document->listOpen($continue, $this->document->getStyleName('numbering'), $this->doc);
+        $this->document->listOpen($continue, $this->document->getStyleName('numbering'));
     }
 
     function listo_close() {
-        $this->document->listClose($this->doc);
+        $this->document->listClose();
     }
 
     /**
@@ -794,19 +794,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $level the nesting level
      */
     function listitem_open($level, $node = false) {
-        $this->document->listItemOpen($level, $this->doc);
+        $this->document->listItemOpen($level);
     }
 
     function listitem_close() {
-        $this->document->listItemClose($this->doc);
+        $this->document->listItemClose();
     }
 
     function listcontent_open() {
-        $this->document->listContentOpen($this->doc);
+        $this->document->listContentOpen();
     }
 
     function listcontent_close() {
-        $this->document->listContentClose($this->doc);
+        $this->document->listContentClose();
     }
 
     /**
@@ -815,7 +815,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      */
     function unformatted($text) {
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     /**
@@ -824,7 +824,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $acronym
      */
     function acronym($acronym) {
-        $this->document->addPlainText($acronym, $this->doc);
+        $this->document->addPlainText($acronym);
     }
 
     /**
@@ -835,7 +835,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $src = DOKU_INC."lib/images/smileys/".$this->smileys[$smiley];
             $this->_odtAddImage($src);
         } else {
-            $this->document->addPlainText($smiley, $this->doc);
+            $this->document->addPlainText($smiley);
         }
     }
 
@@ -846,7 +846,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function entity($entity) {
         // Add plain text will replace entities
-        $this->document->addPlainText($entity, $this->doc);
+        $this->document->addPlainText($entity);
     }
 
     /**
@@ -859,37 +859,37 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function multiplyentity($x, $y) {
         $text .= $x.'×'.$y;
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     function singlequoteopening() {
         global $lang;
         $text .= $lang['singlequoteopening'];
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     function singlequoteclosing() {
         global $lang;
         $text .= $lang['singlequoteclosing'];
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     function apostrophe() {
         global $lang;
         $text .= $lang['apostrophe'];
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     function doublequoteopening() {
         global $lang;
         $text .= $lang['doublequoteopening'];
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     function doublequoteclosing() {
         global $lang;
         $text .= $lang['doublequoteclosing'];
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
     }
 
     /**
@@ -899,7 +899,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function php($text) {
         $this->monospace_open();
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
         $this->monospace_close();
     }
 
@@ -919,7 +919,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function html($text) {
         $this->monospace_open();
-        $this->document->addPlainText($text, $this->doc);
+        $this->document->addPlainText($text);
         $this->monospace_close();
     }
 
@@ -953,11 +953,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function quote_open() {
-        $this->document->quoteOpen($this->doc);
+        $this->document->quoteOpen();
     }
 
     function quote_close() {
-        $this->document->quoteClose($this->doc);        
+        $this->document->quoteClose();        
     }
 
     /**
@@ -977,7 +977,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param bool $notescaped
      */
     function _preformatted($text, $style=null, $notescaped=true) {
-        $this->document->addPreformattedText($this->doc, $text, $style, $notescaped);
+        $this->document->addPreformattedText($text, $style, $notescaped);
     }
 
     /**
@@ -1245,7 +1245,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function locallink_with_text($hash, $id = NULL, $text = NULL, $returnonly = false){
         if (!$returnonly) {
             $id  = $this->_getLinkTitle($id, $hash, $isImage);
-            $this->document->insertCrossReference($this->doc, $id, $text);
+            $this->document->insertCrossReference($id, $text);
         } else {
             return reference($hash, $name);
         }
@@ -1261,7 +1261,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function locallink($hash, $name = NULL){
         $name  = $this->_getLinkTitle($name, $hash, $isImage);
-        $this->document->insertCrossReference($this->doc, $hash, $name);
+        $this->document->insertCrossReference($hash, $name);
     }
 
     /**
@@ -1299,7 +1299,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if($returnonly) {
             return $name;
         } else {
-            $this->document->addPlainText($name, $this->doc);
+            $this->document->addPlainText($name);
         }
     }
 
@@ -1334,7 +1334,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $doc = '';
         if(is_array($name)){
             // Images
-            $doc .= $this->document->openImageLink ($this->doc, $url, $returnonly);
+            $doc .= $this->document->openImageLink ($url, $returnonly);
 
             if($name['type'] == 'internalmedia'){
                 $doc .= $this->internalmedia($name['src'],
@@ -1347,10 +1347,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      $returnonly);
             }
 
-            $doc .= $this->document->closeImageLink ($this->doc, $returnonly);
+            $doc .= $this->document->closeImageLink ($returnonly);
         }else{
             // Text
-            $this->document->insertHyperlink ($this->doc, $url, $name, NULL, NULL, $returnonly);
+            $this->document->insertHyperlink ($url, $name, NULL, NULL, $returnonly);
         }
         return $doc;
     }
@@ -1428,8 +1428,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if($rc){
             for ($x = $start; $x != $end; $x += $mod) {
                 $item = $feed->get_item($x);
-                $this->document->listItemOpen(0, $this->doc);
-                $this->document->listContentOpen($this->doc);
+                $this->document->listItemOpen(0);
+                $this->document->listContentOpen();
 
                 $this->externallink($item->get_permalink(),
                                     $item->get_title());
@@ -1447,18 +1447,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 if($params['details']){
                     $this->cdata(strip_tags($item->get_description()));
                 }
-                $this->document->listContentClose($this->doc);
-                $this->document->listItemClose($this->doc);
+                $this->document->listContentClose();
+                $this->document->listItemClose();
             }
         }else{
-            $this->document->listItemOpen(0, $this->doc);
-            $this->document->listContentOpen($this->doc);
+            $this->document->listItemOpen(0);
+            $this->document->listContentOpen();
             $this->emphasis_open();
             $this->cdata($lang['rssfailed']);
             $this->emphasis_close();
             $this->externallink($url);
-            $this->document->listContentClose($this->doc);
-            $this->document->listItemClose($this->doc);
+            $this->document->listContentClose();
+            $this->document->listItemClose();
         }
         $this->listu_close();
     }
@@ -1470,7 +1470,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTImage::addStringAsSVGImage for a detailed description
      */
     function _addStringAsSVGImage($string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
-        $this->document->addStringAsSVGImage($this->doc, $string, $width, $height, $align, $title, $style);
+        $this->document->addStringAsSVGImage($string, $width, $height, $align, $title, $style);
     }
 
     /**
@@ -1511,9 +1511,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         if ($returnonly) {
-            return $this->document->addImage($this->doc, $src, $width, $height, $align, $title, $style, $returnonly);
+            return $this->document->addImage($src, $width, $height, $align, $title, $style, $returnonly);
         } else {
-            $this->document->addImage($this->doc, $src, $width, $height, $align, $title, $style, $returnonly);
+            $this->document->addImage($src, $width, $height, $align, $title, $style, $returnonly);
         }
     }
 
@@ -1546,7 +1546,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtSpanOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->spanOpenUseCSS($this->doc, $attributes, $import);
+        $this->document->spanOpenUseCSS($attributes, $import);
     }
 
     /**
@@ -1557,11 +1557,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtSpanOpenUseProperties($properties){
-        $this->document->spanOpenUseProperties($this->doc, $properties);
+        $this->document->spanOpenUseProperties($properties);
     }
 
     function _odtSpanOpen($style_name){
-        $this->document->spanOpen($style_name, $this->doc);
+        $this->document->spanOpen($style_name);
     }
 
     /**
@@ -1570,7 +1570,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtSpanClose(){
-        $this->document->spanClose($this->doc);
+        $this->document->spanClose();
     }
 
     /**
@@ -1581,7 +1581,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtParagraphOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->paragraphOpenUseCSS($this->doc, $attributes, $import);
+        $this->document->paragraphOpenUseCSS($attributes, $import);
     }
 
     /**
@@ -1592,7 +1592,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtParagraphOpenUseProperties($properties){
-        $this->document->paragraphOpenUseProperties($this->doc, $properties);
+        $this->document->paragraphOpenUseProperties($properties);
     }
 
     /**
@@ -1602,7 +1602,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
     function _odtOpenTextBoxUseCSS ($attributes=NULL, cssimportnew $import=NULL) {
-        $this->document->openTextBoxUseCSS ($this->doc, $attributes, $import);
+        $this->document->openTextBoxUseCSS ($attributes, $import);
     }
 
     /**
@@ -1653,7 +1653,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *                             If NULL then internal CSS code will be used (if present/loaded).
      */
     function _odtTableOpenUseCSS($maxcols = NULL, $numrows = NULL, $attributes = NULL, cssimportnew $import = NULL){
-        $this->document->tableOpenUseCSS($this->doc, $maxcols, $numrows, $attributes, $import);
+        $this->document->tableOpenUseCSS($maxcols, $numrows, $attributes, $import);
     }
 
     /**
@@ -1672,11 +1672,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $numrows
      */
     function _odtTableOpenUseProperties ($properties, $maxcols = 0, $numrows = 0){
-        $this->document->tableOpenUseProperties ($this->doc, $properties, $maxcols, $numrows);
+        $this->document->tableOpenUseProperties ($properties, $maxcols, $numrows);
     }
 
     function _odtTableClose () {
-        $this->document->tableClose($this->doc);
+        $this->document->tableClose();
     }
 
     /**
@@ -1702,7 +1702,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $rowspan
      */
     function _odtTableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
-        $this->document->tableHeaderOpenUseCSS($this->doc, $colspan, $rowspan, $attributes, $import);
+        $this->document->tableHeaderOpenUseCSS($colspan, $rowspan, $attributes, $import);
     }
 
     /**
@@ -1711,7 +1711,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param int $rowspan
      */
     function _odtTableHeaderOpenUseProperties ($properties = NULL, $colspan = 1, $rowspan = 1){
-        $this->document->tableHeaderOpenUseProperties($this->doc, $properties, $colspan = 1, $rowspan = 1);
+        $this->document->tableHeaderOpenUseProperties($properties, $colspan = 1, $rowspan = 1);
     }
 
     /**
@@ -1730,14 +1730,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $element
      */
     function _odtTableRowOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->tableRowOpenUseCSS($this->doc, $attributes, $import);
+        $this->document->tableRowOpenUseCSS($attributes, $import);
     }
 
     /**
      * @param array $properties
      */
     function _odtTableRowOpenUseProperties ($properties){
-        $this->document->tableRowOpenUseProperties($this->doc, $properties);
+        $this->document->tableRowOpenUseProperties($properties);
     }
 
     /**
@@ -1757,14 +1757,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param null $element
      */
     function _odtTableCellOpenUseCSS($attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
-        $this->document->tableCellOpenUseCSS($this->doc, $attributes, $import);
+        $this->document->tableCellOpenUseCSS($attributes, $import);
     }
 
     /**
      * @param $properties
      */
     function _odtTableCellOpenUseProperties ($properties, $colspan = 1, $rowspan = 1){
-        $this->document->tableCellOpenUseProperties($this->doc, $properties, $colspan, $rowspan);
+        $this->document->tableCellOpenUseProperties($properties, $colspan, $rowspan);
     }
 
     /**
@@ -1774,7 +1774,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTFrame::openMultiColumnTextBoxUseProperties for detailed documentation
      */
     function _odtOpenMultiColumnFrame ($properties) {
-        $this->document->openMultiColumnTextBoxUseProperties($this->doc, $properties);
+        $this->document->openMultiColumnTextBoxUseProperties($properties);
     }
 
     /**
@@ -1785,7 +1785,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtCloseMultiColumnFrame () {
-        $this->document->closeMultiColumnTextBox($this->doc);
+        $this->document->closeMultiColumnTextBox();
     }
 
     /**
@@ -1795,7 +1795,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTFrame::openTextBoxUseProperties for detailed documentation
      */
     function _odtOpenTextBoxUseProperties ($properties) {
-        $this->document->openTextBoxUseProperties ($this->doc, $properties);
+        $this->document->openTextBoxUseProperties ($properties);
     }
 
     /**
@@ -1806,7 +1806,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author LarsDW223
      */
     function _odtCloseTextBox () {
-        $this->document->closeTextBox($this->doc);
+        $this->document->closeTextBox();
     }
 
     /**
@@ -2035,7 +2035,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::insertUserField for detailed desciption.
      */    
     public function insertUserField(&$content, $name) {
-        $this->document->insertUserField($this->doc, $name);
+        $this->document->insertUserField($name);
     }
 }
 

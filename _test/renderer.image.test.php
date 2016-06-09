@@ -31,6 +31,8 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
         $renderer->_odtAddImage(TMP_DIR.'/data/TestPicture100x50.png');
 
         // There should be a frame
+        // FIXME: not working any longer after redesign.
+        //        $renderer->doc will stay empty as long as the document is not finished/exported.
         $start = strpos($renderer->doc, '<draw:frame');
         $end = strpos($renderer->doc, '</draw:frame>');
         $frame = substr($renderer->doc, $start, $end+strlen('</draw:frame>')-$start);
@@ -72,6 +74,9 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
         $renderer = new renderer_plugin_odt_page();
         $renderer->document_start();
         $renderer->_odtAddImage(TMP_DIR.'/data/TestPicture500x256.png');
+
+        // FIXME: not working any longer after redesign.
+        //        $renderer->doc will stay empty as long as the document is not finished/exported.
 
         // There should be a frame
         $start = strpos($renderer->doc, '<draw:frame');

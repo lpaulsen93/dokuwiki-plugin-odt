@@ -131,7 +131,11 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
         $pages = $this->actioninstance->getExportedPages();
         if ( in_array($id, $pages) ) {
             // Yes, create a local link with a name
-            parent::locallink_with_name($hash, $id, $name);
+            if($returnonly) {
+                return $this->locallink_with_text($hash, $id, $name, $returnonly);
+            } else {
+                $this->locallink_with_text($hash, $id, $name, $returnonly);
+            }
             return;
         }
 
@@ -141,15 +145,15 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
 
         if ($ID == $id) {
             if($returnonly) {
-                return $this->reference($hash, $name);
+                return $this->locallink_with_text($hash, $id, $name, $returnonly);
             } else {
-                $this->doc .= $this->reference($hash, $name);
+                $this->locallink_with_text($hash, $id, $name, $returnonly);
             }
         } else {
             if($returnonly) {
-                return $this->_doLink($url,$name);
+                return $this->_doLink($url, $name, $returnonly);
             } else {
-                $this->doc .= $this->_doLink($url,$name);
+                $this->_doLink($url, $name, $returnonly);
             }
         }
     }

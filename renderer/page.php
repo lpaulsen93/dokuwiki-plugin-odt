@@ -172,6 +172,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // FIXME article title != book title  SOLUTION: overwrite at the end for book
         $this->document->setTitle($ID);
 
+        // Enable/disable links according to configuration
+        $disabled = $this->config->getParam ('disable_links');
+        if ($disabled) {
+            $this->document->disableLinks();
+        } else {
+            $this->document->enableLinks();
+        }
+
         // If older or equal to 2007-06-26, we need to disable caching
         $dw_version = preg_replace('/[^\d]/', '', getversion());  //FIXME DEPRECATED
         if (version_compare($dw_version, "20070626", "<=")) {
@@ -219,9 +227,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         //$test = $this->import->rulesToString();
         //$test = $this->importnew->rulesToString();
         //$this->doc .= preg_replace ('/\n/', '<text:line-break/>', $test);
-        //$this->p_open();
-        //$this->doc .= 'Tracedump: '.$this->trace_dump;
-        //$this->p_close();
 
         // Build the document
         $this->finalize_ODTfile();
@@ -318,6 +323,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function enable_links() {
         $this->config->setParam ('disable_links', false);
+        $this->document->enableLinks();
     }
 
     /**
@@ -325,6 +331,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function disable_links() {
         $this->config->setParam ('disable_links', true);
+        $this->document->disableLinks();
     }
 
     /**
@@ -1083,7 +1090,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if(substr($mime,0,5) == 'image'){
             $file = mediaFN($src);
             if($returnonly) {
-              return $this->_odtAddImage($file, $width, $height, $align, $title, true);
+              return $this->_odtAddImage($file, $width, $height, $align, $title, NULL, true);
             } else {
               $this->_odtAddImage($file, $width, $height, $align, $title);
             }
@@ -1170,6 +1177,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * This function is only used for the DokuWiki specific
+     * 'returnonly' behaviour.
+     * 
      * @param string $id
      * @param string $name
      */
@@ -1206,17 +1216,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if($hash) $url .='#'.$hash;
 
         if ($ID == $id) {
-          if($returnonly) {
-            return $this->reference($hash, $name);
-          } else {
-            $this->doc .= $this->reference($hash, $name);
-          }
+            if($returnonly) {
+                return $this->locallink_with_text($hash, $id, $name, $returnonly);
+            } else {
+                $this->locallink_with_text($hash, $id, $name, $returnonly);
+            }
         } else {
-          if($returnonly) {
-            return $this->_doLink($url,$name);
-          } else {
-            $this->doc .= $this->_doLink($url,$name);
-          }
+            if($returnonly) {
+                return $this->_doLink($url, $name, $returnonly);
+            } else {
+                $this->_doLink($url, $name, $returnonly);
+            }
         }
     }
 
@@ -1231,30 +1241,32 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $name = $this->_getLinkTitle($name, $url, $isImage);
 
         if($returnonly) {
-          return $this->_doLink($url,$name,$returnonly);
+            return $this->_doLink($url, $name, $returnonly);
         } else {
-          $this->doc .= $this->_doLink($url,$name);
+            $this->_doLink($url, $name, $returnonly);
         }
     }
 
     /**
-     * Insert local link placeholder with name.
-     * The reference will be resolved on calling replaceLocalLinkPlaceholders();
+     * Inserts a local link with text.
      *
      * @fixme add image handling
      *
      * @param string $hash hash link identifier
      * @param string $id   name for the link (the reference)
-     * @param string $name text for the link (text inserted instead of reference)
+     * @param string $text text for the link (text inserted instead of reference)
      */
-    function locallink_with_name($hash, $id = NULL, $name = NULL){
-        $id  = $this->_getLinkTitle($id, $hash, $isImage);
-        $this->doc .= '<locallink name="'.$name.'">'.$id.'</locallink>';
+    function locallink_with_text($hash, $id = NULL, $text = NULL, $returnonly = false){
+        if (!$returnonly) {
+            $id  = $this->_getLinkTitle($id, $hash, $isImage);
+            $this->document->insertCrossReference($this->doc, $id, $text);
+        } else {
+            return reference($hash, $name);
+        }
     }
 
     /**
-     * Insert local link placeholder.
-     * The reference will be resolved on calling replaceLocalLinkPlaceholders();
+     * Inserts a local link.
      *
      * @fixme add image handling
      *
@@ -1263,7 +1275,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function locallink($hash, $name = NULL){
         $name  = $this->_getLinkTitle($name, $hash, $isImage);
-        $this->doc .= '<locallink name="'.$name.'">'.$hash.'</locallink>';
+        $this->document->insertCrossReference($this->doc, $hash, $name);
     }
 
     /**
@@ -1281,9 +1293,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $name  = $this->_getLinkTitle($name, $wikiUri, $isImage);
         $url = $this-> _resolveInterWiki($wikiName,$wikiUri);
         if($returnonly) {
-          return $this->_doLink($url,$name);
+            return $this->_doLink($url, $name, $returnonly);
         } else {
-          $this->doc .= $this->_doLink($url,$name);
+            $this->_doLink($url, $name, $returnonly);
         }
     }
 
@@ -1299,9 +1311,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function windowssharelink($url, $name = NULL, $returnonly = false) {
         $name  = $this->_getLinkTitle($name, $url, $isImage);
         if($returnonly) {
-          return $name;
+            return $name;
         } else {
-          $this->doc .= $name;
+            $this->document->addPlainText($name, $this->doc);
         }
     }
 
@@ -1317,9 +1329,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function emaillink($address, $name = NULL, $returnonly = false) {
         $name  = $this->_getLinkTitle($name, $address, $isImage);
         if($returnonly) {
-          return $this->_doLink("mailto:".$address,$name);
+            return $this->_doLink("mailto:".$address, $name, $returnonly);
         } else {
-          $this->doc .= $this->_doLink("mailto:".$address,$name);
+            $this->_doLink("mailto:".$address, $name, $returnonly);
         }
     }
 
@@ -1331,12 +1343,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $url
      * @param string|array $name
      */
-    function _doLink($url,$name){
+    function _doLink($url,$name, $returnonly = false){
         $url = $this->_xmlEntities($url);
         $doc = '';
         if(is_array($name)){
             // Images
-            if($url && !$this->config->getParam ('disable_links')) $doc .= '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+            // FIXME: ToDo: Option "disable links"
+            $doc .= $this->document->openImageLink ($this->doc, $url, $returnonly);
 
             if($name['type'] == 'internalmedia'){
                 $doc .= $this->internalmedia($name['src'],
@@ -1346,20 +1359,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                                      $name['height'],
                                      $name['cache'],
                                      $name['linking'],
-                                     true);
+                                     $returnonly);
             }
 
-            if($url && !$this->config->getParam ('disable_links')) $doc .= '</draw:a>';
+            // FIXME: ToDo: Option "disable links"
+            $doc .= $this->document->closeImageLink ($this->doc, $returnonly);
         }else{
             // Text
-            if($url && !$this->config->getParam ('disable_links')) {
-                $doc .= '<text:a xlink:type="simple" xlink:href="'.$url.'"';
-                $doc .= ' text:style-name="'.$this->document->getStyleName('internet link').'"';
-                $doc .= ' text:visited-style-name="'.$this->document->getStyleName('visited internet link').'"';
-                $doc .= '>';
-            }
-            $doc .= $name; // we get the name already XML encoded
-            if($url && !$this->config->getParam ('disable_links')) $doc .= '</text:a>';
+            $this->document->insertHyperlink ($this->doc, $url, $name, NULL, NULL, $returnonly);
         }
         return $doc;
     }
@@ -1377,7 +1384,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function _getLinkTitle($title, $default, & $isImage, $id=null) {
         $isImage = false;
-        if (is_null($title) || trim($title) == '') {
+        if ( is_array($title) ) {
+            $isImage = true;
+            return $title;
+        } elseif (is_null($title) || trim($title) == '') {
             if ($this->config->getParam ('useheading') && $id) {
                 $heading = p_get_first_heading($id);
                 if ($heading) {
@@ -1385,9 +1395,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 }
             }
             return $this->_xmlEntities($default);
-        } else if ( is_array($title) ) {
-            $isImage = true;
-            return $title;
         } else {
             return $this->_xmlEntities($title);
         }
@@ -1519,7 +1526,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param  $returnonly
      */
     function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
-        $this->document->addImage($this->doc, $src, $width, $height, $align, $title, $style, $returnonly);
+        if ($returnonly) {
+            return $this->document->addImage($this->doc, $src, $width, $height, $align, $title, $style, $returnonly);
+        } else {
+            $this->document->addImage($this->doc, $src, $width, $height, $align, $title, $style, $returnonly);
+        }
     }
 
     /**
@@ -1909,12 +1920,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     $adjusted = $this->pixelToPointsY($number).'pt';
                 break;
             }
-            // Only for debugging.
-            //$this->trace_dump .= 'adjustLengthCallback: '.$property.':'.$value.'==>'.$adjusted.'<text:line-break/>';
             return $adjusted;
         }
-        // Only for debugging.
-        //$this->trace_dump .= 'adjustLengthCallback: '.$property.':'.$value.'<text:line-break/>';
         return $value;
     }
 

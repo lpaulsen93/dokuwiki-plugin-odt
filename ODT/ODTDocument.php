@@ -79,6 +79,7 @@ class ODTDocument
     public $footnotes = array();
     protected $quote_depth = 0;
     protected $quote_pos = 0;
+    protected $linksEnabled = true;
 
     /**
      * Constructor:
@@ -129,6 +130,14 @@ class ODTDocument
         // Document based on CSS template.
         $this->docHandler = new CSSTemplateDH ();
         $this->docHandler->import($template_path, $media_sel, $mediadir);
+    }
+
+    public function enableLinks () {
+        $this->linksEnabled = true;
+    }
+
+    public function disableLinks () {
+        $this->linksEnabled = false;
     }
 
     // Functions generating content for now will have to be passed
@@ -1172,7 +1181,11 @@ class ODTDocument
      * @see ODTImage::addImage for a detailed description
      */
     public function addImage(&$content, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
-        ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
+        if ($returnonly) {
+            return ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
+        } else {
+            ODTImage::addImage($this, $content, $src, $width, $height, $align, $title, $style, $returnonly);
+        }
     }
 
     /**
@@ -1475,5 +1488,68 @@ class ODTDocument
             }
         }
         return NULL;
+    }
+
+    /**
+     * Insert cross reference to a "destination" inside of the ODT document.
+     * To insert a link to an external destination use insertHyperlink().
+     * 
+     * The function only inserts a placeholder and resolves 
+     * the reference on calling replaceLocalLinkPlaceholders();
+     *
+     * @fixme add image handling
+     *
+     * @param string $destination The resource to link to (e.g. heading ID)
+     * @param string $text Text for the link (text inserted instead of $destination)
+     */
+    function insertCrossReference(&$content, $destination, $text){
+        $content .= '<locallink name="'.$text.'">'.$destination.'</locallink>';
+    }
+
+    function openImageLink (&$content, $url, $returnonly = false) {
+        $encoded = '';
+        if ($this->linksEnabled) {
+            $encoded = '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
+        }
+        if ($returnonly) {
+            return $encoded;
+        }
+        $content .= $encoded;
+    }
+
+    function closeImageLink (&$content, $returnonly = false) {
+        $encoded = '';
+        if ($this->linksEnabled) {
+            $encoded = '</draw:a>';
+        }
+        if ($returnonly) {
+            return $encoded;
+        }
+        $content .= $encoded;
+    }
+
+    function insertHyperlink (&$content, $url, $text, $styleName = NULL, $visitedStyleName = NULL, $returnonly = false) {
+        $encoded = '';
+        if ($url && $this->linksEnabled) {
+            if (empty($styleName)) {
+                $styleName = $this->getStyleName('internet link');
+            }
+            if (empty($visitedStyleName)) {
+                $visitedStyleName = $this->getStyleName('visited internet link');
+            }
+            $encoded .= '<text:a xlink:type="simple" xlink:href="'.$url.'"';
+            $encoded .= ' text:style-name="'.$styleName.'"';
+            $encoded .= ' text:visited-style-name="'.$visitedStyleName.'"';
+            $encoded .= '>';
+        }
+        // We get the text already XML encoded
+        $encoded .= $text;
+        if ($url && $this->linksEnabled) {
+            $encoded .= '</text:a>';
+        }
+        if ($returnonly) {
+            return $encoded;
+        }
+        $content .= $encoded;
     }
 }

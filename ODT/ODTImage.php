@@ -81,9 +81,9 @@ class ODTImage
         }
 
         if($returnonly) {
-          return $encoded;
+            return $encoded;
         } else {
-          $content .= $encoded;
+            $content .= $encoded;
         }
 
         $z++;

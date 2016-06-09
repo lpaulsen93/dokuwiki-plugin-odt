@@ -1636,132 +1636,127 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function opens a new table using the style as set in the imported CSS $import.
-     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
-     * The CSS style is selected by the element type 'td' and the specified classes in $classes.
-     *
-     * This function calls _odtTableOpenUseProperties. See the function description for supported properties.
-     *
-     * The table should be closed by calling 'table_close()'.
+     * This function opens a new table using CSS.
      *
      * @author LarsDW223
-     *
-     * @param null $maxcols
-     * @param null $numrows
-     * @param string $attributes HTML attributes for the table element
-     * @param cssimportnew $import Imported CSS code to use.
-     *                             If NULL then internal CSS code will be used (if present/loaded).
+     * @see ODTDocument::tableOpenUseCSS for API wrapper function
+     * @see ODTTable::tableOpenUseCSS for detailed documentation
      */
     function _odtTableOpenUseCSS($maxcols = NULL, $numrows = NULL, $attributes = NULL, cssimportnew $import = NULL){
         $this->document->tableOpenUseCSS($maxcols, $numrows, $attributes, $import);
     }
 
     /**
-     * This function opens a new table using the style as set in the assoziative array $properties.
-     * The parameters in the array should be named as the CSS property names e.g. 'width'.
-     *
-     * The currently supported properties are:
-     * width, border-collapse, background-color
-     *
-     * The table must be closed by calling 'table_close'.
+     * This function opens a new table using properties.
      *
      * @author LarsDW223
-     *
-     * @param array $properties
-     * @param null $maxcols
-     * @param null $numrows
+     * @see ODTDocument::tableOpenUseProperties for API wrapper function
+     * @see ODTTable::tableOpenUseProperties for detailed documentation
      */
     function _odtTableOpenUseProperties ($properties, $maxcols = 0, $numrows = 0){
         $this->document->tableOpenUseProperties ($properties, $maxcols, $numrows);
     }
 
+    /**
+     * This function closes a table.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableClose for API wrapper function
+     * @see ODTTable::tableClose for detailed documentation
+     */
     function _odtTableClose () {
         $this->document->tableClose();
     }
 
     /**
-     * @param array $properties
+     * This function adds a new table column using CSS.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableAddColumnUseCSS for API wrapper function
+     * @see ODTTable::tableAddColumnUseCSS for detailed documentation
      */
     function _odtTableAddColumnUseCSS ($attributes=NULL, cssimportnew $import=NULL){
         $this->document->tableAddColumnUseCSS ($attributes, $import);
     }
 
     /**
-     * @param array $properties
+     * This function adds a new table column using properties.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableAddColumnUseProperties for API wrapper function
+     * @see ODTTable::tableAddColumnUseProperties for detailed documentation
      */
     function _odtTableAddColumnUseProperties (array $properties = NULL){
         $this->document->tableAddColumnUseProperties($properties);
     }
 
     /**
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param null $baseURL
-     * @param null $element
-     * @param int $colspan
-     * @param int $rowspan
+     * This function opens a new table header using CSS.
+     * The header should be closed by calling 'tableheader_close()'.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableHeaderOpenUseCSS for API wrapper function
+     * @see ODTTable::tableHeaderOpenUseCSS for detailed documentation
      */
     function _odtTableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
         $this->document->tableHeaderOpenUseCSS($colspan, $rowspan, $attributes, $import);
     }
 
     /**
-     * @param null $properties
-     * @param int $colspan
-     * @param int $rowspan
+     * This function opens a new table header using properties.
+     * The header should be closed by calling 'tableheader_close()'.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableHeaderOpenUseProperties for API wrapper function
+     * @see ODTTable::tableHeaderOpenUseProperties for detailed documentation
      */
     function _odtTableHeaderOpenUseProperties ($properties = NULL, $colspan = 1, $rowspan = 1){
         $this->document->tableHeaderOpenUseProperties($properties, $colspan = 1, $rowspan = 1);
     }
 
     /**
-     * This function opens a new table row using the style as set in the imported CSS $import.
-     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
-     * The CSS style is selected by the element type 'td' and the specified classes in $classes.
-     *
-     * This function calls _odtTableRowOpenUseProperties. See the function description for supported properties.
-     *
+     * This function opens a new table row using CSS.
      * The row should be closed by calling 'tablerow_close()'.
      *
      * @author LarsDW223
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param null $baseURL
-     * @param null $element
+     * @see ODTDocument::tableRowOpenUseCSS for API wrapper function
+     * @see ODTTable::tableRowOpenUseCSS for detailed documentation
      */
     function _odtTableRowOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
         $this->document->tableRowOpenUseCSS($attributes, $import);
     }
 
     /**
-     * @param array $properties
+     * This function opens a new table row using properties.
+     * The row should be closed by calling 'tablerow_close()'.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableRowOpenUseProperties for API wrapper function
+     * @see ODTTable::tableRowOpenUseProperties for detailed documentation
      */
     function _odtTableRowOpenUseProperties ($properties){
         $this->document->tableRowOpenUseProperties($properties);
     }
 
     /**
-     * This function opens a new table cell using the style as set in the imported CSS $import.
-     * So, the function requires the helper class 'helper_plugin_odt_cssimport'.
-     * The CSS style is selected by the element type 'td' and the specified classes in $classes.
-     *
-     * This function calls _odtTableCellOpenUseProperties. See the function description for supported properties.
-     *
+     * This function opens a new table cell using CSS.
      * The cell should be closed by calling 'tablecell_close()'.
      *
      * @author LarsDW223
-     *
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param null $baseURL
-     * @param null $element
+     * @see ODTDocument::tableCellOpenUseCSS for API wrapper function
+     * @see ODTTable::tableCellOpenUseCSS for detailed documentation
      */
     function _odtTableCellOpenUseCSS($attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
         $this->document->tableCellOpenUseCSS($attributes, $import);
     }
 
     /**
-     * @param $properties
+     * This function opens a new table cell using properties.
+     * The cell should be closed by calling 'tablecell_close()'.
+     *
+     * @author LarsDW223
+     * @see ODTDocument::tableCellOpenUseProperties for API wrapper function
+     * @see ODTTable::tableCellOpenUseProperties for detailed documentation
      */
     function _odtTableCellOpenUseProperties ($properties, $colspan = 1, $rowspan = 1){
         $this->document->tableCellOpenUseProperties($properties, $colspan, $rowspan);
@@ -1832,45 +1827,64 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * @param $URL
-     * @param $replacement
-     * @return string
+     * Replace a CSS URL value with the given path.
+     * 
+     * @param $URL CSS URL e.g. 'url(images/xyz.png);'
+     * @param $replacement The local path
+     * @return string The resulting complete file path
      */
     public function replaceURLPrefix ($URL, $replacement) {
         return $this->import->replaceURLPrefix ($URL, $replacement);
     }
 
     /**
-     * @param $pixel
-     * @return float
+     * Convert pixel to points (X axis).
+     * 
+     * @param $pixel value to convert
+     * @return float The converted value in points
+     * @see ODTDocument::toPoints for API wrapper function
+     * @see ODTUnits::toPoints for detailed documentation
      */
     public function pixelToPointsX ($pixel) {
         return $this->document->toPoints($pixel, 'x');
     }
 
     /**
-     * @param $pixel
-     * @return float
+     * Convert pixel to points (Y axis).
+     * 
+     * @param $pixel value to convert
+     * @return float The converted value in points
+     * @see ODTDocument::toPoints for API wrapper function
+     * @see ODTUnits::toPoints for detailed documentation
      */
     public function pixelToPointsY ($pixel) {
         return $this->document->toPoints($pixel, 'y');
     }
 
     /**
-     * @param $property
-     * @param $value
-     * @param int $emValue
-     * @return string
+     * Adjust the given property for ODT.
+     * 
+     * @param $property The property name
+     * @param $value The property value
+     * @param int $emValue The conversion value for 'em' units
+     * @return string The new, adjusted value
+     * @see ODTUtility::adjustValueForODT for detailed documentation
      */
     public function adjustValueForODT ($property, $value, $emValue = 0) {
         return ODTUtility::adjustValueForODT ($property, $value, $emValue);
     }
 
     /**
-     * @param $property
-     * @param $value
-     * @param $type
-     * @return string
+     * Callback function which adjusts all CSS length values to point.
+     * 
+     * @param $property The name of the current CSS property, e.g. 'border-left'
+     * @param $value The current value from the original CSS code
+     * @param $type There are 3 possible values:
+     *              - LengthValueXAxis: the property represents a value on the X axis
+     *              - LengthValueYAxis: the property represents a value on the Y axis
+     *              - CSSValueType::StrokeOrBorderWidth: the property represents a stroke
+     *                or border width
+     * @return string The new, adjusted value for the property
      */
     public function adjustLengthCallback ($property, $value, $type) {
         // Replace px with pt (px does not seem to be supported by ODT)

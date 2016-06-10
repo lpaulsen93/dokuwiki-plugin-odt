@@ -318,10 +318,16 @@ abstract class docHandler
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
         if ( $style != NULL ) {
-            $style->clearLayoutProperties();
-
             $properties = array();
             $import->getPropertiesForElement($properties, $element, $class, $media_sel);
+            if (count($properties) == 0) {
+                // Nothing found. Return, DO NOT change existing style!
+                return;
+            }
+
+            // We have found something.
+            // First clear the existing layout properties of the style.
+            $style->clearLayoutProperties();
 
             // Adjust values for ODT
             foreach ($properties as $property => $value) {
@@ -376,18 +382,24 @@ abstract class docHandler
      *
      * @param string $template
      */
-    public function import_css_from_string($css_code, $media_sel=NULL, $media_path) {
+    public function import_css_from_string($css_code, $media_sel=NULL, $media_path, array $callback=NULL) {
         $import = plugin_load('helper', 'odt_cssimport');
         if ( $import != NULL ) {
             $import->importFromString ($css_code);
+            if ($callback != NULL) {
+                $import->adjustLengthValues ($callback);
+            }
             $this->import_css_internal ($import, $media_sel, $media_path);
         }
     }
 
-    public function import_css_from_file($filename, $media_sel=NULL, $media_path) {
+    public function import_css_from_file($filename, $media_sel=NULL, $media_path, array $callback=NULL) {
         $import = plugin_load('helper', 'odt_cssimport');
         if ( $import != NULL ) {
             $import->importFromFile ($filename);
+            if ($callback != NULL) {
+                $import->adjustLengthValues ($callback);
+            }
             $this->import_css_internal ($import, $media_sel, $media_path);
         }
     }

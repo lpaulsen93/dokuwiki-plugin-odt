@@ -21,8 +21,6 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var helper_plugin_odt_cssimport */
     protected $import = null;
-    /** @var helper_plugin_odt_cssimportnew */
-    protected $importnew = null;
     /** @var helper_plugin_odt_config */
     protected $config = null;
     protected $document = null;
@@ -91,19 +89,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->import = plugin_load('helper', 'odt_cssimport');
         if ( $this->import != NULL ) {
             $this->import->importFromString ($this->css);
+
+            // Call adjustLengthValues to make our callback function being called for every
+            // length value imported. This gives us the chance to convert it once from
+            // pixel to points.
+            $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
         }
 
         // Import CSS (new API)
-        $this->importnew = plugin_load('helper', 'odt_cssimportnew');
-        if ( $this->importnew != NULL ) {
-            $this->importnew->importFromString ($this->css);
-        }
-
-        // Call adjustLengthValues to make our callback function being called for every
-        // length value imported. This gives us the chance to convert it once from
-        // pixel to points.
-        $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
-        $this->importnew->adjustLengthValues (array($this, 'adjustLengthCallback'));
+        $this->document->importCSSFromString($this->css);
     }
 
     /**
@@ -126,9 +120,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $warning = '';
         $mode = $this->config->load($warning);
 
-        // Load and import CSS files, setup Units
-        $this->load_css();
+        // Setup Units before CSS import!
         $this->setupUnits();
+
+        // Import CSS files
+        $this->load_css();
 
         switch($mode) {
             case 'ODT template':
@@ -216,15 +212,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Closes the document
      */
     function document_end(){
-        // DEBUG: The following puts out the loaded raw CSS code
-        //$this->p_open();
-        // This line outputs the raw CSS code
-        //$test = 'CSS: '.$this->css;
-        // The next two lines output the parsed CSS rules with linebreaks
-        //$test = $this->import->rulesToString();
-        //$test = $this->importnew->rulesToString();
-        //$this->doc .= preg_replace ('/\n/', '<text:line-break/>', $test);
-
         // Build the document
         $this->finalize_ODTfile();
 
@@ -1975,28 +1962,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * @param array $dest
-     * @param $element
-     * @param $classString
-     * @param $inlineStyle
+     * Get CSS properties for a given element and adjust them for ODT.
+     *
+     * @see ODTDocument::getODTProperties for more information
      */
     public function getODTPropertiesNew (&$dest, iElementCSSMatchable $element, $media_sel=NULL) {
         if ($media_sel === NULL) {
             $media_sel = $this->config->getParam ('media_sel');
         }
-
-        $save = $this->importnew->getMedia();
-        $this->importnew->setMedia($media_sel);
-        
-        // Get properties for our class/element from imported CSS
-        $this->importnew->getPropertiesForElement($dest, $element);
-
-        // Adjust values for ODT
-        foreach ($dest as $property => $value) {
-            $dest [$property] = $this->adjustValueForODT ($property, $value, 14);
-        }
-
-        $this->importnew->setMedia($save);
+        $this->document->getODTProperties ($dest, $element, $media_sel);
     }
 
     /**

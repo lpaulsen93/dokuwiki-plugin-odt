@@ -17,6 +17,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTSpan.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTIndex.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
+require_once DOKU_PLUGIN . 'odt/ODT/css/cssimportnew.php';
 
 /**
  * Main class/API for creating an ODTDocument.
@@ -84,6 +85,8 @@ class ODTDocument
     protected $fields = array();
     // The document content
     protected $content = '';
+    /** @var cssimportnew */
+    protected $importnew = null;
 
     /**
      * Constructor:
@@ -133,7 +136,88 @@ class ODTDocument
     public function setCSSTemplate ($template_path, $media_sel, $mediadir) {
         // Document based on CSS template.
         $this->docHandler = new CSSTemplateDH ();
+
+        // Import CSS as styles (old API, deprecated)
         $this->docHandler->import($template_path, $media_sel, $mediadir);
+
+        // Import CSS for later use (new API)
+        $this->importCSSCodeInternal($cssCode);
+    }
+
+    /**
+     * Callback function which adjusts all CSS length values to point.
+     * 
+     * @param $property The name of the current CSS property, e.g. 'border-left'
+     * @param $value The current value from the original CSS code
+     * @param $type There are 3 possible values:
+     *              - LengthValueXAxis: the property represents a value on the X axis
+     *              - LengthValueYAxis: the property represents a value on the Y axis
+     *              - CSSValueType::StrokeOrBorderWidth: the property represents a stroke
+     *                or border width
+     * @return string The new, adjusted value for the property
+     */
+    public function adjustLengthCallback ($property, $value, $type) {
+        // Replace px with pt (px does not seem to be supported by ODT)
+        $length = strlen ($value);
+        if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+            $number = trim($value, 'px');
+            switch ($type) {
+                case CSSValueType::LengthValueXAxis:
+                    $adjusted = $this->toPoints($number, 'x').'pt';
+                break;
+
+                case CSSValueType::StrokeOrBorderWidth:
+                    switch ($property) {
+                        case 'border':
+                        case 'border-left':
+                        case 'border-right':
+                        case 'border-top':
+                        case 'border-bottom':
+                            // border in ODT spans does not support 'px' units, so we convert it.
+                            $adjusted = $this->toPoints($number, 'y').'pt';
+                        break;
+
+                        default:
+                            $adjusted = $value;
+                        break;
+                    }
+                break;
+
+                case CSSValueType::LengthValueYAxis:
+                default:
+                    $adjusted = $this->toPoints($number, 'y').'pt';
+                break;
+            }
+            return $adjusted;
+        }
+        return $value;
+    }
+
+    /**
+     * Import CSS code.
+     * This is the CSS code import for the new API.
+     * That means in this function the CSS code is only parsed and stored
+     * but not immediately imported as styles like in the old API.
+     * 
+     * The function can be called multiple times.
+     * All CSS code is handled like being appended.
+     *
+     * @param string $cssCode The CSS code to be imported
+     */
+    protected function importCSSCodeInternal ($cssCode) {
+        if ($this->importnew == NULL) {
+            // No CSS imported yet. Create object.
+            $this->importnew = new cssimportnew();
+            if ($this->importnew == NULL) {
+                return;
+            }
+        }
+        $this->importnew->importFromString($cssCode);
+
+        // Call adjustLengthValues to make our callback function being called for every
+        // length value imported. This gives us the chance to convert it once from
+        // pixel to points.
+        $this->importnew->adjustLengthValues (array($this, 'adjustLengthCallback'));
     }
 
     public function enableLinks () {
@@ -160,7 +244,7 @@ class ODTDocument
         // Otherwise a empty paragraph/line would be created!
         if ( !empty($text) && !ctype_space($text) ) {
             // Insert page bookmark if requested and not done yet.
-            $this->insertPendingPageBookmark($this->content);
+            $this->insertPendingPageBookmark();
 
             // Insert pagebreak or page format change if still pending.
             // Attention: NOT if $text is empty. This would lead to empty lines before headings
@@ -168,7 +252,7 @@ class ODTDocument
             $in_paragraph = $this->state->getInParagraph();
             if ( ($this->pagebreakIsPending() || $this->pageFormatChangeIsPending()) ||
                   !$in_paragraph ) {
-                $this->paragraphOpen(NULL, $this->content);
+                $this->paragraphOpen();
             }
         }
         $this->content .= $this->replaceXMLEntities($text);
@@ -251,10 +335,10 @@ class ODTDocument
      * Insert a horizontal rule
      */
     function horizontalRule() {
-        $this->paragraphClose($this->content);
+        $this->paragraphClose();
         $styleName = $this->getStyleName('horizontal line');
-        $this->paragraphOpen($styleName, $this->content);
-        $this->paragraphClose($this->content);
+        $this->paragraphOpen($styleName);
+        $this->paragraphClose();
 
         // Save paragraph style name in 'Do not delete array'!
         $this->preventDeletetionStyles [] = $styleName;
@@ -305,17 +389,17 @@ class ODTDocument
         $list_item = $this->state->getCurrentListItem();
         if ($list_item != NULL) {
             // if we're in a list item, we must close the <text:p> tag
-            $this->paragraphClose($this->content);
-            $this->paragraphOpen($style, $this->content);
+            $this->paragraphClose();
+            $this->paragraphOpen($style);
             $this->content .= $text;
-            $this->paragraphClose($this->content);
+            $this->paragraphClose();
             // FIXME: query previous style before preformatted text was opened and re-use it here
-            $this->paragraphOpen(NULL, $this->content);
+            $this->paragraphOpen();
         } else {
-            $this->paragraphClose($this->content);
-            $this->paragraphOpen($style, $this->content);
+            $this->paragraphClose();
+            $this->paragraphOpen($style);
             $this->content .= $text;
-            $this->paragraphClose($this->content);
+            $this->paragraphClose();
         }
     }
 
@@ -334,7 +418,7 @@ class ODTDocument
         // The pagebreak will then be inserted in the next call to p_open() or header().
         // The style will be a "pagebreak" style with the paragraph or header style as the parent.
         // This prevents extra empty lines after the pagebreak.
-        $this->paragraphClose($this->content);
+        $this->paragraphClose();
         $this->pagebreak = true;
     }
 
@@ -437,7 +521,7 @@ class ODTDocument
     function setPageBookmark($id){
         $inParagraph = $this->state->getInParagraph();
         if ($inParagraph) {
-            $this->insertBookmarkInternal($id, true, $this->content);
+            $this->insertBookmarkInternal($id, true);
         } else {
             $this->pageBookmark = $id;
         }
@@ -450,7 +534,7 @@ class ODTDocument
      */
     protected function insertBookmarkInternal($id, $openParagraph=true){
         if ($openParagraph) {
-            $this->paragraphOpen(NULL, $this->content);
+            $this->paragraphOpen();
         }
         $this->content .= '<text:bookmark text:name="'.$id.'"/>';
         $this->bookmarks [] = $id;
@@ -466,7 +550,7 @@ class ODTDocument
     function insertPendingPageBookmark(){
         // Insert page bookmark if requested and not done yet.
         if ( !empty($this->pageBookmark) ) {
-            $this->insertBookmarkInternal($this->pageBookmark, false, $this->content);
+            $this->insertBookmarkInternal($this->pageBookmark, false);
             $this->pageBookmark = NULL;
         }
     }
@@ -638,7 +722,7 @@ class ODTDocument
      */
     public function getODTFileAsString() {
         // Close any open paragraph if not done yet.
-        $this->paragraphClose($this->content);
+        $this->paragraphClose();
 
         // Replace local link placeholders with links to headings or bookmarks
         $styleName = $this->getStyleName('local link');
@@ -652,9 +736,11 @@ class ODTDocument
         ODTUtility::deleteUselessElements($this->content, $this->preventDeletetionStyles);
 
         if (!empty($this->trace_dump)) {
-            $this->paragraphOpen(NULL, $this->content);
-            $this->content .= 'Tracedump: '.$this->replaceXMLEntities($this->trace_dump);
-            $this->paragraphClose($this->content);
+            $this->paragraphOpen();
+            $this->linebreak();
+            $this->content .= 'Tracedump: ';
+            $this->addPreformattedText($this->trace_dump);
+            $this->paragraphClose();
         }
 
         // Get meta content
@@ -680,8 +766,12 @@ class ODTDocument
      * @param string $mediaSel The media selector to use e.g. 'print'
      * @param string $mediaPath Local path to media files
      */
-    public function importCSSFromString($cssCode, $mediaSel=NULL, $mediaPath) {
-        $this->docHandler->import_css_from_string ($cssCode, $mediaSel, $mediaPath);
+    public function importCSSFromString($cssCode, $mediaSel=NULL, $mediaPath=NULL) {
+        // Import CSS as styles (old API, deprecated)
+        $this->docHandler->import_css_from_string ($cssCode, $mediaSel, $mediaPath, array($this, 'adjustLengthCallback'));
+        
+        // Import CSS for later use (new API)
+        $this->importCSSCodeInternal($cssCode);
     }
 
     /**
@@ -809,9 +899,9 @@ class ODTDocument
         $quotation1 = $this->getStyleName('quotation1');
         if ($this->quote_depth == 1) {
             // On quote level 1 open a new paragraph with 'quotation1' style
-            $this->paragraphClose($this->content);
+            $this->paragraphClose();
             $this->quote_pos = strlen ($this->content);
-            $this->paragraphOpen($quotation1, $this->content);
+            $this->paragraphOpen($quotation1);
             $this->quote_pos = strpos ($this->content, $quotation1, $this->quote_pos);
             $this->quote_pos += strlen($quotation1) - 1;
         } else {
@@ -828,7 +918,7 @@ class ODTDocument
         }
         if ($this->quote_depth == 0) {
             // This will only close the paragraph if we're actually in one
-            $this->paragraphClose($this->content);
+            $this->paragraphClose();
         }
     }
 
@@ -1369,7 +1459,7 @@ class ODTDocument
             $this->changePageFormat = $data;
 
             // Close paragraph if open
-            $this->paragraphClose($this->content);
+            $this->paragraphClose();
         }
     }
 
@@ -1611,5 +1701,34 @@ class ODTDocument
             return $encoded;
         }
         $this->content .= $encoded;
+    }
+
+    /**
+     * Get CSS properties for a given element and adjust them for ODT.
+     *
+     * @param array $dest Properties found will be written in $dest as key value pairs,
+     *                    e.g. $dest ['color'] = 'black';
+     * @param iElementCSSMatchable $element The element object for which the properties are queried.
+     *                                      The class of the element needs to implement the interface
+     *                                      iElementCSSMatchable.
+     * @param string $media_sel The media selector to use for the query e.g. 'print'. May be empty.
+     */
+    public function getODTProperties (array &$dest, iElementCSSMatchable $element, $media_sel=NULL) {
+        if ($this->importnew == NULL) {
+            return;
+        }
+
+        $save = $this->importnew->getMedia();
+        $this->importnew->setMedia($media_sel);
+        
+        // Get properties for our class/element from imported CSS
+        $this->importnew->getPropertiesForElement($dest, $element);
+
+        // Adjust values for ODT
+        foreach ($dest as $property => $value) {
+            $dest [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
+        }
+
+        $this->importnew->setMedia($save);
     }
 }

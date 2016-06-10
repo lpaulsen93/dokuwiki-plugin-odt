@@ -11,9 +11,8 @@ if(!defined('DOKU_INC')) die();
 
 require_once DOKU_PLUGIN . 'odt/helper/cssimport.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDefaultStyles.php';
-require_once DOKU_PLUGIN . 'odt/ODT/page.php';
 
-// Supported document handlers.
+// Central class for ODT export
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 
 /**
@@ -108,11 +107,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Load and configure units helper.
+     * Configure units to our configuration values.
      */
     protected function setupUnits()
     {
-        // Load helper class for unit conversion.
         $this->document->setPixelPerEm(14);
         $this->document->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
         $this->document->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
@@ -307,7 +305,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Completes the ODT file
+     * Completes the ODT file.
      */
     public function finalize_ODTfile() {
         // Build/assign the document
@@ -317,7 +315,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Simple setter to enable creating links
+     * Simple setter to enable creating links.
      */
     function enable_links() {
         $this->config->setParam ('disable_links', false);
@@ -325,7 +323,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Simple setter to disable creating links
+     * Simple setter to disable creating links.
      */
     function disable_links() {
         $this->config->setParam ('disable_links', true);
@@ -343,9 +341,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     /**
      * This function does not really render an index but inserts a placeholder.
-     * See also insert_indexes().
      *
      * @return string
+     * @see ODTDocument::insertIndex for API wrapper function
+     * @see ODTIndex::insertIndex for more information
      */
     function render_index($type='toc', $settings=NULL) {
         $data = array();
@@ -357,7 +356,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * This function detmerines the settings for a TOC or chapter index.
      * The layout settings are taken from the configuration and $settings.
-     * The result is stored in array $data.
+     * The result is returned as an array.
      *
      * $settings can include the following options syntax:
      * - Title e.g. 'title=Example;'.
@@ -474,6 +473,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Return total page width in centimeters
      * (margins are included)
      *
+     * @see ODTDocument::getWidth for API wrapper function
+     * @see pageFormat::getWidth for more information
      * @author LarsDW223
      */
     function _getPageWidth(){
@@ -484,6 +485,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Return total page height in centimeters
      * (margins are included)
      *
+     * @see ODTDocument::getHeight for API wrapper function
+     * @see pageFormat::getHeight for more information
      * @author LarsDW223
      */
     function _getPageHeight(){
@@ -493,6 +496,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * Return left margin in centimeters
      *
+     * @see ODTDocument::getMarginLeft for API wrapper function
+     * @see pageFormat::getMarginLeft for more information
      * @author LarsDW223
      */
     function _getLeftMargin(){
@@ -502,6 +507,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * Return right margin in centimeters
      *
+     * @see ODTDocument::getMarginRight for API wrapper function
+     * @see pageFormat::getMarginRight for more information
      * @author LarsDW223
      */
     function _getRightMargin(){
@@ -511,6 +518,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * Return top margin in centimeters
      *
+     * @see ODTDocument::getMarginTop for API wrapper function
+     * @see pageFormat::getMarginTop for more information
      * @author LarsDW223
      */
     function _getTopMargin(){
@@ -520,6 +529,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     /**
      * Return bottom margin in centimeters
      *
+     * @see ODTDocument::getMarginBottom for API wrapper function
+     * @see pageFormat::getMarginBottom for more information
      * @author LarsDW223
      */
     function _getBottomMargin(){
@@ -533,10 +544,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * adjusts the percentage to the value which should be used for margins.
      * So 100% == 21cm e.g. becomes 80.9% == 17cm (assuming a margin of 2 cm on both sides).
      *
-     * @author LarsDW223
-     *
      * @param int|string $percentage
      * @return int|string
+     * 
+     * @see ODTDocument::getRelWidthMindMargins for API wrapper function
+     * @see pageFormat::getRelWidthMindMargins for more information
+     * @author LarsDW223
      */
     function _getRelWidthMindMargins ($percentage = '100'){
         return $this->document->getRelWidthMindMargins($percentage);
@@ -546,9 +559,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Like _getRelWidthMindMargins but returns the absulute width
      * in centimeters.
      *
-     * @author LarsDW223
      * @param string|int|float $percentage
      * @return float
+     * 
+     * @see ODTDocument::getAbsWidthMindMargins for API wrapper function
+     * @see pageFormat::getAbsWidthMindMargins for more information
+     * @author LarsDW223
      */
     function _getAbsWidthMindMargins ($percentage = '100'){
         return $this->document->getAbsWidthMindMargins($percentage);
@@ -561,10 +577,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * adjusts the percentage to the value which should be used for margins.
      * So 100% == 29.7cm e.g. becomes 86.5% == 25.7cm (assuming a margin of 2 cm on top and bottom).
      *
-     * @author LarsDW223
-     *
      * @param string|float|int $percentage
      * @return float|string
+     * 
+     * @see ODTDocument::getRelHeightMindMargins for API wrapper function
+     * @see pageFormat::getRelHeightMindMargins for more information
+     * @author LarsDW223
      */
     function _getRelHeightMindMargins ($percentage = '100'){
         return $this->document->getRelHeightMindMargins($percentage);
@@ -574,33 +592,45 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Like _getRelHeightMindMargins but returns the absulute width
      * in centimeters.
      *
-     * @author LarsDW223
-     *
      * @param string|int|float $percentage
      * @return float
+     * 
+     * @see ODTDocument::getAbsHeightMindMargins for API wrapper function
+     * @see pageFormat::getAbsHeightMindMargins for more information
+     * @author LarsDW223
      */
     function _getAbsHeightMindMargins ($percentage = '100'){
         return $this->document->getAbsHeightMindMargins($percentage);
     }
 
     /**
-     * Render plain text data
+     * Render plain text data.
      *
      * @param string $text
+     * @see ODTDocument::addPlainText for more information
      */
     function cdata($text) {
         $this->document->addPlainText($text);
     }
 
     /**
-     * Open a paragraph
+     * Open a paragraph.
      *
-     * @param string $style
+     * @param string $style Name of the style to use for the paragraph
+     * 
+     * @see ODTDocument::paragraphOpen for API wrapper function
+     * @see ODTParagraph::paragraphOpen for more information
      */
     function p_open($style=NULL){
         $this->document->paragraphOpen($style);
     }
 
+    /**
+     * Close a paragraph.
+     *
+     * @see ODTDocument::paragraphClose for API wrapper function
+     * @see ODTParagraph::paragraphClose for more information
+     */
     function p_close(){
         $this->document->paragraphClose();
     }

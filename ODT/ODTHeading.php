@@ -17,7 +17,7 @@ class ODTHeading
      * @param int    $level header level
      * @param int    $pos   byte position in the original source
      */
-    static public function heading(ODTDocument $doc, $text, $level, &$content){
+    static public function heading(ODTDocument $doc, $text, $level, &$content, $element=NULL, $attributes=NULL){
         // Close any open paragraph first
         $doc->paragraphClose($content);
 

@@ -71,6 +71,7 @@ class cssdocument {
     public $size = 0;
     public $level = 0;
     public $entries = array ();
+    protected $rootIndex = 0;
 
     protected function collect_attribute_value (&$value, $input, $pos, $max) {
         $value = '';
@@ -126,6 +127,17 @@ class cssdocument {
         return $result;
     }
 
+    public function saveRootIndex () {
+        $this->rootIndex = $this->getIndexLastOpened ();
+    }
+
+    public function restoreToRoot () {
+        for ($index = $this->size-1 ; $index > $this->rootIndex ; $index--) {
+            $this->entries [$index] = NULL;
+        }
+        $this->size = $this->rootIndex + 1;
+    }
+
     public function open ($element, $attributes=NULL, $pseudo_classes=NULL, $pseudo_elements=NULL) {
         $this->entries [$this->size]['level'] = $this->level;
         $this->entries [$this->size]['state'] = 'open';
@@ -179,7 +191,7 @@ class cssdocument {
         if ($this->size == 0) {
             return -1;
         }
-        for ($index = $this->size-1 ; $index >= 0 ; $index++) {
+        for ($index = $this->size-1 ; $index >= 0 ; $index--) {
             if ($this->entries [$index]['state'] == 'open') {
                 return $index;
             }
@@ -214,5 +226,17 @@ class cssdocument {
             return ($current-1);
         }
         return -1;
+    }
+    
+    public function getDump () {
+        $dump = '';
+        for ($index = 0 ; $index < $this->size ; $index++) {
+            $element = $this->entries [$index];
+            $dump .= str_repeat(' ', $element ['level'] * 2);
+            $dump .= $element ['element'];
+            $dump .= ' ['.$element ['attributes'].']';
+            $dump .= "\n";
+        }
+        return $dump;
     }
 }

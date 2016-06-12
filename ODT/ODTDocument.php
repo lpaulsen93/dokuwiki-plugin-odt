@@ -87,6 +87,9 @@ class ODTDocument
     protected $content = '';
     /** @var cssimportnew */
     protected $importnew = null;
+    /** @var cssdocument */
+    protected $htmlStack = null;
+    protected $CSSUsage = 'off';
 
     /**
      * Constructor:
@@ -96,6 +99,9 @@ class ODTDocument
     public function __construct() {
         // Initialize state
         $this->state = new ODTState();
+
+        // Initialize HTML state
+        $this->htmlStack = new cssdocument();
 
         // Use standard handler, document from scratch.
         $this->docHandler = new scratchDH ();
@@ -112,6 +118,13 @@ class ODTDocument
 
         // Setup meta data store/handler
         $this->meta = new ODTMeta();
+    }
+
+    /**
+     * Initialize the document.
+     */
+    public function initialize () {
+        $this->state->setDocument($this);
     }
 
     /**
@@ -137,11 +150,32 @@ class ODTDocument
         // Document based on CSS template.
         $this->docHandler = new CSSTemplateDH ();
 
-        // Import CSS as styles (old API, deprecated)
-        $this->docHandler->import($template_path, $media_sel, $mediadir);
-
-        // Import CSS for later use (new API)
+        // Import CSS for later use (if CSS usage is 'full')
+        // MUST be called before $this->docHandler->import because it
+        // stores the CSS in $this->importnew!
         $this->importCSSCodeInternal($cssCode);
+
+        // Import CSS as styles
+        if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
+            $this->docHandler->import($this->importnew, $this->htmlStack, $this->units, $template_path, $media_sel, $mediadir);
+        }
+    }
+
+    /**
+     * Set CSS usage.
+     *
+     * @param string $usage
+     */
+    public function setCSSUsage ($usage) {
+        switch (strtolower($usage)) {
+            case 'basic':
+            case 'full':
+                $this->CSSUsage = $usage;
+                break;
+            default:
+                $this->CSSUsage = 'off';
+                break;
+        }
     }
 
     /**
@@ -156,14 +190,17 @@ class ODTDocument
      *                or border width
      * @return string The new, adjusted value for the property
      */
-    public function adjustLengthCallback ($property, $value, $type) {
-        // Replace px with pt (px does not seem to be supported by ODT)
-        $length = strlen ($value);
-        if ( $length > 2 && $value [$length-2] == 'p' && $value [$length-1] == 'x' ) {
+    public function adjustLengthCallback ($property, $value, $type, $rule) {
+        // Get the digits and unit
+        $digits = ODTUnits::getDigits($value);
+        $unit = ODTUnits::stripDigits($value);
+
+        if ( $unit == 'px' ) {
+            // Replace px with pt (px does not seem to be supported by ODT)
             $number = trim($value, 'px');
             switch ($type) {
                 case CSSValueType::LengthValueXAxis:
-                    $adjusted = $this->toPoints($number, 'x').'pt';
+                    $adjusted = $this->toPoints($number, 'x');
                 break;
 
                 case CSSValueType::StrokeOrBorderWidth:
@@ -174,7 +211,7 @@ class ODTDocument
                         case 'border-top':
                         case 'border-bottom':
                             // border in ODT spans does not support 'px' units, so we convert it.
-                            $adjusted = $this->toPoints($number, 'y').'pt';
+                            $adjusted = $this->toPoints($number, 'y');
                         break;
 
                         default:
@@ -185,11 +222,29 @@ class ODTDocument
 
                 case CSSValueType::LengthValueYAxis:
                 default:
-                    $adjusted = $this->toPoints($number, 'y').'pt';
+                    switch ($property) {
+                        case 'line-height':
+                            $adjusted = $this->toPoints($number, 'y');
+                        break;
+                        default:
+                            $adjusted = $this->toPoints($number, 'y');
+                        break;
+                    }
                 break;
             }
             return $adjusted;
+        } else {
+            if ($property == 'line-height' && $value != 'normal') {
+                if ($unit == '%' || empty($unit)) {
+                    // Relative values must be handled later
+                    return $value;
+                }
+                $adjusted = $this->toPoints($value, 'y');
+                return $adjusted;
+            }
+            return $value;
         }
+        
         return $value;
     }
 
@@ -266,8 +321,8 @@ class ODTDocument
      *
      * @param string $styleName The style to use.
      */
-    function spanOpen($styleName){
-        ODTSpan::spanOpen($this, $this->content, $styleName);
+    function spanOpen($styleName, $element=NULL, $attributes=NULL){
+        ODTSpan::spanOpen($this, $this->content, $styleName, $element, $attributes);
     }
 
     /**
@@ -275,8 +330,8 @@ class ODTDocument
      * 
      * @see ODTSpan::spanOpenUseCSS for detailed documentation
      */
-    function spanOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        ODTSpan::spanOpenUseCSS($this, $this->content, $attributes, $import);
+    function spanOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTSpan::spanOpenUseCSS($this, $this->content, $element, $attributes, $import);
     }
 
     /**
@@ -302,8 +357,8 @@ class ODTDocument
      *
      * @param string $styleName The style to use.
      */
-    function paragraphOpen($styleName=NULL){
-        ODTParagraph::paragraphOpen($this, $styleName, $this->content);
+    function paragraphOpen($styleName=NULL, $element=NULL, $attributes=NULL){
+        ODTParagraph::paragraphOpen($this, $styleName, $this->content, $element, $attributes);
     }
 
     /**
@@ -318,8 +373,8 @@ class ODTDocument
      * 
      * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
      */
-    function paragraphOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        ODTParagraph::paragraphOpenUseCSS($this, $this->content, $attributes, $import);
+    function paragraphOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTParagraph::paragraphOpenUseCSS($this, $this->content, $element, $attributes, $import);
     }
 
     /**
@@ -562,8 +617,8 @@ class ODTDocument
      * @param int    $level header level
      * @param int    $pos   byte position in the original source
      */
-    function heading($text, $level){
-        ODTHeading::heading($this, $text, $level, $this->content);
+    function heading($text, $level, $element=NULL, $attributes=NULL){
+        ODTHeading::heading($this, $text, $level, $this->content, $element, $attributes);
     }
 
     /**
@@ -767,11 +822,19 @@ class ODTDocument
      * @param string $mediaPath Local path to media files
      */
     public function importCSSFromString($cssCode, $mediaSel=NULL, $mediaPath=NULL) {
-        // Import CSS as styles (old API, deprecated)
-        $this->docHandler->import_css_from_string ($cssCode, $mediaSel, $mediaPath, array($this, 'adjustLengthCallback'));
-        
-        // Import CSS for later use (new API)
+        // Import CSS for later use (if CSS usage is 'full')
+        // MUST be called before $this->docHandler->import because it
+        // stores the CSS in $this->importnew!
         $this->importCSSCodeInternal($cssCode);
+
+        // Import CSS as styles
+        if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
+            //$this->docHandler->trace_dump = '>>>';
+            $this->docHandler->import_styles_from_css ($this->importnew, $this->htmlStack, $this->units, $mediaSel, $mediaPath);
+            //$this->trace_dump .= $this->docHandler->trace_dump;
+        }
+
+        //$this->trace_dump .= $this->importnew->rulesToString();
     }
 
     /**
@@ -929,8 +992,8 @@ class ODTDocument
      * @param bool $continue Continue numbering?
      * @param string $styleName Name of style to use for the list
      */
-    function listOpen($continue=false, $styleName) {
-        ODTList::listOpen($this, $continue, $styleName, $this->content);
+    function listOpen($continue=false, $styleName, $element=NULL, $attributes=NULL) {
+        ODTList::listOpen($this, $continue, $styleName, $this->content, $element, $attributes);
     }
 
     /**
@@ -945,8 +1008,8 @@ class ODTDocument
      *
      * @param int $level The nesting level
      */
-    function listItemOpen($level) {
-        ODTList::listItemOpen($this, $level, $this->content);
+    function listItemOpen($level, $element=NULL, $attributes=NULL) {
+        ODTList::listItemOpen($this, $level, $this->content, $element, $attributes);
     }
 
     /**
@@ -959,8 +1022,8 @@ class ODTDocument
     /**
      * Open list content/a paragraph in a list item
      */
-    function listContentOpen() {
-        ODTList::listContentOpen($this, $this->content);
+    function listContentOpen($element=NULL, $attributes=NULL) {
+        ODTList::listContentOpen($this, $this->content, $element, $attributes);
     }
 
     /**
@@ -976,8 +1039,8 @@ class ODTDocument
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      */
-    function tableOpen($maxcols = NULL, $numrows = NULL){
-        ODTTable::tableOpen($this, $maxcols, $numrows, $this->content);
+    function tableOpen($maxcols = NULL, $numrows = NULL, $element=NULL, $attributes=NULL){
+        ODTTable::tableOpen($this, $maxcols, $numrows, $this->content, NULL, $element, $attributes);
     }
 
     /**
@@ -1000,8 +1063,8 @@ class ODTDocument
     /**
      * Open a table row
      */
-    function tableRowOpen(){
-        ODTTable::tableRowOpen($this, $this->content);
+    function tableRowOpen($element=NULL, $attributes=NULL){
+        ODTTable::tableRowOpen($this, $this->content, NULL, $element, $attributes);
     }
 
     /**
@@ -1014,8 +1077,8 @@ class ODTDocument
     /**
      * Open a table header cell
      */
-    function tableHeaderOpen($colspan = 1, $rowspan = 1, $align){
-        ODTTable::tableHeaderOpen($this, $colspan = 1, $rowspan = 1, $align, $this->content);
+    function tableHeaderOpen($colspan = 1, $rowspan = 1, $align, $element=NULL, $attributes=NULL){
+        ODTTable::tableHeaderOpen($this, $colspan = 1, $rowspan = 1, $align, $this->content, NULL, NULL, $element, $attributes);
     }
 
     /**
@@ -1028,8 +1091,8 @@ class ODTDocument
     /**
      * Open a table cell
      */
-    function tableCellOpen($colspan, $rowspan, $align){
-        ODTTable::tableCellOpen($this, $colspan, $rowspan, $align, $this->content);
+    function tableCellOpen($colspan, $rowspan, $align, $element=NULL, $attributes=NULL){
+        ODTTable::tableCellOpen($this, $colspan, $rowspan, $align, $this->content, NULL, NULL, $element, $attributes);
     }
 
     /**
@@ -1042,8 +1105,8 @@ class ODTDocument
     /**
      * Open a table using CSS
      */
-    function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableOpenUseCSS($this, $this->content, $maxcols, $numrows, $attributes, $import);
+    function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableOpenUseCSS($this, $this->content, $maxcols, $numrows, $element, $attributes, $import);
     }
 
     /**
@@ -1070,8 +1133,8 @@ class ODTDocument
     /**
      * Open a table header using CSS
      */
-    function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableHeaderOpenUseCSS($this, $this->content, $colspan, $rowspan, $attributes, $import);
+    function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableHeaderOpenUseCSS($this, $this->content, $colspan, $rowspan, $element, $attributes, $import);
     }
 
     /**
@@ -1084,8 +1147,8 @@ class ODTDocument
     /**
      * Open a table row using CSS
      */
-    function tableRowOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableRowOpenUseCSS($this, $this->content, $attributes, $import);
+    function tableRowOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        ODTTable::tableRowOpenUseCSS($this, $this->content, $element, $attributes, $import);
     }
 
     /**
@@ -1098,8 +1161,8 @@ class ODTDocument
     /**
      * Open a table cell using CSS
      */
-    function tableCellOpenUseCSS($attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
-        ODTTable::tableCellOpenUseCSS($this, $this->content, $attributes, $import, $colspan, $rowspan);
+    function tableCellOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+        ODTTable::tableCellOpenUseCSS($this, $this->content, $element, $attributes, $import, $colspan, $rowspan);
     }
 
     /**
@@ -1114,7 +1177,7 @@ class ODTDocument
      * 
      * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
-    function openTextBoxUseCSS ($attributes=NULL, cssimportnew $import=NULL) {
+    function openTextBoxUseCSS ($element=NULL, $attributes=NULL, cssimportnew $import=NULL) {
         ODTFrame::openTextBoxUseCSS($this, $this->content, $attributes, $import);
     }
     
@@ -1730,5 +1793,20 @@ class ODTDocument
         }
 
         $this->importnew->setMedia($save);
+    }
+
+    /**
+     * Adds an $element with $attributes to the internal HTML stack for
+     * CSS matching. HTML elments added from extern using this function
+     * are supposed to never be closed so only root elements should be
+     * added like 'html' or 'body' or maybe a 'div' that should always
+     * be present for proper CSS matching.
+     * 
+     * @param string $element The element name, e.g. 'body'
+     * @param string $attributes The elements attributes, e.g. 'lang="en" dir="ltr"'
+     */
+    public function addHTMLElement ($element, $attributes = NULL) {
+        $this->htmlStack->open($element, $attributes);
+        $this->htmlStack->saveRootIndex ();
     }
 }

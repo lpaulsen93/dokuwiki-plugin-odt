@@ -20,7 +20,9 @@ class ODTFootnote
      *
      * @author Andreas Gohr <andi@splitbrain.org>
      */
-    function footnoteOpen(ODTDocument $doc, &$content) {
+    function footnoteOpen(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL) {
+        // $element and $attributes are actually unused
+
         // Move current content to store and record footnote
         $doc->store = $content;
         $content = '';

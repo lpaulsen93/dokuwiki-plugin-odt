@@ -18,7 +18,7 @@ class ODTList
      * @param bool $continue Continue numbering?
      * @param string $styleName Name of style to use for the list
      */
-    static public function listOpen(ODTDocument $doc, $continue=false, $styleName, &$content) {
+    static public function listOpen(ODTDocument $doc, $continue=false, $styleName, &$content, $element=NULL, $attributes=NULL) {
         $doc->paragraphClose($content);
 
         $list = new ODTElementList($styleName, $continue);
@@ -59,7 +59,7 @@ class ODTList
      *
      * @param int $level The nesting level
      */
-    static public function listItemOpen(ODTDocument $doc, $level, &$content) {
+    static public function listItemOpen(ODTDocument $doc, $level, &$content, $element=NULL, $attributes=NULL) {
         if ($doc->state == NULL ) {
             // ??? Can't be...
             return;
@@ -98,7 +98,7 @@ class ODTList
     /**
      * Open list content/a paragraph in a list item
      */
-    static public function listContentOpen(ODTDocument $doc, &$content) {
+    static public function listContentOpen(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL) {
         // The default style for list content is body but it should always be
         // overwritten. It's just assigned here to guarantee some style name is
         // always set in case of an error also.

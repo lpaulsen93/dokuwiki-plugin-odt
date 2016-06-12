@@ -15,7 +15,7 @@ class ODTSpan
      *
      * @param string $styleName The style to use.
      */
-    public static function spanOpen(ODTDocument $doc, &$content, $styleName){
+    public static function spanOpen(ODTDocument $doc, &$content, $styleName, $element=NULL, $attributes=NULL){
         $span = new ODTElementSpan ($styleName);
         $doc->state->enter($span);
         $content .= $span->getOpeningTag();
@@ -40,7 +40,7 @@ class ODTSpan
      * @param $baseURL
      * @param $element
      */
-    public static function spanOpenUseCSS(ODTDocument $doc, &$content, $attributes=NULL, cssimportnew $import=NULL){
+    public static function spanOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class

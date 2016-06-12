@@ -34,7 +34,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Set up empty array with known config parameters
         $this->config = plugin_load('helper', 'odt_config');
 
+        // Create and initialize document
         $this->document = new ODTDocument();
+        $this->document->initialize ();
     }
 
     /**
@@ -78,6 +80,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Load and imports CSS.
      */
     protected function load_css() {
+        global $conf, $lang;
+
         /** @var helper_plugin_odt_dwcssloader $loader */
         $loader = plugin_load('helper', 'odt_dwcssloader');
         if ( $loader != NULL ) {
@@ -96,8 +100,27 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->import->adjustLengthValues (array($this, 'adjustLengthCallback'));
         }
 
+        // Set CSS usage according to configuration
+        switch ($this->config->getParam('css_usage')) {
+            case 'basic style import':
+                $this->document->setCSSUsage('basic');
+                break;
+            case 'full':
+                $this->document->setCSSUsage('full');
+                break;
+            default:
+                $this->document->setCSSUsage('off');
+                break;
+        }
+
+        // Put some root element on the HTML stack which shopuld always
+        // be present for our CSS matching
+        $this->document->addHTMLElement ('html', 'lang="'.$conf['lang'].'" dir="'.$lang['direction'].'"');
+        $this->document->addHTMLElement ('body');
+        $this->document->addHTMLElement ('div', 'id="dokuwiki__content"');
+
         // Import CSS (new API)
-        $this->document->importCSSFromString($this->css);
+        $this->document->importCSSFromString($this->css, $this->config->getParam('media_sel'));
     }
 
     /**
@@ -105,7 +128,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     protected function setupUnits()
     {
-        $this->document->setPixelPerEm(14);
+        $this->document->setPixelPerEm($this->config->getParam ('css_font_size'));
         $this->document->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
         $this->document->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
     }
@@ -1958,7 +1981,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
-        $this->document->importCSSFromString($text, $media_sel, $this->config->getParam('mediadir'));
+        $this->document->importCSSFromString($text, $this->config->getParam('media_sel'), $this->config->getParam('mediadir'));
     }
 
     /**

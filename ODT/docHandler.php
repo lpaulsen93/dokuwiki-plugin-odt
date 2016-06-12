@@ -22,9 +22,9 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
  */
 abstract class docHandler
 {
+    public $trace_dump = NULL;
     var $manifest;
     var $ZIP;
-    protected $factory = NULL;
 
     /**
      * Constructor.
@@ -33,8 +33,6 @@ abstract class docHandler
         // prepare the zipper, manifest
         $this->ZIP = new ZipLib();
         $this->manifest = new ODTManifest();
-
-        $this->factory = plugin_load('helper', 'odt_stylefactory');
     }
 
     /**
@@ -154,7 +152,7 @@ abstract class docHandler
             $style->setPropertyForLevel($level, 'vertical-pos', 'middle');
             $style->setPropertyForLevel($level, 'vertical-rel', 'line');
 
-            list($width, $height) = renderer_plugin_odt_page::_odtGetImageSize($file);
+            list($width, $height) = ODTUtility::getImageSize($file);
             if (empty($width) || empty($height)) {
                 $width = '0.5';
                 $height = $width;
@@ -181,7 +179,7 @@ abstract class docHandler
         }
     }
 
-    protected function importOrderedListStyles($import, $media_sel, $media_path) {
+    protected function importOrderedListStyles($import, $media_path, ODTUnits $units) {
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -248,7 +246,7 @@ abstract class docHandler
         }
     }
 
-    protected function importUnorderedListStyles($import, $media_sel, $media_path) {
+    protected function importUnorderedListStyles($import, $media_path, ODTUnits $units) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -261,7 +259,7 @@ abstract class docHandler
 
             // Adjust values for ODT
             foreach ($properties as $property => $value) {
-                $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
+                $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
             }
             
             if ($properties ['list-style-type'] !== NULL) {
@@ -314,14 +312,25 @@ abstract class docHandler
         }
     }
 
-    protected function importStyle($import, $style_type, $element, $class, $media_sel) {
+    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
         if ( $style != NULL ) {
+            // Push our element to import on the stack
+            $htmlStack->open($element, $attributes);
+            $toMatch = $htmlStack->getCurrentElement();
+            
+            $element_to_check = 'code';
+            
             $properties = array();
-            $import->getPropertiesForElement($properties, $element, $class, $media_sel);
+            $import->getPropertiesForElement($properties, $toMatch);
             if (count($properties) == 0) {
                 // Nothing found. Return, DO NOT change existing style!
+
+                if ($this->trace_dump != NULL && $element == $element_to_check) {
+                    $this->trace_dump .= 'Nothing found for '.$element_to_check."!\n";
+                }
+
                 return;
             }
 
@@ -329,9 +338,23 @@ abstract class docHandler
             // First clear the existing layout properties of the style.
             $style->clearLayoutProperties();
 
+            if ($this->trace_dump != NULL && $element == $element_to_check) {
+                $this->trace_dump .= 'code BEFORE:'."\n";
+                foreach ($properties as $key => $value) {
+                    $this->trace_dump .= $key.'='.$value."\n";
+                }
+                $this->trace_dump .= '---------------------------------------'."\n";
+            }
+
             // Adjust values for ODT
-            foreach ($properties as $property => $value) {
-                $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
+            ODTUtility::adjustValuesForODT ($properties, $units);
+
+            if ($this->trace_dump != NULL && $element == $element_to_check) {
+                $this->trace_dump .= 'code AFTER:'."\n";
+                foreach ($properties as $key => $value) {
+                    $this->trace_dump .= $key.'='.$value."\n";
+                }
+                $this->trace_dump .= '---------------------------------------'."\n";
             }
 
             // Convert 'text-decoration'.
@@ -374,73 +397,65 @@ abstract class docHandler
             }
 
             $style->importProperties($properties, NULL);
+
+            // Reset stack to saved root so next importStyle
+            // will have the same conditions
+            $htmlStack->restoreToRoot ();
         }
     }
 
-    /**
-     * Import CSS code for styles.
-     *
-     * @param string $template
-     */
-    public function import_css_from_string($css_code, $media_sel=NULL, $media_path, array $callback=NULL) {
-        $import = plugin_load('helper', 'odt_cssimport');
+    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL, $media_path) {
         if ( $import != NULL ) {
-            $import->importFromString ($css_code);
-            if ($callback != NULL) {
-                $import->adjustLengthValues ($callback);
-            }
-            $this->import_css_internal ($import, $media_sel, $media_path);
+            $save = $import->getMedia ();
+            $import->setMedia ($media_sel);
+            
+            // Make a copy of the stack to be sure we do not leave anything behind after import.
+            $stack = clone $htmlStack;
+            $stack->restoreToRoot ();
+
+            $this->import_styles_from_css_internal ($import, $stack, $units, $media_path);
+
+            $import->setMedia ($save);
         }
     }
 
-    public function import_css_from_file($filename, $media_sel=NULL, $media_path, array $callback=NULL) {
-        $import = plugin_load('helper', 'odt_cssimport');
-        if ( $import != NULL ) {
-            $import->importFromFile ($filename);
-            if ($callback != NULL) {
-                $import->adjustLengthValues ($callback);
-            }
-            $this->import_css_internal ($import, $media_sel, $media_path);
-        }
-    }
+    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
+        $this->importStyle($import, $htmlStack, $units, 'heading1', 'h1');
+        $this->importStyle($import, $htmlStack, $units, 'heading2', 'h2');
+        $this->importStyle($import, $htmlStack, $units, 'heading3', 'h3');
+        $this->importStyle($import, $htmlStack, $units, 'heading4', 'h4');
+        $this->importStyle($import, $htmlStack, $units, 'heading5', 'h5');
 
-    protected function import_css_internal($import, $media_sel=NULL, $media_path) {
-        $this->importStyle($import, 'heading1', 'h1', NULL, $media_sel);
-        $this->importStyle($import, 'heading2', 'h2', NULL, $media_sel);
-        $this->importStyle($import, 'heading3', 'h3', NULL, $media_sel);
-        $this->importStyle($import, 'heading4', 'h4', NULL, $media_sel);
-        $this->importStyle($import, 'heading5', 'h5', NULL, $media_sel);
+        $this->importStyle($import, $htmlStack, $units, 'horizontal line', 'hr');
 
-        $this->importStyle($import, 'horizontal line', 'hr',         NULL, $media_sel);
+        $this->importStyle($import, $htmlStack, $units, 'body', 'body');
 
-        $this->importStyle($import, 'body', 'body',       NULL, $media_sel);
+        $this->importStyle($import, $htmlStack, $units, 'emphasis', 'em');
+        $this->importStyle($import, $htmlStack, $units, 'strong', 'strong');
+        $this->importStyle($import, $htmlStack, $units, 'underline', 'u');
+        $this->importStyle($import, $htmlStack, $units, 'monospace', 'code');
+        $this->importStyle($import, $htmlStack, $units, 'del', 'del');
+        $this->importStyle($import, $htmlStack, $units, 'preformatted', 'pre');
 
-        $this->importStyle($import, 'emphasis',     'em',     NULL, $media_sel);
-        $this->importStyle($import, 'strong',       'strong', NULL, $media_sel);
-        $this->importStyle($import, 'underline',    'u',      NULL, $media_sel);
-        $this->importStyle($import, 'monospace',    'code',   NULL, $media_sel);
-        $this->importStyle($import, 'del',          'del',    NULL, $media_sel);
-        $this->importStyle($import, 'preformatted', 'pre',    NULL, $media_sel);
+        $this->importStyle($import, $htmlStack, $units, 'quotation1', 'quotation1');
+        $this->importStyle($import, $htmlStack, $units, 'quotation2', 'quotation2');
+        $this->importStyle($import, $htmlStack, $units, 'quotation3', 'quotation3');
+        $this->importStyle($import, $htmlStack, $units, 'quotation4', 'quotation4');
+        $this->importStyle($import, $htmlStack, $units, 'quotation5', 'quotation5');
 
-        $this->importStyle($import, 'quotation1', 'quotation1', NULL, $media_sel);
-        $this->importStyle($import, 'quotation2', 'quotation2', NULL, $media_sel);
-        $this->importStyle($import, 'quotation3', 'quotation3', NULL, $media_sel);
-        $this->importStyle($import, 'quotation4', 'quotation4', NULL, $media_sel);
-        $this->importStyle($import, 'quotation5', 'quotation5', NULL, $media_sel);
+        $this->importStyle($import, $htmlStack, $units, 'table', 'table');
+        $this->importStyle($import, $htmlStack, $units, 'table header', 'thead');
+        $this->importStyle($import, $htmlStack, $units, 'table heading', 'th');
+        $this->importStyle($import, $htmlStack, $units, 'table cell', 'td');
 
-        $this->importStyle($import, 'table',         'table', NULL, $media_sel);
-        $this->importStyle($import, 'table header',  'thead', NULL, $media_sel);
-        $this->importStyle($import, 'table heading', 'th',    NULL, $media_sel);
-        $this->importStyle($import, 'table cell',    'td',    NULL, $media_sel);
+        //$this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
+        //$this->importOrderedListStyles($import, $htmlStack, $units, $media_path);
+        $this->importStyle($import, $htmlStack, $units, 'list first paragraph', 'p', 'class="listfirstparagraph"');
+        $this->importStyle($import, $htmlStack, $units, 'list last paragraph', 'p', 'class="listlastparagraph"');
 
-        $this->importUnorderedListStyles($import, $media_sel, $media_path);
-        $this->importOrderedListStyles($import, $media_sel, $media_path);
-        $this->importStyle($import, 'list first paragraph', NULL, 'listfirstparagraph', $media_sel);
-        $this->importStyle($import, 'list last paragraph', NULL, 'listlastparagraph', $media_sel);
-
-        $this->importStyle($import, 'internet link',         'internetlink',        NULL, $media_sel);
-        $this->importStyle($import, 'visited internet link', 'visitedinternetlink', NULL, $media_sel);
-        $this->importStyle($import, 'local link',            'locallink',           NULL, $media_sel);
-        $this->importStyle($import, 'visited local link',    'visitedlocallink',    NULL, $media_sel);
+        $this->importStyle($import, $htmlStack, $units, 'internet link', 'a', 'class="internetlink"');
+        $this->importStyle($import, $htmlStack, $units, 'visited internet link', 'a', 'class="visitedinternetlink"');
+        $this->importStyle($import, $htmlStack, $units, 'local link', 'a', 'class="locallink"');
+        $this->importStyle($import, $htmlStack, $units, 'visited local link', 'a', 'class="visitedlocallink"');
     }
 }

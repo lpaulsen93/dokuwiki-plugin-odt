@@ -13,6 +13,7 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableCell.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableHeaderCell.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementFrame.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTextBox.php';
+require_once DOKU_PLUGIN.'odt/ODT/css/cssdocument.php';
 
 /**
  * ODTState: class for maintaining the ODT state stack.
@@ -33,6 +34,8 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTextBox.php';
  */
 class ODTState
 {
+    // The ODT document to which this state belongs
+    protected $document = NULL;
     protected $stack = array();
     protected $size = 0;
     protected $element_counter = array();
@@ -41,6 +44,7 @@ class ODTState
      * Constructor. Set initial 'root' state.
      */
     public function __construct() {
+        // Stack for maintaining our ODT elements
         $this->stack [$this->size] = new ODTElementRoot();
         $this->size++;
     }
@@ -114,7 +118,7 @@ class ODTState
      * @param string $element
      * @param string $clazz
      */
-    public function enter(ODTStateElement $element) {
+    public function enter(ODTStateElement $element, $attributes=NULL) {
         if ($element == NULL ) {
             return;
         }
@@ -134,6 +138,12 @@ class ODTState
         // Add new element to stack
         $this->stack [$this->size] = $element;
         $this->size++;
+
+        // Set the elements style object
+        if ($this->document != NULL) {
+            $styleObj = $this->document->getStyle($element->getStyleName());
+            $element->setStyle($styleObj);
+        }
 
         // Let the element find its parent
         $element->determineParent ($previous);
@@ -248,5 +258,14 @@ class ODTState
         } else {
             return false;
         }
+    }
+
+    /**
+     * Set the ODTDocument to which this state belongs.
+     * 
+     * @param ODTDocument $doc
+     */
+    public function setDocument($doc) {
+        $this->document = $doc;
     }
 }

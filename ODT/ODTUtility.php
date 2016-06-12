@@ -246,6 +246,60 @@ class ODTUtility
     }
 
     /**
+     * The function adjusts the properties values for ODT:
+     * - 'em' units are converted to 'pt' units
+     * - CSS color names are converted to its RGB value
+     * - short color values like #fff are converted to the long format, e.g #ffffff
+     * - some relative values are converted to absoulte depending on other
+     *   values e.g. 'line-height' an 'font-size'
+     *
+     * @author LarsDW223
+     *
+     * @param  array  $properties Array with property value pairs
+     * @param  ODTUnits $units Units object to use for conversion
+     */
+    public static function adjustValuesForODT (&$properties, ODTUnits $units) {
+        // First do simple adjustments per property
+        foreach ($properties as $property => $value) {
+            $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
+        }
+
+        // Now we do the adjustments for which one value depends on another
+
+        // Do we have font-size or line-height set?
+        if ($properties ['font-size'] != NULL || $properties ['line-height'] != NULL) {
+            // First get absolute font-size in points
+            $base_font_size_in_pt = $units->getPixelPerEm ();
+            $base_font_size_in_pt = $units->toPoints($base_font_size_in_pt, 'y');
+            $base_font_size_in_pt = $units->getDigits($base_font_size_in_pt);
+            if ($properties ['font-size'] != NULL) {
+                $font_size_unit = $units->stripDigits($properties ['font-size']);
+                $font_size_digits = $units->getDigits($properties ['font-size']);
+                if ($font_size_unit == '%') {
+                    $base_font_size_in_pt = ($font_size_digits * $base_font_size_in_pt)/100;
+                    $properties ['font-size'] = $base_font_size_in_pt.'pt';
+                } elseif ($font_size_unit != 'pt') {
+                    $properties ['font-size'] = $units->toPoints($properties ['font-size'], 'y');
+                    $base_font_size_in_pt = $units->getDigits($properties ['font-size']);
+                } else {
+                    $base_font_size_in_pt = $units->getDigits($properties ['font-size']);
+                }
+            }
+
+            // Convert relative line-heights to absolute
+            if ($properties ['line-height'] != NULL) {
+                $line_height_unit = $units->stripDigits($properties ['line-height']);
+                $line_height_digits = $units->getDigits($properties ['line-height']);
+                if ($line_height_unit == '%') {
+                    $properties ['line-height'] = (($line_height_digits * $base_font_size_in_pt)/100).'pt';
+                } elseif (empty($line_height_unit)) {
+                    $properties ['line-height'] = ($line_height_digits * $base_font_size_in_pt).'pt';
+                }
+            }
+        }
+    }
+
+    /**
      * The function adjusts the property value for ODT:
      * - 'em' units are converted to 'pt' units
      * - CSS color names are converted to its RGB value
@@ -282,6 +336,10 @@ class ODTUtility
                     $part = ($number * $emValue).'pt';
                 }
             }
+
+            // Some values can have '"' in it. These need to be converted to '&apos;'
+            // e.g. 'font-family' tp specify that '"Courier New"' is one font name not two
+            $part = str_replace('"', '&apos;', $part);
 
             $value .= ' '.$part;
         }

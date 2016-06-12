@@ -24,7 +24,7 @@ class ODTFrame
      *
      * @param array $properties
      */
-    public static function openTextBoxUseCSS (ODTDocument $doc, &$content, $attributes=NULL, cssimportnew $import=NULL) {
+    public static function openTextBoxUseCSS (ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL) {
         $frame = $doc->state->getCurrentFrame();
         if ($frame != NULL) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.

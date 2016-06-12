@@ -15,7 +15,7 @@ class ODTParagraph
      *
      * @param string $styleName The style to use.
      */
-    static public function paragraphOpen(ODTDocument $doc, $styleName=NULL, &$content){
+    static public function paragraphOpen(ODTDocument $doc, $styleName=NULL, &$content, $element=NULL, $attributes=NULL){
         if ( empty($styleName) ) {
             $styleName = $doc->getStyleName('body');
         }
@@ -122,7 +122,7 @@ class ODTParagraph
      * @param $baseURL
      * @param $element
      */
-    function paragraphOpenUseCSS(ODTDocument $doc, &$content, $attributes=NULL, cssimportnew $import=NULL){
+    function paragraphOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class

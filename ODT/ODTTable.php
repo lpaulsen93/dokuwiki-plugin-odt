@@ -17,7 +17,7 @@ class ODTTable
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      */
-    public static function tableOpen(ODTDocument $doc, $maxcols = NULL, $numrows = NULL, &$content, $tableStyleName=NULL){
+    public static function tableOpen(ODTDocument $doc, $maxcols = NULL, $numrows = NULL, &$content, $tableStyleName=NULL, $element=NULL, $attributes=NULL){
         // Close any open paragraph.
         $doc->paragraphClose($content);
         
@@ -187,7 +187,7 @@ class ODTTable
     /**
      * Open a table row
      */
-    public static function tableRowOpen(ODTDocument $doc, &$content, $styleName=NULL){
+    public static function tableRowOpen(ODTDocument $doc, &$content, $styleName=NULL, $element=NULL, $attributes=NULL){
         $row = new ODTElementTableRow($styleName);
         $doc->state->enter($row);
         $content .= $row->getOpeningTag();
@@ -207,7 +207,7 @@ class ODTTable
      * @param int    $rowspan
      * @param string $align left|center|right
      */
-    public static function tableHeaderOpen(ODTDocument $doc, $colspan = 1, $rowspan = 1, $align = "left", &$content, $cellStyle=NULL, $paragraphStyle=NULL){
+    public static function tableHeaderOpen(ODTDocument $doc, $colspan = 1, $rowspan = 1, $align = "left", &$content, $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
             $cellStyle = $doc->getStyleName('table header');
@@ -245,7 +245,7 @@ class ODTTable
      * @param int    $rowspan
      * @param string $align left|center|right
      */
-    public static function tableCellOpen(ODTDocument $doc, $colspan = 1, $rowspan = 1, $align = "left", &$content, $cellStyle=NULL, $paragraphStyle=NULL){
+    public static function tableCellOpen(ODTDocument $doc, $colspan = 1, $rowspan = 1, $align = "left", &$content, $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
             $cellStyle = $doc->getStyleName('table cell');
@@ -293,7 +293,7 @@ class ODTTable
      * @param null $maxcols
      * @param null $numrows
      */
-    public static function tableOpenUseCSS(ODTDocument $doc, &$content, $maxcols=NULL, $numrows=NULL, $attributes=NULL, cssimportnew $import=NULL){
+    public static function tableOpenUseCSS(ODTDocument $doc, &$content, $maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         if ($import == NULL) {
             $import = $doc->import;
         }
@@ -379,7 +379,7 @@ class ODTTable
      * @param int $colspan
      * @param int $rowspan
      */
-    public static function tableHeaderOpenUseCSS(ODTDocument $doc, &$content, $colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
+    public static function tableHeaderOpenUseCSS(ODTDocument $doc, &$content, $colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
@@ -416,7 +416,7 @@ class ODTTable
      * @param null $baseURL
      * @param null $element
      */
-    public static function tableRowOpenUseCSS(ODTDocument $doc, &$content, $attributes=NULL, cssimportnew $import=NULL){
+    public static function tableRowOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
@@ -457,7 +457,7 @@ class ODTTable
      * @param null $baseURL
      * @param null $element
      */
-    public static function tableCellOpenUseCSS(ODTDocument $doc, &$content, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+    public static function tableCellOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class

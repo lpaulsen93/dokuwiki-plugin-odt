@@ -44,8 +44,12 @@ class CSSTemplateDH extends docHandler
      *
      * @param string $template
      */
-    public function import($template_path, $media_sel=NULL, $media_path) {
-        $this->import_css_from_file($template_path, $media_sel, $media_path);
+    public function import(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $template_path, $media_sel=NULL, $media_path, $callback=NULL) {
+        $import->importFromFile($template_path);
+        if ($callback != NULL) {
+            $import->adjustLengthValues ($callback);
+        }
+        $this->import_styles_from_css ($import, $htmlStack, $units, $media_sel, $media_path);
     }
 
 

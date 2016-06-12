@@ -46,7 +46,7 @@ class css_attribute_selector {
         }
     }
     
-    public function matches (array $attributes) {
+    public function matches (array $attributes=NULL) {
         if ($this->operator == NULL) {
             // Attribute should be present
             return array_key_exists($this->attribute, $attributes);
@@ -147,6 +147,7 @@ class css_simple_selector {
     
     public function __construct($simple_selector_string) {
         $pos = 0;
+        $simple_selector_string = trim ($simple_selector_string);
         $max = strlen ($simple_selector_string);
         if ($max == 0) {
             $this->type = '*';
@@ -643,7 +644,7 @@ class css_rule_new {
         $returnString .= $this->selector->toString().' ';
         $returnString .= "{\n";
         foreach ($this->declarations as $declaration) {
-            $returnString .= '  '.$declaration->getProperty ().':'.$declaration->getValue ().";\n";
+            $returnString .= $declaration->getProperty ().':'.$declaration->getValue ().";\n";
         }
         $returnString .= "}\n";
         return $returnString;
@@ -701,7 +702,7 @@ class css_rule_new {
      */
     public function adjustLengthValues ($callback) {
         foreach ($this->declarations as $declaration) {
-            $declaration->adjustLengthValues ($callback);
+            $declaration->adjustLengthValues ($callback, $this);
         }
     }
 }
@@ -823,15 +824,9 @@ class cssimportnew {
             } else {
 
                 // No, decode rule the normal way selector { ... }
-                $selectors = explode (',', $before_open_bracket);
-
+                // The selector is stored in $before_open_bracket
                 $decls = substr ($contents, $bracket_open + 1, $bracket_close - $bracket_open);
-
-                // Create a own, new rule for every selector
-                foreach ( $selectors as $selector ) {
-                    $selector = trim ($selector);
-                    $this->rules [] = new css_rule_new ($selector, $decls, $media);
-                }
+                $this->rules [] = new css_rule_new ($before_open_bracket, $decls, $media);
 
                 $pos = $bracket_close + 1;
             }

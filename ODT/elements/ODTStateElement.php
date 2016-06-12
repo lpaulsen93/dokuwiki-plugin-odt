@@ -14,6 +14,7 @@ abstract class ODTStateElement
     protected $style_name = NULL;
     protected $count = 0;
     protected $parent_element = NULL;
+    protected $style_obj = NULL;
 
     // Temp pointer for various use! Can point to different things!
     protected $temp = NULL;
@@ -81,6 +82,24 @@ abstract class ODTStateElement
      */
     public function getStyleName() {
         return $this->style_name;
+    }
+
+    /**
+     * Set the style object.
+     * 
+     * @param ODTStyle $object
+     */
+    public function setStyle($object) {
+        $this->style_obj = $object;
+    }
+
+    /**
+     * Get the style object.
+     * 
+     * @return ODTStyle Style object.
+     */
+    public function getStyle() {
+        return $this->style_obj;
     }
 
     /**

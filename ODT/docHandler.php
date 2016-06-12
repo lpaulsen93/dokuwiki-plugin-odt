@@ -25,6 +25,32 @@ abstract class docHandler
     public $trace_dump = NULL;
     var $manifest;
     var $ZIP;
+    protected $registrations = array();
+    protected $internalRegs = array('heading1' => array('element' => 'h1', 'attributes' => NULL),
+                                    'heading2' => array('element' => 'h2', 'attributes' => NULL),
+                                    'heading3' => array('element' => 'h3', 'attributes' => NULL),
+                                    'heading4' => array('element' => 'h4', 'attributes' => NULL),
+                                    'heading5' => array('element' => 'h5', 'attributes' => NULL),
+                                    'horizontal line' => array('element' => 'hr', 'attributes' => NULL),
+                                    'body' => array('element' => 'body', 'attributes' => NULL),
+                                    'emphasis' => array('element' => 'em', 'attributes' => NULL),
+                                    'strong' => array('element' => 'strong', 'attributes' => NULL),
+                                    'underline' => array('element' => 'u', 'attributes' => NULL),
+                                    'monospace' => array('element' => 'code', 'attributes' => NULL),
+                                    'del' => array('element' => 'del', 'attributes' => NULL),
+                                    'preformatted' => array('element' => 'pre', 'attributes' => NULL),
+                                    'source code' => array('element' => 'pre', 'attributes' => 'class="code"'),
+                                    'source file' => array('element' => 'pre', 'attributes' => 'class="file"'),
+                                    'quotation1' => array('element' => 'quotation1', 'attributes' => NULL),
+                                    'quotation2' => array('element' => 'quotation1', 'attributes' => NULL),
+                                    'quotation3' => array('element' => 'quotation1', 'attributes' => NULL),
+                                    'quotation4' => array('element' => 'quotation1', 'attributes' => NULL),
+                                    'quotation5' => array('element' => 'quotation1', 'attributes' => NULL),
+                                    'table' => array('element' => 'table', 'attributes' => NULL),
+                                    'table header' => array('element' => 'thead', 'attributes' => NULL),
+                                    'table heading' => array('element' => 'th', 'attributes' => NULL),
+                                    'table cell' => array('element' => 'td', 'attributes' => NULL),
+                                   );
 
     /**
      * Constructor.
@@ -320,7 +346,7 @@ abstract class docHandler
             $htmlStack->open($element, $attributes);
             $toMatch = $htmlStack->getCurrentElement();
             
-            $element_to_check = 'code';
+            $element_to_check = 'pre';
             
             $properties = array();
             $import->getPropertiesForElement($properties, $toMatch);
@@ -339,7 +365,8 @@ abstract class docHandler
             $style->clearLayoutProperties();
 
             if ($this->trace_dump != NULL && $element == $element_to_check) {
-                $this->trace_dump .= 'code BEFORE:'."\n";
+                $this->trace_dump .= 'Checking '.$element_to_check.'['.$attributes.']';
+                $this->trace_dump .= 'BEFORE:'."\n";
                 foreach ($properties as $key => $value) {
                     $this->trace_dump .= $key.'='.$value."\n";
                 }
@@ -350,7 +377,7 @@ abstract class docHandler
             ODTUtility::adjustValuesForODT ($properties, $units);
 
             if ($this->trace_dump != NULL && $element == $element_to_check) {
-                $this->trace_dump .= 'code AFTER:'."\n";
+                $this->trace_dump .= 'AFTER:'."\n";
                 foreach ($properties as $key => $value) {
                     $this->trace_dump .= $key.'='.$value."\n";
                 }
@@ -420,33 +447,13 @@ abstract class docHandler
     }
 
     protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
-        $this->importStyle($import, $htmlStack, $units, 'heading1', 'h1');
-        $this->importStyle($import, $htmlStack, $units, 'heading2', 'h2');
-        $this->importStyle($import, $htmlStack, $units, 'heading3', 'h3');
-        $this->importStyle($import, $htmlStack, $units, 'heading4', 'h4');
-        $this->importStyle($import, $htmlStack, $units, 'heading5', 'h5');
-
-        $this->importStyle($import, $htmlStack, $units, 'horizontal line', 'hr');
-
-        $this->importStyle($import, $htmlStack, $units, 'body', 'body');
-
-        $this->importStyle($import, $htmlStack, $units, 'emphasis', 'em');
-        $this->importStyle($import, $htmlStack, $units, 'strong', 'strong');
-        $this->importStyle($import, $htmlStack, $units, 'underline', 'u');
-        $this->importStyle($import, $htmlStack, $units, 'monospace', 'code');
-        $this->importStyle($import, $htmlStack, $units, 'del', 'del');
-        $this->importStyle($import, $htmlStack, $units, 'preformatted', 'pre');
-
-        $this->importStyle($import, $htmlStack, $units, 'quotation1', 'quotation1');
-        $this->importStyle($import, $htmlStack, $units, 'quotation2', 'quotation2');
-        $this->importStyle($import, $htmlStack, $units, 'quotation3', 'quotation3');
-        $this->importStyle($import, $htmlStack, $units, 'quotation4', 'quotation4');
-        $this->importStyle($import, $htmlStack, $units, 'quotation5', 'quotation5');
-
-        $this->importStyle($import, $htmlStack, $units, 'table', 'table');
-        $this->importStyle($import, $htmlStack, $units, 'table header', 'thead');
-        $this->importStyle($import, $htmlStack, $units, 'table heading', 'th');
-        $this->importStyle($import, $htmlStack, $units, 'table cell', 'td');
+        $toImport = array_merge ($this->internalRegs, $this->registrations);
+        foreach ($toImport as $style => $element) {
+            $this->importStyle($import, $htmlStack, $units,
+                               $style,
+                               $element ['element'],
+                               $element ['attributes']);
+        }
 
         //$this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
         //$this->importOrderedListStyles($import, $htmlStack, $units, $media_path);
@@ -457,5 +464,10 @@ abstract class docHandler
         $this->importStyle($import, $htmlStack, $units, 'visited internet link', 'a', 'class="visitedinternetlink"');
         $this->importStyle($import, $htmlStack, $units, 'local link', 'a', 'class="locallink"');
         $this->importStyle($import, $htmlStack, $units, 'visited local link', 'a', 'class="visitedlocallink"');
+    }
+    
+    public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {
+        $this->registrations [$style_type]['element'] = $element;
+        $this->registrations [$style_type]['attributes'] = $attributes;
     }
 }

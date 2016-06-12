@@ -814,6 +814,10 @@ class ODTDocument
         return $this->docHandler->get();
     }
 
+    public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {
+        $this->docHandler->registerHTMLElementForCSSImport ($style_type, $element, $attributes);
+    }
+    
     /**
      * Import CSS code for styles from a string.
      *

@@ -338,7 +338,15 @@ abstract class docHandler
         }
     }
 
-    protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+    protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL) {
+        //if ($this->trace_dump != NULL &&  $rootProperties != NULL) {
+        //    $this->trace_dump .= 'Root properties:'."\n";
+        //    foreach ($rootProperties as $key => $value) {
+        //        $this->trace_dump .= $key.'='.$value."\n";
+        //    }
+        //    $this->trace_dump .= '---------------------------------------'."\n";
+        //}
+
         foreach ($this->table_styles as $style_type => $elementParams) {
             $name = $this->styleset->getStyleName($style_type);
             $style = $this->styleset->getStyle($name);
@@ -350,7 +358,7 @@ abstract class docHandler
                 $htmlStack->open($element, $attributes);
                 $toMatch = $htmlStack->getCurrentElement();
                 
-                $element_to_check = 'th';
+                $element_to_check = 'td';
 
                 $properties = array();                
                 $import->getPropertiesForElement($properties, $toMatch);
@@ -362,6 +370,15 @@ abstract class docHandler
                     }
 
                     return;
+                }
+
+                // If colors are empty,
+                // eventually inherit them from the $rootProperties
+                if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
+                    $properties ['color'] = $rootProperties ['color'];
+                }
+                if (empty($properties ['background-color']) && !empty($rootProperties ['background-color'])) {
+                    $properties ['background-color'] = $rootProperties ['background-color'];
                 }
 
                 // We have found something.
@@ -427,6 +444,8 @@ abstract class docHandler
                     }
                 }
 
+                // Inherit properties for table header paragraph style from
+                // the properties of the 'th' element
                 if ($element == 'th') {
                     $name = $this->styleset->getStyleName('table heading');
                     $paragraphStyle = $this->styleset->getStyle($name);
@@ -440,6 +459,8 @@ abstract class docHandler
                     $disabled ['border-right']  = 1;
                     $disabled ['border-bottom'] = 1;
                     $disabled ['border-left']   = 1;
+                    // Do not set background/background-color
+                    $disabled ['background-color'] = 1;
                     
                     $this->trace_dump .= 'TEXT-ALIGN:'.$properties ['text-align'];
                     
@@ -455,7 +476,7 @@ abstract class docHandler
         }
     }
 
-    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL) {
+    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL, $rootProperties=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
         if ( $style != NULL ) {
@@ -475,6 +496,12 @@ abstract class docHandler
                 }
 
                 return;
+            }
+
+            // If color is empty,
+            // eventually inherit them from the $rootProperties
+            if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
+                $properties ['color'] = $rootProperties ['color'];
             }
 
             // We have found something.
@@ -548,7 +575,7 @@ abstract class docHandler
         }
     }
 
-    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL, $media_path) {
+    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL, $media_path, $rootProperties=NULL) {
         if ( $import != NULL ) {
             $save = $import->getMedia ();
             $import->setMedia ($media_sel);
@@ -557,22 +584,34 @@ abstract class docHandler
             $stack = clone $htmlStack;
             $stack->restoreToRoot ();
 
-            $this->import_styles_from_css_internal ($import, $stack, $units, $media_path);
+            $this->import_styles_from_css_internal ($import, $stack, $units, $media_path, $rootProperties);
 
             $import->setMedia ($save);
         }
     }
 
-    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
+    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path, $rootProperties=NULL) {
+        // Set background-color of page
+        if (!empty($rootProperties ['background-color'])) {
+            $name = $this->styleset->getStyleName('first page');
+            $first_page = $this->styleset->getStyle($name);
+            if ($first_page != NULL) {
+                $first_page->setProperty('background-color', $rootProperties ['background-color']);
+            }
+        }
+
+        // Import styles which only require a simple import based on element name and attributes
         $toImport = array_merge ($this->internalRegs, $this->registrations);
         foreach ($toImport as $style => $element) {
             $this->importStyle($import, $htmlStack, $units,
                                $style,
                                $element ['element'],
-                               $element ['attributes']);
+                               $element ['attributes'],
+                               $rootProperties);
         }
 
-        $this->importTableStyles($import, $htmlStack, $units);
+        // Import table styles
+        $this->importTableStyles($import, $htmlStack, $units, $rootProperties);
 
         //$this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
         //$this->importOrderedListStyles($import, $htmlStack, $units, $media_path);

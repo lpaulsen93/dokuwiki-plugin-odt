@@ -46,10 +46,10 @@ abstract class docHandler
                                     'quotation3' => array('element' => 'quotation1', 'attributes' => NULL),
                                     'quotation4' => array('element' => 'quotation1', 'attributes' => NULL),
                                     'quotation5' => array('element' => 'quotation1', 'attributes' => NULL),
-                                    'table' => array('element' => 'table', 'attributes' => NULL),
-                                    'table header' => array('element' => 'thead', 'attributes' => NULL),
-                                    'table heading' => array('element' => 'th', 'attributes' => NULL),
-                                    'table cell' => array('element' => 'td', 'attributes' => NULL),
+                                   );
+    protected $table_styles = array('table' => array('element' => 'table', 'attributes' => NULL),
+                                    'table header' => array('element' => 'th', 'attributes' => NULL),
+                                    'table cell' => array('element' => 'td', 'attributes' => NULL)
                                    );
 
     /**
@@ -338,6 +338,123 @@ abstract class docHandler
         }
     }
 
+    protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+        foreach ($this->table_styles as $style_type => $elementParams) {
+            $name = $this->styleset->getStyleName($style_type);
+            $style = $this->styleset->getStyle($name);
+            if ( $style != NULL ) {
+                $element = $elementParams ['element'];
+                $attributes = $elementParams ['attributes'];
+
+                // Push our element to import on the stack
+                $htmlStack->open($element, $attributes);
+                $toMatch = $htmlStack->getCurrentElement();
+                
+                $element_to_check = 'th';
+
+                $properties = array();                
+                $import->getPropertiesForElement($properties, $toMatch);
+                if (count($properties) == 0) {
+                    // Nothing found. Return, DO NOT change existing style!
+
+                    if ($this->trace_dump != NULL && $element == $element_to_check) {
+                        $this->trace_dump .= 'Nothing found for '.$element_to_check."!\n";
+                    }
+
+                    return;
+                }
+
+                // We have found something.
+                // First clear the existing layout properties of the style.
+                $style->clearLayoutProperties();
+
+                if ($this->trace_dump != NULL && $element == $element_to_check) {
+                    $this->trace_dump .= 'Checking '.$element_to_check.'['.$attributes.']';
+                    $this->trace_dump .= 'BEFORE:'."\n";
+                    foreach ($properties as $key => $value) {
+                        $this->trace_dump .= $key.'='.$value."\n";
+                    }
+                    $this->trace_dump .= '---------------------------------------'."\n";
+                }
+
+                // Adjust values for ODT
+                ODTUtility::adjustValuesForODT ($properties, $units);
+
+                if ($this->trace_dump != NULL && $element == $element_to_check) {
+                    $this->trace_dump .= 'AFTER:'."\n";
+                    foreach ($properties as $key => $value) {
+                        $this->trace_dump .= $key.'='.$value."\n";
+                    }
+                    $this->trace_dump .= '---------------------------------------'."\n";
+                }
+
+                // Convert 'text-decoration'.
+                if ( $properties ['text-decoration'] == 'line-through' ) {
+                    $properties ['text-line-through-style'] = 'solid';
+                }
+                if ( $properties ['text-decoration'] == 'underline' ) {
+                    $properties ['text-underline-style'] = 'solid';
+                }
+                if ( $properties ['text-decoration'] == 'overline' ) {
+                    $properties ['text-overline-style'] = 'solid';
+                }
+
+                // If the style imported is a table adjust some properties
+                if ($style->getFamily() == 'table') {
+                    // Move 'width' to 'rel-width' if it is relative
+                    $width = $properties ['width'];
+                    if ($width != NULL) {
+                        if ($properties ['align'] == NULL) {
+                            // If width is set but align not, changing the width
+                            // will not work. So we set it here if not done by the user.
+                            $properties ['align'] = 'center';
+                        }
+                    }
+                    if ($width [strlen($width)-1] == '%') {
+                        $properties ['rel-width'] = $width;
+                        unset ($properties ['width']);
+                    }
+
+                    // Convert property 'border-model' to ODT
+                    if ( !empty ($properties ['border-collapse']) ) {
+                        $properties ['border-model'] = $properties ['border-collapse'];
+                        unset ($properties ['border-collapse']);
+                        if ( $properties ['border-model'] == 'collapse' ) {
+                            $properties ['border-model'] = 'collapsing';
+                        } else {
+                            $properties ['border-model'] = 'separating';
+                        }
+                    }
+                }
+
+                if ($element == 'th') {
+                    $name = $this->styleset->getStyleName('table heading');
+                    $paragraphStyle = $this->styleset->getStyle($name);
+
+                    // Do not set borders on our paragraph styles in the table.
+                    // Otherwise we will have double borders. Around the cell and
+                    // around the text in the cell!
+                    $disabled = array();
+                    $disabled ['border']        = 1;
+                    $disabled ['border-top']    = 1;
+                    $disabled ['border-right']  = 1;
+                    $disabled ['border-bottom'] = 1;
+                    $disabled ['border-left']   = 1;
+                    
+                    $this->trace_dump .= 'TEXT-ALIGN:'.$properties ['text-align'];
+                    
+                    $paragraphStyle->clearLayoutProperties();
+                    $paragraphStyle->importProperties($properties, $disabled);
+                }
+                $style->importProperties($properties, NULL);
+
+                // Reset stack to saved root so next importStyle
+                // will have the same conditions
+                $htmlStack->restoreToRoot ();
+            }
+        }
+    }
+
     protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
@@ -346,7 +463,7 @@ abstract class docHandler
             $htmlStack->open($element, $attributes);
             $toMatch = $htmlStack->getCurrentElement();
             
-            $element_to_check = 'pre';
+            $element_to_check = 'pre1234';
             
             $properties = array();
             $import->getPropertiesForElement($properties, $toMatch);
@@ -454,6 +571,8 @@ abstract class docHandler
                                $element ['element'],
                                $element ['attributes']);
         }
+
+        $this->importTableStyles($import, $htmlStack, $units);
 
         //$this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
         //$this->importOrderedListStyles($import, $htmlStack, $units, $media_path);

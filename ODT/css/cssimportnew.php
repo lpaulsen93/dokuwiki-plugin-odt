@@ -117,7 +117,7 @@ class css_attribute_selector {
             $returnstring .= $this->namespaze.'|';
         }
         $returnstring .= $this->attribute.$this->operator.$this->value;
-        $returnstring = ']';
+        $returnstring .= ']';
         return $returnstring;
     }
 }
@@ -341,7 +341,8 @@ class css_selector {
      * @param $selector_string
      */
     public function __construct($selector_string) {
-        $this->selector_string = trim($selector_string, ' ');
+        $selector_string = str_replace("\n", '', $selector_string);
+        $this->selector_string = trim($selector_string);
         
         $pos = 0;
         $max = strlen($this->selector_string);
@@ -552,6 +553,8 @@ class css_selector {
 
     public function toString () {
         $returnstring = '';
+        $max = count($this->selectors_parsed);
+        $index_parsed = 0;
         foreach ($this->selectors_parsed as $selector) {
             $size = count($selector);
             for ($index = 0 ; $index < $size ; $index++) {
@@ -564,7 +567,14 @@ class css_selector {
                 } else {
                     $simple = $selector [$index]['selector'];
                     $returnstring .= $simple->toString();
+                    if ($index < $size-1) {
+                        $returnstring .= ' ';
+                    }
                 }
+            }
+            $index_parsed++;
+            if ($index_parsed < $max) {
+                $returnstring .= ',';
             }
         }
         return $returnstring;

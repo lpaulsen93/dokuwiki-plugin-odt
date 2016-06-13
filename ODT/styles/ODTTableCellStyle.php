@@ -24,7 +24,6 @@ class ODTTableCellStyle extends ODTStyleStyle
         'writing-mode'                   => array ('style:writing-mode',                'table-cell',  true),
         'shadow'                         => array ('style:shadow',                      'table-cell',  true),
         'background-color'               => array ('fo:background-color',               'table-cell',  true),
-        'background-color'               => array ('fo:background-color',               'table-cell',  true),
         'border'                         => array ('fo:border',                         'table-cell',  true),
         'border-top'                     => array ('fo:border-top',                     'table-cell',  true),
         'border-right'                   => array ('fo:border-right',                   'table-cell',  true),

@@ -338,7 +338,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         if ( $properties ['text-decoration'] == 'overline' ) {
             $properties ['text-overline-style'] = 'solid';
         }
-        
+
         // If the property 'vertical-align' has the value 'sub' or 'super'
         // then for ODT it needs to be converted to the corresponding 'text-position' property.
         // Replace sub and super with text-position.

@@ -46,6 +46,9 @@ class css_doc_element implements iElementCSSMatchable {
     }
 
     public function iECSSM_has_pseudo_class($class) {
+        if ($this->doc->entries [$this->index]['pseudo_classes'] == NULL) {
+            return false;
+        }
         $result = array_search($class, 
             $this->doc->entries [$this->index]['pseudo_classes']);
         if ($result === false) {
@@ -55,6 +58,9 @@ class css_doc_element implements iElementCSSMatchable {
     }
 
     public function iECSSM_has_pseudo_element($element) {
+        if ($this->doc->entries [$this->index]['pseudo_elements'] == NULL) {
+            return false;
+        }
         $result = array_search($element, 
             $this->doc->entries [$this->index]['pseudo_elements']);
         if ($result === false) {
@@ -72,6 +78,7 @@ class cssdocument {
     public $level = 0;
     public $entries = array ();
     protected $rootIndex = 0;
+    protected $rootLevel = 0;
 
     protected function collect_attribute_value (&$value, $input, $pos, $max) {
         $value = '';
@@ -129,6 +136,7 @@ class cssdocument {
 
     public function saveRootIndex () {
         $this->rootIndex = $this->getIndexLastOpened ();
+        $this->rootLevel = $this->level;
     }
 
     public function restoreToRoot () {
@@ -136,6 +144,7 @@ class cssdocument {
             $this->entries [$index] = NULL;
         }
         $this->size = $this->rootIndex + 1;
+        $this->level = $this->rootLevel;
     }
 
     public function open ($element, $attributes=NULL, $pseudo_classes=NULL, $pseudo_elements=NULL) {
@@ -143,12 +152,18 @@ class cssdocument {
         $this->entries [$this->size]['state'] = 'open';
         $this->entries [$this->size]['element'] = $element;
         $this->entries [$this->size]['attributes'] = $attributes;
-        $this->entries [$this->size]['pseudo_classes'] = explode(' ', $pseudo_classes);
-        $this->entries [$this->size]['pseudo_elements'] = explode(' ', $pseudo_elements);
+        if (!empty($pseudo_classes)) {
+            $this->entries [$this->size]['pseudo_classes'] = explode(' ', $pseudo_classes);
+        }
+        if (!empty($pseudo_elements)) {
+            $this->entries [$this->size]['pseudo_elements'] = explode(' ', $pseudo_elements);
+        }
         
         // Build attribute array/parse attributes
-        $this->entries [$this->size]['attributes_array'] =
-            $this->get_attributes_array ($attributes);
+        if ($attributes != NULL) {
+            $this->entries [$this->size]['attributes_array'] =
+                $this->get_attributes_array ($attributes);
+        }
 
         $this->size++;
         $this->level++;

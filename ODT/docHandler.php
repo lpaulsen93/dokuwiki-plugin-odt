@@ -51,6 +51,20 @@ abstract class docHandler
                                     'table header' => array('element' => 'th', 'attributes' => NULL),
                                     'table cell' => array('element' => 'td', 'attributes' => NULL)
                                    );
+    protected $link_styles = array(
+                                   'internet link' => array('element' => 'a',
+                                                            'attributes' => NULL,
+                                                            'pseudo-class' => 'link'),
+                                   'visited internet link' => array('element' => 'a',
+                                                                    'attributes' => NULL,
+                                                                    'pseudo-class' => 'visited'),
+                                   'local link' => array('element' => 'a', 
+                                                         'attributes' => 'class="wikilink1"',
+                                                         'pseudo-class' => NULL),
+                                   'visited local link' => array('element' => 'a',
+                                                                 'attributes' => 'class="wikilink1"',
+                                                                 'pseudo-class' => NULL),
+                                  );
 
     /**
      * Constructor.
@@ -339,14 +353,6 @@ abstract class docHandler
     }
 
     protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL) {
-        //if ($this->trace_dump != NULL &&  $rootProperties != NULL) {
-        //    $this->trace_dump .= 'Root properties:'."\n";
-        //    foreach ($rootProperties as $key => $value) {
-        //        $this->trace_dump .= $key.'='.$value."\n";
-        //    }
-        //    $this->trace_dump .= '---------------------------------------'."\n";
-        //}
-
         foreach ($this->table_styles as $style_type => $elementParams) {
             $name = $this->styleset->getStyleName($style_type);
             $style = $this->styleset->getStyle($name);
@@ -363,13 +369,13 @@ abstract class docHandler
                 $properties = array();                
                 $import->getPropertiesForElement($properties, $toMatch);
                 if (count($properties) == 0) {
-                    // Nothing found. Return, DO NOT change existing style!
+                    // Nothing found. Back to top, DO NOT change existing style!
 
                     if ($this->trace_dump != NULL && $element == $element_to_check) {
                         $this->trace_dump .= 'Nothing found for '.$element_to_check."!\n";
                     }
 
-                    return;
+                    continue;
                 }
 
                 // If colors are empty,
@@ -501,6 +507,68 @@ abstract class docHandler
         }
     }
 
+    protected function importLinkStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL) {
+        foreach ($this->link_styles as $style_type => $elementParams) {
+            $name = $this->styleset->getStyleName($style_type);
+            $style = $this->styleset->getStyle($name);
+            if ( $name != NULL && $style != NULL ) {
+                $element = $elementParams ['element'];
+                $attributes = $elementParams ['attributes'];
+                $pseudo_class = $elementParams ['pseudo-class'];
+
+                // Push our element to import on the stack
+                $htmlStack->open($element, $attributes, $pseudo_class, NULL);
+                $toMatch = $htmlStack->getCurrentElement();
+
+                $properties = array();                
+                $import->getPropertiesForElement($properties, $toMatch);
+                if (count($properties) == 0) {
+                    // Nothing found. Back to top, DO NOT change existing style!
+                    continue;
+                }
+
+                // If colors are empty,
+                // eventually inherit them from the $rootProperties
+                if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
+                    $properties ['color'] = $rootProperties ['color'];
+                }
+                if (empty($properties ['background-color']) && !empty($rootProperties ['background-color'])) {
+                    $properties ['background-color'] = $rootProperties ['background-color'];
+                }
+                if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
+                    $properties ['font-size'] = $rootProperties ['font-size'];
+                }
+                if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
+                    $properties ['line-height'] = $rootProperties ['line-height'];
+                }
+
+                // We have found something.
+                // First clear the existing layout properties of the style.
+                $style->clearLayoutProperties();
+
+                // Adjust values for ODT
+                ODTUtility::adjustValuesForODT ($properties, $units);
+
+                // Convert 'text-decoration'.
+                if ( $properties ['text-decoration'] == 'line-through' ) {
+                    $properties ['text-line-through-style'] = 'solid';
+                }
+                if ( $properties ['text-decoration'] == 'underline' ) {
+                    $properties ['text-underline-style'] = 'solid';
+                }
+                if ( $properties ['text-decoration'] == 'overline' ) {
+                    $properties ['text-overline-style'] = 'solid';
+                }
+
+                $style->importProperties($properties, NULL);
+
+                // Reset stack to saved root so next importStyle
+                // will have the same conditions
+                $htmlStack->restoreToRoot ();
+            }
+        }
+    }
+
     protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL, $rootProperties=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
@@ -570,34 +638,6 @@ abstract class docHandler
                 $properties ['text-overline-style'] = 'solid';
             }
 
-            // If the style imported is a table adjust some properties
-            if ($style->getFamily() == 'table') {
-                // Move 'width' to 'rel-width' if it is relative
-                $width = $properties ['width'];
-                if ($width != NULL) {
-                    if ($properties ['align'] == NULL) {
-                        // If width is set but align not, changing the width
-                        // will not work. So we set it here if not done by the user.
-                        $properties ['align'] = 'center';
-                    }
-                }
-                if ($width [strlen($width)-1] == '%') {
-                    $properties ['rel-width'] = $width;
-                    unset ($properties ['width']);
-                }
-
-                // Convert property 'border-model' to ODT
-                if ( !empty ($properties ['border-collapse']) ) {
-                    $properties ['border-model'] = $properties ['border-collapse'];
-                    unset ($properties ['border-collapse']);
-                    if ( $properties ['border-model'] == 'collapse' ) {
-                        $properties ['border-model'] = 'collapsing';
-                    } else {
-                        $properties ['border-model'] = 'separating';
-                    }
-                }
-            }
-
             // In all paragraph styles set the ODT specific attribute join-border = false
             if ($style->getFamily() == 'paragraph') {
                 $properties ['join-border'] = 'false';
@@ -649,15 +689,13 @@ abstract class docHandler
         // Import table styles
         $this->importTableStyles($import, $htmlStack, $units, $rootProperties);
 
+        // Import link styles (require extra pseudo class handling)
+        $this->importLinkStyles($import, $htmlStack, $units, $rootProperties);
+
         //$this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
         //$this->importOrderedListStyles($import, $htmlStack, $units, $media_path);
         $this->importStyle($import, $htmlStack, $units, 'list first paragraph', 'p', 'class="listfirstparagraph"');
         $this->importStyle($import, $htmlStack, $units, 'list last paragraph', 'p', 'class="listlastparagraph"');
-
-        //$this->importStyle($import, $htmlStack, $units, 'internet link', 'a', 'class="internetlink"');
-        //$this->importStyle($import, $htmlStack, $units, 'visited internet link', 'a', 'class="visitedinternetlink"');
-        //$this->importStyle($import, $htmlStack, $units, 'local link', 'a', 'class="locallink"');
-        //$this->importStyle($import, $htmlStack, $units, 'visited local link', 'a', 'class="visitedlocallink"');
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

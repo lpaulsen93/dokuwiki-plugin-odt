@@ -113,11 +113,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 break;
         }
 
-        // Put some root element on the HTML stack which shopuld always
+        // Put some root element on the HTML stack which should always
         // be present for our CSS matching
         $this->document->addHTMLElement ('html', 'lang="'.$conf['lang'].'" dir="'.$lang['direction'].'"');
         $this->document->addHTMLElement ('body');
+        $this->document->addHTMLElement ('div', 'id="dokuwiki__site"');
+        $this->document->addHTMLElement ('div', 'id="dokuwiki__top" class="site dokuwiki mode_show tpl_adoradark loggedIn"');
         $this->document->addHTMLElement ('div', 'id="dokuwiki__content"');
+        $this->document->addHTMLElement ('div', 'class="page group"');
 
         // Import CSS (new API)
         $this->document->importCSSFromString($this->css, $this->config->getParam('media_sel'));

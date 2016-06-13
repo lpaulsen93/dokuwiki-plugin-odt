@@ -113,7 +113,7 @@ class ODTDocument
         
         // Create units object and set default values
         $this->units = new ODTUnits();
-        $this->units->setPixelPerEm(14);
+        $this->units->setPixelPerEm(16);
         $this->units->setTwipsPerPixelX(16);
         $this->units->setTwipsPerPixelY(20);
 
@@ -1437,7 +1437,7 @@ class ODTDocument
      * @see ODTUtility::getCSSStylePropertiesForODT
      */
     public function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL){
-        ODTUtility::getCSSStylePropertiesForODT($properties, $style, $baseURL);
+        ODTUtility::getCSSStylePropertiesForODT($properties, $style, $baseURL, $this->units);
     }
 
     /**
@@ -1799,11 +1799,20 @@ class ODTDocument
         $this->importnew->getPropertiesForElement($dest, $element);
 
         // Adjust values for ODT
-        foreach ($dest as $property => $value) {
-            $dest [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
-        }
+        //foreach ($dest as $property => $value) {
+        //    $dest [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
+        //}
+        ODTUtility::adjustValuesForODT($dest, $this->units);
 
         $this->importnew->setMedia($save);
+    }
+
+    public function adjustValuesForODT (array &$properties) {
+        ODTUtility::adjustValuesForODT($properties, $this->units);
+    }
+
+    public function adjustValueForODT ($property, $value) {
+        return ODTUtility::adjustValueForODT($property, $value, $this->units);
     }
 
     /**

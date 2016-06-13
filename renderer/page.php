@@ -1864,9 +1864,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->getCSSStylePropertiesForODT($dest, $inlineStyle);
 
         // Adjust values for ODT
-        foreach ($dest as $property => $value) {
-            $dest [$property] = $this->adjustValueForODT ($property, $value, 14);
-        }
+        //foreach ($dest as $property => $value) {
+        //    $dest [$property] = $this->adjustValueForODT ($property, $value, 14);
+        //}
+        $this->document->adjustValuesForODT($dest);
     }
 
     /**
@@ -1913,8 +1914,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @return string The new, adjusted value
      * @see ODTUtility::adjustValueForODT for detailed documentation
      */
-    public function adjustValueForODT ($property, $value, $emValue = 0) {
-        return ODTUtility::adjustValueForODT ($property, $value, $emValue);
+    public function adjustValueForODT ($property, $value) {
+        return $this->document->adjustValueForODT ($property, $value);
     }
 
     /**

@@ -261,7 +261,7 @@ class ODTUtility
     public static function adjustValuesForODT (&$properties, ODTUnits $units) {
         // First do simple adjustments per property
         foreach ($properties as $property => $value) {
-            $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
+            $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, $units);
         }
 
         // Now we do the adjustments for which one value depends on another
@@ -269,7 +269,7 @@ class ODTUtility
         // Do we have font-size or line-height set?
         if ($properties ['font-size'] != NULL || $properties ['line-height'] != NULL) {
             // First get absolute font-size in points
-            $base_font_size_in_pt = $units->getPixelPerEm ();
+            $base_font_size_in_pt = $units->getPixelPerEm ().'px';
             $base_font_size_in_pt = $units->toPoints($base_font_size_in_pt, 'y');
             $base_font_size_in_pt = $units->getDigits($base_font_size_in_pt);
             if ($properties ['font-size'] != NULL) {
@@ -312,7 +312,7 @@ class ODTUtility
      * @param  integer $emValue  Factor for conversion from 'em' to 'pt'
      * @return string  Converted value
      */
-    public static function adjustValueForODT ($property, $value, $emValue = 0) {
+    public static function adjustValueForODT ($property, $value, ODTUnits $units) {
         $values = preg_split ('/\s+/', $value);
         $value = '';
         foreach ($values as $part) {
@@ -331,10 +331,11 @@ class ODTUtility
             }
 
             if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
-                $number = substr ($part, 0, $length-2);
-                if ( is_numeric ($number) && !empty ($emValue) ) {
-                    $part = ($number * $emValue).'pt';
-                }
+                $part = $units->toPoints($part, 'y');
+                //$number = substr ($part, 0, $length-2);
+                //if ( is_numeric ($number) && !empty ($emValue) ) {
+                //    $part = ($number * $emValue).'pt';
+                //}
             }
 
             // Some values can have '"' in it. These need to be converted to '&apos;'
@@ -359,13 +360,14 @@ class ODTUtility
      * @param $style The CSS style e.g. 'color:red;'
      * @param null $baseURL
      */
-    public static function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL){
+    public static function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL, ODTUnits $units){
         // Create rule with selector '*' (doesn't matter) and declarations as set in $style
         $rule = new css_rule ('*', $style);
         $rule->getProperties ($properties);
-        foreach ($properties as $property => $value) {
-            $properties [$property] = self::adjustValueForODT ($property, $value, 14);
-        }
+        //foreach ($properties as $property => $value) {
+        //    $properties [$property] = self::adjustValueForODT ($property, $value, $units);
+        //}
+        self::adjustValuesForODT ($properties, $units);
 
         if ( !empty ($properties ['background-image']) ) {
             if ( !empty ($baseURL) ) {

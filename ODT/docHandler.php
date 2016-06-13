@@ -219,22 +219,28 @@ abstract class docHandler
         }
     }
 
-    protected function importOrderedListStyles($import, $media_path, ODTUnits $units) {
+    protected function importOrderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL, $media_path=NULL) {
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
             return;
         }
 
+        // Reset stack to saved root so next importStyle
+        // will have the same conditions
+        $htmlStack->restoreToRoot ();
+
         for ($level = 1 ; $level < 11 ; $level++) {
-            $properties = array();
-            $import->getPropertiesForElement($properties, 'ol', 'level'.$level, $media_sel);
+            // Push our element to import on the stack
+            $htmlStack->open('ol');
+            $toMatch = $htmlStack->getCurrentElement();
+
+            $properties = array();                
+            $import->getPropertiesForElement($properties, $toMatch);
 
             // Adjust values for ODT
-            foreach ($properties as $property => $value) {
-                $properties [$property] = $this->factory->adjustValueForODT ($property, $value, 14);
-            }
-            
+            ODTUtility::adjustValuesForODT ($properties, $units);
+
             if ($properties ['list-style-type'] !== NULL) {
                 $prefix = NULL;
                 $suffix = '.';
@@ -263,7 +269,7 @@ abstract class docHandler
                         $numbering = 'A';
                         break;
                     case 'upper-roman':
-                        $numbering = 'i';
+                        $numbering = 'I';
                         break;
                 }
                 $style->setPropertyForLevel($level, 'num-format', $numbering);
@@ -271,8 +277,12 @@ abstract class docHandler
                     $style->setPropertyForLevel($level, 'num-prefix', $prefix);
                 }
                 $style->setPropertyForLevel($level, 'num-suffix', $suffix);
+
+                if ($properties ['padding-left'] != NULL) {
+                    $style->setPropertyForLevel($level, 'text-min-label-distance', $properties ['padding-left']);
+                }
             }
-            if ($properties ['list-style-image'] !== NULL) {
+            if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
                 $file = $properties ['list-style-image'];
                 $file = substr($file, 4);
                 $file = trim($file, "()'");
@@ -284,23 +294,59 @@ abstract class docHandler
                 $this->setListStyleImage ($style, $level, $file);
             }
         }
+
+        // Reset stack to saved root so next importStyle
+        // will have the same conditions
+        $htmlStack->restoreToRoot ();
+
+        // Eventually inherit some $rootProperties:
+        // color, font-size and line-height
+        $name = $this->styleset->getStyleName('numbering content');
+        $style = $this->styleset->getStyle($name);
+        if ($style != NULL) {
+            $properties = array();
+            if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
+                $properties ['color'] = $rootProperties ['color'];
+            }
+            if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
+                $properties ['font-size'] = $rootProperties ['font-size'];
+            }
+            if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
+                $properties ['line-height'] = $rootProperties ['line-height'];
+            }
+            if (count($properties) > 0) {
+                $style->importProperties($properties, NULL);
+            }
+        }
     }
 
-    protected function importUnorderedListStyles($import, $media_path, ODTUnits $units) {
+    protected function importUnorderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL, $media_path=NULL) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
             return;
         }
 
+        // Workaround for OFT format, see end of loop
+        $name = $this->styleset->getStyleName('list first paragraph');
+        $firstStyle = $this->styleset->getStyle($name);
+        $name = $this->styleset->getStyleName('list last paragraph');
+        $lastStyle = $this->styleset->getStyle($name);
+
+        // Reset stack to saved root so next importStyle
+        // will have the same conditions
+        $htmlStack->restoreToRoot ();
+
         for ($level = 1 ; $level < 11 ; $level++) {
-            $properties = array();
-            $import->getPropertiesForElement($properties, 'ul', 'level'.$level, $media_sel);
+            // Push our element to import on the stack
+            $htmlStack->open('ul');
+            $toMatch = $htmlStack->getCurrentElement();
+
+            $properties = array();                
+            $import->getPropertiesForElement($properties, $toMatch);
 
             // Adjust values for ODT
-            foreach ($properties as $property => $value) {
-                $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
-            }
+            ODTUtility::adjustValuesForODT ($properties, $units);
             
             if ($properties ['list-style-type'] !== NULL) {
                 switch ($properties ['list-style-type']) {
@@ -338,7 +384,7 @@ abstract class docHandler
                 }
                 $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
             }
-            if ($properties ['list-style-image'] !== NULL) {
+            if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
                 $file = $properties ['list-style-image'];
                 $file = substr($file, 4);
                 $file = trim($file, "()'");
@@ -348,6 +394,50 @@ abstract class docHandler
                 $file = $media_path.$file;
                 
                 $this->setListStyleImage ($style, $level, $file);
+            }
+
+            // Workaround for OFT format:
+            // We can not set margins on the list itself.
+            // So we use extra paragraph styles for the first and last
+            // list items to set a margin.
+            if ($level == 1 &&
+                ($properties ['margin-left'] != NULL ||
+                 $properties ['margin-right'] != NULL ||
+                 $properties ['margin-top'] != NULL ||
+                 $properties ['margin-bottom'] != NULL)) {
+                $set = array ();
+                $set ['margin-left'] = $properties ['margin-left'];
+                $set ['margin-right'] = $properties ['margin-right'];
+                $set ['margin-top'] = $properties ['margin-top'];
+                $set ['margin-bottom'] = '0pt';
+                $firstStyle->importProperties($set);
+                $set ['margin-bottom'] = $properties ['margin-bottom'];
+                $set ['margin-top'] = '0pt';;
+                $lastStyle->importProperties($set);
+            }
+        }
+
+        // Reset stack to saved root so next importStyle
+        // will have the same conditions
+        $htmlStack->restoreToRoot ();
+
+        // Eventually inherit some $rootProperties:
+        // color, font-size and line-height
+        $name = $this->styleset->getStyleName('list content');
+        $style = $this->styleset->getStyle($name);
+        if ($style != NULL) {
+            $properties = array();
+            if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
+                $properties ['color'] = $rootProperties ['color'];
+            }
+            if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
+                $properties ['font-size'] = $rootProperties ['font-size'];
+            }
+            if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
+                $properties ['line-height'] = $rootProperties ['line-height'];
+            }
+            if (count($properties) > 0) {
+                $style->importProperties($properties, NULL);
             }
         }
     }
@@ -692,10 +782,9 @@ abstract class docHandler
         // Import link styles (require extra pseudo class handling)
         $this->importLinkStyles($import, $htmlStack, $units, $rootProperties);
 
-        //$this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
-        //$this->importOrderedListStyles($import, $htmlStack, $units, $media_path);
-        $this->importStyle($import, $htmlStack, $units, 'list first paragraph', 'p', 'class="listfirstparagraph"');
-        $this->importStyle($import, $htmlStack, $units, 'list last paragraph', 'p', 'class="listlastparagraph"');
+        // Import list styles and list paragraph styles
+        $this->importUnorderedListStyles($import, $htmlStack, $units, $rootProperties, $media_path);
+        $this->importOrderedListStyles($import, $htmlStack, $units, $rootProperties, $media_path);
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

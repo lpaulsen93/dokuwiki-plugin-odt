@@ -1837,25 +1837,25 @@ class ODTDocument
 
         // Go starting from our current element through all parents
         $element = $this->htmlStack->getCurrentElement();
-        $this->trace_dump .= "Starting...";
+        //$this->trace_dump .= "Starting...";
         while ($element != NULL) {
-            $this->trace_dump .= "continuing".$element->iECSSM_getName()."[".$element->iECSSM_getAttributes()."]...";
+            //$this->trace_dump .= "continuing".$element->iECSSM_getName()."[".$element->iECSSM_getAttributes()."]...";
 
             $properties = array();
             $this->importnew->getPropertiesForElement($properties, $element);
 
-            if (count($properties) == 0) {
-            $this->trace_dump .= "leer!";
-            }
-            foreach ($properties as $key => $value) {
-                $this->trace_dump .= $key.'='.$value."\n";
-            }
+            //if (count($properties) == 0) {
+            //$this->trace_dump .= "leer!";
+            //}
+            //foreach ($properties as $key => $value) {
+            //    $this->trace_dump .= $key.'='.$value."\n";
+            //}
 
 
             $collected [] = $properties;
             $element = $element->iECSSM_getParent();
         }
-        $this->trace_dump .= "...Ending";
+        //$this->trace_dump .= "...Ending";
         
         $result = array();
         // Merge all arrays (backwards!)

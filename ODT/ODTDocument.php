@@ -90,6 +90,7 @@ class ODTDocument
     /** @var cssdocument */
     protected $htmlStack = null;
     protected $CSSUsage = 'off';
+    protected $rootProperties = NULL;
 
     /**
      * Constructor:
@@ -259,7 +260,7 @@ class ODTDocument
      *
      * @param string $cssCode The CSS code to be imported
      */
-    protected function importCSSCodeInternal ($cssCode) {
+    protected function importCSSCodeInternal ($cssCode, $mediaSel=NULL) {
         if ($this->importnew == NULL) {
             // No CSS imported yet. Create object.
             $this->importnew = new cssimportnew();
@@ -273,6 +274,9 @@ class ODTDocument
         // length value imported. This gives us the chance to convert it once from
         // pixel to points.
         $this->importnew->adjustLengthValues (array($this, 'adjustLengthCallback'));
+
+        // Update our root properties.
+        $this->rootProperties = $this->determineRootProperties ($mediaSel);
     }
 
     public function enableLinks () {
@@ -829,16 +833,19 @@ class ODTDocument
         // Import CSS for later use (if CSS usage is 'full')
         // MUST be called before $this->docHandler->import because it
         // stores the CSS in $this->importnew!
-        $this->importCSSCodeInternal($cssCode);
+        $this->importCSSCodeInternal($cssCode, $mediaSel);
 
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
-            //$this->docHandler->trace_dump = '>>>';
-            $this->docHandler->import_styles_from_css ($this->importnew, $this->htmlStack, $this->units, $mediaSel, $mediaPath);
-            //$this->trace_dump .= $this->docHandler->trace_dump;
+            $this->docHandler->trace_dump = '>>>';
+            $this->docHandler->import_styles_from_css
+                ($this->importnew, $this->htmlStack, $this->units, $mediaSel, $mediaPath, $this->rootProperties);
+            $this->trace_dump .= $this->docHandler->trace_dump;
         }
 
         //$this->trace_dump .= $this->importnew->rulesToString();
+        //$this->trace_dump .= "Raw CSS:";
+        //$this->trace_dump .= $cssCode;
     }
 
     /**
@@ -1812,5 +1819,61 @@ class ODTDocument
     public function addHTMLElement ($element, $attributes = NULL) {
         $this->htmlStack->open($element, $attributes);
         $this->htmlStack->saveRootIndex ();
+
+        // Update our root properties.
+        $this->rootProperties = $this->determineRootProperties ();
+    }
+
+    protected function determineRootProperties ($mediaSel=NULL) {
+        if ($this->importnew == NULL) {
+            return;
+        }
+
+        $save = $this->importnew->getMedia ();
+        $this->importnew->setMedia ($mediaSel);
+
+
+        $collected = array();
+
+        // Go starting from our current element through all parents
+        $element = $this->htmlStack->getCurrentElement();
+        $this->trace_dump .= "Starting...";
+        while ($element != NULL) {
+            $this->trace_dump .= "continuing".$element->iECSSM_getName()."[".$element->iECSSM_getAttributes()."]...";
+
+            $properties = array();
+            $this->importnew->getPropertiesForElement($properties, $element);
+
+            if (count($properties) == 0) {
+            $this->trace_dump .= "leer!";
+            }
+            foreach ($properties as $key => $value) {
+                $this->trace_dump .= $key.'='.$value."\n";
+            }
+
+
+            $collected [] = $properties;
+            $element = $element->iECSSM_getParent();
+        }
+        $this->trace_dump .= "...Ending";
+        
+        $result = array();
+        // Merge all arrays (backwards!)
+        $max = count($collected);
+        for ($index = $max-1 ; $index >=0 ; $index--) {
+            //$result = array_merge ($result, $collected [$index]);
+            foreach ($collected [$index] as $key => $value) {
+                if ($value != 'inherit') {
+                    $result [$key] = $value;
+                }
+            }
+        }
+
+        $this->importnew->setMedia ($save);
+
+        // Adjust values for ODT
+        ODTUtility::adjustValuesForODT ($result, $this->units);
+
+        return $result;
     }
 }

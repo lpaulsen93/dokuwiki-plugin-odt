@@ -32,7 +32,7 @@ abstract class docHandler
                                     'heading4' => array('element' => 'h4', 'attributes' => NULL),
                                     'heading5' => array('element' => 'h5', 'attributes' => NULL),
                                     'horizontal line' => array('element' => 'hr', 'attributes' => NULL),
-                                    'body' => array('element' => 'body', 'attributes' => NULL),
+                                    'body' => array('element' => 'p', 'attributes' => NULL),
                                     'emphasis' => array('element' => 'em', 'attributes' => NULL),
                                     'strong' => array('element' => 'strong', 'attributes' => NULL),
                                     'underline' => array('element' => 'u', 'attributes' => NULL),

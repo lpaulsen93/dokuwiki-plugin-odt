@@ -380,6 +380,12 @@ abstract class docHandler
                 if (empty($properties ['background-color']) && !empty($rootProperties ['background-color'])) {
                     $properties ['background-color'] = $rootProperties ['background-color'];
                 }
+                if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
+                    $properties ['font-size'] = $rootProperties ['font-size'];
+                }
+                if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
+                    $properties ['line-height'] = $rootProperties ['line-height'];
+                }
 
                 // We have found something.
                 // First clear the existing layout properties of the style.
@@ -461,8 +467,27 @@ abstract class docHandler
                     $disabled ['border-left']   = 1;
                     // Do not set background/background-color
                     $disabled ['background-color'] = 1;
-                    
-                    $this->trace_dump .= 'TEXT-ALIGN:'.$properties ['text-align'];
+
+                    $paragraphStyle->clearLayoutProperties();
+                    $paragraphStyle->importProperties($properties, $disabled);
+                }
+                // Inherit properties for table content paragraph style from
+                // the properties of the 'td' element
+                if ($element == 'td') {
+                    $name = $this->styleset->getStyleName('table content');
+                    $paragraphStyle = $this->styleset->getStyle($name);
+
+                    // Do not set borders on our paragraph styles in the table.
+                    // Otherwise we will have double borders. Around the cell and
+                    // around the text in the cell!
+                    $disabled = array();
+                    $disabled ['border']        = 1;
+                    $disabled ['border-top']    = 1;
+                    $disabled ['border-right']  = 1;
+                    $disabled ['border-bottom'] = 1;
+                    $disabled ['border-left']   = 1;
+                    // Do not set background/background-color
+                    $disabled ['background-color'] = 1;
                     
                     $paragraphStyle->clearLayoutProperties();
                     $paragraphStyle->importProperties($properties, $disabled);
@@ -498,10 +523,16 @@ abstract class docHandler
                 return;
             }
 
-            // If color is empty,
-            // eventually inherit them from the $rootProperties
+            // Eventually inherit some $rootProperties:
+            // color, font-size and line-height
             if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
                 $properties ['color'] = $rootProperties ['color'];
+            }
+            if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
+                $properties ['font-size'] = $rootProperties ['font-size'];
+            }
+            if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
+                $properties ['line-height'] = $rootProperties ['line-height'];
             }
 
             // We have found something.
@@ -567,6 +598,11 @@ abstract class docHandler
                 }
             }
 
+            // In all paragraph styles set the ODT specific attribute join-border = false
+            if ($style->getFamily() == 'paragraph') {
+                $properties ['join-border'] = 'false';
+            }
+
             $style->importProperties($properties, NULL);
 
             // Reset stack to saved root so next importStyle
@@ -618,10 +654,10 @@ abstract class docHandler
         $this->importStyle($import, $htmlStack, $units, 'list first paragraph', 'p', 'class="listfirstparagraph"');
         $this->importStyle($import, $htmlStack, $units, 'list last paragraph', 'p', 'class="listlastparagraph"');
 
-        $this->importStyle($import, $htmlStack, $units, 'internet link', 'a', 'class="internetlink"');
-        $this->importStyle($import, $htmlStack, $units, 'visited internet link', 'a', 'class="visitedinternetlink"');
-        $this->importStyle($import, $htmlStack, $units, 'local link', 'a', 'class="locallink"');
-        $this->importStyle($import, $htmlStack, $units, 'visited local link', 'a', 'class="visitedlocallink"');
+        //$this->importStyle($import, $htmlStack, $units, 'internet link', 'a', 'class="internetlink"');
+        //$this->importStyle($import, $htmlStack, $units, 'visited internet link', 'a', 'class="visitedinternetlink"');
+        //$this->importStyle($import, $htmlStack, $units, 'local link', 'a', 'class="locallink"');
+        //$this->importStyle($import, $htmlStack, $units, 'visited local link', 'a', 'class="visitedlocallink"');
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

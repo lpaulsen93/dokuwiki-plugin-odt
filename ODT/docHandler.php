@@ -219,7 +219,7 @@ abstract class docHandler
         }
     }
 
-    protected function importOrderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL, $media_path=NULL) {
+    protected function importOrderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path=NULL) {
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -293,41 +293,37 @@ abstract class docHandler
                 
                 $this->setListStyleImage ($style, $level, $file);
             }
+
+            // Import properties for list paragraph style once.
+            // Margins MUST be ignored!
+            // See extra handling in importUnorderedListStyles() for
+            // paragraph styles 'list first paragraph' and 'list last paragraph'
+            if ($level == 1) {
+                $disabled = array();
+                $disabled ['margin-left'] = 1;
+                $disabled ['margin-right'] = 1;
+                $disabled ['margin-top'] = 1;
+                $disabled ['margin-bottom'] = 1;
+
+                $name = $this->styleset->getStyleName('numbering content');
+                $paragraphStyle = $this->styleset->getStyle($name);
+                $paragraphStyle->importProperties($properties, $disabled);
+            }
         }
 
         // Reset stack to saved root so next importStyle
         // will have the same conditions
         $htmlStack->restoreToRoot ();
-
-        // Eventually inherit some $rootProperties:
-        // color, font-size and line-height
-        $name = $this->styleset->getStyleName('numbering content');
-        $style = $this->styleset->getStyle($name);
-        if ($style != NULL) {
-            $properties = array();
-            if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
-                $properties ['color'] = $rootProperties ['color'];
-            }
-            if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
-                $properties ['font-size'] = $rootProperties ['font-size'];
-            }
-            if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
-                $properties ['line-height'] = $rootProperties ['line-height'];
-            }
-            if (count($properties) > 0) {
-                $style->importProperties($properties, NULL);
-            }
-        }
     }
 
-    protected function importUnorderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL, $media_path=NULL) {
+    protected function importUnorderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path=NULL) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
             return;
         }
 
-        // Workaround for OFT format, see end of loop
+        // Workaround for ODT format, see end of loop
         $name = $this->styleset->getStyleName('list first paragraph');
         $firstStyle = $this->styleset->getStyle($name);
         $name = $this->styleset->getStyleName('list last paragraph');
@@ -396,7 +392,7 @@ abstract class docHandler
                 $this->setListStyleImage ($style, $level, $file);
             }
 
-            // Workaround for OFT format:
+            // Workaround for ODT format:
             // We can not set margins on the list itself.
             // So we use extra paragraph styles for the first and last
             // list items to set a margin.
@@ -415,34 +411,28 @@ abstract class docHandler
                 $set ['margin-top'] = '0pt';;
                 $lastStyle->importProperties($set);
             }
+
+            // Import properties for list paragraph style once.
+            // Margins MUST be ignored! See extra handling above.
+            if ($level == 1) {
+                $disabled = array();
+                $disabled ['margin-left'] = 1;
+                $disabled ['margin-right'] = 1;
+                $disabled ['margin-top'] = 1;
+                $disabled ['margin-bottom'] = 1;
+
+                $name = $this->styleset->getStyleName('list content');
+                $paragraphStyle = $this->styleset->getStyle($name);
+                $paragraphStyle->importProperties($properties, $disabled);
+            }
         }
 
         // Reset stack to saved root so next importStyle
         // will have the same conditions
         $htmlStack->restoreToRoot ();
-
-        // Eventually inherit some $rootProperties:
-        // color, font-size and line-height
-        $name = $this->styleset->getStyleName('list content');
-        $style = $this->styleset->getStyle($name);
-        if ($style != NULL) {
-            $properties = array();
-            if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
-                $properties ['color'] = $rootProperties ['color'];
-            }
-            if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
-                $properties ['font-size'] = $rootProperties ['font-size'];
-            }
-            if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
-                $properties ['line-height'] = $rootProperties ['line-height'];
-            }
-            if (count($properties) > 0) {
-                $style->importProperties($properties, NULL);
-            }
-        }
     }
 
-    protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL) {
+    protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         foreach ($this->table_styles as $style_type => $elementParams) {
             $name = $this->styleset->getStyleName($style_type);
             $style = $this->styleset->getStyle($name);
@@ -571,7 +561,7 @@ abstract class docHandler
         }
     }
 
-    protected function importLinkStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $rootProperties=NULL) {
+    protected function importLinkStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         foreach ($this->link_styles as $style_type => $elementParams) {
             $name = $this->styleset->getStyleName($style_type);
             $style = $this->styleset->getStyle($name);
@@ -607,7 +597,7 @@ abstract class docHandler
         }
     }
 
-    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL, $rootProperties=NULL) {
+    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
         if ( $style != NULL ) {
@@ -666,7 +656,7 @@ abstract class docHandler
         }
     }
 
-    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL, $media_path, $rootProperties=NULL) {
+    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL, $media_path) {
         if ( $import != NULL ) {
             $save = $import->getMedia ();
             $import->setMedia ($media_sel);
@@ -675,19 +665,25 @@ abstract class docHandler
             $stack = clone $htmlStack;
             $stack->restoreToRoot ();
 
-            $this->import_styles_from_css_internal ($import, $stack, $units, $media_path, $rootProperties);
+            $this->import_styles_from_css_internal ($import, $stack, $units, $media_path);
 
             $import->setMedia ($save);
         }
     }
 
-    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path, $rootProperties=NULL) {
+    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
         // Set background-color of page
-        if (!empty($rootProperties ['background-color'])) {
+        // It is assumed that the last element of the "root" elements hold the backround-color.
+        // For DokuWiki this is <div class="page group">, see renderer/page.php, function 'load_css()'
+        $htmlStack->restoreToRoot ();
+        $properties = array();
+        $import->getPropertiesForElement($properties, $htmlStack->getCurrentElement(), $units);
+        ODTUtility::adjustValuesForODT ($properties, $units);
+        if (!empty($properties ['background-color'])) {
             $name = $this->styleset->getStyleName('first page');
             $first_page = $this->styleset->getStyle($name);
             if ($first_page != NULL) {
-                $first_page->setProperty('background-color', $rootProperties ['background-color']);
+                $first_page->setProperty('background-color', $properties ['background-color']);
             }
         }
 
@@ -697,19 +693,18 @@ abstract class docHandler
             $this->importStyle($import, $htmlStack, $units,
                                $style,
                                $element ['element'],
-                               $element ['attributes'],
-                               $rootProperties);
+                               $element ['attributes']);
         }
 
         // Import table styles
-        $this->importTableStyles($import, $htmlStack, $units, $rootProperties);
+        $this->importTableStyles($import, $htmlStack, $units);
 
         // Import link styles (require extra pseudo class handling)
-        $this->importLinkStyles($import, $htmlStack, $units, $rootProperties);
+        $this->importLinkStyles($import, $htmlStack, $units);
 
         // Import list styles and list paragraph styles
-        $this->importUnorderedListStyles($import, $htmlStack, $units, $rootProperties, $media_path);
-        $this->importOrderedListStyles($import, $htmlStack, $units, $rootProperties, $media_path);
+        $this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
+        $this->importOrderedListStyles($import, $htmlStack, $units, $media_path);
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

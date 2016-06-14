@@ -1059,6 +1059,10 @@ class cssimportnew {
                 if ($dest [$key] == 'inherit') {
                     $dest [$key] = $value;
                 } else {
+                    if (strncmp($key, 'background', strlen('background')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
                     if (strncmp($key, 'border', strlen('border')) == 0) {
                         // The property may not be inherited
                         continue;

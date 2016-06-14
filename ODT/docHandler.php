@@ -33,11 +33,11 @@ abstract class docHandler
                                     'heading5' => array('element' => 'h5', 'attributes' => NULL),
                                     'horizontal line' => array('element' => 'hr', 'attributes' => NULL),
                                     'body' => array('element' => 'p', 'attributes' => NULL),
-                                    'emphasis' => array('element' => 'em', 'attributes' => NULL),
-                                    'strong' => array('element' => 'strong', 'attributes' => NULL),
-                                    'underline' => array('element' => 'u', 'attributes' => NULL),
+                                    'emphasis' => array('element' => 'em', 'attributes' => NULL, 'compare' => true),
+                                    'strong' => array('element' => 'strong', 'attributes' => NULL, 'compare' => true),
+                                    'underline' => array('element' => 'u', 'attributes' => NULL, 'compare' => true),
                                     'monospace' => array('element' => 'code', 'attributes' => NULL),
-                                    'del' => array('element' => 'del', 'attributes' => NULL),
+                                    'del' => array('element' => 'del', 'attributes' => NULL, 'compare' => true),
                                     'preformatted' => array('element' => 'pre', 'attributes' => NULL),
                                     'source code' => array('element' => 'pre', 'attributes' => 'class="code"'),
                                     'source file' => array('element' => 'pre', 'attributes' => 'class="file"'),
@@ -597,7 +597,7 @@ abstract class docHandler
         }
     }
 
-    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL) {
+    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL, array $plain=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
         if ( $style != NULL ) {
@@ -617,6 +617,17 @@ abstract class docHandler
                 }
 
                 return;
+            }
+            if ($plain != NULL)
+            {
+                $diff = array_diff ($properties, $plain);
+                if (count($diff) == 0) {
+                    // Workaround for some elements, e.g. 'em' and 'del':
+                    // They may have default values from the browser only.
+                    // In that case do not import the style otherwise
+                    // 'em' and 'del' will look like plain text.
+                    return;
+                }
             }
 
             // We have found something.
@@ -688,12 +699,31 @@ abstract class docHandler
         }
 
         // Import styles which only require a simple import based on element name and attributes
+
+        // Get style of plain text paragraph for comparison
+        // See importStyle()
+        $htmlStack->restoreToRoot ();
+        $htmlStack->open('p');
+        $toMatch = $htmlStack->getCurrentElement();
+        $properties = array();
+        $import->getPropertiesForElement($properties, $toMatch, $units);
+        $htmlStack->restoreToRoot ();
+
         $toImport = array_merge ($this->internalRegs, $this->registrations);
         foreach ($toImport as $style => $element) {
-            $this->importStyle($import, $htmlStack, $units,
-                               $style,
-                               $element ['element'],
-                               $element ['attributes']);
+            if ($element ['compare']) {
+                $this->importStyle($import, $htmlStack, $units,
+                                   $style,
+                                   $element ['element'],
+                                   $element ['attributes'],
+                                   $properties);
+            } else {
+                $this->importStyle($import, $htmlStack, $units,
+                                   $style,
+                                   $element ['element'],
+                                   $element ['attributes'],
+                                   NULL);
+            }
         }
 
         // Import table styles

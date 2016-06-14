@@ -259,6 +259,17 @@ class ODTUtility
      * @param  ODTUnits $units Units object to use for conversion
      */
     public static function adjustValuesForODT (&$properties, ODTUnits $units) {
+        // Convert 'text-decoration'.
+        if ( $properties ['text-decoration'] == 'line-through' ) {
+            $properties ['text-line-through-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'underline' ) {
+            $properties ['text-underline-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'overline' ) {
+            $properties ['text-overline-style'] = 'solid';
+        }
+
         // First do simple adjustments per property
         foreach ($properties as $property => $value) {
             $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, $units);

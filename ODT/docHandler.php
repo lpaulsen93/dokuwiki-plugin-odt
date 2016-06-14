@@ -236,7 +236,7 @@ abstract class docHandler
             $toMatch = $htmlStack->getCurrentElement();
 
             $properties = array();                
-            $import->getPropertiesForElement($properties, $toMatch);
+            $import->getPropertiesForElement($properties, $toMatch, $units);
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $units);
@@ -343,7 +343,7 @@ abstract class docHandler
             $toMatch = $htmlStack->getCurrentElement();
 
             $properties = array();                
-            $import->getPropertiesForElement($properties, $toMatch);
+            $import->getPropertiesForElement($properties, $toMatch, $units);
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $units);
@@ -454,69 +454,43 @@ abstract class docHandler
                 $htmlStack->open($element, $attributes);
                 $toMatch = $htmlStack->getCurrentElement();
                 
-                $element_to_check = 'td';
+                //$element_to_check = 'td';
 
                 $properties = array();                
-                $import->getPropertiesForElement($properties, $toMatch);
+                $import->getPropertiesForElement($properties, $toMatch, $units);
                 if (count($properties) == 0) {
                     // Nothing found. Back to top, DO NOT change existing style!
 
-                    if ($this->trace_dump != NULL && $element == $element_to_check) {
-                        $this->trace_dump .= 'Nothing found for '.$element_to_check."!\n";
-                    }
+                    //if ($this->trace_dump != NULL && $element == $element_to_check) {
+                    //    $this->trace_dump .= 'Nothing found for '.$element_to_check."!\n";
+                    //}
 
                     continue;
-                }
-
-                // If colors are empty,
-                // eventually inherit them from the $rootProperties
-                if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
-                    $properties ['color'] = $rootProperties ['color'];
-                }
-                if (empty($properties ['background-color']) && !empty($rootProperties ['background-color'])) {
-                    $properties ['background-color'] = $rootProperties ['background-color'];
-                }
-                if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
-                    $properties ['font-size'] = $rootProperties ['font-size'];
-                }
-                if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
-                    $properties ['line-height'] = $rootProperties ['line-height'];
                 }
 
                 // We have found something.
                 // First clear the existing layout properties of the style.
                 $style->clearLayoutProperties();
 
-                if ($this->trace_dump != NULL && $element == $element_to_check) {
-                    $this->trace_dump .= 'Checking '.$element_to_check.'['.$attributes.']';
-                    $this->trace_dump .= 'BEFORE:'."\n";
-                    foreach ($properties as $key => $value) {
-                        $this->trace_dump .= $key.'='.$value."\n";
-                    }
-                    $this->trace_dump .= '---------------------------------------'."\n";
-                }
+                //if ($this->trace_dump != NULL && $element == $element_to_check) {
+                //    $this->trace_dump .= 'Checking '.$element_to_check.'['.$attributes.']';
+                //    $this->trace_dump .= 'BEFORE:'."\n";
+                //    foreach ($properties as $key => $value) {
+                //        $this->trace_dump .= $key.'='.$value."\n";
+                //    }
+                //    $this->trace_dump .= '---------------------------------------'."\n";
+                //}
 
                 // Adjust values for ODT
                 ODTUtility::adjustValuesForODT ($properties, $units);
 
-                if ($this->trace_dump != NULL && $element == $element_to_check) {
+                /*if ($this->trace_dump != NULL && $element == $element_to_check) {
                     $this->trace_dump .= 'AFTER:'."\n";
                     foreach ($properties as $key => $value) {
                         $this->trace_dump .= $key.'='.$value."\n";
                     }
                     $this->trace_dump .= '---------------------------------------'."\n";
-                }
-
-                // Convert 'text-decoration'.
-                if ( $properties ['text-decoration'] == 'line-through' ) {
-                    $properties ['text-line-through-style'] = 'solid';
-                }
-                if ( $properties ['text-decoration'] == 'underline' ) {
-                    $properties ['text-underline-style'] = 'solid';
-                }
-                if ( $properties ['text-decoration'] == 'overline' ) {
-                    $properties ['text-overline-style'] = 'solid';
-                }
+                }*/
 
                 // If the style imported is a table adjust some properties
                 if ($style->getFamily() == 'table') {
@@ -611,25 +585,10 @@ abstract class docHandler
                 $toMatch = $htmlStack->getCurrentElement();
 
                 $properties = array();                
-                $import->getPropertiesForElement($properties, $toMatch);
+                $import->getPropertiesForElement($properties, $toMatch, $units);
                 if (count($properties) == 0) {
                     // Nothing found. Back to top, DO NOT change existing style!
                     continue;
-                }
-
-                // If colors are empty,
-                // eventually inherit them from the $rootProperties
-                if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
-                    $properties ['color'] = $rootProperties ['color'];
-                }
-                if (empty($properties ['background-color']) && !empty($rootProperties ['background-color'])) {
-                    $properties ['background-color'] = $rootProperties ['background-color'];
-                }
-                if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
-                    $properties ['font-size'] = $rootProperties ['font-size'];
-                }
-                if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
-                    $properties ['line-height'] = $rootProperties ['line-height'];
                 }
 
                 // We have found something.
@@ -638,17 +597,6 @@ abstract class docHandler
 
                 // Adjust values for ODT
                 ODTUtility::adjustValuesForODT ($properties, $units);
-
-                // Convert 'text-decoration'.
-                if ( $properties ['text-decoration'] == 'line-through' ) {
-                    $properties ['text-line-through-style'] = 'solid';
-                }
-                if ( $properties ['text-decoration'] == 'underline' ) {
-                    $properties ['text-underline-style'] = 'solid';
-                }
-                if ( $properties ['text-decoration'] == 'overline' ) {
-                    $properties ['text-overline-style'] = 'solid';
-                }
 
                 $style->importProperties($properties, NULL);
 
@@ -667,10 +615,10 @@ abstract class docHandler
             $htmlStack->open($element, $attributes);
             $toMatch = $htmlStack->getCurrentElement();
             
-            $element_to_check = 'pre1234';
+            $element_to_check = 'p123';
             
             $properties = array();
-            $import->getPropertiesForElement($properties, $toMatch);
+            $import->getPropertiesForElement($properties, $toMatch, $units);
             if (count($properties) == 0) {
                 // Nothing found. Return, DO NOT change existing style!
 
@@ -679,18 +627,6 @@ abstract class docHandler
                 }
 
                 return;
-            }
-
-            // Eventually inherit some $rootProperties:
-            // color, font-size and line-height
-            if (empty($properties ['color']) && !empty($rootProperties ['color'])) {
-                $properties ['color'] = $rootProperties ['color'];
-            }
-            if (empty($properties ['font-size']) && !empty($rootProperties ['font-size'])) {
-                $properties ['font-size'] = $rootProperties ['font-size'];
-            }
-            if (empty($properties ['line-height']) && !empty($rootProperties ['line-height'])) {
-                $properties ['line-height'] = $rootProperties ['line-height'];
             }
 
             // We have found something.
@@ -715,17 +651,6 @@ abstract class docHandler
                     $this->trace_dump .= $key.'='.$value."\n";
                 }
                 $this->trace_dump .= '---------------------------------------'."\n";
-            }
-
-            // Convert 'text-decoration'.
-            if ( $properties ['text-decoration'] == 'line-through' ) {
-                $properties ['text-line-through-style'] = 'solid';
-            }
-            if ( $properties ['text-decoration'] == 'underline' ) {
-                $properties ['text-underline-style'] = 'solid';
-            }
-            if ( $properties ['text-decoration'] == 'overline' ) {
-                $properties ['text-overline-style'] = 'solid';
             }
 
             // In all paragraph styles set the ODT specific attribute join-border = false

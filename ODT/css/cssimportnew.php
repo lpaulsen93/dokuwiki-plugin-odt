@@ -915,7 +915,7 @@ class cssimportnew {
      * @param $classString
      * @param null $media
      */
-    public function getPropertiesForElement (&$dest, iElementCSSMatchable $element) {
+    public function getPropertiesForElement (&$dest, iElementCSSMatchable $element, ODTUnits $units, $inherit=true) {
         if ($element == NULL) {
             return;
         }
@@ -947,7 +947,222 @@ class cssimportnew {
             $rule->getProperties ($temp);
         }
 
+        if ($inherit) {
+            // Now calculate absolute values and inherit values from parents
+            $this->calculateAndInherit ($temp, $element, $units);
+            unset($temp ['calculated']);
+        }
+
         $dest = $temp;
+    }
+
+    protected function getParentsValue($key, iElementCSSMatchable $parent) {
+        $properties = $parent->getProperties ();
+        if ($properties [$key] != NULL) {
+            return $properties [$key];
+        }
+        
+        $parentsParent = $parent->iECSSM_getParent();
+        if ($parentsParent != NULL) {
+            return $this->getParentsValue($key, $parentsParent);
+        }
+
+        return NULL;
+    }
+
+    protected function calculate (array &$properties, iElementCSSMatchable $element, ODTUnits $units) {
+        if ($properties ['calculated'] == '1') {
+            // Already done
+            return;
+        }
+
+        $properties ['calculated'] = '1';
+        $parent = $element->iECSSM_getParent();
+
+        // First get absolute font-size in points for
+        // conversion of relative units
+        if ($parent != NULL) {
+            $font_size = $this->getParentsValue('font-size', $parent);
+        }
+        if ($font_size != NULL) {
+            // Use the parents value
+            // (It is assumed that the value is already calculated to an absolute
+            //  value. That's why the loops in calculateAndInherit() must run backwards
+            $base_font_size_in_pt = $units->getDigits($font_size);
+        } else {
+            // If there is no parent value use global setting
+            $base_font_size_in_pt = $units->getPixelPerEm ().'px';
+            $base_font_size_in_pt = $units->toPoints($base_font_size_in_pt, 'y');
+            $base_font_size_in_pt = $units->getDigits($base_font_size_in_pt);
+        }
+
+        // Do we have font-size or line-height set?
+        if ($properties ['font-size'] != NULL || $properties ['line-height'] != NULL) {
+            if ($properties ['font-size'] != NULL) {
+                $font_size_unit = $units->stripDigits($properties ['font-size']);
+                $font_size_digits = $units->getDigits($properties ['font-size']);
+                if ($font_size_unit == '%' || $font_size_unit == 'em') {
+                    $base_font_size_in_pt = $units->getAbsoluteValue ($properties ['font-size'], $base_font_size_in_pt);
+                    $properties ['font-size'] = $base_font_size_in_pt.'pt';
+
+                } elseif ($font_size_unit != 'pt') {
+                    $properties ['font-size'] = $units->toPoints($properties ['font-size'], 'y');
+                    $base_font_size_in_pt = $units->getDigits($properties ['font-size']);
+                } else {
+                    $base_font_size_in_pt = $units->getDigits($properties ['font-size']);
+                }
+            }
+
+            // Convert relative line-heights to absolute
+            if ($properties ['line-height'] != NULL) {
+                $line_height_unit = $units->stripDigits($properties ['line-height']);
+                $line_height_digits = $units->getDigits($properties ['line-height']);
+                if ($line_height_unit == '%') {
+                    $properties ['line-height'] = (($line_height_digits * $base_font_size_in_pt)/100).'pt';
+                } elseif (empty($line_height_unit)) {
+                    $properties ['line-height'] = ($line_height_digits * $base_font_size_in_pt).'pt';
+                }
+            }
+        }
+
+        // Calculate all other absolute values
+        // (NOT 'width' as it depends on the encapsulating element,
+        //  and not 'font-size' and 'line-height' => already done above
+        foreach ($properties as $key => $value) {
+            switch ($key) {
+                case 'width':
+                case 'font-size':
+                case 'line-height':
+                    // Do nothing.
+                break;
+                default:
+                    // Convert '%' or 'em' value based on determined font-size
+                    $unit = $units->stripDigits($value);
+                    if ($unit == '%' || $unit == 'em') {
+                        $value = $units->getAbsoluteValue ($value, $base_font_size_in_pt);
+                        $properties [$key] = $value.'pt';
+                    }
+                break;
+            }
+        }
+
+        $element->setProperties($properties);
+    }
+
+    protected function inherit (array &$dest, array $parents) {
+        // Inherit properties of all parents
+        // (MUST be done backwards!)
+        $max = count ($parents);
+        foreach ($parents as $parent) {
+            $properties = $parent->getProperties ();
+            foreach ($properties as $key => $value) {
+                if ($dest [$key] == 'inherit') {
+                    $dest [$key] = $value;
+                } else {
+                    if (strncmp($key, 'border', strlen('border')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'padding', strlen('padding')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'margin', strlen('margin')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'outline', strlen('outline')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'counter', strlen('counter')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'page-break', strlen('page-break')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'cue', strlen('cue')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strncmp($key, 'pause', strlen('pause')) == 0) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strpos($key, 'width') !== false) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    if (strpos($key, 'height') !== false) {
+                        // The property may not be inherited
+                        continue;
+                    }
+                    switch ($key) {
+                        case 'text-decoration':
+                        case 'text-shadow':
+                        case 'display':
+                        case 'table-layout':
+                        case 'vertical-align':
+                        case 'visibility':
+                        case 'position':
+                        case 'top':
+                        case 'right':
+                        case 'bottom':
+                        case 'left':
+                        case 'float':
+                        case 'clear':
+                        case 'z-index':
+                        case 'unicode-bidi':
+                        case 'overflow':
+                        case 'clip':
+                        case 'visibility':
+                        case 'content':
+                        case 'marker-offset':
+                        case 'play-during':
+                            // The property may not be inherited
+                        break;
+                        default:
+                            if ($dest [$key] == NULL || $dest [$key] == 'inherit') {
+                                $dest [$key] = $value;
+                            }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    protected function calculateAndInherit (array &$dest, iElementCSSMatchable $element, ODTUnits $units) {
+        $parents = array();
+        $parent = $element->iECSSM_getParent();
+        while ($parent != NULL) {
+            $parents [] = $parent;
+            $parent = $parent->iECSSM_getParent();
+        }
+
+        // Determine properties of all parents if not done yet
+        // and calculate absolute values
+        // (MUST be done backwards!)
+        $max = count ($parents);
+        for ($index = $max-1 ; $index >= 0 ; $index--) {
+            $properties = $parents [$index]->getProperties ();
+            if ($properties == NULL) {
+                $properties = array();
+                $this->getPropertiesForElement ($properties, $parents [$index], $units, false);
+                $parents [$index]->setProperties ($properties);
+            }
+            if ($properties ['calculated'] == NULL) {
+                $this->calculate($properties, $parents [$index], $units);
+            }
+        }
+
+        // Calculate our own absolute values
+        $this->calculate($dest, $element, $units);
+
+        // Inherit values from our parents
+        $this->inherit($dest, $parents);
     }
 
     /**

@@ -160,4 +160,8 @@ class helper_plugin_odt_units extends DokuWiki_Plugin {
     public function toPoints ($value, $axis = 'y') {
         return $this->internal->toPoints ($value, $axis);
     }
+
+    public function getInternal() {
+        return $this->internal;
+    }
 }

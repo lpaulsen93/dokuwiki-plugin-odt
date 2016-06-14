@@ -1796,7 +1796,7 @@ class ODTDocument
         $this->importnew->setMedia($media_sel);
         
         // Get properties for our class/element from imported CSS
-        $this->importnew->getPropertiesForElement($dest, $element);
+        $this->importnew->getPropertiesForElement($dest, $element, $this->units);
 
         // Adjust values for ODT
         //foreach ($dest as $property => $value) {
@@ -1851,7 +1851,7 @@ class ODTDocument
             //$this->trace_dump .= "continuing".$element->iECSSM_getName()."[".$element->iECSSM_getAttributes()."]...";
 
             $properties = array();
-            $this->importnew->getPropertiesForElement($properties, $element);
+            $this->importnew->getPropertiesForElement($properties, $element, $this->units);
 
             //if (count($properties) == 0) {
             //$this->trace_dump .= "leer!";

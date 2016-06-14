@@ -195,4 +195,22 @@ class ODTUnits {
         }
         return $value;
     }
+
+    public function getAbsoluteValue ($value, $base) {
+        $unit = self::stripDigits ($value);
+
+        $value = self::getDigits ($value);
+        switch ($unit) {
+            case '%':
+                $value = ($value * $base)/100;
+            break;
+            case 'em':
+                $value = $value * $base;
+            break;
+            default:
+                // Not an relative value. Just keep it.
+            break;
+        }
+        return $value;
+    }
 }

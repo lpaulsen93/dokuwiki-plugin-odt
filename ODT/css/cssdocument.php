@@ -68,6 +68,14 @@ class css_doc_element implements iElementCSSMatchable {
         }
         return true;
     }
+
+    public function getProperties () {
+        return $this->doc->entries [$this->index]['properties'];
+    }
+
+    public function setProperties (array &$properties) {
+        $this->doc->entries [$this->index]['properties'] = $properties;
+    }
 }
 
 /**

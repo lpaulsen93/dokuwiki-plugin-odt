@@ -519,6 +519,9 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
                      }
                      }';
 
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
         // Import CSS code
         $import = new helper_plugin_odt_cssimportnew ();
         $import->importFromString ($css_code);
@@ -528,7 +531,7 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
         $state->open('p');
 
         // Query properties.
-        $import->getPropertiesForElement ($properties, $state->getCurrentElement());
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
 
         // Only for debugging.
         //print ($import->rulesToString());
@@ -553,6 +556,9 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
                      }
                      }';
 
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
         // Import CSS code
         $import = new helper_plugin_odt_cssimportnew ();
         $import->importFromString ($css_code);
@@ -563,7 +569,7 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
 
         // Query properties.
         $import->setMedia('print');
-        $import->getPropertiesForElement ($properties, $state->getCurrentElement());
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
 
         $this->assertEquals(count($properties), 1);
         $this->assertEquals('white', $properties ['background-color']);
@@ -587,6 +593,9 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
                      }
                      }';
 
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
         // Import CSS code
         $import = new helper_plugin_odt_cssimportnew ();
         $import->importFromString ($css_code);
@@ -596,7 +605,7 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
         $state->open('p');
 
         // Query properties.
-        $import->getPropertiesForElement ($properties, $state->getCurrentElement());
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
 
         // We shouldn't get any properties
         $this->assertEquals(0, count($properties));
@@ -624,6 +633,9 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
                      }
                      }';
 
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
         // Import CSS code
         $import = new helper_plugin_odt_cssimportnew ();
         $import->importFromString ($css_code);
@@ -634,7 +646,7 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
 
         // Query properties.
         $import->setMedia('print');
-        $import->getPropertiesForElement ($properties, $state->getCurrentElement());
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
 
         // Check properties
         $this->assertEquals(1, count($properties));
@@ -1283,6 +1295,9 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
                          background-color: green;
                      }';
 
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
         // Import CSS code
         $import = new helper_plugin_odt_cssimportnew ();
         $import->importFromString ($css_code);
@@ -1294,7 +1309,7 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
         $state->open('p', 'class="test"');
 
         // Query properties.
-        $import->getPropertiesForElement ($properties, $state->getCurrentElement());
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
 
         // Only for debugging.
         //print ($import->rulesToString());
@@ -1318,6 +1333,9 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
                          background-color: yellow;
                      }';
 
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
         // Import CSS code
         $import = new helper_plugin_odt_cssimportnew ();
         $import->importFromString ($css_code);
@@ -1329,7 +1347,7 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
         $state->open('p', 'class="test"');
 
         // Query properties.
-        $import->getPropertiesForElement ($properties, $state->getCurrentElement());
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
 
         // Only for debugging.
         //print ($import->rulesToString());
@@ -1431,5 +1449,36 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
         $state->open('a', NULL, NULL, 'first-line');
 
         $this->assertEquals(false, $selector->matches($state->getCurrentElement(), $specificity));
+    }
+
+    /**
+     * Test if selector properly matches given pseudo element.
+     */
+    public function test_font_size_inheriting() {
+        $properties = array();
+        $css_code = 'body {
+                         font-size: 2em;
+                     }
+                     code {
+                         font-size: 2em;
+                     }';
+
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
+        // Import CSS code
+        $import = new helper_plugin_odt_cssimportnew ();
+        $import->importFromString ($css_code);
+
+        // Match: element a with pseudo class 'visited'
+        $state = new helper_plugin_odt_cssdocument();
+        $state->open('html', NULL, NULL, NULL);
+        $state->open('body', NULL, NULL, NULL);
+        $state->open('code', NULL, NULL, NULL);
+
+        // Query properties.
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
+
+        $this->assertEquals('64pt', $properties ['font-size']);
     }
 }

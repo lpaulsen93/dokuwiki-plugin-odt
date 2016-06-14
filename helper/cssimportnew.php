@@ -81,8 +81,8 @@ class helper_plugin_odt_cssimportnew extends DokuWiki_Plugin {
      * @param $classString
      * @param null $media
      */
-    public function getPropertiesForElement (&$dest, iElementCSSMatchable $element) {
-        $this->internal->getPropertiesForElement ($dest, $element);
+    public function getPropertiesForElement (&$dest, iElementCSSMatchable $element, helper_plugin_odt_units $units) {
+        $this->internal->getPropertiesForElement ($dest, $element, $units->getInternal());
     }
 
     /**

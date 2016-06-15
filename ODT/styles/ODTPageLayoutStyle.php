@@ -326,5 +326,38 @@ class ODTPageLayoutStyle extends ODTStyle
         $style .= '</style:page-layout'.">\n";
         return $style;
     }
+
+    /**
+     * This function creates a page layout style with the parameters given in $properies.
+     *
+     * The currently supported properties are:
+     * style-name, width, height, margin-top, margin-bottom, margin-right and margin-left.
+     * All properties except the style-name are expected to be numeric values.
+     * The function will add 'cm' itself, so do not add any units.
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     *
+     * @param $properties
+     * @param null $disabled_props
+     * @return ODTUnknownStyle or NULL
+     */
+    public static function createPageLayoutStyle(array $properties, array $disabled_props = NULL) {
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) ) {
+            $style_name = self::getNewStylename ('Page');
+            $properties ['style-name'] = $style_name;
+        }
+        $style = '<style:page-layout style:name="'.$style_name.'">
+                <style:page-layout-properties fo:page-width="'.$properties ['width'].'cm" fo:page-height="'.$properties ['height'].'cm" style:num-format="1" style:print-orientation="landscape" fo:margin-top="'.$properties ['margin-top'].'cm" fo:margin-bottom="'.$properties ['margin-bottom'].'cm" fo:margin-left="'.$properties ['margin-left'].'cm" fo:margin-right="'.$properties ['margin-right'].'cm" style:writing-mode="lr-tb" style:footnote-max-height="0cm">
+                    <style:footnote-sep style:width="0.018cm" style:distance-before-sep="0.1cm" style:distance-after-sep="0.1cm" style:adjustment="left" style:rel-width="25%" style:color="#000000"/>
+                </style:page-layout-properties>
+                <style:header-style/>
+                <style:footer-style/>
+            </style:page-layout>';
+        return self::importODTStyle($style);
+    }
 }
 

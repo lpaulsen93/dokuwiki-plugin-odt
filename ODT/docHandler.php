@@ -682,20 +682,41 @@ abstract class docHandler
         }
     }
 
-    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
-        // Set background-color of page
-        // It is assumed that the last element of the "root" elements hold the backround-color.
-        // For DokuWiki this is <div class="page group">, see renderer/page.php, function 'load_css()'
-        $htmlStack->restoreToRoot ();
-        $properties = array();
-        $import->getPropertiesForElement($properties, $htmlStack->getCurrentElement(), $units);
-        ODTUtility::adjustValuesForODT ($properties, $units);
-        if (!empty($properties ['background-color'])) {
-            $name = $this->styleset->getStyleName('first page');
-            $first_page = $this->styleset->getStyle($name);
-            if ($first_page != NULL) {
-                $first_page->setProperty('background-color', $properties ['background-color']);
+    public function set_page_properties (ODTPageLayoutStyle $pageStyle, cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL) {
+        if ( $import != NULL ) {
+            if ($media_sel != NULL ) {
+                $save = $import->getMedia ();
+                $import->setMedia ($media_sel);
             }
+
+            $stack = clone $htmlStack;
+            $stack->restoreToRoot ();
+
+            // Set background-color of page
+            // It is assumed that the last element of the "root" elements hold the backround-color.
+            // For DokuWiki this is <div class="page group">, see renderer/page.php, function 'load_css()'
+            $stack->restoreToRoot ();
+            $properties = array();
+            $import->getPropertiesForElement($properties, $stack->getCurrentElement(), $units);
+            ODTUtility::adjustValuesForODT ($properties, $units);
+            if (!empty($properties ['background-color'])) {
+                if ($pageStyle != NULL) {
+                    $pageStyle->setProperty('background-color', $properties ['background-color']);
+                }
+            }
+
+            if ($media_sel != NULL ) {
+                $import->setMedia ($save);
+            }
+        }
+    }
+
+    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
+        // Import page layout
+        $name = $this->styleset->getStyleName('first page');
+        $first_page = $this->styleset->getStyle($name);
+        if ($first_page != NULL) {
+            $this->set_page_properties ($first_page, $import, $htmlStack, $units, NULL);
         }
 
         // Import styles which only require a simple import based on element name and attributes

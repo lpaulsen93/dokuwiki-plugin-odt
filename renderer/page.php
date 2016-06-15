@@ -112,6 +112,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $this->document->setCSSUsage('off');
                 break;
         }
+        $this->document->setMediaSelector ($this->config->getParam('media_sel'));
 
         // Put some root element on the HTML stack which should always
         // be present for our CSS matching

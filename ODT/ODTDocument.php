@@ -179,6 +179,22 @@ class ODTDocument
     }
 
     /**
+     * Set commom CSS media selector.
+     *
+     * @param string $mediaSel
+     */
+    public function setMediaSelector ($mediaSel) {
+        if ($this->importnew == NULL) {
+            // No CSS imported yet. Create object.
+            $this->importnew = new cssimportnew();
+            if ($this->importnew == NULL) {
+                return;
+            }
+        }
+        $this->importnew->setMedia ($mediaSel);
+    }
+
+    /**
      * Callback function which adjusts all CSS length values to point.
      * 
      * @param $property The name of the current CSS property, e.g. 'border-left'
@@ -889,9 +905,14 @@ class ODTDocument
         $properties ['margin-bottom'] = $data ['margin-bottom'];
         $properties ['margin-left']   = $data ['margin-left'];
         $properties ['margin-right']  = $data ['margin-right'];
-        $style_obj = ODTUnknownStyle::createPageLayoutStyle($properties);
+        $style_obj = ODTPageLayoutStyle::createPageLayoutStyle($properties);
         $style_name = $style_obj->getProperty('style-name');
-
+        
+        // It is iassumed the proper media selector has been set by calling setMediaSelector()
+        if (($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') && $this->importnew != NULL) {
+            $this->docHandler->set_page_properties ($style_obj, $this->importnew, $this->htmlStack, $this->units);
+        }
+        
         // Save style data in page style array, in common styles and set current page format
         $master_page_style_name = $format_string;
         $this->pageStyles [$master_page_style_name] = $style_name;

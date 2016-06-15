@@ -174,7 +174,7 @@ class ODTIndex
         $title_style = $doc->getStyleName('contents heading');
         if (!empty($styleH)) {
             $properties = array();
-            ODTUtility::getCSSStylePropertiesForODT ($properties, $styleH);
+            $doc->getCSSStylePropertiesForODT ($properties, $styleH);
             $properties ['style-parent'] = 'Heading';
             $properties ['style-class'] = 'index';
             $this->style_count++;
@@ -193,7 +193,7 @@ class ODTIndex
         {
             $indent = $indents [$count];
             $properties = array();
-            ODTUtility::getCSSStylePropertiesForODT ($properties, $stylesL [$count+1]);
+            $doc->getCSSStylePropertiesForODT ($properties, $stylesL [$count+1]);
             $properties ['style-parent'] = 'Index';
             $properties ['style-class'] = 'index';
             $properties ['style-position'] = 17 - $indent .'cm';
@@ -232,7 +232,7 @@ class ODTIndex
         // (this MUST be a text style (not paragraph!) and MUST be placed in styles (not automatic styles) to work!)
         for ( $count = 0 ; $count < $max_outline_level ; $count++ ) {
             $properties = array();
-            ODTUtility::getCSSStylePropertiesForODT ($properties, $stylesL [$count+1]);
+            $doc->getCSSStylePropertiesForODT ($properties, $stylesL [$count+1]);
             $properties ['style-name'] = 'ToC '.$indexNo.'- Text Level '.($count+1);
             $properties ['style-display-name'] = 'ToC '.$indexNo.', Level '.($count+1);
             $style_obj = ODTTextStyle::createTextStyle($properties);

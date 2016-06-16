@@ -1021,7 +1021,7 @@ class ODTDocument
      * @author Andreas Gohr <andi@splitbrain.org>
      */
     function footnoteOpen() {
-        ODTFootnote::footnoteOpen($this, $this->content);
+        ODTFootnote::footnoteOpen($this->params);
     }
 
     /**
@@ -1030,7 +1030,7 @@ class ODTDocument
      * @author Andreas Gohr
      */
     function footnoteClose() {
-        ODTFootnote::footnoteClose($this, $this->content);
+        ODTFootnote::footnoteClose($this->params);
     }
 
     function quoteOpen() {

@@ -20,12 +20,12 @@ class ODTFootnote
      *
      * @author Andreas Gohr <andi@splitbrain.org>
      */
-    function footnoteOpen(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL) {
+    function footnoteOpen(ODTInternalParams $params, $element=NULL, $attributes=NULL) {
         // $element and $attributes are actually unused
 
         // Move current content to store and record footnote
-        $doc->store = $content;
-        $content = '';
+        $params->document->store = $params->content;
+        $params->content = '';
     }
 
     /**
@@ -36,31 +36,31 @@ class ODTFootnote
      *
      * @author Andreas Gohr
      */
-    function footnoteClose(ODTDocument $doc, &$content) {
+    function footnoteClose(ODTInternalParams $params) {
         // Recover footnote into the stack and restore old content
-        $footnote = $content;
-        $content = $doc->store;
-        $doc->store = '';
+        $footnote = $params->content;
+        $params->content = $params->document->store;
+        $params->document->store = '';
 
         // Check to see if this footnote has been seen before
-        $i = array_search($footnote, $doc->footnotes);
+        $i = array_search($footnote, $params->document->footnotes);
 
         if ($i === false) {
-            $i = count($doc->footnotes);
+            $i = count($params->document->footnotes);
             // Its a new footnote, add it to the $footnotes array
-            $doc->footnotes[$i] = $footnote;
+            $params->document->footnotes[$i] = $footnote;
 
-            $content .= '<text:note text:id="ftn'.$i.'" text:note-class="footnote">';
-            $content .= '<text:note-citation>'.($i+1).'</text:note-citation>';
-            $content .= '<text:note-body>';
-            $content .= '<text:p text:style-name="'.$doc->getStyleName('footnote').'">';
-            $content .= $footnote;
-            $content .= '</text:p>';
-            $content .= '</text:note-body>';
-            $content .= '</text:note>';
+            $params->content .= '<text:note text:id="ftn'.$i.'" text:note-class="footnote">';
+            $params->content .= '<text:note-citation>'.($i+1).'</text:note-citation>';
+            $params->content .= '<text:note-body>';
+            $params->content .= '<text:p text:style-name="'.$params->document->getStyleName('footnote').'">';
+            $params->content .= $footnote;
+            $params->content .= '</text:p>';
+            $params->content .= '</text:note-body>';
+            $params->content .= '</text:note>';
         } else {
             // Seen this one before - just reference it FIXME: style isn't correct yet
-            $content .= '<text:note-ref text:note-class="footnote" text:ref-name="ftn'.$i.'">'.($i+1).'</text:note-ref>';
+            $params->content .= '<text:note-ref text:note-class="footnote" text:ref-name="ftn'.$i.'">'.($i+1).'</text:note-ref>';
         }
     }
 }

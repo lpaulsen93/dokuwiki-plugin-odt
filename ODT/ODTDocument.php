@@ -1139,7 +1139,7 @@ class ODTDocument
      * @param int $numrows NOT IMPLEMENTED
      */
     function tableOpen($maxcols = NULL, $numrows = NULL, $element=NULL, $attributes=NULL){
-        ODTTable::tableOpen($this, $maxcols, $numrows, $this->content, NULL, $element, $attributes);
+        ODTTable::tableOpen($this->params, $maxcols, $numrows, NULL, $element, $attributes);
     }
 
     /**
@@ -1149,126 +1149,126 @@ class ODTDocument
      * @param int $numrows NOT IMPLEMENTED
      */
     function tableClose(){
-        ODTTable::tableClose($this, $this->content);
+        ODTTable::tableClose($this->params);
     }
 
     /**
      * Add a column to a table.
      */
     function tableAddColumn (){
-        ODTTable::tableAddColumn ($this);
+        ODTTable::tableAddColumn ($this->params);
     }
 
     /**
      * Open a table row
      */
     function tableRowOpen($element=NULL, $attributes=NULL){
-        ODTTable::tableRowOpen($this, $this->content, NULL, $element, $attributes);
+        ODTTable::tableRowOpen($this->params, NULL, $element, $attributes);
     }
 
     /**
      * Close a table row
      */
     function tableRowClose(){
-        ODTTable::tableRowClose($this, $this->content);
+        ODTTable::tableRowClose($this->params);
     }
 
     /**
      * Open a table header cell
      */
     function tableHeaderOpen($colspan = 1, $rowspan = 1, $align, $element=NULL, $attributes=NULL){
-        ODTTable::tableHeaderOpen($this, $colspan = 1, $rowspan = 1, $align, $this->content, NULL, NULL, $element, $attributes);
+        ODTTable::tableHeaderOpen($this->params, $colspan = 1, $rowspan = 1, $align, NULL, NULL, $element, $attributes);
     }
 
     /**
      * Close a table header cell
      */
     function tableHeaderClose(){
-        ODTTable::tableHeaderClose($this, $this->content);
+        ODTTable::tableHeaderClose($this->params);
     }
 
     /**
      * Open a table cell
      */
     function tableCellOpen($colspan, $rowspan, $align, $element=NULL, $attributes=NULL){
-        ODTTable::tableCellOpen($this, $colspan, $rowspan, $align, $this->content, NULL, NULL, $element, $attributes);
+        ODTTable::tableCellOpen($this->params, $colspan, $rowspan, $align, NULL, NULL, $element, $attributes);
     }
 
     /**
      * Close a table cell
      */
     function tableCellClose(){
-        ODTTable::tableCellClose($this, $this->content);
+        ODTTable::tableCellClose($this->params);
     }
 
     /**
      * Open a table using CSS
      */
     function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableOpenUseCSS($this, $this->content, $maxcols, $numrows, $element, $attributes, $import);
+        ODTTable::tableOpenUseCSS($this->params, $maxcols, $numrows, $element, $attributes);
     }
 
     /**
      * Open a table using properties
      */
     function tableOpenUseProperties ($properties, $maxcols = 0, $numrows = 0){
-        ODTTable::tableOpenUseProperties($this, $this->content, $properties, $maxcols, $numrows);
+        ODTTable::tableOpenUseProperties($this->params, $properties, $maxcols, $numrows);
     }
 
     /**
      * Add a table column using CSS
      */
     function tableAddColumnUseCSS ($attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableAddColumnUseCSS($this, $attributes, $import);
+        ODTTable::tableAddColumnUseCSS($this->params, $attributes);
     }
 
     /**
      * Add a table column using properties
      */
     function tableAddColumnUseProperties ($properties){
-        ODTTable::tableAddColumnUseProperties($this, $properties);
+        ODTTable::tableAddColumnUseProperties($this->params, $properties);
     }
 
     /**
      * Open a table header using CSS
      */
     function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableHeaderOpenUseCSS($this, $this->content, $colspan, $rowspan, $element, $attributes, $import);
+        ODTTable::tableHeaderOpenUseCSS($this->params, $colspan, $rowspan, $element, $attributes);
     }
 
     /**
      * Open a table header using properties
      */
     function tableHeaderOpenUseProperties($properties, $colspan = 1, $rowspan = 1){
-        ODTTable::tableHeaderOpenUseProperties($this, $this->content, $properties, $colspan, $rowspan);
+        ODTTable::tableHeaderOpenUseProperties($this->params, $properties, $colspan, $rowspan);
     }
 
     /**
      * Open a table row using CSS
      */
     function tableRowOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTTable::tableRowOpenUseCSS($this, $this->content, $element, $attributes, $import);
+        ODTTable::tableRowOpenUseCSS($this->params, $element, $attributes);
     }
 
     /**
      * Open a table row using properties
      */
     function tableRowOpenUseProperties($properties){
-        ODTTable::tableRowOpenUseProperties($this, $this->content, $properties);
+        ODTTable::tableRowOpenUseProperties($this->params, $properties);
     }
 
     /**
      * Open a table cell using CSS
      */
     function tableCellOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
-        ODTTable::tableCellOpenUseCSS($this, $this->content, $element, $attributes, $import, $colspan, $rowspan);
+        ODTTable::tableCellOpenUseCSS($this->params, $element, $attributes, $colspan, $rowspan);
     }
 
     /**
      * Open a table cell using properties
      */
     function tableCellOpenUseProperties($properties, $colspan = 1, $rowspan = 1){
-        ODTTable::tableCellOpenUseProperties($this, $this->content, $properties, $colspan, $rowspan);
+        ODTTable::tableCellOpenUseProperties($this->params, $properties, $colspan, $rowspan);
     }
 
     /**

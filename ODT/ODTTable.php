@@ -17,9 +17,9 @@ class ODTTable
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      */
-    public static function tableOpen(ODTDocument $doc, $maxcols = NULL, $numrows = NULL, &$content, $tableStyleName=NULL, $element=NULL, $attributes=NULL){
+    public static function tableOpen(ODTInternalParams $params, $maxcols = NULL, $numrows = NULL, $tableStyleName=NULL, $element=NULL, $attributes=NULL){
         // Close any open paragraph.
-        $doc->paragraphClose($content);
+        $params->document->paragraphClose();
         
         // Do additional actions if the parent element is a list.
         // In this case we need to finish the list and re-open it later
@@ -27,35 +27,35 @@ class ODTTable
 
         $interrupted = false;
         if ($tableStyleName == NULL) {
-            $tableStyleName = $doc->getStyleName('table');
+            $tableStyleName = $params->document->getStyleName('table');
         }
 
-        $list_item = $doc->state->getCurrentListItem();
+        $list_item = $params->document->state->getCurrentListItem();
         if ($list_item != NULL) {
             // We are in a list item. Query indentation settings.
             $list = $list_item->getList();
             if ($list != NULL) {
                 $list_style_name = $list->getStyleName();
-                $list_style = $doc->getStyle($list_style_name);
+                $list_style = $params->document->getStyle($list_style_name);
                 if ($list_style != NULL) {
                     // The list level stored in the list item/from the parser
                     // might not be correct. Count 'list' states to get level.
-                    $level = $doc->state->countClass('list');
+                    $level = $params->document->state->countClass('list');
 
                     // Create a table style for indenting the table.
                     // We try to achieve this by substracting the list indentation
                     // from the width of the table and right align it!
                     // (if not done yet, the name must be unique!)
                     $style_name = 'Table_Indentation_Level'.$level;
-                    if (!$doc->styleExists($style_name)) {
-                        $style_obj = clone $doc->getStyle($tableStyleName);
+                    if (!$params->document->styleExists($style_name)) {
+                        $style_obj = clone $params->document->getStyle($tableStyleName);
                         $style_obj->setProperty('style-name', $style_name);
                         if ($style_obj != NULL) {
-                            $max = $doc->getAbsWidthMindMargins();
+                            $max = $params->document->getAbsWidthMindMargins();
                             $indent = 0 + ODTUnits::getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));
                             $style_obj->setProperty('width', ($max-$indent).'cm');
                             $style_obj->setProperty('align', 'right');
-                            $doc->addAutomaticStyle($style_obj);
+                            $params->document->addAutomaticStyle($style_obj);
                         }
                     }
                     $tableStyleName = $style_name;
@@ -66,32 +66,32 @@ class ODTTable
             $lists = array();
             $first = true;
             $iterations = 0;
-            $list = $doc->state->getCurrentList();
+            $list = $params->document->state->getCurrentList();
             while ($list != NULL)
             {
                 // Close list items
                 if ($first == true) {
                     $first = false;
-                    $doc->listContentClose($content);
+                    $params->document->listContentClose();
                 }
-                $doc->listItemClose($content);
+                $params->document->listItemClose();
                 
                 // Now we are in the list state!
                 // Get the lists style name before closing it.
-                $lists [] = $doc->state->getStyleName();
-                $doc->listClose($content);
+                $lists [] = $params->document->state->getStyleName();
+                $params->document->listClose();
                 
-                if ($doc->state == NULL || $doc->state->getElement() == 'root') {
+                if ($params->document->state == NULL || $params->document->state->getElement() == 'root') {
                     break;
                 }
 
                 // List has been closed (and removed from stack). Get next.
-                $list = $doc->state->getCurrentList();
+                $list = $params->document->state->getCurrentList();
 
                 // Just to prevent endless loops in case of an error!
                 $iterations++;
                 if ($iterations == 50) {
-                    $content .= 'Error: ENDLESS LOOP!';
+                    $params->content .= 'Error: ENDLESS LOOP!';
                     break;
                 }
             }
@@ -100,7 +100,7 @@ class ODTTable
         }
 
         $table = new ODTElementTable($tableStyleName, $maxcols, $numrows);
-        $doc->state->enter($table);
+        $params->document->state->enter($table);
         if ($interrupted == true) {
             // Set marker that list has been interrupted
             $table->setListInterrupted(true);
@@ -113,14 +113,14 @@ class ODTTable
             $table->setTemp($lists);
         }
         
-        $content .= $table->getOpeningTag();
+        $params->content .= $table->getOpeningTag();
     }
 
     /**
      * Close/finish a table
      */
-    public static function tableClose(ODTDocument $doc, &$content){
-        $table = $doc->state->getCurrentTable();
+    public static function tableClose(ODTInternalParams $params){
+        $table = $params->document->state->getCurrentTable();
         if ($table == NULL) {
             // ??? Error. Not table found.
             return;
@@ -133,11 +133,11 @@ class ODTTable
         }
 
         // Eventually replace table width.
-        self::replaceTableWidth ($doc, $table);
+        self::replaceTableWidth ($params, $table);
 
         // Close the table.
-        $content .= $table->getClosingTag($content);
-        $doc->state->leave();
+        $params->content .= $table->getClosingTag($params->content);
+        $params->document->state->leave();
 
         // Do additional actions required if we interrupted a list,
         // see table_open()
@@ -146,12 +146,12 @@ class ODTTable
             // (in revers order of lists array)
             $max = count($lists);
             for ($index = $max ; $index > 0 ; $index--) {
-                $doc->listOpen(true, $lists [$index-1], $content);
+                $params->document->listOpen(true, $lists [$index-1]);
                 
                 // If this is not the most inner list then we need to open
                 // a list item too!
                 if ($index > 0) {
-                    $doc->listItemOpen($max-$index, $content);
+                    $params->document->listItemOpen($max-$index);
                 }
             }
 
@@ -165,10 +165,10 @@ class ODTTable
     /**
      * @param array $properties
      */
-    public static function tableAddColumn (ODTDocument $doc, $styleNameSet=NULL, &$styleNameGet=NULL){
+    public static function tableAddColumn (ODTInternalParams $params, $styleNameSet=NULL, &$styleNameGet=NULL){
         // Create new column
         $column = new ODTElementTableColumn();
-        $doc->state->enter($column);
+        $params->document->state->enter($column);
 
         if ($styleNameSet != NULL) {
             // Change automatically assigned style name.
@@ -181,23 +181,23 @@ class ODTTable
         // Never create any new document content here!!!
         // Columns have already been added on table open or are
         // re-written on table close.
-        $doc->state->leave();
+        $params->document->state->leave();
     }
 
     /**
      * Open a table row
      */
-    public static function tableRowOpen(ODTDocument $doc, &$content, $styleName=NULL, $element=NULL, $attributes=NULL){
+    public static function tableRowOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
         $row = new ODTElementTableRow($styleName);
-        $doc->state->enter($row);
-        $content .= $row->getOpeningTag();
+        $params->document->state->enter($row);
+        $params->content .= $row->getOpeningTag();
     }
 
     /**
      * Close a table row
      */
-    public static function tableRowClose(ODTDocument $doc, &$content){
-        $doc->closeCurrentElement($content);
+    public static function tableRowClose(ODTInternalParams $params){
+        $params->document->closeCurrentElement();
     }
 
     /**
@@ -207,13 +207,13 @@ class ODTTable
      * @param int    $rowspan
      * @param string $align left|center|right
      */
-    public static function tableHeaderOpen(ODTDocument $doc, $colspan = 1, $rowspan = 1, $align = "left", &$content, $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
+    public static function tableHeaderOpen(ODTInternalParams $params, $colspan = 1, $rowspan = 1, $align = "left", $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
-            $cellStyle = $doc->getStyleName('table header');
+            $cellStyle = $params->document->getStyleName('table header');
         }
         if (empty($paragraphStyle)) {
-            $paragraphStyle = $doc->getStyleName('table heading');
+            $paragraphStyle = $params->document->getStyleName('table heading');
         }
 
         // ODT has no element for the table header.
@@ -221,21 +221,21 @@ class ODTTable
         // to differ between a normal cell and a header cell.
         $header_cell = new ODTElementTableHeaderCell
             ($cellStyle, $colspan, $rowspan);
-        $doc->state->enter($header_cell);
+        $params->document->state->enter($header_cell);
 
         // Encode table (header) cell.
-        $content .= $header_cell->getOpeningTag();
+        $params->content .= $header_cell->getOpeningTag();
 
         // Open new paragraph with table heading style.
-        $doc->paragraphOpen($paragraphStyle, $content);
+        $params->document->paragraphOpen($paragraphStyle);
     }
 
     /**
      * Close a table header cell
      */
-    public static function tableHeaderClose(ODTDocument $doc, &$content){
-        $doc->paragraphClose($content);
-        $doc->closeCurrentElement($content);
+    public static function tableHeaderClose(ODTInternalParams $params){
+        $params->document->paragraphClose();
+        $params->document->closeCurrentElement();
     }
 
     /**
@@ -245,34 +245,34 @@ class ODTTable
      * @param int    $rowspan
      * @param string $align left|center|right
      */
-    public static function tableCellOpen(ODTDocument $doc, $colspan = 1, $rowspan = 1, $align = "left", &$content, $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
+    public static function tableCellOpen(ODTInternalParams $params, $colspan = 1, $rowspan = 1, $align = "left", $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
-            $cellStyle = $doc->getStyleName('table cell');
+            $cellStyle = $params->document->getStyleName('table cell');
         }
         if (empty($paragraphStyle)) {
             // Open paragraph with required alignment.
             if (!$align) $align = "left";
-            $paragraphStyle = $doc->getStyleName('tablealign '.$align);
+            $paragraphStyle = $params->document->getStyleName('tablealign '.$align);
         }
 
         $cell = new ODTElementTableCell
             ($cellStyle, $colspan, $rowspan);
-        $doc->state->enter($cell);
+        $params->document->state->enter($cell);
 
         // Encode table cell.
-        $content .= $cell->getOpeningTag();
+        $params->content .= $cell->getOpeningTag();
 
         // Open paragraph.
-        $doc->paragraphOpen($paragraphStyle, $content);
+        $params->document->paragraphOpen($paragraphStyle);
     }
 
     /**
      * Close a table cell
      */
-    public static function tableCellClose(ODTDocument $doc, &$content){
-        $doc->paragraphClose($content);
-        $doc->closeCurrentElement($content);
+    public static function tableCellClose(ODTInternalParams $params){
+        $params->document->paragraphClose();
+        $params->document->closeCurrentElement();
     }
 
     /**
@@ -293,10 +293,7 @@ class ODTTable
      * @param null $maxcols
      * @param null $numrows
      */
-    public static function tableOpenUseCSS(ODTDocument $doc, &$content, $maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
-            $import = $doc->import;
-        }
+    public static function tableOpenUseCSS(ODTInternalParams $params, $maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL){
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
 
@@ -305,7 +302,7 @@ class ODTTable
         //    $element = 'table';
         //}
         //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        self::tableOpenUseProperties($doc, $content, $properties, $maxcols, $numrows);
+        self::tableOpenUseProperties($params, $properties, $maxcols, $numrows);
     }
 
     /**
@@ -323,8 +320,8 @@ class ODTTable
      * @param null $maxcols
      * @param null $numrows
      */
-    public static function tableOpenUseProperties (ODTDocument $doc, &$content, $properties, $maxcols = 0, $numrows = 0){
-        $doc->paragraphClose($content);
+    public static function tableOpenUseProperties (ODTInternalParams $params, $properties, $maxcols = 0, $numrows = 0){
+        $params->document->paragraphClose();
 
         // Eventually adjust table width.
         if ( !empty ($properties ['width']) ) {
@@ -332,43 +329,40 @@ class ODTTable
                 // Width has got an absolute value.
                 // Some units are not supported by ODT for table width (e.g. 'px').
                 // So we better convert it to points.
-                $properties ['width'] = $doc->toPoints($properties ['width'], 'x');
+                $properties ['width'] = $params->document->toPoints($properties ['width'], 'x');
             }
         }
         
         // Create style.
         // FIXME: fix disabled_props, ask state for current max width...
         $style_obj = ODTTableStyle::createTableTableStyle($properties, NULL, 17);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
         // Open the table referencing our style.
-        self::tableOpen($doc, $maxcols, $numrows, $content, $style_name);
+        self::tableOpen($params, $maxcols, $numrows, $style_name);
     }
 
-    public static function tableAddColumnUseCSS(ODTDocument $doc, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
-            $import = $doc->import;
-        }
+    public static function tableAddColumnUseCSS(ODTInternalParams $params, $attributes=NULL){
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
 
-        self::tableAddColumnUseProperties($doc, $properties);
+        self::tableAddColumnUseProperties($params, $properties);
     }
 
     /**
      * @param array $properties
      */
-    public static function tableAddColumnUseProperties (ODTDocument $doc, array $properties = NULL){
+    public static function tableAddColumnUseProperties (ODTInternalParams $params, array $properties = NULL){
         // Add column and set/query assigned style name
         $styleName = $properties ['style-name'];
         $styleNameGet = '';
-        self::tableAddColumn ($doc, $styleName, $styleNameGet);
+        self::tableAddColumn ($params, $styleName, $styleNameGet);
 
         // Overwrite/Create column style for actual column
         $properties ['style-name'] = $styleNameGet;
         $style_obj = ODTTableColumnStyle::createTableColumnStyle ($properties);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
     }
 
     /**
@@ -379,7 +373,7 @@ class ODTTable
      * @param int $colspan
      * @param int $rowspan
      */
-    public static function tableHeaderOpenUseCSS(ODTDocument $doc, &$content, $colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+    public static function tableHeaderOpenUseCSS(ODTInternalParams $params, $colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
@@ -388,7 +382,7 @@ class ODTTable
         //    $element = 'th';
         //}
         //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        self::tableHeaderOpenUseProperties($doc, $content, $properties, $colspan, $rowspan);
+        self::tableHeaderOpenUseProperties($params, $properties, $colspan, $rowspan);
     }
 
     /**
@@ -396,9 +390,9 @@ class ODTTable
      * @param int $colspan
      * @param int $rowspan
      */
-    public static function tableHeaderOpenUseProperties (ODTDocument $doc, &$content, $properties = NULL, $colspan = 1, $rowspan = 1){
+    public static function tableHeaderOpenUseProperties (ODTInternalParams $params, $properties = NULL, $colspan = 1, $rowspan = 1){
         // Open cell, second parameter MUST BE true to indicate we are in the header.
-        self::tableCellOpenUsePropertiesInternal ($doc, $content, $properties, true, $colspan, $rowspan);
+        self::tableCellOpenUsePropertiesInternal ($params, $properties, true, $colspan, $rowspan);
     }
 
     /**
@@ -416,7 +410,7 @@ class ODTTable
      * @param null $baseURL
      * @param null $element
      */
-    public static function tableRowOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+    public static function tableRowOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
@@ -425,20 +419,20 @@ class ODTTable
         //    $element = 'tr';
         //}
         //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        self::tableRowOpenUseProperties($doc, $content, $properties);
+        self::tableRowOpenUseProperties($params, $properties);
     }
 
     /**
      * @param array $properties
      */
-    public static function tableRowOpenUseProperties (ODTDocument $doc, &$content, $properties){
+    public static function tableRowOpenUseProperties (ODTInternalParams $params, $properties){
         // Create style.
         $style_obj = ODTTableRowStyle::createTableRowStyle ($properties);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
         // Open table row with our new style.
-        self::tableRowOpen($doc, $content, $style_name);
+        self::tableRowOpen($params, $style_name);
     }
 
     /**
@@ -457,7 +451,7 @@ class ODTTable
      * @param null $baseURL
      * @param null $element
      */
-    public static function tableCellOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+    public static function tableCellOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL, $colspan = 1, $rowspan = 1){
         $properties = array();
 
         // FIXME: delete old outcommented code below and re-write using new CSS import class
@@ -466,14 +460,14 @@ class ODTTable
         //    $element = 'td';
         //}
         //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        self::tableCellOpenUseProperties($doc, $content, $properties, $colspan, $rowspan);
+        self::tableCellOpenUseProperties($params, $properties, $colspan, $rowspan);
     }
 
     /**
      * @param $properties
      */
-    public static function tableCellOpenUseProperties (ODTDocument $doc, &$content, $properties = NULL, $colspan = 1, $rowspan = 1){
-        self::tableCellOpenUsePropertiesInternal ($doc, $content, $properties, false, $colspan, $rowspan);
+    public static function tableCellOpenUseProperties (ODTInternalParams $params, $properties = NULL, $colspan = 1, $rowspan = 1){
+        self::tableCellOpenUsePropertiesInternal ($params, $properties, false, $colspan, $rowspan);
     }
 
     /**
@@ -482,12 +476,12 @@ class ODTTable
      * @param int $colspan
      * @param int $rowspan
      */
-    static protected function tableCellOpenUsePropertiesInternal (ODTDocument $doc, &$content, $properties, $inHeader = false, $colspan = 1, $rowspan = 1){
+    static protected function tableCellOpenUsePropertiesInternal (ODTInternalParams $params, $properties, $inHeader = false, $colspan = 1, $rowspan = 1){
         $disabled = array ();
 
         // Create style name. (Re-enable background-color!)
         $style_obj = ODTTableCellStyle::createTableCellStyle ($properties);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
         // Create a paragraph style for the paragraph within the cell.
@@ -501,14 +495,14 @@ class ODTTable
         $disabled ['background-image'] = 1;
         $disabled ['vertical-align'] = 1;
         $style_obj = ODTParagraphStyle::createParagraphStyle ($properties, $disabled);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name_paragraph = $style_obj->getProperty('style-name');
     
         // Open header or normal cell.
         if ($inHeader) {
-            self::tableHeaderOpen($doc, $colspan, $rowspan, NULL, $content, $style_name, $style_name_paragraph);
+            self::tableHeaderOpen($params, $colspan, $rowspan, NULL, $style_name, $style_name_paragraph);
         } else {
-            self::tableCellOpen($doc, $colspan, $rowspan, NULL, $content, $style_name, $style_name_paragraph);
+            self::tableCellOpen($params, $colspan, $rowspan, NULL, $style_name, $style_name_paragraph);
         }
     }
 
@@ -520,7 +514,7 @@ class ODTTable
      * @param ODTDocument $doc The current document
      * @param ODTElementTable $table The table to be adjusted
      */
-    static protected function replaceTableWidth (ODTDocument $doc, ODTElementTable $table) {
+    static protected function replaceTableWidth (ODTInternalParams $params, ODTElementTable $table) {
         if ($table == NULL) {
             // ??? Should not happen.
             return;
@@ -540,18 +534,18 @@ class ODTTable
         $table_column_styles = $table->getTableColumnStyles();
         for ($index = 0 ; $index < $table->getTableMaxColumns() ; $index++ ) {
             $style_name = $table_column_styles [$index];
-            $style_obj = $doc->getStyle($style_name);
+            $style_obj = $params->document->getStyle($style_name);
             if ($style_obj != NULL && $style_obj->getProperty('column-width') != NULL) {
                 $width = $style_obj->getProperty('column-width');
                 $length = strlen ($width);
-                $width = $doc->toPoints($width, 'x');
+                $width = $params->document->toPoints($width, 'x');
                 $sum += (float) trim ($width, 'pt');
             } else {
                 return;
             }
         }
 
-        $style_obj = $doc->getStyle($table_style_name);
+        $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $sum.'pt');
         }

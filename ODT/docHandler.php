@@ -412,7 +412,7 @@ abstract class docHandler
                 $set ['margin-bottom'] = '0pt';
                 $firstStyle->importProperties($set);
                 $set ['margin-bottom'] = $properties ['margin-bottom'];
-                $set ['margin-top'] = '0pt';;
+                $set ['margin-top'] = '0pt';
                 $lastStyle->importProperties($set);
             }
 

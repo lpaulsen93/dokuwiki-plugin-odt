@@ -161,7 +161,7 @@ class ODTList
             }
 
             $last_p_style = NULL;
-            if (preg_match('/<text:p text:style-name="[^"]*">/', $content, $matches, 0, $position) === 1) {
+            if (preg_match('/<text:p text:style-name="[^"]*">/', $params->content, $matches, 0, $position) === 1) {
                 $last_p_style = substr($matches [0], strlen('<text:p text:style-name='));
                 $last_p_style = trim($last_p_style, '">');
             } else {
@@ -178,6 +178,7 @@ class ODTList
                     $style_body = $params->document->getStyle($last_p_style);
                     $style_display_name = 'Last '.$style_body->getProperty('style-display-name');
                     $style_obj = clone $style_last;
+
                     if ($style_obj != NULL) {
                         $style_obj->setProperty('style-name', $style_name);
                         $style_obj->setProperty('style-parent', $last_p_style);

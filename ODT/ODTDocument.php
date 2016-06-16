@@ -603,7 +603,7 @@ class ODTDocument
     }
 
     function insertIndex($type='toc', array $settings=NULL) {
-        ODTIndex::insertIndex($this, $this->content, $this->indexesData, $type, $settings);
+        ODTIndex::insertIndex($this->params, $this->indexesData, $type, $settings);
     }
     
     /**
@@ -862,7 +862,7 @@ class ODTDocument
         ODTUtility::replaceLocalLinkPlaceholders($this->content, $this->toc, $this->bookmarks, $styleName, $visitedStyleName);
 
         // Build indexes
-        ODTIndex::replaceIndexesPlaceholders($this, $this->content, $this->indexesData, $this->toc);
+        ODTIndex::replaceIndexesPlaceholders($this->params, $this->indexesData, $this->toc);
 
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
         ODTUtility::deleteUselessElements($this->content, $this->preventDeletetionStyles);

@@ -17,12 +17,12 @@ class ODTIndex
      *
      * @return string
      */
-    function insertIndex(ODTDocument $doc, &$content, array &$indexesData, $type='toc', array $settings=NULL) {        
+    function insertIndex(ODTInternalParams $params, array &$indexesData, $type='toc', array $settings=NULL) {        
         // Insert placeholder
         $index_count = count ($indexesData);
 
-        $doc->paragraphClose($content);
-        $content .= '<index-placeholder no="'.($index_count+1).'"/>';
+        $params->document->paragraphClose();
+        $params->content .= '<index-placeholder no="'.($index_count+1).'"/>';
 
         // Prepare index data
         $new = array();
@@ -32,7 +32,7 @@ class ODTIndex
         $new ['type'] = $type;
 
         if ($type == 'chapter') {
-            $new ['start_ref'] = $doc->getPreviousToCItem(1);
+            $new ['start_ref'] = $params->document->getPreviousToCItem(1);
         } else {
             $new ['start_ref'] = NULL;
         }
@@ -66,7 +66,7 @@ class ODTIndex
      * It is allowed to use defaults for all settings by using '{{odt>toc}}'.
      * Multiple settings can be combined, e.g. '{{odt>toc:leader-sign=.;indents=0,0.5,1,1.5,2,2.5,3;}}'.
      */
-    public static function replaceIndexesPlaceholders(ODTDocument $doc, &$content, array $indexesData, array $toc) {
+    public static function replaceIndexesPlaceholders(ODTInternalParams $params, array $indexesData, array $toc) {
         $index_count = count($indexesData);
         for ($index_no = 0 ; $index_no < $index_count ; $index_no++) {
             $data = $indexesData [$index_no];
@@ -74,10 +74,10 @@ class ODTIndex
             // At the moment it does not make sense to disable links for the TOC
             // because LibreOffice will insert links on updating the TOC.
             $data ['create_links'] = true;
-            $indexContent = self::buildIndex($doc, $toc, $data, $index_no+1);
+            $indexContent = self::buildIndex($params->document, $toc, $data, $index_no+1);
 
             // Replace placeholder with TOC content.
-            $content = str_replace ('<index-placeholder no="'.($index_no+1).'"/>', $indexContent, $content);
+            $params->content = str_replace ('<index-placeholder no="'.($index_no+1).'"/>', $indexContent, $params->content);
         }
     }
 

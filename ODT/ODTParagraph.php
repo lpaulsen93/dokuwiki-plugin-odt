@@ -15,19 +15,22 @@ class ODTParagraph
      *
      * @param string $styleName The style to use.
      */
-    static public function paragraphOpen(ODTDocument $doc, $styleName=NULL, &$content, $element=NULL, $attributes=NULL){
+    static public function paragraphOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'p';
+        }
         if ( empty($styleName) ) {
-            $styleName = $doc->getStyleName('body');
+            $styleName = $params->document->getStyleName('body');
         }
 
         $list = NULL;
-        $listItem = $doc->state->getCurrentListItem();
+        $listItem = $params->document->state->getCurrentListItem();
         if ($listItem != NULL) {
             // We are in a list item. Is this the list start?
             $list = $listItem->getList();
             if ($list != NULL) {
                 // Get list count and Flag if this is the first paragraph in the list
-                $listCount = $doc->state->countClass('list');
+                $listCount = $params->document->state->countClass('list');
                 $isFirst = $list->getListFirstParagraph();
                 $list->setListFirstParagraph(false);
 
@@ -37,12 +40,12 @@ class ODTParagraph
                     
                     // Has the style already been created...
                     $styleNameFirst = 'FirstListParagraph_'.$styleName;
-                    if (!$doc->styleExists($styleNameFirst)) {
+                    if (!$params->document->styleExists($styleNameFirst)) {
 
                         // ...no, create style as copy of style 'list first paragraph'
-                        $styleFirstTemplate = $doc->getStyleByAlias('list first paragraph');
+                        $styleFirstTemplate = $params->document->getStyleByAlias('list first paragraph');
                         if ($styleFirstTemplate != NULL) {
-                            $styleBody = $doc->getStyle($styleName);
+                            $styleBody = $params->document->getStyle($styleName);
                             $styleDisplayName = 'First '.$styleBody->getProperty('style-display-name');
                             $styleObj = clone $styleFirstTemplate;
                             if ($styleObj != NULL) {
@@ -53,7 +56,7 @@ class ODTParagraph
                                 if ($bottom === NULL) {
                                     $styleObj->setProperty('margin-bottom', $styleBody->getProperty('margin-bottom'));
                                 }
-                                $doc->addStyle($styleObj);
+                                $params->document->addStyle($styleObj);
                                 $styleName = $styleNameFirst;
                             }
                         }
@@ -66,40 +69,47 @@ class ODTParagraph
         }
         
         // Opening a paragraph inside another paragraph is illegal
-        $inParagraph = $doc->state->getInParagraph();
+        $inParagraph = $params->document->state->getInParagraph();
         if (!$inParagraph) {
-            if ( $doc->pageFormatChangeIsPending() ) {
-                $pageStyle = $doc->doPageFormatChange($styleName);
+            if ( $params->document->pageFormatChangeIsPending() ) {
+                $pageStyle = $params->document->doPageFormatChange($styleName);
                 if ( $pageStyle != NULL ) {
                     $styleName = $pageStyle;
                     // Delete pagebreak, the format change will also introduce a pagebreak.
-                    $doc->setPagebreakPending(false);
+                    $params->document->setPagebreakPending(false);
                 }
             }
-            if ( $doc->pagebreakIsPending() ) {
-                $styleName = $doc->createPagebreakStyle ($styleName);
-                $doc->setPagebreakPending(false);
+            if ( $params->document->pagebreakIsPending() ) {
+                $styleName = $params->document->createPagebreakStyle ($styleName);
+                $params->document->setPagebreakPending(false);
             }
             
             // If we are in a list remember paragraph position
             if ($list != NULL) {
-                $list->setListLastParagraphPosition(strlen($content));
+                $list->setListLastParagraphPosition(strlen($params->content));
+            }
+
+            if ($params->elementObj == NULL) {
+                $properties = array();
+                ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
             }
 
             $paragraph = new ODTElementParagraph($styleName);
-            $doc->state->enter($paragraph);
-            $content .= $paragraph->getOpeningTag();
+            $params->document->state->enter($paragraph);
+            $params->content .= $paragraph->getOpeningTag();
+            $paragraph->setHTMLElement ($element);
         }
     }
 
     /**
      * Close a paragraph
      */
-    static public function paragraphClose(ODTDocument $doc, &$content){
-        $paragraph = $doc->state->getCurrentParagraph();
+    static public function paragraphClose(ODTInternalParams $params){
+        $paragraph = $params->document->state->getCurrentParagraph();
         if ($paragraph != NULL) {
-            $content .= $paragraph->getClosingTag();
-            $doc->state->leave();
+            ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+            $params->content .= $paragraph->getClosingTag();
+            $params->document->state->leave();
         }
     }
 
@@ -122,16 +132,17 @@ class ODTParagraph
      * @param $baseURL
      * @param $element
      */
-    function paragraphOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+    function paragraphOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
+        $inParagraph = $params->document->state->getInParagraph();
+        if ($inParagraph) {
+            return;
+        }
+
         $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        //if ( empty($element) ) {
-        //    $element = 'p';
-        //}
-        //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        self::paragraphOpenUseProperties($doc, $content, $properties);
+        self::paragraphOpenUseProperties($params, $properties);
     }
 
     /**
@@ -149,10 +160,14 @@ class ODTParagraph
      *
      * @param array $properties
      */
-    public static function paragraphOpenUseProperties(ODTDocument $doc, &$content, $properties){
+    public static function paragraphOpenUseProperties(ODTInternalParams $params, $properties){
+        $inParagraph = $params->document->state->getInParagraph();
+        if ($inParagraph) {
+            return;
+        }
         $disabled = array ();
 
-        $in_paragraph = $doc->state->getInParagraph();
+        $in_paragraph = $params->document->state->getInParagraph();
         if ($in_paragraph) {
             // opening a paragraph inside another paragraph is illegal
             return;
@@ -167,23 +182,23 @@ class ODTParagraph
 
             // Define graphic style for picture
             $style_name = ODTStyle::getNewStylename('span_graphic');
-            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$doc->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$params->document->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
 
             // Add style and image to our document
             // (as unknown style because style-family graphic is not supported)
             $style_obj = ODTUnknownStyle::importODTStyle($image_style);
-            $this->document->addAutomaticStyle($style_obj);
-            ODTImage::addImage ($doc, $content, $picture, NULL, NULL, NULL, NULL, $style_name);
+            $params->document->addAutomaticStyle($style_obj);
+            ODTImage::addImage ($params->document, $params->content, $picture, NULL, NULL, NULL, NULL, $style_name);
         }
 
         // Create the style for the paragraph.
         //$disabled ['background-image'] = 1;
         //FIXME: pass $disabled
         $style_obj = ODTParagraphStyle::createParagraphStyle ($properties);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
         // Open a paragraph
-        $doc->paragraphOpen($style_name, $content);
+        self::paragraphOpen($params, $style_name);
     }
 }

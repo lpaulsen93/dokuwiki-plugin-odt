@@ -1624,8 +1624,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
      * @author LarsDW223
      */
-    function _odtParagraphOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->paragraphOpenUseCSS($attributes, $import);
+    function _odtParagraphOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        $this->document->paragraphOpenUseCSS($element, $attributes, $import);
     }
 
     /**

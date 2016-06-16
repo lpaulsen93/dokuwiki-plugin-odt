@@ -410,14 +410,16 @@ class ODTDocument
      * @param string $styleName The style to use.
      */
     function paragraphOpen($styleName=NULL, $element=NULL, $attributes=NULL){
-        ODTParagraph::paragraphOpen($this, $styleName, $this->content, $element, $attributes);
+        unset($this->params->elementObj);
+        ODTParagraph::paragraphOpen($this->params, $styleName, $element, $attributes);
     }
 
     /**
      * Close a paragraph
      */
     function paragraphClose(){
-        ODTParagraph::paragraphClose($this, $this->content);
+        unset($this->params->elementObj);
+        ODTParagraph::paragraphClose($this->params);
     }
 
     /**
@@ -426,7 +428,16 @@ class ODTDocument
      * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
      */
     function paragraphOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTParagraph::paragraphOpenUseCSS($this, $this->content, $element, $attributes, $import);
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'p';
+        }
+        unset($this->params->elementObj);
+        $this->params->import = $import;
+        ODTParagraph::paragraphOpenUseCSS($this->params, $element, $attributes);
+        $this->params->import = $this->importnew;
     }
 
     /**
@@ -435,7 +446,9 @@ class ODTDocument
      * @see ODTParagraph::paragraphOpenUseProperties for detailed documentation
      */
     function paragraphOpenUseProperties($properties){
-        ODTParagraph::paragraphOpenUseProperties($this, $this->content, $properties);
+        ODTUtility::adjustValuesForODT($properties, $this->units);
+        unset($this->params->elementObj);
+        ODTParagraph::paragraphOpenUseProperties($this->params, $properties);
     }
 
     /**

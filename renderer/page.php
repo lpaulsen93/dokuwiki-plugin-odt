@@ -824,7 +824,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function listu_open($continue=false) {
-        $this->document->listOpen($continue, $this->document->getStyleName('list'));
+        $this->document->listOpen($continue, $this->document->getStyleName('list'), 'ul');
     }
 
     function listu_close() {
@@ -832,7 +832,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     function listo_open($continue=false) {
-        $this->document->listOpen($continue, $this->document->getStyleName('numbering'));
+        $this->document->listOpen($continue, $this->document->getStyleName('numbering'), 'ol');
     }
 
     function listo_close() {

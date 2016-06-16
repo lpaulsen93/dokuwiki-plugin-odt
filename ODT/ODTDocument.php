@@ -1084,14 +1084,22 @@ class ODTDocument
      * @param string $styleName Name of style to use for the list
      */
     function listOpen($continue=false, $styleName, $element=NULL, $attributes=NULL) {
-        ODTList::listOpen($this, $continue, $styleName, $this->content, $element, $attributes);
+        if ($element == NULL) {
+            if ($styleName == $this->document->getStyleName('list')) {
+                $element = 'ul';
+            }
+            if ($styleName == $this->document->getStyleName('numbering')) {
+                $element = 'ol';
+            }
+        }
+        ODTList::listOpen($this->params, $continue, $styleName, $element, $attributes);
     }
 
     /**
      * Close a list
      */
     function listClose() {
-        ODTList::listClose($this, $this->content);
+        ODTList::listClose($this->params);
     }
 
     /**
@@ -1100,28 +1108,28 @@ class ODTDocument
      * @param int $level The nesting level
      */
     function listItemOpen($level, $element=NULL, $attributes=NULL) {
-        ODTList::listItemOpen($this, $level, $this->content, $element, $attributes);
+        ODTList::listItemOpen($this->params, $level, $element, $attributes);
     }
 
     /**
      * Close a list item
      */
     function listItemClose() {
-        ODTList::listItemClose($this, $this->content);
+        ODTList::listItemClose($this->params);
     }
 
     /**
      * Open list content/a paragraph in a list item
      */
     function listContentOpen($element=NULL, $attributes=NULL) {
-        ODTList::listContentOpen($this, $this->content, $element, $attributes);
+        ODTList::listContentOpen($this->params, $element, $attributes);
     }
 
     /**
      * Close list content/a paragraph in a list item
      */
     function listContentClose() {
-        ODTList::listContentClose($this, $this->content);
+        ODTList::listContentClose($this->params);
     }
 
     /**

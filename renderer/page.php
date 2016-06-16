@@ -76,6 +76,13 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         return true;
     }
 
+    public function replaceURLPrefixesCallback ($property, $value, $url) {
+        if (strncmp($url, '/lib/plugins', strlen('/lib/plugins')) == 0) {
+            return DOKU_INC.substr($url,1);
+        }
+        return $url;
+    }
+
     /**
      * Load and imports CSS.
      */
@@ -124,7 +131,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->addHTMLElement ('div', 'class="page group"');
 
         // Import CSS (new API)
-        $this->document->importCSSFromString($this->css, $this->config->getParam('media_sel'));
+        $this->document->importCSSFromString($this->css, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'));
     }
 
     /**
@@ -1645,8 +1652,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::openTextBoxUseCSS for API wrapper function
      * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
-    function _odtOpenTextBoxUseCSS ($attributes=NULL, cssimportnew $import=NULL) {
-        $this->document->openTextBoxUseCSS ($attributes, $import);
+    function _odtOpenTextBoxUseCSS ($element=NULL, $attributes=NULL, cssimportnew $import=NULL) {
+        $this->document->openTextBoxUseCSS ($element, $attributes, $import);
     }
 
     /**

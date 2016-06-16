@@ -219,7 +219,7 @@ abstract class docHandler
         }
     }
 
-    protected function importOrderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path=NULL) {
+    protected function importOrderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -283,13 +283,15 @@ abstract class docHandler
                 }
             }
             if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
+                // It is assumed that the CSS already contains absolute path values only!
+                // (see replaceURLPrefixes)
                 $file = $properties ['list-style-image'];
-                $file = substr($file, 4);
+                /*$file = substr($file, 4);
                 $file = trim($file, "()'");
                 if ($media_path [strlen($media_path)-1] != '/') {
                     $media_path .= '/';
                 }
-                $file = $media_path.$file;
+                $file = $media_path.$file;*/
                 
                 $this->setListStyleImage ($style, $level, $file);
             }
@@ -316,7 +318,7 @@ abstract class docHandler
         $htmlStack->restoreToRoot ();
     }
 
-    protected function importUnorderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path=NULL) {
+    protected function importUnorderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -381,13 +383,15 @@ abstract class docHandler
                 $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
             }
             if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
+                // It is assumed that the CSS already contains absolute path values only!
+                // (see replaceURLPrefixes)
                 $file = $properties ['list-style-image'];
-                $file = substr($file, 4);
+                /*$file = substr($file, 4);
                 $file = trim($file, "()'");
                 if ($media_path [strlen($media_path)-1] != '/') {
                     $media_path .= '/';
                 }
-                $file = $media_path.$file;
+                $file = $media_path.$file;*/
                 
                 $this->setListStyleImage ($style, $level, $file);
             }
@@ -667,7 +671,7 @@ abstract class docHandler
         }
     }
 
-    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL, $media_path) {
+    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL) {
         if ( $import != NULL ) {
             $save = $import->getMedia ();
             $import->setMedia ($media_sel);
@@ -676,7 +680,7 @@ abstract class docHandler
             $stack = clone $htmlStack;
             $stack->restoreToRoot ();
 
-            $this->import_styles_from_css_internal ($import, $stack, $units, $media_path);
+            $this->import_styles_from_css_internal ($import, $stack, $units);
 
             $import->setMedia ($save);
         }
@@ -711,7 +715,7 @@ abstract class docHandler
         }
     }
 
-    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_path) {
+    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         // Import page layout
         $name = $this->styleset->getStyleName('first page');
         $first_page = $this->styleset->getStyle($name);
@@ -754,8 +758,8 @@ abstract class docHandler
         $this->importLinkStyles($import, $htmlStack, $units);
 
         // Import list styles and list paragraph styles
-        $this->importUnorderedListStyles($import, $htmlStack, $units, $media_path);
-        $this->importOrderedListStyles($import, $htmlStack, $units, $media_path);
+        $this->importUnorderedListStyles($import, $htmlStack, $units);
+        $this->importOrderedListStyles($import, $htmlStack, $units);
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

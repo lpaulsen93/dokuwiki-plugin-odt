@@ -855,6 +855,16 @@ class css_declaration {
             break;
         }
     }
+
+    /**
+     * @param $callback
+     */
+    public function replaceURLPrefixes ($callback) {
+        if (strncmp($this->value, 'url(', 4) == 0) {
+            $url = substr($this->value, 4, -1);
+            $this->value = call_user_func($callback, $this->property, $this->value, $url);
+        }
+    }
 }
 
 /**

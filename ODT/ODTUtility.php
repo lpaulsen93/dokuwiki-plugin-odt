@@ -395,7 +395,7 @@ class ODTUtility
         $params->import->getPropertiesForElement($dest, $toMatch, $params->units);
 
         // Adjust values for ODT
-        ODTUtility::adjustValuesForODT($properties, $params->units);
+        ODTUtility::adjustValuesForODT($dest, $params->units);
     }
 
     public function closeHTMLElement (ODTInternalParams $params, $element) {

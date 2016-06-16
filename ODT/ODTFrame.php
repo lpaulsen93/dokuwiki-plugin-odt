@@ -24,26 +24,18 @@ class ODTFrame
      *
      * @param array $properties
      */
-    public static function openTextBoxUseCSS (ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL) {
-        $frame = $doc->state->getCurrentFrame();
+    public static function openTextBoxUseCSS (ODTInternalParams $params, $element=NULL, $attributes=NULL) {
+        $frame = $params->document->state->getCurrentFrame();
         if ($frame != NULL) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
             //return;
         }
 
         $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        //if ( empty($element) ) {
-        //    $element = 'div';
-        //}
-
-        //$import->getPropertiesForElement($properties, $element, $classes);
-        //foreach ($properties as $property => $value) {
-        //    $properties [$property] = $this->adjustValueForODT ($value, 14);
-        //}
-        self::openTextBoxUseProperties ($doc, $content, $properties);
+        self::openTextBoxUseProperties ($params, $properties);
     }
 
     /**
@@ -60,14 +52,18 @@ class ODTFrame
      *
      * @param array $properties
      */
-    public static function openTextBoxUseProperties (ODTDocument $doc, &$content, $properties) {
-        $frame = $doc->state->getCurrentFrame();
+    public static function openTextBoxUseProperties (ODTInternalParams $params, $properties, $element=NULL, $attributes=NULL) {
+        $frame = $params->document->state->getCurrentFrame();
         if ($frame != NULL) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
             //return;
         }
+        if ($element == NULL) {
+            $element = 'div';
+        }
+        $elementObj = $params->elementObj;
 
-        $doc->div_z_index += 5;
+        $params->document->div_z_index += 5;
 
         $valign = $properties ['vertical-align'];
         $top = $properties ['top'];
@@ -101,7 +97,7 @@ class ODTFrame
         if ( !empty ($picture) ) {
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
-            $pic_link = $doc->addFileAsPicture($picture);
+            $pic_link = $params->document->addFileAsPicture($picture);
             list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture);
         }
 
@@ -112,7 +108,7 @@ class ODTFrame
             $width = '100%';
         }
         if ( !empty($pic_positions [0]) ) {
-            $pic_positions [0] = $doc->toPoints($pic_positions [0], 'x');
+            $pic_positions [0] = $params->document->toPoints($pic_positions [0], 'x');
         }
         if ( empty($min_height) ) {
             $min_height = '1pt';
@@ -130,11 +126,11 @@ class ODTFrame
         if ( $width [strlen($width)-1] == '%' ) {
             // Convert percentage values to absolute size, respecting page margins
             $width = trim($width, '%');
-            $width_abs = $doc->getAbsWidthMindMargins($width).'cm';
+            $width_abs = $params->document->getAbsWidthMindMargins($width).'cm';
         } else {
             // Absolute values may include not supported units.
             // Adjust.
-            $width_abs = $doc->toPoints($width, 'x');
+            $width_abs = $params->document->toPoints($width, 'x');
         }
 
 
@@ -245,45 +241,51 @@ class ODTFrame
         // Add style to our document
         // (as unknown style because style-family graphic is not supported)
         $style_obj = ODTUnknownStyle::importODTStyle($style);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
 
         // Group the frame so that they are stacked one on each other.
-        $doc->paragraphClose($content);
-        $doc->paragraphOpen(NULL, $content);
-        $doc->linebreak($content);
+        $params->document->paragraphClose();
+        $params->document->paragraphOpen();
+        $params->document->linebreak();
         if ( $display == NULL ) {
-            $content .= '<draw:g draw:z-index="'.($doc->div_z_index + 0).'">';
+            $params->content .= '<draw:g draw:z-index="'.($params->document->div_z_index + 0).'">';
         } else {
-            $content .= '<draw:g draw:display="' . $display . '">';
+            $params->content .= '<draw:g draw:display="' . $display . '">';
         }
 
         // Draw a frame with the image in it, if required.
         // FIXME: delete this part if 'background-image' in graphic style is working.
         if ( $picture != NULL )
         {
-            $content .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
-                                svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
-                                svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                draw:z-index="'.($doc->div_z_index + 1).'">
-                               <draw:image xlink:href="'.$pic_link.'"
-                                xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-                                </draw:frame>';
+            $params->content .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
+                                     svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
+                                     svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
+                                     draw:z-index="'.($params->document->div_z_index + 1).'">
+                                 <draw:image xlink:href="'.$pic_link.'"
+                                     xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
+                                 </draw:frame>';
         }
 
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
+
+        if ($elementObj == NULL) {
+            $throwAway = array();
+            ODTUtility::openHTMLElement ($params, $throwAway, $element, $attributes);
+        }
 
         // Create frame
         $frame = new ODTElementFrame($style_name.'_text_frame');
         $frame_attrs .= 'draw:name="Bild1"
                          svg:x="'.$left.'" svg:y="'.$top.'"
                          svg:width="'.$width_abs.'" svg:height="'.$min_height.'"
-                         draw:z-index="'.($doc->div_z_index + 0).'">';
+                         draw:z-index="'.($params->document->div_z_index + 0).'">';
         $frame->setAttributes($frame_attrs);
-        $doc->state->enter($frame);
+        $params->document->state->enter($frame);
+        $frame->setHTMLElement ($element);
 
         // Encode frame
-        $content .= $frame->getOpeningTag();
+        $params->content .= $frame->getOpeningTag();
         
         // Create text box
         $box = new ODTElementTextBox();
@@ -292,27 +294,29 @@ class ODTFrame
         if ( !empty($radius) )
             $box_attrs .= 'draw:corner-radius="'.$radius.'"';
         $box->setAttributes($box_attrs);
-        $doc->state->enter($box);
+        $params->document->state->enter($box);
 
         // Encode box
-        $content .= $box->getOpeningTag();
+        $params->content .= $box->getOpeningTag();
     }
 
     /**
      * This function closes a textbox (previously opened with openTextBoxUseProperties()).
      */
-    function closeTextBox (ODTDocument $doc, &$content) {
+    function closeTextBox (ODTInternalParams $params) {
         // Close paragraph (if open)
-        $doc->paragraphClose($content);
+        $params->document->paragraphClose();
         // Close text box
-        $doc->closeCurrentElement($content);
+        $params->document->closeCurrentElement();
         // Close frame
-        $doc->closeCurrentElement($content);
+        $element = $params->document->state->getHTMLElement();
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+        $params->document->closeCurrentElement();
 
-        $content .= '</draw:g>';
-        $doc->paragraphClose($content);
+        $params->content .= '</draw:g>';
+        $params->document->paragraphClose();
 
-        $doc->div_z_index -= 5;
+        $params->document->div_z_index -= 5;
     }
 
     /**
@@ -324,38 +328,48 @@ class ODTFrame
      *      about supported $properties.
      * @author LarsDW223
      */
-    public static function openMultiColumnTextBoxUseProperties (ODTDocument $doc, &$content, $properties) {
+    public static function openMultiColumnTextBoxUseProperties (ODTInternalParams $params, $properties) {
+        if ($element == NULL) {
+            $element = 'div';
+        }
+
         // Create style name.
         $style_obj = ODTUnknownStyle::createMultiColumnFrameStyle ($properties);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
-        $width_abs = $doc->getAbsWidthMindMargins (100);
+        $width_abs = $params->document->getAbsWidthMindMargins (100);
 
         // Group the frame so that they are stacked one on each other.
-        $doc->paragraphClose($content);
-        $doc->paragraphOpen(NULL, $content);
+        $params->document->paragraphClose();
+        $params->document->paragraphOpen();
 
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
+
+        if ($params->elementObj == NULL) {
+            $properties = array();
+            ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        }
 
         // Create frame
         $frame = new ODTElementFrame($style_name);
         $frame_attrs = 'draw:name="Frame1" text:anchor-type="paragraph" svg:width="'.$width_abs.'cm" draw:z-index="0">';
         $frame->setAttributes($frame_attrs);
-        $doc->state->enter($frame);
+        $params->document->state->enter($frame);
+        $frame->setHTMLElement ($element);
 
         // Encode frame
-        $content .= $frame->getOpeningTag();
+        $params->content .= $frame->getOpeningTag();
         
         // Create text box
         $box = new ODTElementTextBox();
         $box_attrs = 'fo:min-height="1pt"';
         $box->setAttributes($box_attrs);
-        $doc->state->enter($box);
+        $params->document->state->enter($box);
 
         // Encode box
-        $content .= $box->getOpeningTag();
+        $params->content .= $box->getOpeningTag();
     }
 
     /**
@@ -363,16 +377,17 @@ class ODTFrame
      *
      * @author LarsDW223
      */
-    public static function closeMultiColumnTextBox (ODTDocument $doc, &$content) {
+    public static function closeMultiColumnTextBox (ODTInternalParams $params) {
         // Close paragraph (if open)
-        $doc->paragraphClose($content);
+        $params->document->paragraphClose();
         // Close text box
-        $doc->closeCurrentElement($content);
+        $params->document->closeCurrentElement();
         // Close frame
-        $doc->closeCurrentElement($content);
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+        $params->document->closeCurrentElement();
 
-        $doc->paragraphClose($content);
+        $params->document->paragraphClose();
 
-        $doc->div_z_index -= 5;
+        $params->document->div_z_index -= 5;
     }
 }

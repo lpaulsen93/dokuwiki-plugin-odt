@@ -715,6 +715,15 @@ class css_rule_new {
             $declaration->adjustLengthValues ($callback, $this);
         }
     }
+
+    /**
+     * @param $callback
+     */
+    public function replaceURLPrefixes ($callback) {
+        foreach ($this->declarations as $declaration) {
+            $declaration->replaceURLPrefixes ($callback);
+        }
+    }
 }
 
 /**
@@ -1201,6 +1210,15 @@ class cssimportnew {
     public function adjustLengthValues ($callback) {
         foreach ($this->rules as $rule) {
             $rule->adjustLengthValues ($callback);
+        }
+    }
+
+    /**
+     * @param $callback
+     */
+    public function replaceURLPrefixes ($callback) {
+        foreach ($this->rules as $rule) {
+            $rule->replaceURLPrefixes ($callback);
         }
     }
 }

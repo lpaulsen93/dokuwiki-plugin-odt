@@ -107,7 +107,7 @@ class ODTParagraph
     static public function paragraphClose(ODTInternalParams $params){
         $paragraph = $params->document->state->getCurrentParagraph();
         if ($paragraph != NULL) {
-            ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+            ODTUtility::closeHTMLElement ($params, $paragraph->getHTMLElement());
             $params->content .= $paragraph->getClosingTag();
             $params->document->state->leave();
         }

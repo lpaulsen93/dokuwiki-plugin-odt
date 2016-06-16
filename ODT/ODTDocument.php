@@ -166,14 +166,14 @@ class ODTDocument
      *
      * @param string $style_name The style to use.
      */
-    public function setCSSTemplate ($template_path, $media_sel, $mediadir) {
+    public function setCSSTemplate ($template_path, $media_sel, $mediadir, $callback=NULL) {
         // Document based on CSS template.
         $this->docHandler = new CSSTemplateDH ();
 
         // Import CSS for later use (if CSS usage is 'full')
         // MUST be called before $this->docHandler->import because it
         // stores the CSS in $this->importnew!
-        $this->importCSSCodeInternal($cssCode);
+        $this->importCSSCodeInternal($cssCode, $media_sel, $callback);
 
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
@@ -291,6 +291,12 @@ class ODTDocument
         return $value;
     }
 
+    public function replaceURLPrefixes ($callback) {
+        if ($this->importnew != NULL) {
+            $this->importnew->replaceURLPrefixes ($callback);
+        }
+    }
+
     /**
      * Import CSS code.
      * This is the CSS code import for the new API.
@@ -302,7 +308,7 @@ class ODTDocument
      *
      * @param string $cssCode The CSS code to be imported
      */
-    protected function importCSSCodeInternal ($cssCode, $mediaSel=NULL) {
+    protected function importCSSCodeInternal ($cssCode, $mediaSel=NULL, $callback=NULL) {
         if ($this->importnew == NULL) {
             $this->setupImport();
         }
@@ -312,6 +318,12 @@ class ODTDocument
         // length value imported. This gives us the chance to convert it once from
         // pixel to points.
         $this->importnew->adjustLengthValues (array($this, 'adjustLengthCallback'));
+
+        // Call replaceURLPrefixes to make the callers (renderer/page.php) callback
+        // function being called for every URL to convert it to an absolute path.
+        if ($callback != NULL) {
+            $this->importnew->replaceURLPrefixes ($callback);
+        }
     }
 
     public function enableLinks () {
@@ -892,17 +904,17 @@ class ODTDocument
      * @param string $mediaSel The media selector to use e.g. 'print'
      * @param string $mediaPath Local path to media files
      */
-    public function importCSSFromString($cssCode, $mediaSel=NULL, $mediaPath=NULL) {
+    public function importCSSFromString($cssCode, $mediaSel=NULL, $callback=NULL) {        
         // Import CSS for later use (if CSS usage is 'full')
         // MUST be called before $this->docHandler->import because it
         // stores the CSS in $this->importnew!
-        $this->importCSSCodeInternal($cssCode, $mediaSel);
+        $this->importCSSCodeInternal($cssCode, $mediaSel, $callback);
 
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
             $this->docHandler->trace_dump = '>>>';
             $this->docHandler->import_styles_from_css
-                ($this->importnew, $this->htmlStack, $this->units, $mediaSel, $mediaPath);
+                ($this->importnew, $this->htmlStack, $this->units, $mediaSel);
             $this->trace_dump .= $this->docHandler->trace_dump;
         }
 
@@ -1257,7 +1269,17 @@ class ODTDocument
      * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
     function openTextBoxUseCSS ($element=NULL, $attributes=NULL, cssimportnew $import=NULL) {
-        ODTFrame::openTextBoxUseCSS($this, $this->content, $attributes, $import);
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'div';
+        }
+
+        unset($this->params->elementObj);
+        $this->params->import = $import;
+        ODTFrame::openTextBoxUseCSS($this->params, $element, $attributes);
+        $this->params->import = $this->importnew;
     }
     
     /**
@@ -1266,7 +1288,8 @@ class ODTDocument
      * @see ODTFrame::openTextBoxUseProperties for detailed documentation
      */
     function openTextBoxUseProperties ($properties) {
-        ODTFrame::openTextBoxUseProperties($this, $this->content, $properties);
+        unset($this->params->elementObj);
+        ODTFrame::openTextBoxUseProperties($this->params, $properties);
     }
 
     /**
@@ -1275,7 +1298,10 @@ class ODTDocument
      * @see ODTFrame::closeTextBox for detailed documentation
      */
     function closeTextBox () {
-        ODTFrame::closeTextBox($this, $this->content);
+        $element = $this->state->getCurrent();
+        $element = $this->state->getSecondLast();
+        unset($this->params->elementObj);
+        ODTFrame::closeTextBox($this->params);
     }
 
     /**
@@ -1284,7 +1310,8 @@ class ODTDocument
      * @see ODTFrame::openMultiColumnTextBoxUseProperties for detailed documentation
      */
     function openMultiColumnTextBoxUseProperties ($properties) {
-        ODTFrame::openMultiColumnTextBoxUseProperties($this, $this->content, $properties);
+        unset($this->params->elementObj);
+        ODTFrame::openMultiColumnTextBoxUseProperties($this->params, $properties);
     }
 
     /**
@@ -1293,7 +1320,8 @@ class ODTDocument
      * @see ODTFrame::closeTextBox for detailed documentation
      */
     function closeMultiColumnTextBox () {
-        ODTFrame::closeMultiColumnTextBox($this, $this->content);
+        unset($this->params->elementObj);
+        ODTFrame::closeMultiColumnTextBox($this->params);
     }
 
     /**

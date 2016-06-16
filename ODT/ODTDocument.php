@@ -695,7 +695,7 @@ class ODTDocument
      * @param int    $pos   byte position in the original source
      */
     function heading($text, $level, $element=NULL, $attributes=NULL){
-        ODTHeading::heading($this, $text, $level, $this->content, $element, $attributes);
+        ODTHeading::heading($this->params, $text, $level, $element, $attributes);
     }
 
     /**
@@ -867,7 +867,7 @@ class ODTDocument
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
         ODTUtility::deleteUselessElements($this->content, $this->preventDeletetionStyles);
 
-        $this->trace_dump .= $this->htmlStack->getDump();
+        //$this->trace_dump .= $this->htmlStack->getDump();
 
         if (!empty($this->trace_dump)) {
             $this->paragraphOpen();
@@ -912,10 +912,10 @@ class ODTDocument
 
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
-            $this->docHandler->trace_dump = '>>>';
+            //$this->docHandler->trace_dump = '>>>';
             $this->docHandler->import_styles_from_css
                 ($this->importnew, $this->htmlStack, $this->units, $mediaSel);
-            $this->trace_dump .= $this->docHandler->trace_dump;
+            //$this->trace_dump .= $this->docHandler->trace_dump;
         }
 
         //$this->trace_dump .= $this->importnew->rulesToString();

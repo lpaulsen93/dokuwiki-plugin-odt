@@ -17,46 +17,46 @@ class ODTHeading
      * @param int    $level header level
      * @param int    $pos   byte position in the original source
      */
-    static public function heading(ODTDocument $doc, $text, $level, &$content, $element=NULL, $attributes=NULL){
+    static public function heading(ODTInternalParams $params, $text, $level, $element=NULL, $attributes=NULL){
         // Close any open paragraph first
-        $doc->paragraphClose($content);
+        $params->document->paragraphClose();
 
-        $hid = self::headerToLink($doc, $text, true);
-        $TOCRef = $doc->buildTOCReferenceID($text);
-        $style = $doc->getStyleName('heading'.$level);
+        $hid = self::headerToLink($params->document, $text, true);
+        $TOCRef = $params->document->buildTOCReferenceID($text);
+        $style = $params->document->getStyleName('heading'.$level);
 
         // Change page format if pending
-        if ( $doc->pageFormatChangeIsPending() ) {
-            $pageStyle = $doc->doPageFormatChange($style);
+        if ( $params->document->pageFormatChangeIsPending() ) {
+            $pageStyle = $params->document->doPageFormatChange($style);
             if ( $pageStyle != NULL ) {
                 $style = $pageStyle;
 
                 // Delete pagebreak, the format change will also introduce a pagebreak.
-                $doc->setPagebreakPending(false);
+                $params->document->setPagebreakPending(false);
             }
         }
 
         // Insert pagebreak if pending
-        if ( $doc->pagebreakIsPending() ) {
-            $style = $doc->createPagebreakStyle ($style);
-            $doc->setPagebreakPending(false);
+        if ( $params->document->pagebreakIsPending() ) {
+            $style = $params->document->createPagebreakStyle ($style);
+            $params->document->setPagebreakPending(false);
         }
-        $content .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
+        $params->content .= '<text:h text:style-name="'.$style.'" text:outline-level="'.$level.'">';
 
         // Insert page bookmark if requested and not done yet.
-        $doc->insertPendingPageBookmark($content);
+        $params->document->insertPendingPageBookmark();
 
-        $content .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
-        $content .= '<text:bookmark-start text:name="'.$hid.'"/>';
-        $content .= $doc->replaceXMLEntities($text);
-        $content .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
-        $content .= '<text:bookmark-end text:name="'.$hid.'"/>';
-        $content .= '</text:h>';
+        $params->content .= '<text:bookmark-start text:name="'.$TOCRef.'"/>';
+        $params->content .= '<text:bookmark-start text:name="'.$hid.'"/>';
+        $params->content .= $params->document->replaceXMLEntities($text);
+        $params->content .= '<text:bookmark-end text:name="'.$TOCRef.'"/>';
+        $params->content .= '<text:bookmark-end text:name="'.$hid.'"/>';
+        $params->content .= '</text:h>';
 
         // Do not add headings in frames
-        $frame = $doc->state->getCurrentFrame();
+        $frame = $params->document->state->getCurrentFrame();
         if ($frame == NULL) {
-            $doc->tocAddItemInternal($TOCRef, $hid, $text, $level);
+            $params->document->tocAddItemInternal($TOCRef, $hid, $text, $level);
         }
     }
 

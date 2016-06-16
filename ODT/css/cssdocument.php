@@ -144,7 +144,7 @@ class cssdocument {
 
     public function saveRootIndex () {
         $this->rootIndex = $this->getIndexLastOpened ();
-        $this->rootLevel = $this->level;
+        $this->rootLevel = $this->level-1;
     }
 
     public function restoreToRoot () {
@@ -152,7 +152,7 @@ class cssdocument {
             $this->entries [$index] = NULL;
         }
         $this->size = $this->rootIndex + 1;
-        $this->level = $this->rootLevel;
+        $this->level = $this->rootLevel + 1;
     }
 
     public function open ($element, $attributes=NULL, $pseudo_classes=NULL, $pseudo_elements=NULL) {
@@ -183,6 +183,12 @@ class cssdocument {
         $this->entries [$this->size]['state'] = 'close';
         $this->entries [$this->size]['element'] = $element;
         $this->size++;
+
+        // If the just closed element is a child of root
+        // then delete all elements up to the root index to save memory.
+        if ($this->entries [$this->size-1]['level'] == $this->rootLevel+1) {
+            $this->restoreToRoot();
+        }
     }
 
     public function getCurrentElement() {
@@ -253,11 +259,17 @@ class cssdocument {
     
     public function getDump () {
         $dump = '';
+        $dump .= 'RootLevel: '.$this->rootLevel.', RootIndex: '.$this->rootIndex."\n";
         for ($index = 0 ; $index < $this->size ; $index++) {
             $element = $this->entries [$index];
             $dump .= str_repeat(' ', $element ['level'] * 2);
-            $dump .= $element ['element'];
-            $dump .= ' ['.$element ['attributes'].']';
+            if ($this->entries [$index]['state'] == 'open') {
+                $dump .= '<'.$element ['element'];
+                $dump .= ' '.$element ['attributes'].'>';
+            } else {
+                $dump .= '</'.$element ['element'].'>';
+            }
+            $dump .= ' (Level: '.$element ['level'].')';
             $dump .= "\n";
         }
         return $dump;

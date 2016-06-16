@@ -387,4 +387,18 @@ class ODTUtility
             }
         }
     }
+
+    public function openHTMLElement (ODTInternalParams $params, array &$dest, $element, $attributes) {
+        // Push/create our element to import on the stack
+        $params->htmlStack->open($element, $attributes);
+        $toMatch = $params->htmlStack->getCurrentElement();
+        $params->import->getPropertiesForElement($dest, $toMatch, $params->units);
+
+        // Adjust values for ODT
+        ODTUtility::adjustValuesForODT($properties, $params->units);
+    }
+
+    public function closeHTMLElement (ODTInternalParams $params, $element) {
+        $params->htmlStack->close($element);
+    }
 }

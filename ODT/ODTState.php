@@ -268,4 +268,13 @@ class ODTState
     public function setDocument($doc) {
         $this->document = $doc;
     }
+
+    public function getHTMLElement() {
+        // Ask the current element
+        if ($this->size > 0) {
+            return $this->stack [$this->size-1]->getHTMLElement();
+        } else {
+            return NULL;
+        }
+    }
 }

@@ -15,10 +15,19 @@ class ODTSpan
      *
      * @param string $styleName The style to use.
      */
-    public static function spanOpen(ODTDocument $doc, &$content, $styleName, $element=NULL, $attributes=NULL){
+    public static function spanOpen(ODTInternalParams $params, $styleName, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'span';
+        }
+        if ($params->elementObj == NULL) {
+            $properties = array();
+            ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        }
+
         $span = new ODTElementSpan ($styleName);
-        $doc->state->enter($span);
-        $content .= $span->getOpeningTag();
+        $params->document->state->enter($span);
+        $params->content .= $span->getOpeningTag();
+        $span->setHTMLElement ($element);
     }
 
     /**
@@ -40,16 +49,12 @@ class ODTSpan
      * @param $baseURL
      * @param $element
      */
-    public static function spanOpenUseCSS(ODTDocument $doc, &$content, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+    public static function spanOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
         $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        //if ( empty($element) ) {
-        //    $element = 'span';
-        //}
-        //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
-        self::spanOpenUseProperties($doc, $content, $properties);
+        self::spanOpenUseProperties($params, $properties);
     }
 
     /**
@@ -67,7 +72,7 @@ class ODTSpan
      *
      * @param array $properties
      */
-    public static function spanOpenUseProperties(ODTDocument $doc, &$content, $properties){
+    public static function spanOpenUseProperties(ODTInternalParams $params, $properties){
         $disabled = array ();
 
         $odt_bg = $properties ['background-color'];
@@ -79,23 +84,23 @@ class ODTSpan
 
             // Define graphic style for picture
             $style_name = ODTStyle::getNewStylename('span_graphic');
-            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$doc->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+            $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$params->document->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$odt_bg.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
 
             // Add style and image to our document
             // (as unknown style because style-family graphic is not supported)
             $style_obj = ODTUnknownStyle::importODTStyle($image_style);
-            $doc->addAutomaticStyle($style_obj);
-            ODTImage::addImage ($doc, $content, $picture,NULL,NULL,NULL,NULL,$style_name);
+            $params->document->addAutomaticStyle($style_obj);
+            ODTImage::addImage ($params->document, $params->content, $picture, NULL, NULL, NULL, NULL, $style_name);
         }
 
         // Create a text style for our span
         $disabled ['background-image'] = 1;
         $style_obj = ODTTextStyle::createTextStyle ($properties, $disabled);
-        $doc->addAutomaticStyle($style_obj);
+        $params->document->addAutomaticStyle($style_obj);
         $style_name = $style_obj->getProperty('style-name');
 
         // Open span
-        self::spanOpen($doc, $content, $style_name);
+        self::spanOpen($params, $style_name);
     }
 
     /**
@@ -103,7 +108,8 @@ class ODTSpan
      *
      * @param string $style_name The style to use.
      */    
-    public static function spanClose(ODTDocument $doc, &$content) {
-        $doc->closeCurrentElement($content);
+    public static function spanClose(ODTInternalParams $params) {
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+        $params->document->closeCurrentElement($params->content);
     }
 }

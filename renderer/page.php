@@ -1589,8 +1589,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTSpan::spanOpenUseCSS for detailed documentation
      * @author LarsDW223
      */
-    function _odtSpanOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->spanOpenUseCSS($attributes, $import);
+    function _odtSpanOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        $this->document->spanOpenUseCSS($element, $attributes, $import);
     }
 
     /**

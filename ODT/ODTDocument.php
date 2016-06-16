@@ -19,6 +19,18 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
 require_once DOKU_PLUGIN . 'odt/ODT/css/cssimportnew.php';
 
+// Siple class as storage for internal parameters passed to other
+// classes to prevent to long parameter lines.
+class ODTInternalParams
+{
+    public $document = NULL;
+    public $htmlStack = NULL;
+    public $import = NULL;
+    public $units = NULL;
+    public $content = NULL;
+    public $elementObj = NULL;
+}
+
 /**
  * Main class/API for creating an ODTDocument.
  * 
@@ -90,6 +102,7 @@ class ODTDocument
     /** @var cssdocument */
     protected $htmlStack = null;
     protected $CSSUsage = 'off';
+    protected $params = NULL;
 
     /**
      * Constructor:
@@ -118,6 +131,8 @@ class ODTDocument
 
         // Setup meta data store/handler
         $this->meta = new ODTMeta();
+        
+        $this->params = new ODTInternalParams();
     }
 
     /**
@@ -125,6 +140,11 @@ class ODTDocument
      */
     public function initialize () {
         $this->state->setDocument($this);
+
+        $this->params->document  = $this;
+        $this->params->htmlStack = $this->htmlStack;
+        $this->params->units     = $this->units;
+        $this->params->content   = &$this->content;
     }
 
     /**
@@ -178,6 +198,17 @@ class ODTDocument
         }
     }
 
+    protected function setupImport() {
+        if ($this->importnew == NULL) {
+            // No CSS imported yet. Create object.
+            $this->importnew = new cssimportnew();
+            if ($this->importnew == NULL) {
+                return;
+            }
+        }
+        $this->params->import = $this->importnew;
+    }
+
     /**
      * Set commom CSS media selector.
      *
@@ -185,11 +216,7 @@ class ODTDocument
      */
     public function setMediaSelector ($mediaSel) {
         if ($this->importnew == NULL) {
-            // No CSS imported yet. Create object.
-            $this->importnew = new cssimportnew();
-            if ($this->importnew == NULL) {
-                return;
-            }
+            $this->setupImport();
         }
         $this->importnew->setMedia ($mediaSel);
     }
@@ -277,11 +304,7 @@ class ODTDocument
      */
     protected function importCSSCodeInternal ($cssCode, $mediaSel=NULL) {
         if ($this->importnew == NULL) {
-            // No CSS imported yet. Create object.
-            $this->importnew = new cssimportnew();
-            if ($this->importnew == NULL) {
-                return;
-            }
+            $this->setupImport();
         }
         $this->importnew->importFromString($cssCode);
 
@@ -338,7 +361,8 @@ class ODTDocument
      * @param string $styleName The style to use.
      */
     function spanOpen($styleName, $element=NULL, $attributes=NULL){
-        ODTSpan::spanOpen($this, $this->content, $styleName, $element, $attributes);
+        unset($this->params->elementObj);
+        ODTSpan::spanOpen($this->params, $styleName, $element, $attributes);
     }
 
     /**
@@ -347,7 +371,16 @@ class ODTDocument
      * @see ODTSpan::spanOpenUseCSS for detailed documentation
      */
     function spanOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        ODTSpan::spanOpenUseCSS($this, $this->content, $element, $attributes, $import);
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'span';
+        }
+        unset($this->params->elementObj);
+        $this->params->import = $import;
+        ODTSpan::spanOpenUseCSS($this->params, $element, $attributes);
+        $this->params->import = $this->importnew;
     }
 
     /**
@@ -356,7 +389,9 @@ class ODTDocument
      * @see ODTSpan::spanOpenUseProperties for detailed documentation
      */
     function spanOpenUseProperties($properties){
-        ODTSpan::spanOpenUseProperties($this, $this->content, $properties);
+        ODTUtility::adjustValuesForODT($properties, $this->units);
+        unset($this->params->elementObj);
+        ODTSpan::spanOpenUseProperties($this->params, $properties);
     }
 
     /**
@@ -365,7 +400,8 @@ class ODTDocument
      * @param string $style_name The style to use.
      */    
     function spanClose() {
-        ODTSpan::spanClose($this, $this->content);
+        unset($this->params->elementObj);
+        ODTSpan::spanClose($this->params);
     }
 
     /**
@@ -805,6 +841,8 @@ class ODTDocument
 
         // Delete paragraphs which only contain whitespace (but keep pagebreaks!)
         ODTUtility::deleteUselessElements($this->content, $this->preventDeletetionStyles);
+
+        $this->trace_dump .= $this->htmlStack->getDump();
 
         if (!empty($this->trace_dump)) {
             $this->paragraphOpen();

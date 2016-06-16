@@ -388,7 +388,7 @@ class ODTUtility
         }
     }
 
-    public function openHTMLElement (ODTInternalParams $params, array &$dest, $element, $attributes) {
+    public static function openHTMLElement (ODTInternalParams $params, array &$dest, $element, $attributes) {
         // Push/create our element to import on the stack
         $params->htmlStack->open($element, $attributes);
         $toMatch = $params->htmlStack->getCurrentElement();
@@ -398,7 +398,7 @@ class ODTUtility
         ODTUtility::adjustValuesForODT($dest, $params->units);
     }
 
-    public function closeHTMLElement (ODTInternalParams $params, $element) {
+    public static function closeHTMLElement (ODTInternalParams $params, $element) {
         $params->htmlStack->close($element);
     }
 }

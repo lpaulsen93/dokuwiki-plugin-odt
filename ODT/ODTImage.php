@@ -19,14 +19,14 @@ class ODTImage
      * @param  $style
      * @param  $returnonly
      */
-    public static function addImage(ODTDocument $doc, &$content, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
+    public static function addImage(ODTInternalParams $params, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         static $z = 0;
 
         $encoded = '';
         if (file_exists($src)) {
             list($ext,$mime) = mimetype($src);
             $name = 'Pictures/'.md5($src).'.'.$ext;
-            $doc->addFile($name, $mime, io_readfile($src,false));
+            $params->document->addFile($name, $mime, io_readfile($src,false));
         } else {
             $name = $src;
         }
@@ -35,8 +35,8 @@ class ODTImage
             list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height);
         } else {
             // Adjust values for ODT
-            $width = $doc->toPoints($width, 'x');
-            $height = $doc->toPoints($height, 'y');
+            $width = $params->document->toPoints($width, 'x');
+            $height = $params->document->toPoints($height, 'y');
         }
 
         if($align){
@@ -45,27 +45,27 @@ class ODTImage
             $anchor = 'as-char';
         }
 
-        if (empty($style) || !$doc->styleExists($style)) {
+        if (empty($style) || !$params->document->styleExists($style)) {
             if (!empty($align)) {
-                $style = $doc->getStyleName('media '.$align);
+                $style = $params->document->getStyleName('media '.$align);
             } else {
-                $style = $doc->getStyleName('media');
+                $style = $params->document->getStyleName('media');
             }
         }
 
         // Open paragraph if necessary
-        if (!$doc->state->getInParagraph()) {
-            $doc->paragraphOpen(NULL, $content);
+        if (!$params->document->state->getInParagraph()) {
+            $params->document->paragraphOpen();
         }
 
         if ($title) {
-            $encoded .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$doc->replaceXMLEntities($title).' Legend"
+            $encoded .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$params->document->replaceXMLEntities($title).' Legend"
                             text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
             $encoded .= '<draw:text-box>';
-            $encoded .= '<text:p text:style-name="'.$doc->getStyleName('legend center').'">';
+            $encoded .= '<text:p text:style-name="'.$params->document->getStyleName('legend center').'">';
         }
         if (!empty($title)) {
-            $encoded .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$doc->replaceXMLEntities($title).'"
+            $encoded .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$params->document->replaceXMLEntities($title).'"
                             text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
                             svg:width="'.$width.'" svg:height="'.$height.'" >';
         } else {
@@ -73,17 +73,17 @@ class ODTImage
                             text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
                             svg:width="'.$width.'" svg:height="'.$height.'" >';
         }
-        $encoded .= '<draw:image xlink:href="'.$doc->replaceXMLEntities($name).'"
+        $encoded .= '<draw:image xlink:href="'.$params->document->replaceXMLEntities($name).'"
                         xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
         $encoded .= '</draw:frame>';
         if ($title) {
-            $encoded .= $doc->replaceXMLEntities($title).'</text:p></draw:text-box></draw:frame>';
+            $encoded .= $params->document->replaceXMLEntities($title).'</text:p></draw:text-box></draw:frame>';
         }
 
         if($returnonly) {
             return $encoded;
         } else {
-            $content .= $encoded;
+            $params->content .= $encoded;
         }
 
         $z++;
@@ -124,10 +124,10 @@ class ODTImage
      * @param  $title
      * @param  $style
      */
-    function addStringAsSVGImage(ODTDocument $doc, &$content, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
+    function addStringAsSVGImage(ODTInternalParams $params, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
         if ( empty($string) ) { return; }
 
-        $name = self::addStringAsSVGImageFile($doc, $string);
+        $name = self::addStringAsSVGImageFile($params->document, $string);
 
         // make sure width and height are available
         if (!$width || !$height) {
@@ -140,31 +140,31 @@ class ODTImage
             $anchor = 'as-char';
         }
 
-        if (!$style or !$doc->styleExists($style)) {
-            $style = $doc->getStyleName('media '.$align);
+        if (!$style or !$params->document->styleExists($style)) {
+            $style = $params->document->getStyleName('media '.$align);
         }
 
         // Open paragraph if necessary
-        if (!$doc->state->getInParagraph()) {
-            $doc->paragraphOpen(NULL, $content);
+        if (!$params->document->state->getInParagraph()) {
+            $params->document->paragraphOpen();
         }
 
         if ($title) {
-            $content .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$doc->replaceXMLEntities($title).' Legend"
-                            text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
-            $content .= '<draw:text-box>';
-            $doc->paragraphOpen($doc->getStyleName('legend center'));
+            $params->content .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$params->document->replaceXMLEntities($title).' Legend"
+                                 text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
+            $params->content .= '<draw:text-box>';
+            $params->document->paragraphOpen($$params->document->getStyleName('legend center'));
         }
-        $content .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$doc->replaceXMLEntities($title).'"
-                        text:anchor-type="'.$anchor.'" draw:z-index="0"
-                        svg:width="'.$width.'" svg:height="'.$height.'" >';
-        $content .= '<draw:image xlink:href="'.$doc->replaceXMLEntities($name).'"
-                        xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
-        $content .= '</draw:frame>';
+        $params->content .= '<draw:frame draw:style-name="'.$style.'" draw:name="'.$params->document->replaceXMLEntities($title).'"
+                             text:anchor-type="'.$anchor.'" draw:z-index="0"
+                             svg:width="'.$width.'" svg:height="'.$height.'" >';
+        $params->content .= '<draw:image xlink:href="'.$params->document->replaceXMLEntities($name).'"
+                             xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
+        $params->content .= '</draw:frame>';
         if ($title) {
-            $content .= $doc->replaceXMLEntities($title);
-            $doc->paragraphClose($content);
-            $content .= '</draw:text-box></draw:frame>';
+            $params->content .= $params->document->replaceXMLEntities($title);
+            $params->document->paragraphClose();
+            $params->content .= '</draw:text-box></draw:frame>';
         }
     }
 }

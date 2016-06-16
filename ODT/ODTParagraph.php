@@ -188,7 +188,7 @@ class ODTParagraph
             // (as unknown style because style-family graphic is not supported)
             $style_obj = ODTUnknownStyle::importODTStyle($image_style);
             $params->document->addAutomaticStyle($style_obj);
-            ODTImage::addImage ($params->document, $params->content, $picture, NULL, NULL, NULL, NULL, $style_name);
+            ODTImage::addImage ($params, $picture, NULL, NULL, NULL, NULL, $style_name);
         }
 
         // Create the style for the paragraph.

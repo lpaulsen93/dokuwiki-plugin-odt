@@ -1502,9 +1502,9 @@ class ODTDocument
      */
     public function addImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         if ($returnonly) {
-            return ODTImage::addImage($this, $this->content, $src, $width, $height, $align, $title, $style, $returnonly);
+            return ODTImage::addImage($this->params, $src, $width, $height, $align, $title, $style, $returnonly);
         } else {
-            ODTImage::addImage($this, $this->content, $src, $width, $height, $align, $title, $style, $returnonly);
+            ODTImage::addImage($this->params, $src, $width, $height, $align, $title, $style, $returnonly);
         }
     }
 
@@ -1524,7 +1524,7 @@ class ODTDocument
      * @see ODTImage::addStringAsSVGImage for a detailed description
      */
     public function addStringAsSVGImage($string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
-        return ODTImage::addStringAsSVGImage($this, $this->content, $string, $width, $height, $align, $title, $style);
+        return ODTImage::addStringAsSVGImage($this->params, $string, $width, $height, $align, $title, $style);
     }
 
     /**

@@ -75,7 +75,7 @@ class plugin_odt_renderer_start_test extends DokuWikiTest {
 
         // If there is a paragraph, it should start behind the heading
         if ( $paragraph !== NULL ) {
-            $this->assertFalse($paragraph_end >= $heading_end, "First paragraph not found!");
+            $this->assertFalse($paragraph_end >= $heading_end, "Paragraph before heading found!");
         }
     }
 

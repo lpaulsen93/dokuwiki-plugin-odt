@@ -86,7 +86,11 @@ class ODTElementTableColumn extends ODTStateElement
         $table_column_styles = $table->getTableColumnStyles();
         $auto_columns = $table->getTableAutoColumns();
         $max_columns = $table->getTableMaxColumns();
+        $row_count = $table->getRowCount();
         $curr_column = $table->getTableCurrentColumn();
+        if ($row_count > 0) {
+            $curr_column--;
+        }
 
         // Set our column number.
         $this->columnNumber = $curr_column;
@@ -100,12 +104,16 @@ class ODTElementTableColumn extends ODTStateElement
         }
         $this->setStyleName ($style_name);
 
-        $curr_column++;
-        $table->setTableCurrentColumn($curr_column);
+        if ($row_count == 0) {
+            // Only count columns here if not already a row has been opened.
+            // Otherwise counting will be done in ODTElementTableCell!
+            $curr_column++;
+            $table->setTableCurrentColumn($curr_column);
 
-        // Eventually increase max columns if out range
-        if ( $curr_column > $max_columns ) {
-            $table->setTableMaxColumns($max_columns + 1);
+            // Eventually increase max columns if out range
+            if ( $curr_column > $max_columns ) {
+                $table->setTableMaxColumns($max_columns + 1);
+            }
         }
     }
 

@@ -17,6 +17,7 @@ class ODTElementTable extends ODTStateElement
     protected $table_autocols = false;
     protected $table_maxcols = 0;
     protected $table_curr_column = 0;
+    protected $table_row_count = 0;
 
     // Flag indicating that a table was created inside of a list
     protected $list_interrupted = false;
@@ -98,6 +99,8 @@ class ODTElementTable extends ODTStateElement
             }
             $content =
                 str_replace ('<ColumnsPlaceholder'.$count.'>', $column_defs, $content);
+            $content =
+                str_replace ('<MaxColsPlaceholder'.$count.'>', $max, $content);
         }
 
         return '</table:table>';
@@ -243,5 +246,18 @@ class ODTElementTable extends ODTStateElement
      */
     public function getListInterrupted() {
         return $this->list_interrupted;
+    }
+
+    /**
+     * Increae the number of rows
+     * 
+     * @param boolean $value
+     */
+    public function increaseRowCount() {
+        $this->table_row_count++;
+    }
+
+    public function getRowCount() {
+        return $this->table_row_count;
     }
 }

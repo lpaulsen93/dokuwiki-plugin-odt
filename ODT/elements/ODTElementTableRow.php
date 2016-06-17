@@ -85,6 +85,7 @@ class ODTElementTableRow extends ODTStateElement
         }
 
         // A new row, we are back in the first column again.
+        $table->increaseRowCount();
         $table->setTableCurrentColumn(0);
     }
 

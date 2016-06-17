@@ -545,6 +545,10 @@ class ODTTable
         } else {
             self::tableCellOpen($params, $colspan, $rowspan, NULL, $style_name, $style_name_paragraph);
         }
+
+        // There might be properties in the table header cell/normal cell which in ODT belong to the
+        // column, e.g. 'width'. So eventually adjust column style.
+        self::adjustColumnStyle($params, $properties);
     }
 
     /**
@@ -589,6 +593,29 @@ class ODTTable
         $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $sum.'pt');
+        }
+    }
+
+    static protected function adjustColumnStyle(ODTInternalParams $params, array $properties) {
+        if (!empty($properties ['width'])) {
+            $table = $params->document->state->getCurrentTable();
+            if ($table == NULL) {
+                // ??? Error. Not table found.
+                return;
+            }
+            $curr_column = $table->getTableCurrentColumn();
+            $table_column_styles = $table->getTableColumnStyles();
+            $style_name = $table_column_styles [$curr_column-1];
+            $style_obj = $params->document->getStyle($style_name);
+
+            if ($style_obj != NULL) {
+                $width = $properties ['width'];
+                $length = strlen ($width);
+                $width = $params->document->toPoints($width, 'x');
+                $style_obj->setProperty('column-width', $width);
+            } else {
+                self::tableAddColumnUseProperties ($params, $properties);
+            }
         }
     }
 }

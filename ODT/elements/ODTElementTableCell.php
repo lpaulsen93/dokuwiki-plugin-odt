@@ -91,6 +91,16 @@ class ODTElementTableCell extends ODTStateElement
             $previous = $previous->getParent();
         }
         $this->setParent($previous);
+
+        $curr_column = $previous->getTableCurrentColumn();
+        $curr_column++;
+        $previous->setTableCurrentColumn($curr_column);
+
+        // Eventually increase max columns if out range
+        $max_columns = $previous->getTableMaxColumns();
+        if ( $curr_column > $max_columns ) {
+            $previous->setTableMaxColumns($max_columns + 1);
+        }
     }
 
     /**

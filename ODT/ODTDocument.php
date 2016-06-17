@@ -1214,6 +1214,13 @@ class ODTDocument
      * Open a table using CSS
      */
     function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'table';
+        }
+
         unset($this->params->elementObj);
         $this->params->import = $import;
         ODTTable::tableOpenUseCSS($this->params, $maxcols, $numrows, $element, $attributes);
@@ -1240,6 +1247,13 @@ class ODTDocument
      * Open a table header using CSS
      */
     function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'th';
+        }
+
         unset($this->params->elementObj);
         $this->params->import = $import;
         ODTTable::tableHeaderOpenUseCSS($this->params, $colspan, $rowspan, $element, $attributes);
@@ -1258,6 +1272,13 @@ class ODTDocument
      * Open a table row using CSS
      */
     function tableRowOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'tr';
+        }
+
         unset($this->params->elementObj);
         $this->params->import = $import;
         ODTTable::tableRowOpenUseCSS($this->params, $element, $attributes);
@@ -1275,7 +1296,14 @@ class ODTDocument
     /**
      * Open a table cell using CSS
      */
-    function tableCellOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
+    function tableCellOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        if ($import == NULL) {
+            $import = $this->importnew;
+        }
+        if ($element == NULL) {
+            $element = 'td';
+        }
+
         unset($this->params->elementObj);
         $this->params->import = $import;
         ODTTable::tableCellOpenUseCSS($this->params, $element, $attributes, $colspan, $rowspan);

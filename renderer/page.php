@@ -1693,8 +1693,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::tableOpenUseCSS for API wrapper function
      * @see ODTTable::tableOpenUseCSS for detailed documentation
      */
-    function _odtTableOpenUseCSS($maxcols = NULL, $numrows = NULL, $attributes = NULL, cssimportnew $import = NULL){
-        $this->document->tableOpenUseCSS($maxcols, $numrows, $attributes, $import);
+    function _odtTableOpenUseCSS($maxcols = NULL, $numrows = NULL, $element=NULL, $attributes = NULL, cssimportnew $import = NULL){
+        $this->document->tableOpenUseCSS($maxcols, $numrows, $element, $attributes, $import);
     }
 
     /**
@@ -1738,8 +1738,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::tableHeaderOpenUseCSS for API wrapper function
      * @see ODTTable::tableHeaderOpenUseCSS for detailed documentation
      */
-    function _odtTableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $attributes=NULL, cssimportnew $import=NULL){
-        $this->document->tableHeaderOpenUseCSS($colspan, $rowspan, $attributes, $import);
+    function _odtTableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        $this->document->tableHeaderOpenUseCSS($colspan, $rowspan, $element, $attributes, $import);
     }
 
     /**
@@ -1762,8 +1762,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::tableRowOpenUseCSS for API wrapper function
      * @see ODTTable::tableRowOpenUseCSS for detailed documentation
      */
-    function _odtTableRowOpenUseCSS($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->tableRowOpenUseCSS($attributes, $import);
+    function _odtTableRowOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        $this->document->tableRowOpenUseCSS($element, $attributes, $import);
     }
 
     /**
@@ -1786,8 +1786,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::tableCellOpenUseCSS for API wrapper function
      * @see ODTTable::tableCellOpenUseCSS for detailed documentation
      */
-    function _odtTableCellOpenUseCSS($attributes=NULL, cssimportnew $import=NULL, $colspan = 1, $rowspan = 1){
-        $this->document->tableCellOpenUseCSS($attributes, $import);
+    function _odtTableCellOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        $this->document->tableCellOpenUseCSS($colspan, $rowspan, $element, $attributes, $import);
     }
 
     /**

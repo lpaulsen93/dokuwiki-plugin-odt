@@ -1575,8 +1575,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::getImageSize for API wrapper function
      * @see ODTUtility::getImageSize for a detailed description
      */
-    public static function _odtGetImageSize($src, $maxwidth=NULL, $maxheight=NULL){
-        $this->document->getImageSize($src, $maxwidth, $maxheight);
+    public function _odtGetImageSize($src, $maxwidth=NULL, $maxheight=NULL){
+        return $this->document->getImageSize($src, $maxwidth, $maxheight);
     }
 
     /**

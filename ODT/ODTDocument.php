@@ -1536,7 +1536,7 @@ class ODTDocument
      * 
      * @see ODTUtility::getImageSize for a detailed description
      */
-    public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
+    public function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
         return ODTUtility::getImageSize($src, $maxwidth, $maxheight);
     }
 

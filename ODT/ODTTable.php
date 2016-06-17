@@ -18,6 +18,11 @@ class ODTTable
      * @param int $numrows NOT IMPLEMENTED
      */
     public static function tableOpen(ODTInternalParams $params, $maxcols = NULL, $numrows = NULL, $tableStyleName=NULL, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'table';
+        }
+        $elementObj = $params->elementObj;
+
         // Close any open paragraph.
         $params->document->paragraphClose();
         
@@ -99,6 +104,11 @@ class ODTTable
             $interrupted = true;
         }
 
+        if ($elementObj == NULL) {
+            $properties = array();
+            ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        }
+
         $table = new ODTElementTable($tableStyleName, $maxcols, $numrows);
         $params->document->state->enter($table);
         if ($interrupted == true) {
@@ -112,6 +122,7 @@ class ODTTable
             //  So we use the table state to save the style name!)
             $table->setTemp($lists);
         }
+        $table->setHTMLElement ($element);
         
         $params->content .= $table->getOpeningTag();
     }
@@ -136,6 +147,7 @@ class ODTTable
         self::replaceTableWidth ($params, $table);
 
         // Close the table.
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->content .= $table->getClosingTag($params->content);
         $params->document->state->leave();
 
@@ -188,15 +200,26 @@ class ODTTable
      * Open a table row
      */
     public static function tableRowOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'tr';
+        }
+
+        if ($params->elementObj == NULL) {
+            $properties = array();
+            ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        }
+
         $row = new ODTElementTableRow($styleName);
         $params->document->state->enter($row);
         $params->content .= $row->getOpeningTag();
+        $row->setHTMLElement ($element);
     }
 
     /**
      * Close a table row
      */
     public static function tableRowClose(ODTInternalParams $params){
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->document->closeCurrentElement();
     }
 
@@ -208,6 +231,9 @@ class ODTTable
      * @param string $align left|center|right
      */
     public static function tableHeaderOpen(ODTInternalParams $params, $colspan = 1, $rowspan = 1, $align = "left", $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'th';
+        }
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
             $cellStyle = $params->document->getStyleName('table header');
@@ -216,12 +242,18 @@ class ODTTable
             $paragraphStyle = $params->document->getStyleName('table heading');
         }
 
+        if ($params->elementObj == NULL) {
+            $properties = array();
+            ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        }
+
         // ODT has no element for the table header.
         // We mark the state with a differnt class to be able
         // to differ between a normal cell and a header cell.
         $header_cell = new ODTElementTableHeaderCell
             ($cellStyle, $colspan, $rowspan);
         $params->document->state->enter($header_cell);
+        $header_cell->setHTMLElement ($element);
 
         // Encode table (header) cell.
         $params->content .= $header_cell->getOpeningTag();
@@ -235,6 +267,8 @@ class ODTTable
      */
     public static function tableHeaderClose(ODTInternalParams $params){
         $params->document->paragraphClose();
+
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->document->closeCurrentElement();
     }
 
@@ -246,6 +280,10 @@ class ODTTable
      * @param string $align left|center|right
      */
     public static function tableCellOpen(ODTInternalParams $params, $colspan = 1, $rowspan = 1, $align = "left", $cellStyle=NULL, $paragraphStyle=NULL, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'td';
+        }
+
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
             $cellStyle = $params->document->getStyleName('table cell');
@@ -256,9 +294,15 @@ class ODTTable
             $paragraphStyle = $params->document->getStyleName('tablealign '.$align);
         }
 
+        if ($params->elementObj == NULL) {
+            $properties = array();
+            ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        }
+
         $cell = new ODTElementTableCell
             ($cellStyle, $colspan, $rowspan);
         $params->document->state->enter($cell);
+        $cell->setHTMLElement ($element);
 
         // Encode table cell.
         $params->content .= $cell->getOpeningTag();
@@ -272,6 +316,8 @@ class ODTTable
      */
     public static function tableCellClose(ODTInternalParams $params){
         $params->document->paragraphClose();
+
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->document->closeCurrentElement();
     }
 
@@ -294,14 +340,14 @@ class ODTTable
      * @param null $numrows
      */
     public static function tableOpenUseCSS(ODTInternalParams $params, $maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'table';
+        }
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
+        $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        //$properties = array();
-        //if ( empty($element) ) {
-        //    $element = 'table';
-        //}
-        //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         self::tableOpenUseProperties($params, $properties, $maxcols, $numrows);
     }
 
@@ -321,6 +367,7 @@ class ODTTable
      * @param null $numrows
      */
     public static function tableOpenUseProperties (ODTInternalParams $params, $properties, $maxcols = 0, $numrows = 0){
+        $elementObj = $params->elementObj;
         $params->document->paragraphClose();
 
         // Eventually adjust table width.
@@ -340,14 +387,8 @@ class ODTTable
         $style_name = $style_obj->getProperty('style-name');
 
         // Open the table referencing our style.
+        $params->elementObj = $elementObj;
         self::tableOpen($params, $maxcols, $numrows, $style_name);
-    }
-
-    public static function tableAddColumnUseCSS(ODTInternalParams $params, $attributes=NULL){
-
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        self::tableAddColumnUseProperties($params, $properties);
     }
 
     /**
@@ -374,14 +415,14 @@ class ODTTable
      * @param int $rowspan
      */
     public static function tableHeaderOpenUseCSS(ODTInternalParams $params, $colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'th';
+        }
+
         $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        //if ( empty($element) ) {
-        //    $element = 'th';
-        //}
-        //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         self::tableHeaderOpenUseProperties($params, $properties, $colspan, $rowspan);
     }
 
@@ -411,14 +452,14 @@ class ODTTable
      * @param null $element
      */
     public static function tableRowOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
+        if ($element == NULL) {
+            $element = 'tr';
+        }
+
         $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        //if ( empty($element) ) {
-        //    $element = 'tr';
-        //}
-        //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         self::tableRowOpenUseProperties($params, $properties);
     }
 
@@ -452,14 +493,14 @@ class ODTTable
      * @param null $element
      */
     public static function tableCellOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL, $colspan = 1, $rowspan = 1){
+        if ($element == NULL) {
+            $element = 'td';
+        }
+
         $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+        $params->elementObj = $params->htmlStack->getCurrentElement();
 
-        // FIXME: delete old outcommented code below and re-write using new CSS import class
-
-        //if ( empty($element) ) {
-        //    $element = 'td';
-        //}
-        //$this->_processCSSClass ($properties, $import, $classes, $baseURL, $element);
         self::tableCellOpenUseProperties($params, $properties, $colspan, $rowspan);
     }
 

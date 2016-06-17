@@ -1720,17 +1720,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * This function adds a new table column using CSS.
-     *
-     * @author LarsDW223
-     * @see ODTDocument::tableAddColumnUseCSS for API wrapper function
-     * @see ODTTable::tableAddColumnUseCSS for detailed documentation
-     */
-    function _odtTableAddColumnUseCSS ($attributes=NULL, cssimportnew $import=NULL){
-        $this->document->tableAddColumnUseCSS ($attributes, $import);
-    }
-
-    /**
      * This function adds a new table column using properties.
      *
      * @author LarsDW223

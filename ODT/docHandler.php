@@ -715,6 +715,37 @@ abstract class docHandler
         }
     }
 
+    protected function importParagraphDefaultStyle() {
+        // This function MUST be called at the end of import_styles_from_css_internal
+        // ==> the 'body' paragraph style must have alread been imported!
+
+        // Get standard text style ('body')
+        $styleName = $this->styleset->getStyleName('body');
+        $body = $this->styleset->getStyle($styleName);
+
+        // Copy body paragraph properties to the paragraph default styles
+        // But not margins and paddings:
+        // That would also influence the margin and paddings in the
+        // Table of Contents or in lists
+        $disabled = array();
+        $disabled ['margin'] = 1;
+        $disabled ['margin-top'] = 1;
+        $disabled ['margin-right'] = 1;
+        $disabled ['margin-bottom'] = 1;
+        $disabled ['margin-left'] = 1;
+        $disabled ['padding'] = 1;
+        $disabled ['padding-top'] = 1;
+        $disabled ['padding-right'] = 1;
+        $disabled ['padding-bottom'] = 1;
+        $disabled ['padding-left'] = 1;
+        
+        $default = $this->styleset->getDefaultStyle ('paragraph');
+        if ($default != NULL && $body != NULL) {
+            ODTParagraphStyle::copyLayoutProperties ($body, $default, $disabled);
+        }
+    }
+
+
     protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         // Import page layout
         $name = $this->styleset->getStyleName('first page');
@@ -760,6 +791,8 @@ abstract class docHandler
         // Import list styles and list paragraph styles
         $this->importUnorderedListStyles($import, $htmlStack, $units);
         $this->importOrderedListStyles($import, $htmlStack, $units);
+
+        $this->importParagraphDefaultStyle();
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

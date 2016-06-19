@@ -184,6 +184,10 @@ class scratchDH extends docHandler
         return $this->styleset->getStyle($name);
     }
 
+    public function getDefaultStyle ($family) {
+        return $this->styleset->getDefaultStyle($family);
+    }
+
     /**
      * The function returns the style names used for the basic syntax.
      */

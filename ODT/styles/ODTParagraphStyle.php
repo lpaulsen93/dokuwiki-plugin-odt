@@ -455,4 +455,39 @@ class ODTParagraphStyle extends ODTStyleStyle
         }
         return self::createParagraphStyle($properties);
     }
+
+    /**
+     * Set a property.
+     * 
+     * @param $property The name of the property to set
+     * @param $value    New value to set
+     */
+    public static function copyLayoutProperties(ODTParagraphStyle $source, ODTParagraphStyle $dest, array $disabled=NULL) {
+        // DO NOT COPY STYLE FIELDS/PROPERTIES
+
+        // Copy $tab_stop_fields
+        foreach (self::$tab_stop_fields as $property => $fields) {
+            $value = $source->getProperty($property);
+            if ($value != NULL && $disabled [$property] == 0) {
+                $dest -> setProperty($property, $value);
+            }
+        }
+
+        // Copy $paragraph_fields
+        foreach (self::$paragraph_fields as $property => $fields) {
+            $value = $source->getProperty($property);
+            if ($value != NULL && $disabled [$property] == 0) {
+                $dest -> setProperty($property, $value);
+            }
+        }
+
+        // Copy $text_fields
+        $text_fields = ODTTextStyle::getTextProperties ();
+        foreach ($text_fields as $property => $fields) {
+            $value = $source->getProperty($property);
+            if ($value != NULL && $disabled [$property] == 0) {
+                $dest -> setProperty($property, $value);
+            }
+        }
+    }
 }

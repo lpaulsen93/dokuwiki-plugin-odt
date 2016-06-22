@@ -745,6 +745,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->spanClose();
     }
 
+    function generateSpansfromHTMLCode($HTMLCode){
+        $this->document->generateSpansfromHTMLCode($HTMLCode);
+    }
+
     /*
      * Tables
      */

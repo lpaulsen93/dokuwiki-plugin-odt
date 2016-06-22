@@ -416,6 +416,10 @@ class ODTDocument
         ODTSpan::spanClose($this->params);
     }
 
+    function generateSpansfromHTMLCode($HTMLCode){
+        ODTSpan::generateSpansfromHTMLCode($this->params, $HTMLCode);
+    }
+
     /**
      * Open a paragraph
      *

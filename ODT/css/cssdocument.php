@@ -274,4 +274,15 @@ class cssdocument {
         }
         return $dump;
     }
+
+    public function removeCurrent () {
+        $index = $this->size-1;
+        if ($index <= $this->rootIndex) {
+            // Do not remove root elements!
+            return;
+        }
+        $this->level = $this->entries [$index]['level'];
+        $this->entries [$index] = NULL;
+        $this->size--;
+    }
 }

@@ -401,4 +401,29 @@ class ODTUtility
     public static function closeHTMLElement (ODTInternalParams $params, $element) {
         $params->htmlStack->close($element);
     }
+
+    public static function getHTMLElementProperties (ODTInternalParams $params, array &$dest, $element, $attributes) {
+        // Push/create our element to import on the stack
+        $params->htmlStack->open($element, $attributes);
+        $toMatch = $params->htmlStack->getCurrentElement();
+        $params->import->getPropertiesForElement($dest, $toMatch, $params->units);
+
+        // Adjust values for ODT
+        ODTUtility::adjustValuesForODT($dest, $params->units);
+
+        // Remove element from stack
+        $params->htmlStack->removeCurrent();
+    }
+
+    public static function getNextTag (&$content, $pos) {
+        $start = strpos ($content, '<', $pos);
+        if ($start === false) {
+            return false;
+        }
+        $end = strpos ($content, '>', $pos);
+        if ($end === false) {
+            return false;
+        }
+        return array($start, $end);
+    }
 }

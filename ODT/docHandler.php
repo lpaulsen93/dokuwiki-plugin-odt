@@ -745,6 +745,34 @@ abstract class docHandler
         }
     }
 
+    protected function importFootnoteStyle() {
+        // This function MUST be called at the end of import_styles_from_css_internal
+        // ==> the 'body' paragraph style must have alread been imported!
+
+        // Get standard text style ('body')
+        $styleName = $this->styleset->getStyleName('body');
+        $body = $this->styleset->getStyle($styleName);
+
+        // Copy body paragraph properties to the footnote style
+        // But not margins and paddings.
+        $disabled = array();
+        $disabled ['margin'] = 1;
+        $disabled ['margin-top'] = 1;
+        $disabled ['margin-right'] = 1;
+        $disabled ['margin-bottom'] = 1;
+        $disabled ['margin-left'] = 1;
+        $disabled ['padding'] = 1;
+        $disabled ['padding-top'] = 1;
+        $disabled ['padding-right'] = 1;
+        $disabled ['padding-bottom'] = 1;
+        $disabled ['padding-left'] = 1;
+        
+        $styleName = $this->styleset->getStyleName (footnote);
+        $footnote = $this->styleset->getStyle($styleName);
+        if ($footnote != NULL && $body != NULL) {
+            ODTParagraphStyle::copyLayoutProperties ($body, $footnote, $disabled);
+        }
+    }
 
     protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
         // Import page layout
@@ -793,6 +821,7 @@ abstract class docHandler
         $this->importOrderedListStyles($import, $htmlStack, $units);
 
         $this->importParagraphDefaultStyle();
+        $this->importFootnoteStyle();
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

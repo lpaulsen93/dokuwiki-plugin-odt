@@ -83,10 +83,11 @@ class ODTTable
                 
                 // Now we are in the list state!
                 // Get the lists style name before closing it.
-                $lists [] = $params->document->state->getStyleName();
+                $lists [] = $params->document->getStyleName();
                 $params->document->listClose();
                 
-                if ($params->document->state == NULL || $params->document->state->getElement() == 'root') {
+                if ($params->document->state == NULL ||
+                    $params->document->state->getCurrent()->getElementName() == 'root') {
                     break;
                 }
 

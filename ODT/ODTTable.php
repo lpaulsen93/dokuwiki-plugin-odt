@@ -83,7 +83,9 @@ class ODTTable
                 
                 // Now we are in the list state!
                 // Get the lists style name before closing it.
-                $lists [] = $params->document->getStyleName();
+                $lists [] = $list->getStyleName();
+                // Reset saved last paragraph position to -1 to prevent change of the paragraph style
+                $list->setListLastParagraphPosition(-1);
                 $params->document->listClose();
                 
                 if ($params->document->state == NULL ||

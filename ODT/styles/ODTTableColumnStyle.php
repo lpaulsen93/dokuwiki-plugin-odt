@@ -20,7 +20,6 @@ class ODTTableColumnStyle extends ODTStyleStyle
         'column-width'               => array ('style:column-width',              'table-column',  true),
         'rel-column-width'           => array ('style:rel-column-width',          'table-column',  true),
         'use-optimal-column-width'   => array ('style:use-optimal-column-width',  'table-column',  true),
-        'use-optimal-column-width'   => array ('style:use-optimal-column-width',  'table-column',  true),
         'break-before'               => array ('fo:break-before',                 'table-column',  true),
         'break-after'                => array ('fo:break-after',                  'table-column',  true),
     );
@@ -158,9 +157,11 @@ class ODTTableColumnStyle extends ODTStyleStyle
             } else {
                 // Columns have a specific syntax for relative width in %!
                 // Change % to *.
-                //$table_co_width [$length-1] = '*';
+                // Also mutiply with 10:
+                // For some reason values for two columns like 10* and 90* do not give the result 10% and 90%.
+                // But 100* and 900* do give the wanted reuslt! (weird)
                 $table_co_width = trim ($table_co_width, '%');
-                $properties ['rel-column-width'] = $table_co_width;
+                $properties ['rel-column-width'] = ($table_co_width*10).'*';
             }
         }
 

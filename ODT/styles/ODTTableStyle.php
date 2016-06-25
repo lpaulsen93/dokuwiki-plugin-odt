@@ -167,26 +167,25 @@ class ODTTableStyle extends ODTStyleStyle
     public static function createTableTableStyle(array $properties, array $disabled_props = NULL, $max_width_cm = 17){
         // If we want to change the table width we must set table:align to something else
         // than "margins". Otherwise the width will not be changed.
-        // Also we set a fixed default width of 100%. Otherwise setting the width of the columns
-        // will have no effect in case the user does not specify any width for the whole table.
-        // FIXME: This will always produce at least one attribute.
-        //        It would be more elegant to change the style if we find any width attributes
-        //        in the headers/columns. Maybe later.
-        $properties ['align'] = 'center';
-        $table_width = $max_width_cm.'cm';
+        if (empty($properties ['align'])) {
+            $properties ['align'] = 'center';
+        }
+        if ($properties ['margin-left'] == '0') {
+            unset($properties ['margin-left']);
+        }
+        if ($properties ['margin-right'] == '0') {
+            unset($properties ['margin-right']);
+        }
 
-        if ( !empty ($properties ['width']) ) {
-            // If width has a percentage value we need to use the rel-width attribute,
-            // otherwise the width attribute
-            $width = $properties ['width'];
-            if ( $width [strlen($width)-1] == '%' ) {
-                // Better calculate absolute width and use it instead of relative width.
-                // Some applications might not support relative width.
-                $table_width = (($max_width_cm * trim($width, '%'))/100).'cm';
-                $properties ['width'] = $table_width;
-            }
-        } else {
-            $properties ['width'] = $table_width;
+        // If no width specified always set 100%
+        if (empty ($properties ['width'])) {
+            $properties ['width'] = '100%';
+        }
+        
+        // If relative width set, then move value to property 'rel-width'!
+        if ( $properties ['width'] [strlen($properties ['width'])-1] == '%' ) {
+            $properties ['rel-width'] = $properties ['width'];
+            unset($properties ['width']);
         }
         
         // Convert property 'border-model' to ODT

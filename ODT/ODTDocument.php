@@ -1089,10 +1089,10 @@ class ODTDocument
      */
     function listOpen($continue=false, $styleName, $element=NULL, $attributes=NULL) {
         if ($element == NULL) {
-            if ($styleName == $this->document->getStyleName('list')) {
+            if ($styleName == $this->getStyleName('list')) {
                 $element = 'ul';
             }
-            if ($styleName == $this->document->getStyleName('numbering')) {
+            if ($styleName == $this->getStyleName('numbering')) {
                 $element = 'ol';
             }
         }

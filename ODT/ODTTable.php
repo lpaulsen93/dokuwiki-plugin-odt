@@ -587,27 +587,6 @@ class ODTTable
         $max_width = self::getMaxWidth($params, $table);
         $width = self::adjustTableWidthInternal ($params, $table, $max_width);
 
-        // Search through all column styles for the column width ('style:width="..."').
-        // If every column has a absolute width set, add them all and replace the table
-        // width with the result.
-        // Abort if a column has no width.
-        /*$sum = 0;
-        $table_column_styles = $table->getTableColumnStyles();
-        $replace = true;
-        for ($index = 0 ; $index < $table->getTableMaxColumns() ; $index++ ) {
-            $style_name = $table_column_styles [$index];
-            $style_obj = $params->document->getStyle($style_name);
-            if ($style_obj != NULL && $style_obj->getProperty('column-width') != NULL) {
-                $width = $style_obj->getProperty('column-width');
-                $length = strlen ($width);
-                $width = $params->document->toPoints($width, 'x');
-                $sum += (float) trim ($width, 'pt');
-            } else {
-                $replace = true;
-                break;
-            }
-        }*/
-
         $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $width.'pt');
@@ -691,7 +670,7 @@ class ODTTable
         return $width.'pt';
     }
 
-    protected function adjustTableWidthInternal (ODTInternalParams $params, ODTElementTable $table, $maxWidth) {
+    static protected function adjustTableWidthInternal (ODTInternalParams $params, ODTElementTable $table, $maxWidth) {
         $empty = array();
         $relative = array();
 

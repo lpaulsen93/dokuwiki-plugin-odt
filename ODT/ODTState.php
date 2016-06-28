@@ -277,4 +277,8 @@ class ODTState
             return NULL;
         }
     }
+
+    public function getElementCount($element) {
+        return $this->element_counter [$element]++;
+    }
 }

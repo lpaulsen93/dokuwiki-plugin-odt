@@ -51,15 +51,19 @@ class ODTTable
                     // We try to achieve this by substracting the list indentation
                     // from the width of the table and right align it!
                     // (if not done yet, the name must be unique!)
-                    $style_name = 'Table_Indentation_Level'.$level;
+                    $count = $params->document->state->getElementCount('table')+1;
+                    $style_name = 'Table'.$count.'_Indentation_Level'.$level;
                     if (!$params->document->styleExists($style_name)) {
                         $style_obj = clone $params->document->getStyle($tableStyleName);
                         $style_obj->setProperty('style-name', $style_name);
                         if ($style_obj != NULL) {
                             $max = $params->document->getAbsWidthMindMargins();
                             $indent = 0 + ODTUnits::getDigits($list_style->getPropertyFromLevel($level, 'margin-left'));
-                            $style_obj->setProperty('width', ($max-$indent).'cm');
-                            $style_obj->setProperty('align', 'right');
+                            $style_obj->setProperty('margin-left', ($indent).'cm');
+                            if ($style_obj->getProperty('width') == NULL && $style_obj->getProperty('rel-width')) {
+                                $style_obj->setProperty('width', ($max-$indent).'cm');
+                            }
+                            $style_obj->setProperty('align', 'left');
                             $params->document->addAutomaticStyle($style_obj);
                         }
                     }
@@ -146,8 +150,8 @@ class ODTTable
             $lists = $table->getTemp();
         }
 
-        // Eventually replace table width.
-        self::replaceTableWidth ($params, $table);
+        // Eventually adjust table width.
+        self::adjustTableWidth ($params, $table);
 
         // Close the table.
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
@@ -562,9 +566,15 @@ class ODTTable
      * @param ODTDocument $doc The current document
      * @param ODTElementTable $table The table to be adjusted
      */
-    static protected function replaceTableWidth (ODTInternalParams $params, ODTElementTable $table) {
+    static protected function adjustTableWidth (ODTInternalParams $params, ODTElementTable $table, $allowNested=false) {
         if ($table == NULL) {
             // ??? Should not happen.
+            return;
+        }
+        if ($table->isNested () && !$allowNested) {
+            // Do not do anything if this is a nested table.
+            // Only if the function is called for the parent/root table
+            // then the width of the nested tables will be calculated.
             return;
         }
         $matches = array ();
@@ -574,12 +584,16 @@ class ODTTable
             return;
         }
 
+        $max_width = self::getMaxWidth($params, $table);
+        $width = self::adjustTableWidthInternal ($params, $table, $max_width);
+
         // Search through all column styles for the column width ('style:width="..."').
         // If every column has a absolute width set, add them all and replace the table
         // width with the result.
         // Abort if a column has no width.
-        $sum = 0;
+        /*$sum = 0;
         $table_column_styles = $table->getTableColumnStyles();
+        $replace = true;
         for ($index = 0 ; $index < $table->getTableMaxColumns() ; $index++ ) {
             $style_name = $table_column_styles [$index];
             $style_obj = $params->document->getStyle($style_name);
@@ -589,13 +603,20 @@ class ODTTable
                 $width = $params->document->toPoints($width, 'x');
                 $sum += (float) trim ($width, 'pt');
             } else {
-                return;
+                $replace = true;
+                break;
             }
-        }
+        }*/
 
         $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
-            $style_obj->setProperty('width', $sum.'pt');
+            $style_obj->setProperty('width', $width.'pt');
+        }
+
+        // Now adjust all nested tables too
+        $nested = $table->getNestedTables ();
+        foreach ($nested as $table) {
+            self::adjustTableWidth ($params, $table, true);
         }
     }
 
@@ -620,5 +641,128 @@ class ODTTable
                 self::tableAddColumnUseProperties ($params, $properties);
             }
         }
+    }
+
+    static protected function getMaxWidth (ODTInternalParams $params, ODTElementTable $table) {
+        if (!$table->isNested ()) {
+            // Get max page width in points.
+            $maxPageWidth = $params->document->getAbsWidthMindMargins ();
+            $maxPageWidthPt = $params->units->getDigits ($params->units->toPoints($maxPageWidth.'cm'));
+
+            $tableStyle = $table->getStyle();
+
+            // Get table left margin
+            $leftMargin = $tableStyle->getProperty('margin-left');
+            if ($leftMargin == NULL) {
+                $leftMarginPt = 0;
+            } else {
+                $leftMarginPt = $params->units->getDigits ($params->units->toPoints($leftMargin));
+            }
+
+            // Get table right margin
+            $rightMargin = $tableStyle->getProperty('margin-right');
+            if ($rightMargin == NULL) {
+                $rightMarginPt = 0;
+            } else {
+                $rightMarginPt = $params->units->getDigits ($params->units->toPoints($rightMargin));
+            }
+
+            // Get table width
+            $width = $tableStyle->getProperty('width');
+            if ($width != NULL) {
+                $widthPt = $params->units->getDigits ($params->units->toPoints($width));
+            }
+
+            if ($width == NULL) {
+                $width = $maxPageWidthPt - $leftMarginPt - $rightMarginPt;
+            } else {
+                $width = $widthPt;
+            }
+        } else {
+            $column = $table->getNestedColumn ();
+            $table_column_styles = $table->getParent()->getTableColumnStyles();
+            $style_name = $table_column_styles [$column-1];
+            $style_obj = $params->document->getStyle($style_name);
+
+            $width = $style_obj->getProperty('column-width');
+            $width = trim ($width, 'pt');
+        }
+
+        return $width.'pt';
+    }
+
+    protected function adjustTableWidthInternal (ODTInternalParams $params, ODTElementTable $table, $maxWidth) {
+        $empty = array();
+        $relative = array();
+
+        $tableStyle = $table->getStyle();
+
+        // First step:
+        // - convert all absolute widths to points
+        // - build the sum of all absolute column width values (if any)
+        // - build the sum of all relative column width values (if any)
+        $abs_sum = 0;
+        $table_column_styles = $table->getTableColumnStyles();
+        $replace = true;
+        for ($index = 0 ; $index < $table->getTableMaxColumns() ; $index++ ) {
+            $style_name = $table_column_styles [$index];
+            $style_obj = $params->document->getStyle($style_name);
+            if ($style_obj != NULL) {
+                if ($style_obj->getProperty('rel-column-width') != NULL) {
+                    $width = $style_obj->getProperty('rel-column-width');
+                    $length = strlen ($width);
+                    $width = trim ($width, '*');
+
+                    // Add column style object to relative array
+                    // We need convert it to an absolute width
+                    $entry = array();
+                    $entry ['width'] = $width;
+                    $entry ['obj'] = $style_obj;
+                    $relative [] = $entry;
+
+                    $abs_sum += (($width/10)/100) * $maxWidth;
+                } else if ($style_obj->getProperty('column-width') != NULL) {
+                    $width = $style_obj->getProperty('column-width');
+                    $length = strlen ($width);
+                    $width = $params->document->toPoints($width, 'x');
+                    $abs_sum += (float) trim ($width, 'pt');
+                } else {
+                    // Add column style object to empty array
+                    // We need to assign a width to this column
+                    $empty [] = $style_obj;
+                }
+            }
+        }
+
+        // Convert max width to points
+        $maxWidth = $params->units->toPoints($maxWidth);
+        $maxWidth = $params->units->getDigits($maxWidth);
+
+        // The remaining absolute width is the max width minus the sum of
+        // all absolute width values
+        $absWidthLeft = $maxWidth - $abs_sum;
+
+        // Calculate the relative width left
+        // (e.g. if the absolute width is the half of the max width
+        //  then the relative width left if 50%)
+        $relWidthLeft = 100-(($absWidthLeft/$maxWidth)*100);
+
+        // Give all empty columns a width
+        $maxEmpty = count($empty);
+        foreach ($empty as $column) {
+            //$width = ($relWidthLeft/$maxEmpty) * $absWidthLeft;
+            $width = $absWidthLeft/$maxEmpty;
+            $column->setProperty('column-width', $width.'pt');
+            $column->setProperty('rel-column-width', NULL);
+        }
+
+        // Convert all relative width to absolute
+        foreach ($relative as $column) {
+            $width = (($column ['width']/10)/100) * $maxWidth;
+            $column ['obj']->setProperty('column-width', $width.'pt');
+            $column ['obj']->setProperty('rel-column-width', NULL);
+        }
+
+        return $maxWidth;
     }
 }

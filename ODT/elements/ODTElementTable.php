@@ -18,6 +18,9 @@ class ODTElementTable extends ODTStateElement
     protected $table_maxcols = 0;
     protected $table_curr_column = 0;
     protected $table_row_count = 0;
+    protected $table_is_nested = false;
+    protected $table_nested_column = 0;
+    protected $nestedTables = array();
 
     // Flag indicating that a table was created inside of a list
     protected $list_interrupted = false;
@@ -119,11 +122,28 @@ class ODTElementTable extends ODTStateElement
     /**
      * Determine and set the parent for this element.
      * As a table the previous element is our parent.
+     * 
+     * If the table is nested in another table, then the surrounding
+     * table is the parent!
      *
      * @param ODTStateElement $previous
      */
     public function determineParent(ODTStateElement $previous) {
-        $this->setParent($previous);
+        $table = $previous;
+        while ($table != NULL) {
+            if ($table->getClass() == 'table') {
+                break;
+            }
+            $table = $table->getParent();
+        }
+        if ($table == NULL) {
+            $this->setParent($previous);
+        } else {
+            $this->setParent($table);
+            $table->addNestedTable ($this);
+            $this->table_is_nested = true;
+            $this->table_nested_column = $table->getTableCurrentColumn();
+        }
     }
 
     /**
@@ -259,5 +279,36 @@ class ODTElementTable extends ODTStateElement
 
     public function getRowCount() {
         return $this->table_row_count;
+    }
+
+    /**
+     * Is this table a nested table (inserted into another table)?
+     * 
+     * @return boolean
+     */
+    public function isNested () {
+        return $this->table_is_nested;
+    }
+
+    /**
+     * Get the column number of the surrounding table in which this
+     * table has been inserted. If this table is not a nested table
+     * then -1 will be returend.
+     * 
+     * @return int Nested column number or -1
+     */
+    public function getNestedColumn () {
+        if (!$this->isNested ()) {
+            return -1;
+        }
+        return $this->table_nested_column;
+    }
+
+    public function addNestedTable (ODTElementTable $nested) {
+        $this->nestedTables [] = $nested;
+    }
+
+    public function getNestedTables () {
+        return $this->nestedTables;
     }
 }

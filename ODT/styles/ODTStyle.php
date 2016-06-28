@@ -157,14 +157,22 @@ abstract class ODTStyle
      * @param $value New value to set
      */
     protected function setPropertyInternal($property, $odt_property, $value, $section, &$dest=NULL) {
-        if ( $dest === NULL ) {
-            $this->properties [$property] = array ('odt_property' => $odt_property,
-                                                   'value' => $value,
-                                                   'section' => $section);
+        if ($value !== NULL) {
+            if ( $dest === NULL ) {
+                $this->properties [$property] = array ('odt_property' => $odt_property,
+                                                       'value' => $value,
+                                                       'section' => $section);
+            } else {
+                $dest [$property] = array ('odt_property' => $odt_property,
+                                           'value' => $value,
+                                           'section' => $section);
+            }
         } else {
-            $dest [$property] = array ('odt_property' => $odt_property,
-                                       'value' => $value,
-                                       'section' => $section);
+            if ( $dest === NULL ) {
+                unset ($this->properties [$property]);
+            } else {
+                unset ($dest [$property]);
+            }
         }
     }
 

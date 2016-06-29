@@ -623,12 +623,11 @@ class ODTTable
     }
 
     static protected function getMaxWidth (ODTInternalParams $params, ODTElementTable $table) {
+        $tableStyle = $table->getStyle();
         if (!$table->isNested ()) {
             // Get max page width in points.
             $maxPageWidth = $params->document->getAbsWidthMindMargins ();
             $maxPageWidthPt = $params->units->getDigits ($params->units->toPoints($maxPageWidth.'cm'));
-
-            $tableStyle = $table->getStyle();
 
             // Get table left margin
             $leftMargin = $tableStyle->getProperty('margin-left');
@@ -659,12 +658,42 @@ class ODTTable
             }
         } else {
             $column = $table->getNestedColumn ();
+            $cell = $table->getNestedCell();
+
+            $cell_style = $cell->getStyle();
+            $padding = 0;
+            if ($cell_style->getProperty('padding-left') != NULL
+                ||
+                $cell_style->getProperty('padding-right') != NULL) {
+                $value = $cell_style->getProperty('padding-left');
+                $value = $params->document->toPoints($value, 'y');
+                $padding += $value;
+                $value = $cell_style->getProperty('padding-right');
+                $value = $params->document->toPoints($value, 'y');
+                $padding += $value;
+            } else if ($cell_style->getProperty('padding') != NULL) {
+                $value = $cell_style->getProperty('padding');
+                $value = $params->document->toPoints($value, 'y');
+                $padding += 2 * $value;
+            }
+
             $table_column_styles = $table->getParent()->getTableColumnStyles();
             $style_name = $table_column_styles [$column-1];
             $style_obj = $params->document->getStyle($style_name);
 
             $width = $style_obj->getProperty('column-width');
             $width = trim ($width, 'pt');
+            $width -= $padding;
+
+            // Get table width
+            $table_width = $tableStyle->getProperty('width');
+            if ($table_width != NULL) {
+                $table_width = $params->units->getDigits ($params->units->toPoints($table_width));
+
+                if ($table_width < $width) {
+                    $width = $table_width;
+                }
+            }
         }
 
         return $width.'pt';

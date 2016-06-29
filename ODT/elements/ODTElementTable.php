@@ -21,6 +21,7 @@ class ODTElementTable extends ODTStateElement
     protected $table_is_nested = false;
     protected $table_nested_column = 0;
     protected $nestedTables = array();
+    protected $table_nested_cell = NULL;
 
     // Flag indicating that a table was created inside of a list
     protected $list_interrupted = false;
@@ -131,6 +132,9 @@ class ODTElementTable extends ODTStateElement
     public function determineParent(ODTStateElement $previous) {
         $table = $previous;
         while ($table != NULL) {
+            if ($table->getClass() == 'table-cell') {
+                $cell = $table;
+            }
             if ($table->getClass() == 'table') {
                 break;
             }
@@ -143,6 +147,7 @@ class ODTElementTable extends ODTStateElement
             $table->addNestedTable ($this);
             $this->table_is_nested = true;
             $this->table_nested_column = $table->getTableCurrentColumn();
+            $this->table_nested_cell = $cell;
         }
     }
 
@@ -302,6 +307,10 @@ class ODTElementTable extends ODTStateElement
             return -1;
         }
         return $this->table_nested_column;
+    }
+
+    public function getNestedCell () {
+        return $this->table_nested_cell;
     }
 
     public function addNestedTable (ODTElementTable $nested) {

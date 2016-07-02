@@ -31,8 +31,6 @@ class ODTTemplateDH extends docHandler
      * Constructor.
      */
     public function __construct() {
-        parent::__construct();
-
         // Load config
         $this->config = plugin_load('helper', 'odt_config');
         $this->config->load($warning);
@@ -64,7 +62,7 @@ class ODTTemplateDH extends docHandler
      * Build the document from the template.
      * (code taken from old function 'document_end_scratch')
      *
-     * @param string      $doc
+     * @param ODTInternalParams $params
      * @param string      $autostyles
      * @param array       $commonstyles
      * @param string      $meta
@@ -72,7 +70,7 @@ class ODTTemplateDH extends docHandler
      * @param ODTDefaultStyles $styleset
      * @return mixed
      */
-    public function build($doc=null, $meta=null, $userfields=null, $pagestyles=null){
+    public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
         // for the temp dir
         global $ID;
 
@@ -90,7 +88,7 @@ class ODTTemplateDH extends docHandler
 
         // Extract template
         $template_path = $this->config->getParam('mediadir').'/'.$this->directory."/".$this->template;
-        $ok = $this->ZIP->Extract($template_path, $temp_dir);
+        $ok = $params->ZIP->Extract($template_path, $temp_dir);
         if($ok == -1){
             throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$temp_dir);
         }
@@ -131,9 +129,9 @@ class ODTTemplateDH extends docHandler
         $old_content = io_readFile($temp_dir.'/content.xml');
         if (strpos($old_content, 'DOKUWIKI-ODT-INSERT') !== FALSE) { // Replace the mark
             $this->_odtReplaceInFile('/<text:p[^>]*>DOKUWIKI-ODT-INSERT<\/text:p>/',
-                $doc, $temp_dir.'/content.xml', true);
+                $params->content, $temp_dir.'/content.xml', true);
         } else { // Append to the template
-            $this->_odtReplaceInFile('</office:text>', $doc.'</office:text>', $temp_dir.'/content.xml');
+            $this->_odtReplaceInFile('</office:text>', $params->content.'</office:text>', $temp_dir.'/content.xml');
         }
 
         // Cut off unwanted content
@@ -175,10 +173,10 @@ class ODTTemplateDH extends docHandler
         }
 
         // Add manifest data
-        $this->_odtReplaceInFile('</manifest:manifest>', $this->manifest->getExtraContent() . '</manifest:manifest>', $temp_dir . '/META-INF/manifest.xml');
+        $this->_odtReplaceInFile('</manifest:manifest>', $params->manifest->getExtraContent() . '</manifest:manifest>', $temp_dir . '/META-INF/manifest.xml');
 
         // Build the Zip
-        $this->ZIP->Compress(null, $temp_dir, null);
+        $params->ZIP->Compress(null, $temp_dir, null);
         io_rmdir($temp_dir,true);
     }
 

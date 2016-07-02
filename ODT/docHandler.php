@@ -13,8 +13,6 @@
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
-require_once DOKU_INC.'inc/ZipLib.class.php';
-require_once DOKU_INC.'lib/plugins/odt/ODT/ODTmanifest.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 
 /**
@@ -23,8 +21,6 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 abstract class docHandler
 {
     public $trace_dump = NULL;
-    var $manifest;
-    var $ZIP;
     protected $registrations = array();
     protected $internalRegs = array('heading1' => array('element' => 'h1', 'attributes' => NULL),
                                     'heading2' => array('element' => 'h2', 'attributes' => NULL),
@@ -67,61 +63,6 @@ abstract class docHandler
                                   );
 
     /**
-     * Constructor.
-     */
-    public function __construct() {
-        // prepare the zipper, manifest
-        $this->ZIP = new ZipLib();
-        $this->manifest = new ODTManifest();
-    }
-
-    /**
-     * Check if file exists.
-     *
-     * @param string $name
-     * @return bool
-     */
-    public function fileExists($name) {
-        return $this->manifest->exists($name);
-    }
-
-    /**
-     * Add a file to the document
-     *
-     * @param string $name
-     * @param string $mime
-     * @param string $content
-     * @return bool
-     */
-    public function addFile($name, $mime, $content) {
-        if(!$this->manifest->exists($name)){
-            $this->manifest->add($name, $mime);
-            $this->ZIP->add_File($content, $name, 0);
-            return true;
-        }
-
-        // File with that name already exists!
-        return false;
-    }
-
-    /**
-     * Adds the file $src as a picture file without adding it to the content.
-     * Returns name of the file in the document for reference.
-     *
-     * @param string $src
-     * @return string
-     */
-    function addFileAsPicture($src){
-        $name = '';
-        if (file_exists($src)) {
-            list($ext,$mime) = mimetype($src);
-            $name = 'Pictures/'.md5($src).'.'.$ext;
-            $this->addFile($name, $mime, io_readfile($src,false));
-        }
-        return $name;
-    }
-
-    /**
      * Build ODT document.
      *
      * @param string      $doc
@@ -132,16 +73,7 @@ abstract class docHandler
      * @param ODTStyleSet $styleset
      * @return mixed
      */
-    abstract public function build($doc=null, $meta=null, $userfields=null, $pagestyles=null);
-
-    /**
-     * Get ODT document file.
-     *
-     * @return string
-     */
-    public function get() {
-        return $this->ZIP->get_file();
-    }
+    abstract public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null);
 
     /**
      * Each docHandler needs to provide a way to add a style to the document.
@@ -180,8 +112,8 @@ abstract class docHandler
      */
     abstract public function getStyleName($style);
 
-    protected function setListStyleImage ($style, $level, $file) {
-        $odt_file = $this->addFileAsPicture($file);
+    protected function setListStyleImage (ODTInternalParams $params, $style, $level, $file) {
+        $odt_file = $params->document->addFileAsPicture($file);
 
         if ( $odt_file != NULL ) {
             $style->setPropertyForLevel($level, 'list-level-style', 'image');
@@ -219,7 +151,7 @@ abstract class docHandler
         }
     }
 
-    protected function importOrderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+    protected function importOrderedListStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -236,10 +168,10 @@ abstract class docHandler
             $toMatch = $htmlStack->getCurrentElement();
 
             $properties = array();                
-            $import->getPropertiesForElement($properties, $toMatch, $units);
+            $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
 
             // Adjust values for ODT
-            ODTUtility::adjustValuesForODT ($properties, $units);
+            ODTUtility::adjustValuesForODT ($properties, $params->units);
 
             if ($properties ['list-style-type'] !== NULL) {
                 $prefix = NULL;
@@ -293,7 +225,7 @@ abstract class docHandler
                 }
                 $file = $media_path.$file;*/
                 
-                $this->setListStyleImage ($style, $level, $file);
+                $this->setListStyleImage ($params, $style, $level, $file);
             }
 
             // Import properties for list paragraph style once.
@@ -318,7 +250,7 @@ abstract class docHandler
         $htmlStack->restoreToRoot ();
     }
 
-    protected function importUnorderedListStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+    protected function importUnorderedListStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -341,10 +273,10 @@ abstract class docHandler
             $toMatch = $htmlStack->getCurrentElement();
 
             $properties = array();                
-            $import->getPropertiesForElement($properties, $toMatch, $units);
+            $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
 
             // Adjust values for ODT
-            ODTUtility::adjustValuesForODT ($properties, $units);
+            ODTUtility::adjustValuesForODT ($properties, $params->units);
             
             if ($properties ['list-style-type'] !== NULL) {
                 switch ($properties ['list-style-type']) {
@@ -393,7 +325,7 @@ abstract class docHandler
                 }
                 $file = $media_path.$file;*/
                 
-                $this->setListStyleImage ($style, $level, $file);
+                $this->setListStyleImage ($params, $style, $level, $file);
             }
 
             // Workaround for ODT format:
@@ -436,7 +368,7 @@ abstract class docHandler
         $htmlStack->restoreToRoot ();
     }
 
-    protected function importTableStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+    protected function importTableStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         foreach ($this->table_styles as $style_type => $elementParams) {
             $name = $this->styleset->getStyleName($style_type);
             $style = $this->styleset->getStyle($name);
@@ -451,7 +383,7 @@ abstract class docHandler
                 //$element_to_check = 'td';
 
                 $properties = array();                
-                $import->getPropertiesForElement($properties, $toMatch, $units);
+                $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
                 if (count($properties) == 0) {
                     // Nothing found. Back to top, DO NOT change existing style!
 
@@ -476,7 +408,7 @@ abstract class docHandler
                 //}
 
                 // Adjust values for ODT
-                ODTUtility::adjustValuesForODT ($properties, $units);
+                ODTUtility::adjustValuesForODT ($properties, $params->units);
 
                 /*if ($this->trace_dump != NULL && $element == $element_to_check) {
                     $this->trace_dump .= 'AFTER:'."\n";
@@ -565,7 +497,7 @@ abstract class docHandler
         }
     }
 
-    protected function importLinkStyles(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+    protected function importLinkStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         foreach ($this->link_styles as $style_type => $elementParams) {
             $name = $this->styleset->getStyleName($style_type);
             $style = $this->styleset->getStyle($name);
@@ -579,7 +511,7 @@ abstract class docHandler
                 $toMatch = $htmlStack->getCurrentElement();
 
                 $properties = array();                
-                $import->getPropertiesForElement($properties, $toMatch, $units);
+                $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
                 if (count($properties) == 0) {
                     // Nothing found. Back to top, DO NOT change existing style!
                     continue;
@@ -590,7 +522,7 @@ abstract class docHandler
                 $style->clearLayoutProperties();
 
                 // Adjust values for ODT
-                ODTUtility::adjustValuesForODT ($properties, $units);
+                ODTUtility::adjustValuesForODT ($properties, $params->units);
 
                 $style->importProperties($properties, NULL);
 
@@ -601,7 +533,7 @@ abstract class docHandler
         }
     }
 
-    protected function importStyle(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $style_type, $element, $attributes=NULL, array $plain=NULL) {
+    protected function importStyle(ODTInternalParams $params, cssdocument $htmlStack, $style_type, $element, $attributes=NULL, array $plain=NULL) {
         $name = $this->styleset->getStyleName($style_type);
         $style = $this->styleset->getStyle($name);
         if ( $style != NULL ) {
@@ -612,7 +544,7 @@ abstract class docHandler
             $element_to_check = 'p123';
             
             $properties = array();
-            $import->getPropertiesForElement($properties, $toMatch, $units);
+            $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
             if (count($properties) == 0) {
                 // Nothing found. Return, DO NOT change existing style!
 
@@ -648,7 +580,7 @@ abstract class docHandler
             }
 
             // Adjust values for ODT
-            ODTUtility::adjustValuesForODT ($properties, $units);
+            ODTUtility::adjustValuesForODT ($properties, $params->units);
 
             if ($this->trace_dump != NULL && $element == $element_to_check) {
                 $this->trace_dump .= 'AFTER:'."\n";
@@ -671,29 +603,29 @@ abstract class docHandler
         }
     }
 
-    public function import_styles_from_css (cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL) {
-        if ( $import != NULL ) {
-            $save = $import->getMedia ();
-            $import->setMedia ($media_sel);
+    public function import_styles_from_css (ODTInternalParams $params, $media_sel=NULL) {
+        if ( $params->import != NULL ) {
+            $save = $params->import->getMedia ();
+            $params->import->setMedia ($media_sel);
             
             // Make a copy of the stack to be sure we do not leave anything behind after import.
-            $stack = clone $htmlStack;
+            $stack = clone $params->htmlStack;
             $stack->restoreToRoot ();
 
-            $this->import_styles_from_css_internal ($import, $stack, $units);
+            $this->import_styles_from_css_internal ($params, $stack);
 
-            $import->setMedia ($save);
+            $params->import->setMedia ($save);
         }
     }
 
-    public function set_page_properties (ODTPageLayoutStyle $pageStyle, cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $media_sel=NULL) {
-        if ( $import != NULL ) {
+    public function set_page_properties (ODTInternalParams $params, ODTPageLayoutStyle $pageStyle, $media_sel=NULL) {
+        if ( $params->import != NULL ) {
             if ($media_sel != NULL ) {
-                $save = $import->getMedia ();
-                $import->setMedia ($media_sel);
+                $save = $params->import->getMedia ();
+                $params->import->setMedia ($media_sel);
             }
 
-            $stack = clone $htmlStack;
+            $stack = clone $params->htmlStack;
             $stack->restoreToRoot ();
 
             // Set background-color of page
@@ -701,8 +633,8 @@ abstract class docHandler
             // For DokuWiki this is <div class="page group">, see renderer/page.php, function 'load_css()'
             $stack->restoreToRoot ();
             $properties = array();
-            $import->getPropertiesForElement($properties, $stack->getCurrentElement(), $units);
-            ODTUtility::adjustValuesForODT ($properties, $units);
+            $params->import->getPropertiesForElement($properties, $stack->getCurrentElement(), $params->units);
+            ODTUtility::adjustValuesForODT ($properties, $params->units);
             if (!empty($properties ['background-color'])) {
                 if ($pageStyle != NULL) {
                     $pageStyle->setProperty('background-color', $properties ['background-color']);
@@ -710,7 +642,7 @@ abstract class docHandler
             }
 
             if ($media_sel != NULL ) {
-                $import->setMedia ($save);
+                $params->import->setMedia ($save);
             }
         }
     }
@@ -774,12 +706,12 @@ abstract class docHandler
         }
     }
 
-    protected function import_styles_from_css_internal(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units) {
+    protected function import_styles_from_css_internal(ODTInternalParams $params, $htmlStack) {
         // Import page layout
         $name = $this->styleset->getStyleName('first page');
         $first_page = $this->styleset->getStyle($name);
         if ($first_page != NULL) {
-            $this->set_page_properties ($first_page, $import, $htmlStack, $units, NULL);
+            $this->set_page_properties ($params, $first_page, $htmlStack, NULL);
         }
 
         // Import styles which only require a simple import based on element name and attributes
@@ -790,19 +722,19 @@ abstract class docHandler
         $htmlStack->open('p');
         $toMatch = $htmlStack->getCurrentElement();
         $properties = array();
-        $import->getPropertiesForElement($properties, $toMatch, $units);
+        $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
         $htmlStack->restoreToRoot ();
 
         $toImport = array_merge ($this->internalRegs, $this->registrations);
         foreach ($toImport as $style => $element) {
             if ($element ['compare']) {
-                $this->importStyle($import, $htmlStack, $units,
+                $this->importStyle($params, $htmlStack,
                                    $style,
                                    $element ['element'],
                                    $element ['attributes'],
                                    $properties);
             } else {
-                $this->importStyle($import, $htmlStack, $units,
+                $this->importStyle($params, $htmlStack,
                                    $style,
                                    $element ['element'],
                                    $element ['attributes'],
@@ -811,14 +743,14 @@ abstract class docHandler
         }
 
         // Import table styles
-        $this->importTableStyles($import, $htmlStack, $units);
+        $this->importTableStyles($params, $htmlStack);
 
         // Import link styles (require extra pseudo class handling)
-        $this->importLinkStyles($import, $htmlStack, $units);
+        $this->importLinkStyles($params, $htmlStack);
 
         // Import list styles and list paragraph styles
-        $this->importUnorderedListStyles($import, $htmlStack, $units);
-        $this->importOrderedListStyles($import, $htmlStack, $units);
+        $this->importUnorderedListStyles($params, $htmlStack);
+        $this->importOrderedListStyles($params, $htmlStack);
 
         $this->importParagraphDefaultStyle();
         $this->importFootnoteStyle();

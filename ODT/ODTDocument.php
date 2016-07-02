@@ -1,5 +1,6 @@
 <?php
 
+require_once DOKU_INC . 'inc/ZipLib.class.php';
 require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
 require_once DOKU_PLUGIN . 'odt/ODT/scratchDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
@@ -17,6 +18,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTSpan.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTIndex.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTmanifest.php';
 require_once DOKU_PLUGIN . 'odt/ODT/css/cssimportnew.php';
 
 // Siple class as storage for internal parameters passed to other
@@ -29,6 +31,8 @@ class ODTInternalParams
     public $units = NULL;
     public $content = NULL;
     public $elementObj = NULL;
+    public $ZIP = NULL;
+    public $manifest = NULL;
 }
 
 /**
@@ -103,6 +107,8 @@ class ODTDocument
     protected $htmlStack = null;
     protected $CSSUsage = 'off';
     protected $params = NULL;
+    protected $manifest = NULL;
+    protected $ZIP = NULL;
 
     /**
      * Constructor:
@@ -131,7 +137,13 @@ class ODTDocument
 
         // Setup meta data store/handler
         $this->meta = new ODTMeta();
-        
+
+        // Setup manifest data
+        $this->manifest = new ODTManifest();
+
+        // prepare the zipper
+        $this->ZIP = new ZipLib();
+
         $this->params = new ODTInternalParams();
     }
 
@@ -145,6 +157,8 @@ class ODTDocument
         $this->params->htmlStack = $this->htmlStack;
         $this->params->units     = $this->units;
         $this->params->content   = &$this->content;
+        $this->params->ZIP       = $this->ZIP;
+        $this->params->manifest  = $this->manifest;
     }
 
     /**
@@ -166,7 +180,7 @@ class ODTDocument
      *
      * @param string $style_name The style to use.
      */
-    public function setCSSTemplate ($template_path, $media_sel, $mediadir, $callback=NULL) {
+    public function setCSSTemplate ($template_path, $media_sel, $callback=NULL) {
         // Document based on CSS template.
         $this->docHandler = new CSSTemplateDH ();
 
@@ -177,7 +191,7 @@ class ODTDocument
 
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
-            $this->docHandler->import($this->importnew, $this->htmlStack, $this->units, $template_path, $media_sel, $mediadir);
+            $this->docHandler->import($this->params, $template_path, $media_sel);
         }
     }
 
@@ -761,41 +775,6 @@ class ODTDocument
     }
 
     /**
-     * Add a file to the document.
-     *
-     * @param string $fileName Full file name in the document
-     *                         e.g. 'Pictures/myimage.png'
-     * @param string $mime Mime type
-     * @param string $content The content of the file
-     */    
-    public function addFile($fileName, $mime, $content) {
-        $this->docHandler->addFile($fileName, $mime, $content);
-    }
-
-    /**
-     * Adds the image $fileName as a picture file without adding it to
-     * the content of the document. The link name which can be used for
-     * the ODT draw:image xlink:href is returned.
-     *
-     * @param string $fileName
-     * @return string
-     */
-    function addFileAsPicture($fileName){
-        return $this->docHandler->addFileAsPicture($fileName);
-    }
-
-    /**
-     * Check if a file already exists in the document.
-     *
-     * @param string $fileName Full file name in the document
-     *                         e.g. 'Pictures/myimage.png'
-     * @return bool
-     */    
-    public function fileExists($fileName) {
-        return $this->docHandler->fileExists($fileName);
-    }
-
-    /**
      * Make sure that a user field name only contains valid sings.
      * (Code has been adopted from the fields plugin)
      *
@@ -888,13 +867,13 @@ class ODTDocument
         $userFieldDecls = $this->getUserFieldDecls();
            
         // Build the document
-        $this->docHandler->build($this->content,
+        $this->docHandler->build($this->params,
                                  $metaContent,
                                  $userFieldDecls,
                                  $this->pageStyles);
 
         // Return document
-        return $this->docHandler->get();
+        return $this->ZIP->get_file();
     }
 
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {
@@ -917,8 +896,7 @@ class ODTDocument
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
             //$this->docHandler->trace_dump = '>>>';
-            $this->docHandler->import_styles_from_css
-                ($this->importnew, $this->htmlStack, $this->units, $mediaSel);
+            $this->docHandler->import_styles_from_css ($this->params, $mediaSel);
             //$this->trace_dump .= $this->docHandler->trace_dump;
         }
 
@@ -977,7 +955,7 @@ class ODTDocument
         
         // It is iassumed the proper media selector has been set by calling setMediaSelector()
         if (($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') && $this->importnew != NULL) {
-            $this->docHandler->set_page_properties ($style_obj, $this->importnew, $this->htmlStack, $this->units);
+            $this->docHandler->set_page_properties ($this->params, $style_obj);
         }
         
         // Save style data in page style array, in common styles and set current page format
@@ -1983,5 +1961,53 @@ class ODTDocument
     public function addHTMLElement ($element, $attributes = NULL) {
         $this->htmlStack->open($element, $attributes);
         $this->htmlStack->saveRootIndex ();
+    }
+
+    /**
+     * Check if a file already exists in the document.
+     *
+     * @param string $fileName Full file name in the document
+     *                         e.g. 'Pictures/myimage.png'
+     * @return bool
+     */    
+    public function fileExists($name) {
+        return $this->manifest->exists($name);
+    }
+
+    /**
+     * Add a file to the document.
+     *
+     * @param string $fileName Full file name in the document
+     *                         e.g. 'Pictures/myimage.png'
+     * @param string $mime Mime type
+     * @param string $content The content of the file
+     */    
+    public function addFile($fileName, $mime, $content) {
+        if(!$this->manifest->exists($fileName)){
+            $this->manifest->add($fileName, $mime);
+            $this->ZIP->add_File($content, $fileName, 0);
+            return true;
+        }
+
+        // File with that name already exists!
+        return false;
+    }
+
+    /**
+     * Adds the image $fileName as a picture file without adding it to
+     * the content of the document. The link name which can be used for
+     * the ODT draw:image xlink:href is returned.
+     *
+     * @param string $fileName
+     * @return string
+     */
+    function addFileAsPicture($fileName){
+        $name = '';
+        if (file_exists($fileName)) {
+            list($ext,$mime) = mimetype($fileName);
+            $name = 'Pictures/'.md5($fileName).'.'.$ext;
+            $this->addFile($name, $mime, io_readfile($fileName,false));
+        }
+        return $name;
     }
 }

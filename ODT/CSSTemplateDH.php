@@ -29,7 +29,6 @@ class CSSTemplateDH extends docHandler
      * Constructor.
      */
     public function __construct() {
-        parent::__construct();
         $this->settings = new ODTSettings();
 
         $this->factory = plugin_load('helper', 'odt_stylefactory');
@@ -44,12 +43,12 @@ class CSSTemplateDH extends docHandler
      *
      * @param string $template
      */
-    public function import(cssimportnew $import, cssdocument $htmlStack, ODTUnits $units, $template_path, $media_sel=NULL, $media_path, $callback=NULL) {
-        $import->importFromFile($template_path);
+    public function import(ODTInternalParams $params, $template_path, $media_sel=NULL, $callback=NULL) {
+        $params->import->importFromFile($template_path);
         if ($callback != NULL) {
-            $import->adjustLengthValues ($callback);
+            $params->import->adjustLengthValues ($callback);
         }
-        $this->import_styles_from_css ($import, $htmlStack, $units, $media_sel, $media_path);
+        $this->import_styles_from_css ($params, $media_sel);
     }
 
 
@@ -57,19 +56,17 @@ class CSSTemplateDH extends docHandler
      * Build the document from scratch.
      * (code taken from old function 'document_end_scratch')
      *
-     * @param string      $doc
-     * @param string      $autostyles
-     * @param array       $commonstyles
+     * @param ODTInternalParams $params
      * @param string      $meta
      * @param string      $userfields
      * @param ODTStyleSet $styleset
      * @return mixed
      */
-    public function build($doc=null, $meta=null, $userfields=null, $pagestyles=null){
+    public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
         // add defaults
-        $this->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
-        $this->ZIP->add_File($meta,'meta.xml');
-        $this->ZIP->add_File($this->settings->getContent(),'settings.xml');
+        $params->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
+        $params->ZIP->add_File($meta,'meta.xml');
+        $params->ZIP->add_File($this->settings->getContent(),'settings.xml');
 
         $autostyles = $this->styleset->export('office:automatic-styles');
         $commonstyles = $this->styleset->export('office:styles');
@@ -115,12 +112,12 @@ class CSSTemplateDH extends docHandler
         $value .=                   '<text:sequence-decl text:display-outline-level="0" text:name="Drawing"/>';
         $value .=               '</text:sequence-decls>';
         $value .=               $userfields;
-        $value .=   $doc;
+        $value .=   $params->content;
         $value .=           '</office:text>';
         $value .=       '</office:body>';
         $value .=   '</office:document-content>';
 
-        $this->ZIP->add_File($value,'content.xml');
+        $params->ZIP->add_File($value,'content.xml');
 
         // Edit 'styles.xml'
         $value = io_readFile(DOKU_PLUGIN.'odt/styles.xml');
@@ -140,10 +137,10 @@ class CSSTemplateDH extends docHandler
 
         // Add automatic styles.
         $value = str_replace('<office:automatic-styles/>', $autostyles, $value);
-        $this->ZIP->add_File($value,'styles.xml');
+        $params->ZIP->add_File($value,'styles.xml');
 
         // build final manifest
-        $this->ZIP->add_File($this->manifest->getContent(),'META-INF/manifest.xml');
+        $params->ZIP->add_File($params->manifest->getContent(),'META-INF/manifest.xml');
     }
 
     /**

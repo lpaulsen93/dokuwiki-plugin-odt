@@ -20,7 +20,6 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
 class CSSTemplateDH extends docHandler
 {
     protected $factory = NULL;
-    protected $settings;
     protected $styleset = NULL;
     protected $template = NULL;
     protected $untis = NULL;
@@ -29,8 +28,6 @@ class CSSTemplateDH extends docHandler
      * Constructor.
      */
     public function __construct() {
-        $this->settings = new ODTSettings();
-
         $this->factory = plugin_load('helper', 'odt_stylefactory');
 
         // Create default styles (from styles.xml).
@@ -64,9 +61,10 @@ class CSSTemplateDH extends docHandler
      */
     public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
         // add defaults
+        $settings = new ODTSettings();
         $params->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
         $params->ZIP->add_File($meta,'meta.xml');
-        $params->ZIP->add_File($this->settings->getContent(),'settings.xml');
+        $params->ZIP->add_File($settings->getContent(),'settings.xml');
 
         $autostyles = $this->styleset->export('office:automatic-styles');
         $commonstyles = $this->styleset->export('office:styles');

@@ -23,15 +23,12 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
  */
 class scratchDH extends docHandler
 {
-    protected $settings;
     protected $styleset = NULL;
 
     /**
      * Constructor.
      */
     public function __construct() {
-        $this->settings = new ODTSettings();
-
         // Create styles.
         $this->styleset = new ODTDefaultStyles();
         $this->styleset->import();
@@ -51,9 +48,10 @@ class scratchDH extends docHandler
      */
     public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
         // add defaults
+        $settings = new ODTSettings();
         $params->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
         $params->ZIP->add_File($meta,'meta.xml');
-        $params->ZIP->add_File($this->settings->getContent(),'settings.xml');
+        $params->ZIP->add_File($settings->getContent(),'settings.xml');
 
         $autostyles = $this->styleset->export('office:automatic-styles');
         $commonstyles = $this->styleset->export('office:styles');

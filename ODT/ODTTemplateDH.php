@@ -22,8 +22,6 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
  */
 class ODTTemplateDH extends docHandler
 {
-    var $template = null;
-    var $directory = null;
     protected $styleset = NULL;
 
     /**

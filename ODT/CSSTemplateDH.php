@@ -20,8 +20,6 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
 class CSSTemplateDH extends docHandler
 {
     protected $styleset = NULL;
-    protected $template = NULL;
-    protected $untis = NULL;
 
     /**
      * Constructor.

@@ -66,51 +66,11 @@ abstract class docHandler
      * Build ODT document.
      *
      * @param string      $doc
-     * @param string      $autostyles
-     * @param array       $commonstyles
      * @param string      $meta
      * @param string      $userfields
-     * @param ODTStyleSet $styleset
      * @return mixed
      */
     abstract public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null);
-
-    /**
-     * Each docHandler needs to provide a way to add a style to the document.
-     *
-     * @param $new The ODTStyle to add.
-     */
-    abstract public function addStyle(ODTStyle $new);
-
-    /**
-     * Each docHandler needs to provide a way to add an automatic style to the document.
-     *
-     * @param $new The ODTStyle to add.
-     */
-    abstract public function addAutomaticStyle(ODTStyle $new);
-
-    /**
-     * Each docHandler needs to provide a way to check if a style definition
-     * already exists in the document.
-     *
-     * @param $name Name of the style to check
-     * @return boolean
-     */
-    abstract public function styleExists ($name);
-
-    /**
-     * Each docHandler needs to provide a way to get a style definition's
-     * object (if it exists).
-     *
-     * @param $name Name of the style
-     * @return ODTStyle
-     */
-    abstract public function getStyle ($name);
-
-    /**
-     * The function returns the style names used for the basic syntax.
-     */
-    abstract public function getStyleName($style);
 
     protected function setListStyleImage (ODTInternalParams $params, $style, $level, $file) {
         $odt_file = $params->document->addFileAsPicture($file);
@@ -152,8 +112,8 @@ abstract class docHandler
     }
 
     protected function importOrderedListStyles(ODTInternalParams $params, cssdocument $htmlStack) {
-        $name = $this->styleset->getStyleName('numbering');
-        $style = $this->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName('numbering');
+        $style = $params->styleset->getStyle($name);
         if ($style == NULL ) {
             return;
         }
@@ -239,8 +199,8 @@ abstract class docHandler
                 $disabled ['margin-top'] = 1;
                 $disabled ['margin-bottom'] = 1;
 
-                $name = $this->styleset->getStyleName('numbering content');
-                $paragraphStyle = $this->styleset->getStyle($name);
+                $name = $params->styleset->getStyleName('numbering content');
+                $paragraphStyle = $params->styleset->getStyle($name);
                 $paragraphStyle->importProperties($properties, $disabled);
             }
         }
@@ -251,17 +211,17 @@ abstract class docHandler
     }
 
     protected function importUnorderedListStyles(ODTInternalParams $params, cssdocument $htmlStack) {
-        $name = $this->styleset->getStyleName('list');
-        $style = $this->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName('list');
+        $style = $params->styleset->getStyle($name);
         if ($style == NULL ) {
             return;
         }
 
         // Workaround for ODT format, see end of loop
-        $name = $this->styleset->getStyleName('list first paragraph');
-        $firstStyle = $this->styleset->getStyle($name);
-        $name = $this->styleset->getStyleName('list last paragraph');
-        $lastStyle = $this->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName('list first paragraph');
+        $firstStyle = $params->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName('list last paragraph');
+        $lastStyle = $params->styleset->getStyle($name);
 
         // Reset stack to saved root so next importStyle
         // will have the same conditions
@@ -357,8 +317,8 @@ abstract class docHandler
                 $disabled ['margin-top'] = 1;
                 $disabled ['margin-bottom'] = 1;
 
-                $name = $this->styleset->getStyleName('list content');
-                $paragraphStyle = $this->styleset->getStyle($name);
+                $name = $params->styleset->getStyleName('list content');
+                $paragraphStyle = $params->styleset->getStyle($name);
                 $paragraphStyle->importProperties($properties, $disabled);
             }
         }
@@ -370,8 +330,8 @@ abstract class docHandler
 
     protected function importTableStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         foreach ($this->table_styles as $style_type => $elementParams) {
-            $name = $this->styleset->getStyleName($style_type);
-            $style = $this->styleset->getStyle($name);
+            $name = $params->styleset->getStyleName($style_type);
+            $style = $params->styleset->getStyle($name);
             if ( $style != NULL ) {
                 $element = $elementParams ['element'];
                 $attributes = $elementParams ['attributes'];
@@ -449,8 +409,8 @@ abstract class docHandler
                 // Inherit properties for table header paragraph style from
                 // the properties of the 'th' element
                 if ($element == 'th') {
-                    $name = $this->styleset->getStyleName('table heading');
-                    $paragraphStyle = $this->styleset->getStyle($name);
+                    $name = $params->styleset->getStyleName('table heading');
+                    $paragraphStyle = $params->styleset->getStyle($name);
 
                     // Do not set borders on our paragraph styles in the table.
                     // Otherwise we will have double borders. Around the cell and
@@ -470,8 +430,8 @@ abstract class docHandler
                 // Inherit properties for table content paragraph style from
                 // the properties of the 'td' element
                 if ($element == 'td') {
-                    $name = $this->styleset->getStyleName('table content');
-                    $paragraphStyle = $this->styleset->getStyle($name);
+                    $name = $params->styleset->getStyleName('table content');
+                    $paragraphStyle = $params->styleset->getStyle($name);
 
                     // Do not set borders on our paragraph styles in the table.
                     // Otherwise we will have double borders. Around the cell and
@@ -499,8 +459,8 @@ abstract class docHandler
 
     protected function importLinkStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         foreach ($this->link_styles as $style_type => $elementParams) {
-            $name = $this->styleset->getStyleName($style_type);
-            $style = $this->styleset->getStyle($name);
+            $name = $params->styleset->getStyleName($style_type);
+            $style = $params->styleset->getStyle($name);
             if ( $name != NULL && $style != NULL ) {
                 $element = $elementParams ['element'];
                 $attributes = $elementParams ['attributes'];
@@ -534,8 +494,8 @@ abstract class docHandler
     }
 
     protected function importStyle(ODTInternalParams $params, cssdocument $htmlStack, $style_type, $element, $attributes=NULL, array $plain=NULL) {
-        $name = $this->styleset->getStyleName($style_type);
-        $style = $this->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName($style_type);
+        $style = $params->styleset->getStyle($name);
         if ( $style != NULL ) {
             // Push our element to import on the stack
             $htmlStack->open($element, $attributes);
@@ -647,13 +607,13 @@ abstract class docHandler
         }
     }
 
-    protected function importParagraphDefaultStyle() {
+    protected function importParagraphDefaultStyle(ODTInternalParams $params) {
         // This function MUST be called at the end of import_styles_from_css_internal
         // ==> the 'body' paragraph style must have alread been imported!
 
         // Get standard text style ('body')
-        $styleName = $this->styleset->getStyleName('body');
-        $body = $this->styleset->getStyle($styleName);
+        $styleName = $params->styleset->getStyleName('body');
+        $body = $params->styleset->getStyle($styleName);
 
         // Copy body paragraph properties to the paragraph default styles
         // But not margins and paddings:
@@ -671,19 +631,19 @@ abstract class docHandler
         $disabled ['padding-bottom'] = 1;
         $disabled ['padding-left'] = 1;
         
-        $default = $this->styleset->getDefaultStyle ('paragraph');
+        $default = $params->styleset->getDefaultStyle ('paragraph');
         if ($default != NULL && $body != NULL) {
             ODTParagraphStyle::copyLayoutProperties ($body, $default, $disabled);
         }
     }
 
-    protected function importFootnoteStyle() {
+    protected function importFootnoteStyle(ODTInternalParams $params) {
         // This function MUST be called at the end of import_styles_from_css_internal
         // ==> the 'body' paragraph style must have alread been imported!
 
         // Get standard text style ('body')
-        $styleName = $this->styleset->getStyleName('body');
-        $body = $this->styleset->getStyle($styleName);
+        $styleName = $params->styleset->getStyleName('body');
+        $body = $params->styleset->getStyle($styleName);
 
         // Copy body paragraph properties to the footnote style
         // But not margins and paddings.
@@ -699,8 +659,8 @@ abstract class docHandler
         $disabled ['padding-bottom'] = 1;
         $disabled ['padding-left'] = 1;
         
-        $styleName = $this->styleset->getStyleName (footnote);
-        $footnote = $this->styleset->getStyle($styleName);
+        $styleName = $params->styleset->getStyleName (footnote);
+        $footnote = $params->styleset->getStyle($styleName);
         if ($footnote != NULL && $body != NULL) {
             ODTParagraphStyle::copyLayoutProperties ($body, $footnote, $disabled);
         }
@@ -708,8 +668,8 @@ abstract class docHandler
 
     protected function import_styles_from_css_internal(ODTInternalParams $params, $htmlStack) {
         // Import page layout
-        $name = $this->styleset->getStyleName('first page');
-        $first_page = $this->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName('first page');
+        $first_page = $params->styleset->getStyle($name);
         if ($first_page != NULL) {
             $this->set_page_properties ($params, $first_page, $htmlStack, NULL);
         }
@@ -752,8 +712,8 @@ abstract class docHandler
         $this->importUnorderedListStyles($params, $htmlStack);
         $this->importOrderedListStyles($params, $htmlStack);
 
-        $this->importParagraphDefaultStyle();
-        $this->importFootnoteStyle();
+        $this->importParagraphDefaultStyle($params);
+        $this->importFootnoteStyle($params);
     }
     
     public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {

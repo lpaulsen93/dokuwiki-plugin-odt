@@ -33,6 +33,7 @@ class ODTInternalParams
     public $elementObj = NULL;
     public $ZIP = NULL;
     public $manifest = NULL;
+    public $styleset = NULL;
 }
 
 /**
@@ -109,6 +110,7 @@ class ODTDocument
     protected $params = NULL;
     protected $manifest = NULL;
     protected $ZIP = NULL;
+    protected $styleset = NULL;
 
     /**
      * Constructor:
@@ -121,6 +123,10 @@ class ODTDocument
 
         // Initialize HTML state
         $this->htmlStack = new cssdocument();
+
+        // Create default styles/styles storage.
+        $this->styleset = new ODTDefaultStyles();
+        $this->styleset->import();
 
         // Use standard handler, document from scratch.
         $this->docHandler = new scratchDH ();
@@ -159,6 +165,7 @@ class ODTDocument
         $this->params->content   = &$this->content;
         $this->params->ZIP       = $this->ZIP;
         $this->params->manifest  = $this->manifest;
+        $this->params->styleset  = $this->styleset;
     }
 
     /**
@@ -712,64 +719,6 @@ class ODTDocument
      */
     function heading($text, $level, $element=NULL, $attributes=NULL){
         ODTHeading::heading($this->params, $text, $level, $element, $attributes);
-    }
-
-    /**
-     * Get the style name for a style alias.
-     *
-     * @param string $alias The alias for the style.
-     * @return string The style name used in the ODT document
-     */    
-    public function getStyleName($alias) {
-        return $this->docHandler->getStyleName($alias);
-    }
-
-    /**
-     * Get the style object with style name $styleName.
-     *
-     * @param string $styleName The style name ofthe style style.
-     * @return ODTStyle The style object
-     */    
-    public function getStyle($styleName) {
-        return $this->docHandler->getStyle($styleName);
-    }
-
-    /**
-     * Get the style object by $alias.
-     *
-     * @param string $alias The alias for the style.
-     * @return ODTStyle The style object
-     */    
-    public function getStyleByAlias($alias) {
-        return $this->docHandler->getStyle($this->docHandler->getStyleName($alias));
-    }
-
-    /**
-     * Add style object to the document as a common style.
-     *
-     * @param ODTStyle $style_obj Object to add
-     */
-    public function addStyle(ODTStyle $style_obj) {
-        $this->docHandler->addStyle($style_obj);
-    }
-
-    /**
-     * Add style object to the document as an automatic style.
-     *
-     * @param ODTStyle $style_obj Object to add
-     */
-    public function addAutomaticStyle(ODTStyle $style_obj) {
-        $this->docHandler->addAutomaticStyle($style_obj);
-    }
-
-    /**
-     * Check if a style with $styleName already exists.
-     *
-     * @param string $styleName The style name ofthe style style.
-     * @return bool
-     */    
-    public function styleExists($styleName) {
-        return $this->docHandler->styleExists($styleName);
     }
 
     /**
@@ -2009,5 +1958,77 @@ class ODTDocument
             $this->addFile($name, $mime, io_readfile($fileName,false));
         }
         return $name;
+    }
+
+    /**
+     * Add style object to the document as a common style.
+     *
+     * @param ODTStyle $new Object to add
+     */
+    public function addStyle(ODTStyle $new) {
+        return $this->styleset->addStyle($new);
+    }
+
+    /**
+     * Add style object to the document as an automatic style.
+     *
+     * @param ODTStyle $new Object to add
+     */
+    public function addAutomaticStyle(ODTStyle $new) {
+        return $this->styleset->addAutomaticStyle($new);
+    }
+
+    /**
+     * Check if a style with $styleName already exists.
+     *
+     * @param string $styleName The style name ofthe style style.
+     * @return bool
+     */    
+    public function styleExists ($name) {
+        return $this->styleset->styleExists($name);
+    }
+
+    /**
+     * Get the style object with style name $styleName.
+     *
+     * @param string $styleName The style name ofthe style style.
+     * @return ODTStyle The style object
+     */    
+    public function getStyle ($styleName) {
+        return $this->styleset->getStyle($styleName);
+    }
+
+    public function getDefaultStyle ($family) {
+        return $this->styleset->getDefaultStyle($family);
+    }
+
+    /**
+     * Get the style name for a style alias.
+     *
+     * @param string $alias The alias for the style.
+     * @return string The style name used in the ODT document
+     */    
+    public function getStyleName($alias) {
+        return $this->styleset->getStyleName($alias);
+    }
+
+    /**
+     * The function returns the style at the given index
+     * 
+     * @param $element Element of the style e.g. 'office:styles'
+     * @return ODTStyle or NULL
+     */
+    public function getStyleAtIndex($element, $index) {
+        return $this->styleset->getStyleAtIndex($element, $index);
+    }
+
+    /**
+     * Get the style object by $alias.
+     *
+     * @param string $alias The alias for the style.
+     * @return ODTStyle The style object
+     */    
+    public function getStyleByAlias($alias) {
+        return $this->styleset->getStyle($this->styleset->getStyleName($alias));
     }
 }

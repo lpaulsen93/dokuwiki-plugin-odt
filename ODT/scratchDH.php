@@ -23,27 +23,13 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
  */
 class scratchDH extends docHandler
 {
-    protected $styleset = NULL;
-
-    /**
-     * Constructor.
-     */
-    public function __construct() {
-        // Create styles.
-        $this->styleset = new ODTDefaultStyles();
-        $this->styleset->import();
-    }
-
     /**
      * Build the document from scratch.
      * (code taken from old function 'document_end_scratch')
      *
      * @param ODTInternalParams $params
-     * @param string      $autostyles
-     * @param array       $commonstyles
      * @param string      $meta
      * @param string      $userfields
-     * @param ODTStyleSet $styleset
      * @return mixed
      */
     public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
@@ -53,9 +39,9 @@ class scratchDH extends docHandler
         $params->ZIP->add_File($meta,'meta.xml');
         $params->ZIP->add_File($settings->getContent(),'settings.xml');
 
-        $autostyles = $this->styleset->export('office:automatic-styles');
-        $commonstyles = $this->styleset->export('office:styles');
-        $masterstyles = $this->styleset->export('office:master-styles');
+        $autostyles = $params->styleset->export('office:automatic-styles');
+        $commonstyles = $params->styleset->export('office:styles');
+        $masterstyles = $params->styleset->export('office:master-styles');
 
         $value  =   '<' . '?xml version="1.0" encoding="UTF-8"?' . ">\n";
         $value .=   '<office:document-content ';
@@ -145,60 +131,5 @@ class scratchDH extends docHandler
 
         // build final manifest
         $params->ZIP->add_File($params->manifest->getContent(),'META-INF/manifest.xml');
-    }
-
-    /**
-     * @param null $source
-     */
-    public function addStyle(ODTStyle $new) {
-        return $this->styleset->addStyle($new);
-    }
-
-    /**
-     * @param null $source
-     */
-    public function addAutomaticStyle(ODTStyle $new) {
-        return $this->styleset->addAutomaticStyle($new);
-    }
-
-    /**
-     * The function style checks if a style with the given $name already exists.
-     * 
-     * @param $name Name of the style to check
-     * @return boolean
-     */
-    public function styleExists ($name) {
-        return $this->styleset->styleExists($name);
-    }
-
-    /**
-     * The function returns the style with the given name
-     * 
-     * @param $name Name of the style
-     * @return ODTStyle or NULL
-     */
-    public function getStyle ($name) {
-        return $this->styleset->getStyle($name);
-    }
-
-    public function getDefaultStyle ($family) {
-        return $this->styleset->getDefaultStyle($family);
-    }
-
-    /**
-     * The function returns the style names used for the basic syntax.
-     */
-    public function getStyleName($style) {
-        return $this->styleset->getStyleName($style);
-    }
-
-    /**
-     * The function returns the style at the given index
-     * 
-     * @param $element Element of the style e.g. 'office:styles'
-     * @return ODTStyle or NULL
-     */
-    public function getStyleAtIndex($element, $index) {
-        return $this->styleset->getStyleAtIndex($element, $index);
     }
 }

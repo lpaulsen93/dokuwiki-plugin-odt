@@ -19,7 +19,6 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
  */
 class CSSTemplateDH extends docHandler
 {
-    protected $factory = NULL;
     protected $styleset = NULL;
     protected $template = NULL;
     protected $untis = NULL;
@@ -28,8 +27,6 @@ class CSSTemplateDH extends docHandler
      * Constructor.
      */
     public function __construct() {
-        $this->factory = plugin_load('helper', 'odt_stylefactory');
-
         // Create default styles (from styles.xml).
         $this->styleset = new ODTDefaultStyles();
         $this->styleset->import();

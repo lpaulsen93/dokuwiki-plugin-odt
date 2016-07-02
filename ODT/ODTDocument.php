@@ -169,8 +169,6 @@ class ODTDocument
     public function setODTTemplate ($file, $directory) {
         // Document based on ODT template.
         $this->docHandler = new ODTTemplateDH ();
-        $this->docHandler->setTemplate($file);
-        $this->docHandler->setDirectory($directory);
 
         // Do NOT overwrite outline style of ODT template.
     }
@@ -835,7 +833,7 @@ class ODTDocument
      * @param string $content The content
      * @return string String containing ODT ZIP stream
      */
-    public function getODTFileAsString() {
+    public function getODTFileAsString($ODTtemplate=NULL, $tempDir=NULL) {
         // Close any open paragraph if not done yet.
         $this->paragraphClose();
 
@@ -865,12 +863,14 @@ class ODTDocument
 
         // Get user field declarations
         $userFieldDecls = $this->getUserFieldDecls();
-           
+
         // Build the document
         $this->docHandler->build($this->params,
                                  $metaContent,
                                  $userFieldDecls,
-                                 $this->pageStyles);
+                                 $this->pageStyles,
+                                 $ODTtemplate,
+                                 $tempDir);
 
         // Return document
         return $this->ZIP->get_file();

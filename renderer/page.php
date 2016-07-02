@@ -26,6 +26,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $document = null;
     /** @var string */
     protected $css;
+    protected $directory;
+    protected $template;
 
     /**
      * Constructor. Loads helper plugins.
@@ -163,8 +165,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         switch($mode) {
             case 'ODT template':
                 // Document based on ODT template.
-                $this->document->setODTTemplate($this->config->getParam ('odt_template'),
-                    $this->config->getParam ('tpl_dir'));
+                $this->document->setODTTemplate();
+                $this->directory = $this->config->getParam ('tpl_dir');
+                $this->template = $this->config->getParam ('odt_template');
                 break;
 
             case 'CSS template':
@@ -329,8 +332,22 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * Completes the ODT file.
      */
     public function finalize_ODTfile() {
+        global $ID;
+
+        // Temp dir
+        if (is_dir($this->config->getParam('tmpdir'))) {
+            $temp_dir = $this->config->getParam('tmpdir');
+        }
+        $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
+
+        // Eventually determine ODT template file
+        $ODTtemplate = NULL;
+        if ($this->directory != NULL || $this->template != NULL) {
+            $ODTtemplate = $this->config->getParam('mediadir').'/'.$this->directory."/".$this->template;
+        }
+
         // Build/assign the document
-        $this->doc = $this->document->getODTFileAsString ();
+        $this->doc = $this->document->getODTFileAsString ($ODTtemplate, $temp_dir);
 
         $this->convert();
     }

@@ -22,7 +22,6 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/docHandler.php';
  */
 class ODTTemplateDH extends docHandler
 {
-    protected $config = null;
     var $template = null;
     var $directory = null;
     protected $styleset = NULL;
@@ -31,31 +30,9 @@ class ODTTemplateDH extends docHandler
      * Constructor.
      */
     public function __construct() {
-        // Load config
-        $this->config = plugin_load('helper', 'odt_config');
-        $this->config->load($warning);
-
         // Create styles.
         $this->styleset = new ODTDefaultStyles();
         $this->styleset->import();
-    }
-
-    /**
-     * Set the template.
-     *
-     * @param string $template
-     */
-    public function setTemplate($template) {
-        $this->template = $template;
-    }
-
-    /**
-     * Set the template directory.
-     *
-     * @param string $directory
-     */
-    public function setDirectory($directory) {
-        $this->directory = $directory;
     }
 
     /**
@@ -70,34 +47,29 @@ class ODTTemplateDH extends docHandler
      * @param ODTDefaultStyles $styleset
      * @return mixed
      */
-    public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
+    public function build(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null, $template=NULL, $tempDir=NULL){
         // for the temp dir
         global $ID;
 
-        // Temp dir
-        if (is_dir($this->config->getParam('tmpdir'))) {
-            // version > 20070626
-            $temp_dir = $this->config->getParam('tmpdir');
-        } else {
-            // version <= 20070626
-            $temp_dir = $this->config->getParam('savedir').'/cache/tmp';
+        if ($template == NULL || $tempDir == NULL) {
+            return;
         }
-        $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
-        if (is_dir($temp_dir)) { io_rmdir($temp_dir,true); }
-        io_mkdir_p($temp_dir);
+
+        // Temp dir
+        if (is_dir($tempDir)) { io_rmdir($tempDir,true); }
+        io_mkdir_p($tempDir);
 
         // Extract template
-        $template_path = $this->config->getParam('mediadir').'/'.$this->directory."/".$this->template;
-        $ok = $params->ZIP->Extract($template_path, $temp_dir);
+        $ok = $params->ZIP->Extract($template, $tempDir);
         if($ok == -1){
-            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$temp_dir);
+            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$tempDir);
         }
 
         // Import styles from ODT template        
-        $this->styleset->importFromODTFile($temp_dir.'/content.xml', 'office:automatic-styles', true);
-        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:automatic-styles', true);
-        $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:styles', true);
-        $test = $this->styleset->importFromODTFile($temp_dir.'/styles.xml', 'office:master-styles', true);
+        $this->styleset->importFromODTFile($tempDir.'/content.xml', 'office:automatic-styles', true);
+        $this->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:automatic-styles', true);
+        $this->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:styles', true);
+        $test = $this->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:master-styles', true);
 
         // Evtl. copy page format of first page to different style
         $first_master = $this->styleset->getStyleAtIndex ('office:master-styles', 0);
@@ -123,45 +95,45 @@ class ODTTemplateDH extends docHandler
         $masterstyles = $this->styleset->export('office:master-styles');
 
         // Prepare content
-        $missingfonts = $this->styleset->getMissingFonts($temp_dir.'/styles.xml');
+        $missingfonts = $this->styleset->getMissingFonts($tempDir.'/styles.xml');
 
         // Insert content
-        $old_content = io_readFile($temp_dir.'/content.xml');
+        $old_content = io_readFile($tempDir.'/content.xml');
         if (strpos($old_content, 'DOKUWIKI-ODT-INSERT') !== FALSE) { // Replace the mark
             $this->_odtReplaceInFile('/<text:p[^>]*>DOKUWIKI-ODT-INSERT<\/text:p>/',
-                $params->content, $temp_dir.'/content.xml', true);
+                $params->content, $tempDir.'/content.xml', true);
         } else { // Append to the template
-            $this->_odtReplaceInFile('</office:text>', $params->content.'</office:text>', $temp_dir.'/content.xml');
+            $this->_odtReplaceInFile('</office:text>', $params->content.'</office:text>', $tempDir.'/content.xml');
         }
 
         // Cut off unwanted content
         if (strpos($old_content, 'DOKUWIKI-ODT-CUT-START') !== FALSE
                 && strpos($old_content, 'DOKUWIKI-ODT-CUT-STOP') !== FALSE) {
             $this->_odtReplaceInFile('/DOKUWIKI-ODT-CUT-START.*DOKUWIKI-ODT-CUT-STOP/',
-                '', $temp_dir.'/content.xml', true);
+                '', $tempDir.'/content.xml', true);
         }
 
         // Insert userfields
         if (strpos($old_content, "text:user-field-decls") === FALSE) { // no existing userfields
-            $this->_odtReplaceInFile('/<office:text([^>]*)>/U', '<office:text\1>'.$userfields, $temp_dir.'/content.xml', TRUE);
+            $this->_odtReplaceInFile('/<office:text([^>]*)>/U', '<office:text\1>'.$userfields, $tempDir.'/content.xml', TRUE);
         } else {
-            $this->_odtReplaceInFile('</text:user-field-decls>', substr($userfields,23), $temp_dir.'/content.xml');
+            $this->_odtReplaceInFile('</text:user-field-decls>', substr($userfields,23), $tempDir.'/content.xml');
         }
         
         // Insert styles & fonts
-        $value = io_readFile($temp_dir.'/content.xml');
+        $value = io_readFile($tempDir.'/content.xml');
         $original = XMLUtil::getElement('office:automatic-styles', $value);
-        $this->_odtReplaceInFile($original, $autostyles, $temp_dir.'/content.xml');
+        $this->_odtReplaceInFile($original, $autostyles, $tempDir.'/content.xml');
 
-        $value = io_readFile($temp_dir.'/styles.xml');
+        $value = io_readFile($tempDir.'/styles.xml');
         $original = XMLUtil::getElement('office:automatic-styles', $value);
-        $this->_odtReplaceInFile($original, $autostyles, $temp_dir.'/styles.xml');
+        $this->_odtReplaceInFile($original, $autostyles, $tempDir.'/styles.xml');
 
-        $value = io_readFile($temp_dir.'/styles.xml');
+        $value = io_readFile($tempDir.'/styles.xml');
         $original = XMLUtil::getElement('office:styles', $value);
-        $this->_odtReplaceInFile($original, $commonstyles, $temp_dir.'/styles.xml');
+        $this->_odtReplaceInFile($original, $commonstyles, $tempDir.'/styles.xml');
 
-        $this->_odtReplaceInFile('</office:font-face-decls>', $missingfonts.'</office:font-face-decls>', $temp_dir.'/styles.xml');
+        $this->_odtReplaceInFile('</office:font-face-decls>', $missingfonts.'</office:font-face-decls>', $tempDir.'/styles.xml');
 
         // Insert page styles
         $page = '';
@@ -169,15 +141,15 @@ class ODTTemplateDH extends docHandler
             $page .= '<style:master-page style:name="'.$name.'" style:page-layout-name="'.$layout_name.'"/>';
         }
         if ( !empty($page) ) {
-            $this->_odtReplaceInFile('</office:master-styles>', $page.'</office:master-styles>', $temp_dir.'/styles.xml');
+            $this->_odtReplaceInFile('</office:master-styles>', $page.'</office:master-styles>', $tempDir.'/styles.xml');
         }
 
         // Add manifest data
-        $this->_odtReplaceInFile('</manifest:manifest>', $params->manifest->getExtraContent() . '</manifest:manifest>', $temp_dir . '/META-INF/manifest.xml');
+        $this->_odtReplaceInFile('</manifest:manifest>', $params->manifest->getExtraContent() . '</manifest:manifest>', $tempDir . '/META-INF/manifest.xml');
 
         // Build the Zip
-        $params->ZIP->Compress(null, $temp_dir, null);
-        io_rmdir($temp_dir,true);
+        $params->ZIP->Compress(null, $tempDir, null);
+        io_rmdir($tempDir,true);
     }
 
     /**

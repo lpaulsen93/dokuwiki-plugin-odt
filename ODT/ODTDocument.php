@@ -20,6 +20,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTUnits.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTmanifest.php';
 require_once DOKU_PLUGIN . 'odt/ODT/css/cssimportnew.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTImport.php';
 
 // Siple class as storage for internal parameters passed to other
 // classes to prevent to long parameter lines.
@@ -111,6 +112,7 @@ class ODTDocument
     protected $manifest = NULL;
     protected $ZIP = NULL;
     protected $styleset = NULL;
+    protected $registrations = array();
 
     /**
      * Constructor:
@@ -196,7 +198,7 @@ class ODTDocument
 
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
-            $this->docHandler->import($this->params, $template_path, $media_sel);
+            ODTImport::importCSSFromFile ($this->params, $template_path, $media_sel, NULL, $this->registrations);
         }
     }
 
@@ -824,10 +826,6 @@ class ODTDocument
         // Return document
         return $this->ZIP->get_file();
     }
-
-    public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {
-        $this->docHandler->registerHTMLElementForCSSImport ($style_type, $element, $attributes);
-    }
     
     /**
      * Import CSS code for styles from a string.
@@ -845,7 +843,7 @@ class ODTDocument
         // Import CSS as styles
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
             //$this->docHandler->trace_dump = '>>>';
-            $this->docHandler->import_styles_from_css ($this->params, $mediaSel);
+            ODTImport::import_styles_from_css ($this->params, $mediaSel, $this->registrations);
             //$this->trace_dump .= $this->docHandler->trace_dump;
         }
 
@@ -904,7 +902,7 @@ class ODTDocument
         
         // It is iassumed the proper media selector has been set by calling setMediaSelector()
         if (($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') && $this->importnew != NULL) {
-            $this->docHandler->set_page_properties ($this->params, $style_obj);
+            ODTImport::set_page_properties ($this->params, $style_obj);
         }
         
         // Save style data in page style array, in common styles and set current page format
@@ -2030,5 +2028,10 @@ class ODTDocument
      */    
     public function getStyleByAlias($alias) {
         return $this->styleset->getStyle($this->styleset->getStyleName($alias));
+    }
+
+    public function registerHTMLElementForCSSImport ($style_type, $element, $attributes=NULL) {
+        $this->registrations [$style_type]['element'] = $element;
+        $this->registrations [$style_type]['attributes'] = $attributes;
     }
 }

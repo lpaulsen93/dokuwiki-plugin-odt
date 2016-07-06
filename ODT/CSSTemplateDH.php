@@ -20,20 +20,6 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/ODTsettings.php';
 class CSSTemplateDH extends docHandler
 {
     /**
-     * Set the DokuWiki CSS template.
-     *
-     * @param string $template
-     */
-    public function import(ODTInternalParams $params, $template_path, $media_sel=NULL, $callback=NULL) {
-        $params->import->importFromFile($template_path);
-        if ($callback != NULL) {
-            $params->import->adjustLengthValues ($callback);
-        }
-        $this->import_styles_from_css ($params, $media_sel);
-    }
-
-
-    /**
      * Build the document from scratch.
      * (code taken from old function 'document_end_scratch')
      *

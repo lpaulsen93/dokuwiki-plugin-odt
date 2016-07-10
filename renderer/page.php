@@ -26,8 +26,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $document = null;
     /** @var string */
     protected $css;
-    protected $directory;
-    protected $template;
 
     /**
      * Constructor. Loads helper plugins.
@@ -166,8 +164,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             case 'ODT template':
                 // Document based on ODT template.
                 $this->document->setODTTemplate();
-                $this->directory = $this->config->getParam ('tpl_dir');
-                $this->template = $this->config->getParam ('odt_template');
+                $this->buildODTPathes ($ODTtemplate, $temp_dir);
+                ODTImport::importODTStyles($ODTtemplate, $temp_dir);
                 break;
 
             case 'CSS template':
@@ -335,17 +333,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function finalize_ODTfile() {
         global $ID;
 
-        // Temp dir
-        if (is_dir($this->config->getParam('tmpdir'))) {
-            $temp_dir = $this->config->getParam('tmpdir');
-        }
-        $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
-
-        // Eventually determine ODT template file
-        $ODTtemplate = NULL;
-        if ($this->directory != NULL || $this->template != NULL) {
-            $ODTtemplate = $this->config->getParam('mediadir').'/'.$this->directory."/".$this->template;
-        }
+        $this->buildODTPathes ($ODTtemplate, $temp_dir);
 
         // Build/assign the document
         $this->doc = $this->document->getODTFileAsString ($ODTtemplate, $temp_dir);
@@ -2101,6 +2089,22 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function insertUserField(&$content, $name) {
         $this->document->insertUserField($name);
     }
+
+    protected function buildODTPathes (&$ODTTemplatePath, &$tempDirPath) {
+        global $ID;
+
+        // Temp dir
+        if (is_dir($this->config->getParam('tmpdir'))) {
+            $tempDirPath = $this->config->getParam('tmpdir');
+        }
+        $tempDirPath = $tempDirPath."/odt/".str_replace(':','-',$ID);
+
+        // Eventually determine ODT template file
+        $ODTTemplatePath = NULL;
+        if (!empty($this->config->getParam ('odt_template'))) {
+            $ODTTemplatePath = $this->config->getParam('mediadir').'/'.$this->config->getParam ('tpl_dir')."/".$this->config->getParam ('odt_template');
+        }
+    }    
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

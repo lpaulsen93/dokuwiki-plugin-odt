@@ -820,6 +820,10 @@ class ODTDocument
         ODTImport::importCSSFromFile ($this->params, $CSSTemplate, $mediaSel, array($this, 'adjustLengthCallback'), $URLCallback, $this->registrations, $importStyles);
     }
 
+    public function importODTStyles($template=NULL, $tempDir=NULL) {
+        ODTImport::importODTStyles($this->params, $template, $tempDir);
+    }
+
     /**
      * General internal function for closing an element.
      * Can always be used to close any open element if no more actions

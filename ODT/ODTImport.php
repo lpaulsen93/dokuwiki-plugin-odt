@@ -719,4 +719,29 @@ class ODTImport
         self::importParagraphDefaultStyle($params);
         self::importFootnoteStyle($params);
     }
+
+    static public function importODTStyles(ODTInternalParams $params, $template=NULL, $tempDir=NULL){
+        if ($template == NULL || $tempDir == NULL) {
+            return;
+        }
+
+        // Temp dir
+        if (is_dir($tempDir)) { io_rmdir($tempDir,true); }
+        io_mkdir_p($tempDir);
+
+        // Extract template
+        $ok = $params->ZIP->Extract($template, $tempDir);
+        if($ok == -1){
+            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$tempDir);
+        }
+
+        // Import styles from ODT template        
+        $params->styleset->importFromODTFile($tempDir.'/content.xml', 'office:automatic-styles', true);
+        $params->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:automatic-styles', true);
+        $params->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:styles', true);
+        $params->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:master-styles', true);
+
+        // Cleanup temp dir.
+        io_rmdir($tempDir,true);
+    }
 }

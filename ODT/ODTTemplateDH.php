@@ -46,14 +46,8 @@ class ODTTemplateDH extends docHandler
         // Extract template
         $ok = $params->ZIP->Extract($template, $tempDir);
         if($ok == -1){
-            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$tempDir);
+            throw new Exception(' Error extracting the zip archive:'.$template.' to '.$tempDir);
         }
-
-        // Import styles from ODT template        
-        $params->styleset->importFromODTFile($tempDir.'/content.xml', 'office:automatic-styles', true);
-        $params->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:automatic-styles', true);
-        $params->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:styles', true);
-        $test = $params->styleset->importFromODTFile($tempDir.'/styles.xml', 'office:master-styles', true);
 
         // Evtl. copy page format of first page to different style
         $first_master = $params->styleset->getStyleAtIndex ('office:master-styles', 0);

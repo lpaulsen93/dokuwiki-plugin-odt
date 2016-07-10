@@ -187,19 +187,9 @@ class ODTDocument
      *
      * @param string $style_name The style to use.
      */
-    public function setCSSTemplate ($template_path, $media_sel, $callback=NULL) {
+    public function setCSSTemplate () {
         // Document based on CSS template.
         $this->docHandler = new CSSTemplateDH ();
-
-        // Import CSS for later use (if CSS usage is 'full')
-        // MUST be called before $this->docHandler->import because it
-        // stores the CSS in $this->importnew!
-        $this->importCSSCodeInternal($cssCode, $media_sel, $callback);
-
-        // Import CSS as styles
-        if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
-            ODTImport::importCSSFromFile ($this->params, $template_path, $media_sel, NULL, $this->registrations);
-        }
     }
 
     /**
@@ -314,35 +304,6 @@ class ODTDocument
 
     public function replaceURLPrefixes ($callback) {
         if ($this->importnew != NULL) {
-            $this->importnew->replaceURLPrefixes ($callback);
-        }
-    }
-
-    /**
-     * Import CSS code.
-     * This is the CSS code import for the new API.
-     * That means in this function the CSS code is only parsed and stored
-     * but not immediately imported as styles like in the old API.
-     * 
-     * The function can be called multiple times.
-     * All CSS code is handled like being appended.
-     *
-     * @param string $cssCode The CSS code to be imported
-     */
-    protected function importCSSCodeInternal ($cssCode, $mediaSel=NULL, $callback=NULL) {
-        if ($this->importnew == NULL) {
-            $this->setupImport();
-        }
-        $this->importnew->importFromString($cssCode);
-
-        // Call adjustLengthValues to make our callback function being called for every
-        // length value imported. This gives us the chance to convert it once from
-        // pixel to points.
-        $this->importnew->adjustLengthValues (array($this, 'adjustLengthCallback'));
-
-        // Call replaceURLPrefixes to make the callers (renderer/page.php) callback
-        // function being called for every URL to convert it to an absolute path.
-        if ($callback != NULL) {
             $this->importnew->replaceURLPrefixes ($callback);
         }
     }
@@ -826,7 +787,7 @@ class ODTDocument
         // Return document
         return $this->ZIP->get_file();
     }
-    
+
     /**
      * Import CSS code for styles from a string.
      *
@@ -834,22 +795,29 @@ class ODTDocument
      * @param string $mediaSel The media selector to use e.g. 'print'
      * @param string $mediaPath Local path to media files
      */
-    public function importCSSFromString($cssCode, $mediaSel=NULL, $callback=NULL) {        
-        // Import CSS for later use (if CSS usage is 'full')
-        // MUST be called before $this->docHandler->import because it
-        // stores the CSS in $this->importnew!
-        $this->importCSSCodeInternal($cssCode, $mediaSel, $callback);
-
-        // Import CSS as styles
+    public function importCSSFromString($cssCode, $mediaSel=NULL, $URLCallback=NULL) {
+        // Import CSS as styles?
+        $importStyles = false;
         if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
-            //$this->docHandler->trace_dump = '>>>';
-            ODTImport::import_styles_from_css ($this->params, $mediaSel, $this->registrations);
-            //$this->trace_dump .= $this->docHandler->trace_dump;
+            $importStyles = true;
         }
+        ODTImport::importCSSFromString ($this->params, $cssCode, $mediaSel, array($this, 'adjustLengthCallback'), $URLCallback, $this->registrations, $importStyles);
+    }
 
-        //$this->trace_dump .= $this->importnew->rulesToString();
-        //$this->trace_dump .= "Raw CSS:";
-        //$this->trace_dump .= $cssCode;
+    /**
+     * Import CSS code for styles from a file.
+     *
+     * @param string $CSSTemplate String containing the path and file name of the CSS file to import
+     * @param string $mediaSel The media selector to use e.g. 'print'
+     * @param string $mediaPath Local path to media files
+     */
+    public function importCSSFromFile($CSSTemplate, $mediaSel=NULL, $URLCallback=NULL) {
+        // Import CSS as styles?
+        $importStyles = false;
+        if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
+            $importStyles = true;
+        }
+        ODTImport::importCSSFromFile ($this->params, $CSSTemplate, $mediaSel, array($this, 'adjustLengthCallback'), $URLCallback, $this->registrations, $importStyles);
     }
 
     /**

@@ -176,7 +176,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $template = $this->config->getParam ('odt_template');
                 $directory = $this->config->getParam ('tpl_dir');
                 $template_path = $this->config->getParam('mediadir').'/'.$directory."/".$template;
-                $this->document->setCSSTemplate($template_path, $media_sel, array($this, 'replaceURLPrefixesCallback'));
+                $this->document->setCSSTemplate();
+                $this->document->importCSSFromFile($template_path, $media_sel, array($this, 'replaceURLPrefixesCallback'));
 
                 // Set outline style.
                 $this->document->setOutlineStyle($this->config->getParam('outline_list_style'));
@@ -2003,7 +2004,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
-        $this->document->importCSSFromString($text, $this->config->getParam('media_sel'), $this->config->getParam('mediadir'));
+        $this->document->importCSSFromString($text, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'));
     }
 
     /**

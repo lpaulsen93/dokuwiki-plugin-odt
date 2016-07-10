@@ -52,6 +52,47 @@ class ODTImport
                                   );
 
     /**
+     * Import CSS code.
+     * This is the CSS code import for the new API.
+     * That means in this function the CSS code is only parsed and stored
+     * but not immediately imported as styles like in the old API.
+     * 
+     * The function can be called multiple times.
+     * All CSS code is handled like being appended.
+     *
+     * @param string $cssCode The CSS code to be imported
+     */
+    static protected function importCSSCodeInternal (ODTInternalParams $params, $isFile, $CSSSource, $mediaSel=NULL, $lengthCallback=NULL, $URLCallback=NULL) {
+        if ($params->import == NULL) {
+            // No CSS imported yet. Create object.
+            $params->import = new cssimportnew();
+            if ( $params->import == NULL ) {
+                return;
+            }
+            $params->import->setMedia ($mediaSel);
+        }
+
+        if ($isFile == false) {
+            $params->import->importFromString($CSSSource);
+        } else {
+            $params->import->importFromFile($CSSSource);
+        }
+
+        // Call adjustLengthValues to make our callback function being called for every
+        // length value imported. This gives us the chance to convert it once from
+        // pixel to points.
+        if ($lengthCallback != NULL) {
+            $params->import->adjustLengthValues ($lengthCallback);
+        }
+
+        // Call replaceURLPrefixes to make the callers (renderer/page.php) callback
+        // function being called for every URL to convert it to an absolute path.
+        if ($URLCallback != NULL) {
+            $params->import->replaceURLPrefixes ($URLCallback);
+        }
+    }
+
+    /**
      * Import CSS code from a file.
      *
      * @param ODTInternalParams $params Common params
@@ -59,13 +100,27 @@ class ODTImport
      * @param string $media_sel String containing the media selector to use for import (e.g. 'print' or 'screen')
      * @param callable $callback Callback for adjusting length values
      */
-    static public function importCSSFromFile (ODTInternalParams $params, $CSSTemplate, $media_sel=NULL, $callback=NULL, $registrations=NULL) {
-        $params->import->importFromFile($CSSTemplate);
-        if ($callback != NULL) {
-            $params->import->adjustLengthValues ($callback);
+    static public function importCSSFromFile (ODTInternalParams $params, $CSSTemplate, $media_sel=NULL, $lengthCallback=NULL, $URLCallback=NULL, $registrations=NULL, $importStyles=true) {
+        self::importCSSCodeInternal ($params, true, $CSSTemplate, $media_sel, $lengthCallback, $URLCallback);
+        if ($importStyles) {
+            self::import_styles_from_css ($params, $media_sel, $registrations);
         }
-        self::import_styles_from_css ($params, $media_sel, $registrations);
-    }    
+    }
+
+    /**
+     * Import CSS code for styles from a string.
+     *
+     * @param string $cssCode The CSS code to import
+     * @param string $mediaSel The media selector to use e.g. 'print'
+     * @param string $mediaPath Local path to media files
+     */
+    static public function importCSSFromString(ODTInternalParams $params, $cssCode, $media_sel=NULL, $lengthCallback=NULL, $URLCallback=NULL, $registrations=NULL, $importStyles=true)
+    {
+        self::importCSSCodeInternal ($params, false, $cssCode, $media_sel, $lengthCallback, $URLCallback);
+        if ($importStyles) {
+            self::import_styles_from_css ($params, $media_sel, $registrations);
+        }
+    }
 
     static protected function setListStyleImage (ODTInternalParams $params, $style, $level, $file) {
         $odt_file = $params->document->addFileAsPicture($file);

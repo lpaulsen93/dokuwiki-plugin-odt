@@ -1,10 +1,6 @@
 <?php
 
 require_once DOKU_INC . 'inc/ZipLib.class.php';
-require_once DOKU_PLUGIN . 'odt/ODT/docHandler.php';
-require_once DOKU_PLUGIN . 'odt/ODT/scratchDH.php';
-require_once DOKU_PLUGIN . 'odt/ODT/ODTTemplateDH.php';
-require_once DOKU_PLUGIN . 'odt/ODT/CSSTemplateDH.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUtility.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTList.php';
@@ -21,6 +17,7 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTmeta.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTmanifest.php';
 require_once DOKU_PLUGIN . 'odt/ODT/css/cssimportnew.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTImport.php';
+require_once DOKU_PLUGIN . 'odt/ODT/ODTExport.php';
 
 // Siple class as storage for internal parameters passed to other
 // classes to prevent to long parameter lines.
@@ -76,8 +73,6 @@ class ODTDocument
     protected $changePageFormat = NULL;
     /** @var indexesData */
     protected $indexesData = array();
-    /** @var docHandler */
-    protected $docHandler = null;
     /** @var Array of used page styles. Will stay empty if only A4-portrait is used */
     protected $pageStyles = array ();
     /** @var Array of paragraph style names that prevent an empty paragraph from being deleted */
@@ -117,7 +112,6 @@ class ODTDocument
     /**
      * Constructor:
      * - initializes the state
-     * - creates the default docHandler
      */
     public function __construct() {
         // Initialize state
@@ -129,9 +123,6 @@ class ODTDocument
         // Create default styles/styles storage.
         $this->styleset = new ODTDefaultStyles();
         $this->styleset->import();
-
-        // Use standard handler, document from scratch.
-        $this->docHandler = new scratchDH ();
 
         // Set standard page format: A4, portrait, 2cm margins
         $this->page = new pageFormat();
@@ -168,28 +159,6 @@ class ODTDocument
         $this->params->ZIP       = $this->ZIP;
         $this->params->manifest  = $this->manifest;
         $this->params->styleset  = $this->styleset;
-    }
-
-    /**
-     * Set ODT template file.
-     *
-     * @param string $style_name The style to use.
-     */
-    public function setODTTemplate ($file, $directory) {
-        // Document based on ODT template.
-        $this->docHandler = new ODTTemplateDH ();
-
-        // Do NOT overwrite outline style of ODT template.
-    }
-
-    /**
-     * Set CSS template file.
-     *
-     * @param string $style_name The style to use.
-     */
-    public function setCSSTemplate () {
-        // Document based on CSS template.
-        $this->docHandler = new CSSTemplateDH ();
     }
 
     /**
@@ -777,12 +746,12 @@ class ODTDocument
         $userFieldDecls = $this->getUserFieldDecls();
 
         // Build the document
-        $this->docHandler->build($this->params,
-                                 $metaContent,
-                                 $userFieldDecls,
-                                 $this->pageStyles,
-                                 $ODTtemplate,
-                                 $tempDir);
+        ODTExport::buildZIPFile($this->params,
+                                $metaContent,
+                                $userFieldDecls,
+                                $this->pageStyles,
+                                $ODTtemplate,
+                                $tempDir);
 
         // Return document
         return $this->ZIP->get_file();

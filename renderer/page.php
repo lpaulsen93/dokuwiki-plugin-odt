@@ -163,9 +163,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         switch($mode) {
             case 'ODT template':
                 // Document based on ODT template.
-                $this->document->setODTTemplate();
                 $this->buildODTPathes ($ODTtemplate, $temp_dir);
-                ODTImport::importODTStyles($ODTtemplate, $temp_dir);
+                $this->document->importODTStyles($ODTtemplate, $temp_dir);
                 break;
 
             case 'CSS template':
@@ -174,7 +173,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $template = $this->config->getParam ('odt_template');
                 $directory = $this->config->getParam ('tpl_dir');
                 $template_path = $this->config->getParam('mediadir').'/'.$directory."/".$template;
-                $this->document->setCSSTemplate();
                 $this->document->importCSSFromFile($template_path, $media_sel, array($this, 'replaceURLPrefixesCallback'));
 
                 // Set outline style.

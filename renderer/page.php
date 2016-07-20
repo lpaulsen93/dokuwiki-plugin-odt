@@ -1627,10 +1627,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 
                 // Now we are in the list state!
                 // Get the lists style name before closing it.
-                $lists [] = $this->state->getStyleName();
+                $lists [] = $list->getStyleName();
                 $this->list_close();
                 
-                if ($this->state == NULL || $this->state->getElement() == 'root') {
+                if ($this->state == NULL || $this->state->getCurrent()->getElementName() == 'root') {
                     break;
                 }
 

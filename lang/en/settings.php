@@ -8,7 +8,7 @@
 
 // for the configuration manager
 $lang['tpl_dir'] = 'Sub-directory for the templates in the media manager';
-$lang['showexportbutton'] = 'Dispaly ODT Export Button';
+$lang['showexportbutton'] = 'Display ODT Export Button';
 
 $lang['media_sel'] = 'Which @media selector shall be used to query CSS properties?';
 $lang['css_template'] = 'Which template should be used for formatting the ODT files?';

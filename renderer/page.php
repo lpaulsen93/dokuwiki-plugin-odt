@@ -2896,11 +2896,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
         // make sure width and height are available
         if (!$width || !$height) {
-            list($width, $height) = $this->_odtGetImageSizeString($src, $width, $height);
+            list($width, $height) = $this->_odtGetImageSizeString($src, $width, $height, true);
         } else {
-            // Adjust values for ODT
-            $width = $this->adjustXLengthValueForODT ($width);
-            $height = $this->adjustYLengthValueForODT ($height);
+            list($width, $height) = $this->_odtGetImageSizeString($src, $width, $height, false);
         }
 
         if($align){
@@ -2999,9 +2997,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param  $height
      * @return array
      */
-    function _odtGetImageSizeString($src, $width = NULL, $height = NULL){
+    function _odtGetImageSizeString($src, $width = NULL, $height = NULL, $preferImage=true){
         list($width_file, $height_file) = $this->_odtGetImageSize($src);
-        if ($width_file != 0) {
+        if ($width_file != 0 && $preferImage) {
             $width  = $width_file;
             $height = $height_file;
         } else {

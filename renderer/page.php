@@ -3008,6 +3008,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             if ($height) $height = (($height/96.0)*2.54);
         }
 
+        $width = str_replace(',', '.', $width);
+        $height = str_replace(',', '.', $height);
         if ($width && $height) {
             // Don't be wider than the page
             if ($width >= 17){ // FIXME : this assumes A4 page format with 2cm margins

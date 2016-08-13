@@ -375,7 +375,6 @@ class ODTTable
      */
     public static function tableOpenUseProperties (ODTInternalParams $params, $properties, $maxcols = 0, $numrows = 0){
         $elementObj = $params->elementObj;
-        $params->document->paragraphClose();
 
         // Eventually adjust table width.
         if ( !empty ($properties ['width']) ) {

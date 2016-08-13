@@ -35,8 +35,8 @@ class ODTImage
             list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height);
         } else {
             // Adjust values for ODT
-            $width = $params->document->toPoints($width, 'x');
-            $height = $params->document->toPoints($height, 'y');
+            $width = $params->document->toPoints($width, 'x').'pt';
+            $height = $params->document->toPoints($height, 'y').'pt';
         }
 
         if($align){
@@ -166,5 +166,82 @@ class ODTImage
             $params->document->paragraphClose();
             $params->content .= '</draw:text-box></draw:frame>';
         }
+    }
+
+    public static function addImageUseProperties(ODTInternalParams $params, $src, array $properties, $returnonly = false){
+        static $z = 0;
+
+        ODTUtility::adjustValuesForODT ($properties, $params->units);
+        $width = $properties ['width'];
+        $height = $properties ['height'];
+        $title = $properties ['title'];
+        $bg_color = $properties ['background-color'];
+        
+        $encoded = '';
+        if (file_exists($src)) {
+            list($ext,$mime) = mimetype($src);
+            $name = 'Pictures/'.md5($src).'.'.$ext;
+            $params->document->addFile($name, $mime, io_readfile($src,false));
+        } else {
+            $name = $src;
+        }
+        // make sure width and height are available
+        if (!$width || !$height) {
+            list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height);
+        } else {
+            // Adjust values for ODT
+            $width = $params->document->toPoints($width, 'x').'pt';
+            $height = $params->document->toPoints($height, 'y').'pt';
+        }
+
+        if($align){
+            $anchor = 'paragraph';
+        }else{
+            $anchor = 'as-char';
+        }
+
+        // Open paragraph if necessary
+        if (!$params->document->state->getInParagraph()) {
+            $params->document->paragraphOpen();
+        }
+
+        // Define graphic style for picture
+        $style_name = ODTStyle::getNewStylename('span_graphic');
+        $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$params->document->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$bg_color.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+
+        // Add style and image to our document
+        // (as unknown style because style-family graphic is not supported)
+        $style_obj = ODTUnknownStyle::importODTStyle($image_style);
+        $params->document->addAutomaticStyle($style_obj);
+
+        if ($title) {
+            $encoded .= '<draw:frame draw:style-name="'.$style_name.'" draw:name="'.$params->document->replaceXMLEntities($title).' Legend"
+                            text:anchor-type="'.$anchor.'" draw:z-index="0" svg:width="'.$width.'">';
+            $encoded .= '<draw:text-box>';
+            $encoded .= '<text:p text:style-name="'.$params->document->getStyleName('legend center').'">';
+        }
+        if (!empty($title)) {
+            $encoded .= '<draw:frame draw:style-name="'.$style_name.'" draw:name="'.$params->document->replaceXMLEntities($title).'"
+                            text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
+                            svg:width="'.$width.'" svg:height="'.$height.'" >';
+        } else {
+            $encoded .= '<draw:frame draw:style-name="'.$style_name.'" draw:name="'.$z.'"
+                            text:anchor-type="'.$anchor.'" draw:z-index="'.$z.'"
+                            svg:width="'.$width.'" svg:height="'.$height.'" >';
+        }
+        $encoded .= '<draw:image xlink:href="'.$params->document->replaceXMLEntities($name).'"
+                        xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>';
+        $encoded .= '</draw:frame>';
+        if ($title) {
+            $encoded .= $params->document->replaceXMLEntities($title).'</text:p></draw:text-box></draw:frame>';
+        }
+
+        if($returnonly) {
+            return $encoded;
+        } else {
+            $params->content .= $encoded;
+        }
+
+        $z++;
     }
 }

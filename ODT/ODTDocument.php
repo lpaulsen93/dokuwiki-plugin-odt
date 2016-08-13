@@ -1433,6 +1433,14 @@ class ODTDocument
         }
     }
 
+    public function addImageUseProperties($src, $properties, $returnonly = false){
+        if ($returnonly) {
+            return ODTImage::addImageUseProperties($this->params, $src, $properties, $returnonly);
+        } else {
+            ODTImage::addImageUseProperties($this->params, $src, $properties, $returnonly);
+        }
+    }
+
     /**
      * The function adds $string as an SVG image file.
      * It does NOT insert the image in the document.

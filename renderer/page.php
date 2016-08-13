@@ -1576,6 +1576,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
+    function _odtAddImageUseProperties($src, array $properties, $returnonly = false){
+        if ($returnonly) {
+            return $this->document->addImageUseProperties($src, $properties, $returnonly);
+        } else {
+            $this->document->addImageUseProperties($src, $properties, $returnonly);
+        }
+    }
+
     /**
      * The function tries to examine the width and height
      * of the image stored in file $src.

@@ -1044,6 +1044,14 @@ class cssimportnew {
                 case 'line-height':
                     // Do nothing.
                 break;
+                case 'margin':
+                case 'margin-left':
+                case 'margin-right':
+                case 'margin-top':
+                case 'margin-bottom':
+                    // Do nothing.
+                    // We do not know the size of the surrounding element.
+                break;
                 default:
                     // Convert '%' or 'em' value based on determined font-size
                     $unit = $units->stripDigits($value);

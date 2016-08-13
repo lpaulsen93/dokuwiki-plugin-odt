@@ -2111,6 +2111,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $ODTTemplatePath = $this->config->getParam('mediadir').'/'.$this->config->getParam ('tpl_dir')."/".$this->config->getParam ('odt_template');
         }
     }    
+
+    public function addToValue ($value, $add) {
+        return $this->document->addToValue ($value, $add);
+    }
+
+    public function subFromValue ($value, $sub) {
+        return $this->document->subFromValue ($value, $sub);
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

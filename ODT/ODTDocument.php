@@ -1983,4 +1983,20 @@ class ODTDocument
         $this->registrations [$style_type]['element'] = $element;
         $this->registrations [$style_type]['attributes'] = $attributes;
     }
+
+    public function addToValue ($value, $add) {
+        $valueInPt = $this->units->toPoints($value, 'y');
+        $valueInPt = $this->units->getDigits($valueInPt);
+        $addInPt = $this->units->toPoints($add, 'y');
+        $addInPt = $this->units->getDigits($addInPt);
+        return ($valueInPt + $addInPt).'pt';
+    }
+
+    public function subFromValue ($value, $sub) {
+        $valueInPt = $this->units->toPoints($value, 'y');
+        $valueInPt = $this->units->getDigits($valueInPt);
+        $subInPt = $this->units->toPoints($sub, 'y');
+        $subInPt = $this->units->getDigits($subInPt);
+        return ($valueInPt - $subInPt).'pt';
+    }
 }

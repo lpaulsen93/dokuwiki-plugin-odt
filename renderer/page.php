@@ -2027,11 +2027,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      *
      * @see ODTDocument::getODTProperties for more information
      */
-    public function getODTPropertiesNew (&$dest, iElementCSSMatchable $element, $media_sel=NULL) {
+    public function getODTPropertiesNew (&$dest, $element, $attributes=NULL, $media_sel=NULL, $inherit=true) {
         if ($media_sel === NULL) {
             $media_sel = $this->config->getParam ('media_sel');
         }
-        $this->document->getODTProperties ($dest, $element, $media_sel);
+        $this->document->getODTProperties ($dest, $element, $attributes, $media_sel, $inherit);
+    }
+
+    public function getODTPropertiesFromElement (&$dest, iElementCSSMatchable $element, $media_sel=NULL, $inherit=true) {
+        if ($media_sel === NULL) {
+            $media_sel = $this->config->getParam ('media_sel');
+        }
+        $this->document->getODTPropertiesFromElement ($dest, $element, $media_sel, $inherit);
     }
 
     /**

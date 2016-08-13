@@ -1834,22 +1834,34 @@ class ODTDocument
      *                                      iElementCSSMatchable.
      * @param string $media_sel The media selector to use for the query e.g. 'print'. May be empty.
      */
-    public function getODTProperties (array &$dest, iElementCSSMatchable $element, $media_sel=NULL) {
+    public function getODTProperties (array &$dest, $element, $attributes=NULL, $media_sel=NULL, $inherit=true) {
         if ($this->importnew == NULL) {
             return;
         }
 
         $save = $this->importnew->getMedia();
         $this->importnew->setMedia($media_sel);
-        
+
+        $maxWidth = $this->getAbsWidthMindMargins().'cm';
+        ODTUtility::getHTMLElementProperties($this->params, $dest, $element, $attributes, $maxWidth, $inherit);
+
+        $this->importnew->setMedia($save);
+    }
+
+    public function getODTPropertiesFromElement (array &$dest, iElementCSSMatchable $element, $media_sel=NULL, $inherit=true) {
+        if ($this->importnew == NULL) {
+            return;
+        }
+
+        $save = $this->importnew->getMedia();
+        $this->importnew->setMedia($media_sel);
+
         // Get properties for our class/element from imported CSS
-        $this->importnew->getPropertiesForElement($dest, $element, $this->units);
+        $this->importnew->getPropertiesForElement($dest, $element, $this->units, $inherit);
 
         // Adjust values for ODT
-        //foreach ($dest as $property => $value) {
-        //    $dest [$property] = ODTUtility::adjustValueForODT ($property, $value, 14);
-        //}
-        ODTUtility::adjustValuesForODT($dest, $this->units);
+        $maxWidth = $this->getAbsWidthMindMargins().'cm';
+        ODTUtility::adjustValuesForODT($dest, $this->units, $maxWidth);
 
         $this->importnew->setMedia($save);
     }

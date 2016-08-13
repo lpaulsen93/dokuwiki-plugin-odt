@@ -245,6 +245,26 @@ class ODTUtility
         return array($width, $height);
     }
 
+    protected static function adjustPercentageValueParts ($value, $maxWidthInPt, $units) {
+        $values = preg_split ('/\s+/', $value);
+        $value = '';
+        foreach ($values as $part) {
+            $length = strlen ($part);
+
+            if ( $length > 1 && $part [$length-1] == '%' ) {
+                $percentageValue = $units->getDigits($part);
+                $part = (($percentageValue * $maxWidthInPt)/100) . 'pt';
+                //$part = '5pt ';
+            }
+
+            $value .= ' '.$part;
+        }
+        $value = trim($value);
+        $value = trim($value, '"');
+
+        return $value;
+    }
+
     /**
      * The function adjusts the properties values for ODT:
      * - 'em' units are converted to 'pt' units
@@ -258,7 +278,9 @@ class ODTUtility
      * @param  array  $properties Array with property value pairs
      * @param  ODTUnits $units Units object to use for conversion
      */
-    public static function adjustValuesForODT (&$properties, ODTUnits $units) {
+    public static function adjustValuesForODT (&$properties, ODTUnits $units, $maxWidth=NULL) {
+        $adjustToMaxWidth = array('margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom');
+
         // Convert 'text-decoration'.
         if ( $properties ['text-decoration'] == 'line-through' ) {
             $properties ['text-line-through-style'] = 'solid';
@@ -273,6 +295,19 @@ class ODTUtility
         // First do simple adjustments per property
         foreach ($properties as $property => $value) {
             $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, $units);
+        }
+
+        // Adjust relative margins if $maxWidth is given.
+        // $maxWidth is expected to be the width of the surrounding element.
+        if ($maxWidth != NULL) {
+            $maxWidthInPt = $units->toPoints($maxWidth, 'y');
+            $maxWidthInPt = $units->getDigits($maxWidthInPt);
+            
+            foreach ($adjustToMaxWidth as $property) {
+                if (!empty($properties [$property])) {
+                    $properties [$property] = self::adjustPercentageValueParts ($properties [$property], $maxWidthInPt, $units);
+                }
+            }
         }
 
         // Now we do the adjustments for which one value depends on another
@@ -343,10 +378,6 @@ class ODTUtility
 
             if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
                 $part = $units->toPoints($part, 'y');
-                //$number = substr ($part, 0, $length-2);
-                //if ( is_numeric ($number) && !empty ($emValue) ) {
-                //    $part = ($number * $emValue).'pt';
-                //}
             }
 
             // Some values can have '"' in it. These need to be converted to '&apos;'
@@ -371,14 +402,14 @@ class ODTUtility
      * @param $style The CSS style e.g. 'color:red;'
      * @param null $baseURL
      */
-    public static function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL, ODTUnits $units){
+    public static function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL, ODTUnits $units, $maxWidth=NULL){
         // Create rule with selector '*' (doesn't matter) and declarations as set in $style
         $rule = new css_rule ('*', $style);
         $rule->getProperties ($properties);
         //foreach ($properties as $property => $value) {
         //    $properties [$property] = self::adjustValueForODT ($property, $value, $units);
         //}
-        self::adjustValuesForODT ($properties, $units);
+        self::adjustValuesForODT ($properties, $units, $maxWidth);
 
         if ( !empty ($properties ['background-image']) ) {
             if ( !empty ($baseURL) ) {
@@ -388,28 +419,28 @@ class ODTUtility
         }
     }
 
-    public static function openHTMLElement (ODTInternalParams $params, array &$dest, $element, $attributes) {
+    public static function openHTMLElement (ODTInternalParams $params, array &$dest, $element, $attributes, $maxWidth=NULL) {
         // Push/create our element to import on the stack
         $params->htmlStack->open($element, $attributes);
         $toMatch = $params->htmlStack->getCurrentElement();
         $params->import->getPropertiesForElement($dest, $toMatch, $params->units);
 
         // Adjust values for ODT
-        ODTUtility::adjustValuesForODT($dest, $params->units);
+        ODTUtility::adjustValuesForODT($dest, $params->units, $maxWidth);
     }
 
     public static function closeHTMLElement (ODTInternalParams $params, $element) {
         $params->htmlStack->close($element);
     }
 
-    public static function getHTMLElementProperties (ODTInternalParams $params, array &$dest, $element, $attributes) {
+    public static function getHTMLElementProperties (ODTInternalParams $params, array &$dest, $element, $attributes, $maxWidth=NULL, $inherit=true) {
         // Push/create our element to import on the stack
         $params->htmlStack->open($element, $attributes);
         $toMatch = $params->htmlStack->getCurrentElement();
-        $params->import->getPropertiesForElement($dest, $toMatch, $params->units);
+        $params->import->getPropertiesForElement($dest, $toMatch, $params->units, $inherit);
 
         // Adjust values for ODT
-        ODTUtility::adjustValuesForODT($dest, $params->units);
+        ODTUtility::adjustValuesForODT($dest, $params->units, $maxWidth);
 
         // Remove element from stack
         $params->htmlStack->removeCurrent();

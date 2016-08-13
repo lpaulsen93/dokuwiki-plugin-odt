@@ -1223,8 +1223,6 @@ class ODTDocument
      * @see ODTFrame::closeTextBox for detailed documentation
      */
     function closeTextBox () {
-        $element = $this->state->getCurrent();
-        $element = $this->state->getSecondLast();
         unset($this->params->elementObj);
         ODTFrame::closeTextBox($this->params);
     }

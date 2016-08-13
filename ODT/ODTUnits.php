@@ -32,7 +32,7 @@ class ODTUnits {
      * @return string The unit of $value, e.g. 'cm'
      */
     static public function stripDigits ($value) {
-        return ltrim ($value, '.0123456789');
+        return ltrim ($value, '-.0123456789');
     }
 
     /**
@@ -45,7 +45,9 @@ class ODTUnits {
         $digits = NULL;
         $length = strlen ((string)$value);
         for ($index = 0 ; $index < $length ; $index++ ) {
-            if ( is_numeric ($value [$index]) === false && $value [$index] != '.' ) {
+            if ( is_numeric ($value [$index]) === false &&
+                 $value [$index] != '.' && 
+                 $value [$index] != '-' ) {
                 break;
             }
             $digits .= $value [$index];

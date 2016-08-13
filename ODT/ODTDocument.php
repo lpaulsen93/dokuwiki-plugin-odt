@@ -1228,6 +1228,26 @@ class ODTDocument
     }
 
     /**
+     * Open a frame using properties.
+     * 
+     * @see ODTFrame::openFrameUseProperties for detailed documentation
+     */
+    function openFrameUseProperties ($properties) {
+        unset($this->params->elementObj);
+        ODTFrame::openFrameUseProperties($this->params, $properties);
+    }
+
+    /**
+     * This function closes a textbox.
+     * 
+     * @see ODTFrame::closeTextBox for detailed documentation
+     */
+    function closeFrame () {
+        unset($this->params->elementObj);
+        ODTFrame::closeFrame($this->params);
+    }
+
+    /**
      * Open a multi column text box in a frame using properties.
      * 
      * @see ODTFrame::openMultiColumnTextBoxUseProperties for detailed documentation

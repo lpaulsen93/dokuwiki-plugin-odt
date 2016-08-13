@@ -1861,6 +1861,27 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * Open a frame using properties.
+     * 
+     * @see ODTDocument::openFrameUseProperties for API wrapper function
+     * @see ODTFrame::openFrameUseProperties for detailed documentation
+     */
+    function _odtOpenFrameUseProperties ($properties) {
+        $this->document->openFrameUseProperties ($properties);
+    }
+
+    /**
+     * This function closes a frame.
+     *
+     * @see ODTDocument::closeFrame for API wrapper function
+     * @see ODTFrame::closeFrame for detailed documentation
+     * @author LarsDW223
+     */
+    function _odtCloseFrame () {
+        $this->document->closeFrame();
+    }
+
+    /**
      * @param array $dest
      * @param $element
      * @param $classString

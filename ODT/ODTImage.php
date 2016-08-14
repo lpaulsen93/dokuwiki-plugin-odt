@@ -32,11 +32,9 @@ class ODTImage
         }
         // make sure width and height are available
         if (!$width || !$height) {
-            list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height);
+            list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height, true);
         } else {
-            // Adjust values for ODT
-            $width = $params->document->toPoints($width, 'x').'pt';
-            $height = $params->document->toPoints($height, 'y').'pt';
+            list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height, false);
         }
 
         if($align){

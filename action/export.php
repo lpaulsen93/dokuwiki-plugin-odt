@@ -254,6 +254,30 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         }
 
         $list = array_map('cleanID', $list);
+
+        $skippedpages = array();
+        foreach($list as $index => $pageid) {
+            if(auth_quickaclcheck($pageid) < AUTH_READ) {
+                $skippedpages[] = $pageid;
+                unset($list[$index]);
+            }
+        }
+        $list = array_filter($list); //removes also pages mentioned '0'
+
+        //if selection contains forbidden pages throw (overridable) warning
+        if(!$INPUT->bool('book_skipforbiddenpages') && !empty($skippedpages)) {
+            $msg = sprintf($this->getLang('forbidden'), hsc(join(', ', $skippedpages)));
+            if($INPUT->has('selection')) {
+                http_status(400);
+                print $msg;
+                exit();
+            } else {
+                $this->showPageWithErrorMsg($event, null, $msg);
+                return false;
+            }
+
+        }
+
         return array($title, $list);
     }
 
@@ -355,10 +379,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
 
         // loop over all pages
         $xmlcontent = '';
-
-        $cnt = count($this->list);
-        for($n = 0; $n < $cnt; $n++) {
-            $page = $this->list[$n];
+        foreach($this->list as $page) {
             $filename = wikiFN($page, $REV);
 
             if(!file_exists($filename)) {

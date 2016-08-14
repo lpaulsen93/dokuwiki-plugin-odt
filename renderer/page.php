@@ -3003,32 +3003,36 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $width  = $width_file;
             $height = $height_file;
         } else {
-            // convert from pixel to centimeters
-            if ($width) $width = (($width/96.0)*2.54);
-            if ($height) $height = (($height/96.0)*2.54);
+            // convert from pixel to centimeters only if no unit is
+            // specified or if unit is 'px'
+            $unit_width = $this->units->stripDigits ($width);
+            $unit_height = $this->units->stripDigits ($height);
+            if ((empty($unit_width) && empty($unit_height)) ||
+                ($unit_width == 'px' && $unit_height == 'px')) {
+                if ($width) $width = (($width/96.0)*2.54).'cm';
+                if ($height) $height = (($height/96.0)*2.54).'cm';
+            }
         }
+
+        // At this point $width and $height should include a unit
 
         $width = str_replace(',', '.', $width);
         $height = str_replace(',', '.', $height);
         if ($width && $height) {
             // Don't be wider than the page
             if ($width >= 17){ // FIXME : this assumes A4 page format with 2cm margins
-                $width = $width.'cm"  style:rel-width="100%';
-                $height = $height.'cm"  style:rel-height="scale';
+                $width = $width.'"  style:rel-width="100%';
+                $height = $height.'"  style:rel-height="scale';
             } else {
-                $width = $width.'cm';
-                $height = $height.'cm';
+                $width = $width;
+                $height = $height;
             }
         } else {
             // external image and unable to download, fallback
-            if ($width) {
-                $width = $width."cm";
-            } else {
+            if (!$width) {
                 $width = '" svg:rel-width="100%';
             }
-            if ($height) {
-                $height = $height."cm";
-            } else {
+            if (!$height) {
                 $height = '" svg:rel-height="100%';
             }
         }

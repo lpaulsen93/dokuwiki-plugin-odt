@@ -24,6 +24,8 @@ require_once 'ODTTableCellStyle.php';
  */
 abstract class ODTStyle
 {
+    protected static $style_base_name = 'PluginODTAutoStyle_';
+    protected static $style_count = 0;
     protected $properties = array();
 
     /**
@@ -155,14 +157,22 @@ abstract class ODTStyle
      * @param $value New value to set
      */
     protected function setPropertyInternal($property, $odt_property, $value, $section, &$dest=NULL) {
-        if ( $dest === NULL ) {
-            $this->properties [$property] = array ('odt_property' => $odt_property,
-                                                   'value' => $value,
-                                                   'section' => $section);
+        if ($value !== NULL) {
+            if ( $dest === NULL ) {
+                $this->properties [$property] = array ('odt_property' => $odt_property,
+                                                       'value' => $value,
+                                                       'section' => $section);
+            } else {
+                $dest [$property] = array ('odt_property' => $odt_property,
+                                           'value' => $value,
+                                           'section' => $section);
+            }
         } else {
-            $dest [$property] = array ('odt_property' => $odt_property,
-                                       'value' => $value,
-                                       'section' => $section);
+            if ( $dest === NULL ) {
+                unset ($this->properties [$property]);
+            } else {
+                unset ($dest [$property]);
+            }
         }
     }
 
@@ -221,5 +231,18 @@ abstract class ODTStyle
      */
     public function isDefault() {
         return false;
+    }
+
+    /**
+     * This function creates a new style name. All functions of this class which create a new
+     * style/style name shall use this function to create the style name. By doing so it is
+     * guaranteed that all style names created by this class are unique.
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     */
+    public static function getNewStylename ($type = '') {
+        self::$style_count++;
+        $style_name = self::$style_base_name.$type.'_'.self::$style_count;
+        return $style_name;
     }
 }

@@ -11,15 +11,16 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTStateElement.php';
  */
 class ODTElementTableColumn extends ODTStateElement
 {
+    // Which column number in the corresponding table is this?
+    // [Is set on enter() ==> determineParent()]
+    protected $columnNumber = 0;
+    
     /**
      * Constructor.
      */
-    public function __construct($style_name=NULL) {
+    public function __construct() {
         parent::__construct();
         $this->setClass ('table-column');
-        if ($style_name != NULL) {
-            $this->setStyleName ($style_name);
-        }
     }
 
     /**
@@ -85,7 +86,14 @@ class ODTElementTableColumn extends ODTStateElement
         $table_column_styles = $table->getTableColumnStyles();
         $auto_columns = $table->getTableAutoColumns();
         $max_columns = $table->getTableMaxColumns();
+        $row_count = $table->getRowCount();
         $curr_column = $table->getTableCurrentColumn();
+        if ($row_count > 0) {
+            $curr_column--;
+        }
+
+        // Set our column number.
+        $this->columnNumber = $curr_column;
 
         // Set our style name to a predefined name
         // and also set it in the table (if not done yet)
@@ -96,19 +104,36 @@ class ODTElementTableColumn extends ODTStateElement
         }
         $this->setStyleName ($style_name);
 
-        $curr_column++;
-        $table->setTableCurrentColumn($curr_column);
+        if ($row_count == 0) {
+            // Only count columns here if not already a row has been opened.
+            // Otherwise counting will be done in ODTElementTableCell!
+            $curr_column++;
+            $table->setTableCurrentColumn($curr_column);
 
-        // Eventually add a new temp column if in auto mode
-        if ( $auto_columns === true ) {
+            // Eventually increase max columns if out range
             if ( $curr_column > $max_columns ) {
-                // Add temp column.
-                $column_defs = $table->getTableColumnDefs();
-                $column_defs .= '<table:table-column table:style-name="'.$style_name.'"/>';
-                //$column_defs .= '<table:table-column table:style-name="Peng"/>';
-                $table->setTableColumnDefs($column_defs);
                 $table->setTableMaxColumns($max_columns + 1);
             }
+        }
+    }
+
+    /**
+     * Set the style name.
+     * The method is overwritten to make the column also set the new
+     * column style name in its corresponding table.
+     * 
+     * FIXME: it would be better to just have an array of object
+     * pointers in the table and use them to query the names.
+     * 
+     * @param string $value Style name, e.g. 'body'
+     */
+    public function setStyleName($value) {
+        parent::setStyleName($value);
+        $table = $this->getParent();
+        if ($table != NULL) {
+            $table->setTableColumnStyleName($this->columnNumber, $value);
+        } else {
+            // FIXME: some error logging would be nice...
         }
     }
 

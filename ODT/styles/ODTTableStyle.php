@@ -146,5 +146,73 @@ class ODTTableStyle extends ODTStyleStyle
     static public function getTableProperties () {
         return self::$table_fields;
     }
+
+    /**
+     * This function creates a table table style using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
+     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
+     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
+     *
+     * The currently supported properties are:
+     * width, border-collapse, background-color
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     * @param $properties
+     * @param null $disabled_props
+     * @param int $max_width_cm
+     * @return ODTTableStyle or NULL
+     */
+    public static function createTableTableStyle(array $properties, array $disabled_props = NULL, $max_width_cm = 17){
+        // If we want to change the table width we must set table:align to something else
+        // than "margins". Otherwise the width will not be changed.
+        if (empty($properties ['align'])) {
+            $properties ['align'] = 'center';
+        }
+        if ($properties ['margin-left'] == '0') {
+            unset($properties ['margin-left']);
+        }
+        if ($properties ['margin-right'] == '0') {
+            unset($properties ['margin-right']);
+        }
+
+        // If no width specified always set 100%
+        if (empty ($properties ['width'])) {
+            $properties ['width'] = '100%';
+        }
+        
+        // If relative width set, then move value to property 'rel-width'!
+        if ( $properties ['width'] [strlen($properties ['width'])-1] == '%' ) {
+            $properties ['rel-width'] = $properties ['width'];
+            unset($properties ['width']);
+        }
+        
+        // Convert property 'border-model' to ODT
+        if ( !empty ($properties ['border-model']) ) {
+            if ( $properties ['border-model'] == 'collapse' ) {
+                $properties ['border-model'] = 'collapsing';
+            } else {
+                $properties ['border-model'] = 'separating';
+            }
+        }
+
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) ) {
+            $style_name = self::getNewStylename ('Table');
+            $properties ['style-name'] = $style_name;
+        }
+
+        // Create empty table style.
+        $object = new ODTTableStyle();
+        if ($object == NULL) {
+            return NULL;
+        }
+        
+        // Import our properties
+        $object->importProperties($properties, $disabled_props);
+        return $object;
+    }
 }
 

@@ -16,8 +16,8 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
     public static function setUpBeforeClass(){
         parent::setUpBeforeClass();
 
-        // copy test files to test directory
-        TestUtils::rcopy(TMP_DIR, dirname(__FILE__) . '/data/');
+        // Copy test media files to test wiki namespace
+        ODTTestUtils::rcopyMedia('wiki', dirname(__FILE__) . '/data/media/wiki/');
     }
 
     /**
@@ -26,19 +26,21 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
      */
     public function test_image_size() {
         $units = new helper_plugin_odt_units ();
-        $renderer = new renderer_plugin_odt_page();
-        $renderer->document_start();
-        $renderer->_odtAddImage(TMP_DIR.'/data/TestPicture100x50.png');
+
+        $files = array();
+        $ok = ODTTestUtils::getRenderedODTDocument($files, '{{wiki:TestPicture100x50.png}}');
+        $this->assertFalse($ok == false, 'Error rendering, creating, unpacking, reading ODT doc!');
+        $encoded = $files['content-xml'];
 
         // There should be a frame
-        $start = strpos($renderer->doc, '<draw:frame');
-        $end = strpos($renderer->doc, '</draw:frame>');
-        $frame = substr($renderer->doc, $start, $end+strlen('</draw:frame>')-$start);
+        $start = strpos($encoded, '<draw:frame');
+        $end = strpos($encoded, '</draw:frame>');
+        $frame = substr($encoded, $start, $end+strlen('</draw:frame>')-$start);
         $this->assertFalse(empty($frame));
 
         // Check that the width has the unit 'cm' and that it is
         // calculated according to the formula ($width/96.0)*2.54
-        $result = preg_match('/svg:width="[^"]*"/', $renderer->doc, $widths);
+        $result = preg_match('/svg:width="[^"]*"/', $encoded, $widths);
         $this->assertEquals($result, 1);
 
         $unit = substr($widths [0], strlen('svg:width='));
@@ -51,7 +53,7 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
 
         // Check that the height has the unit 'cm' and that it is
         // calculated according to the formula ($height/96.0)*2.54
-        $result = preg_match('/svg:height="[^"]*"/', $renderer->doc, $heights);
+        $result = preg_match('/svg:height="[^"]*"/', $encoded, $heights);
         $this->assertEquals($result, 1);
 
         $unit = substr($heights [0], strlen('svg:height='));
@@ -69,19 +71,21 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
      */
     public function test_image_size_2() {
         $units = new helper_plugin_odt_units ();
-        $renderer = new renderer_plugin_odt_page();
-        $renderer->document_start();
-        $renderer->_odtAddImage(TMP_DIR.'/data/TestPicture500x256.png');
+
+        $files = array();
+        $ok = ODTTestUtils::getRenderedODTDocument($files, '{{wiki:TestPicture500x256.png}}');
+        $this->assertFalse($ok == false, 'Error rendering, creating, unpacking, reading ODT doc!');
+        $encoded = $files['content-xml'];
 
         // There should be a frame
-        $start = strpos($renderer->doc, '<draw:frame');
-        $end = strpos($renderer->doc, '</draw:frame>');
-        $frame = substr($renderer->doc, $start, $end+strlen('</draw:frame>')-$start);
+        $start = strpos($encoded, '<draw:frame');
+        $end = strpos($encoded, '</draw:frame>');
+        $frame = substr($encoded, $start, $end+strlen('</draw:frame>')-$start);
         $this->assertFalse(empty($frame));
 
         // Check that the width has the unit 'cm' and that it is
         // calculated according to the formula ($width/96.0)*2.54
-        $result = preg_match('/svg:width="[^"]*"/', $renderer->doc, $widths);
+        $result = preg_match('/svg:width="[^"]*"/', $encoded, $widths);
         $this->assertEquals($result, 1);
 
         $unit = substr($widths [0], strlen('svg:width='));
@@ -94,7 +98,7 @@ class plugin_odt_renderer_image_test extends DokuWikiTest {
 
         // Check that the height has the unit 'cm' and that it is
         // calculated according to the formula ($height/96.0)*2.54
-        $result = preg_match('/svg:height="[^"]*"/', $renderer->doc, $heights);
+        $result = preg_match('/svg:height="[^"]*"/', $encoded, $heights);
         $this->assertEquals($result, 1);
 
         $unit = substr($heights [0], strlen('svg:height='));

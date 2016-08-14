@@ -14,6 +14,8 @@ abstract class ODTStateElement
     protected $style_name = NULL;
     protected $count = 0;
     protected $parent_element = NULL;
+    protected $style_obj = NULL;
+    protected $htmlElement = NULL;
 
     // Temp pointer for various use! Can point to different things!
     protected $temp = NULL;
@@ -81,6 +83,24 @@ abstract class ODTStateElement
      */
     public function getStyleName() {
         return $this->style_name;
+    }
+
+    /**
+     * Set the style object.
+     * 
+     * @param ODTStyle $object
+     */
+    public function setStyle($object) {
+        $this->style_obj = $object;
+    }
+
+    /**
+     * Get the style object.
+     * 
+     * @return ODTStyle Style object.
+     */
+    public function getStyle() {
+        return $this->style_obj;
     }
 
     /**
@@ -152,4 +172,22 @@ abstract class ODTStateElement
      * The search starts at element $previous.
      */
     abstract public function determineParent(ODTStateElement $previous);
+
+    /**
+     * Set the HTML element name pushed to the HTML stack for this ODT element.
+     * 
+     * @param string $value HTML element name e.g. 'u'
+     */
+    public function setHTMLElement($value) {
+        $this->htmlElement = $value;
+    }
+
+    /**
+     * Get the HTML element name pushed to the HTML stack for this ODT element.
+     * 
+     * @return string HTML element name.
+     */
+    public function getHTMLElement() {
+        return $this->htmlElement;
+    }
 }

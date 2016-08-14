@@ -15,6 +15,8 @@ if (!defined('DOKU_INC')) die();
  * Class helper_plugin_odt_dwcssloader
  */
 class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
+    public $trace_dump = NULL;
+    
     /**
      * @return array
      */
@@ -39,12 +41,27 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
      * @return string
      */
     public function load($plugin_name, $format, $template, $usestyles) {
+        $mediatypes = array('screen', 'all', 'print');
+
         //reusue the CSS dispatcher functions without triggering the main function
         define('SIMPLE_TEST', 1);
         require_once(DOKU_INC . 'lib/exe/css.php');
 
         // Always only use small letters in format
         $format = strtolower ($format);
+
+        // load styl.ini
+        $styleini = css_styleini($template);
+
+        $template_files = array();
+        foreach($mediatypes as $mediatype) {
+            $template_files[$mediatype] = array();
+
+            // load template styles
+            if (isset($styleini['stylesheets'][$mediatype])) {
+                $template_files[$mediatype] = array_merge($template_files[$mediatype], $styleini['stylesheets'][$mediatype]);
+            }
+        }
 
         // prepare CSS files
         $files = array_merge(
@@ -67,6 +84,31 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         );
         $css = '';
         $css .= $this->get_css_for_filetypes();
+
+        // build the stylesheet
+        foreach ($mediatypes as $mediatype) {
+            // load files
+            $css_content = '';
+            foreach($template_files[$mediatype] as $file => $location){
+                $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
+                $css_content .= "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
+                $css_content .= css_loadfile($file, $location);
+            }
+            switch ($mediatype) {
+                case 'screen':
+                    $css .= NL.'@media screen { /* START screen styles */'.NL.$css_content.NL.'} /* /@media END screen styles */'.NL;
+                    break;
+                case 'print':
+                    $css .= NL.'@media print { /* START print styles */'.NL.$css_content.NL.'} /* /@media END print styles */'.NL;
+                    break;
+                case 'all':
+                case 'feed':
+                default:
+                    $css .= NL.'/* START rest styles */ '.NL.$css_content.NL.'/* END rest styles */'.NL;
+                    break;
+            }
+        }
+
         foreach($files as $file => $location) {
             $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
             $css_content = "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
@@ -86,7 +128,6 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
 
         if(function_exists('css_parseless')) {
             // apply pattern replacements
-            $styleini = css_styleini($template);
             $css = css_applystyle($css, $styleini['replacements']);
 
             // parse less

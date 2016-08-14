@@ -192,6 +192,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // CSS usage.
+        $this->config ['css_usage'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // CSS template.
         $this->config ['css_template'] =
             array('value'              => NULL,
@@ -203,6 +212,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'refresh'            => false);
         // CSS media selector (screen or print)
         $this->config ['media_sel'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
+        // Standard font size for CSS import = value for 1em/100%
+        $this->config ['css_font_size'] =
             array('value'              => NULL,
                   'DWGlobalName'       => NULL,
                   'hasGlobal'          => true,

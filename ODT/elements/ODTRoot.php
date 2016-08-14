@@ -27,7 +27,7 @@ class ODTElementRoot extends ODTStateElement
      */
     public function getElementName () {
         // Dummy.
-        return '';
+        return 'root';
     }
 
     /**

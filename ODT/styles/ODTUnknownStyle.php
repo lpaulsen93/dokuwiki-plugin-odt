@@ -137,4 +137,91 @@ class ODTUnknownStyle extends ODTStyle
      */
     public function clearLayoutProperties() {
     }
+
+    /**
+     * This function creates a frame style for multiple columns, using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
+     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
+     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
+     *
+     * The currently supported properties are:
+     * column-count, column-rule, column-gap
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     *
+     * @param $style
+     * @param $properties
+     * @param null $disabled_props
+     * @return ODTUnknownStyle or NULL
+     */
+    public static function createMultiColumnFrameStyle(array $properties, array $disabled_props = NULL) {
+        $attrs = 0;
+
+        $columns = '';
+        if ( empty ($disabled_props ['column-count']) ) {
+            $columns = $properties ['column-count'];
+            $attrs++;
+        }
+
+        $rule_width = '';
+        if ( empty ($disabled_props ['column-rule-width']) ) {
+            $rule_width = $properties ['column-rule-width'];
+            $attrs++;
+        }
+
+        $rule_style = '';
+        if ( empty ($disabled_props ['column-rule-style']) ) {
+            $rule_style = $properties ['column-rule-style'];
+            $attrs++;
+        }
+
+        $rule_color = '';
+        if ( empty ($disabled_props ['column-rule-color']) ) {
+            $rule_color = $properties ['column-rule-color'];
+            $attrs++;
+        }
+
+        $gap = '';
+        if ( empty ($disabled_props ['column-gap']) ) {
+            $gap = $properties ['column-gap'];
+            $attrs++;
+        }
+
+        // If all relevant properties are empty or disabled, then there
+        // are no attributes for our style. Return NULL to indicate 'no style required'.
+        if ( $attrs == 0 ) {
+            return NULL;
+        }
+
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) ) {
+            $style_name = self::getNewStylename ('Frame');
+            $properties ['style-name'] = $style_name;
+        }
+
+        $width = '1000*';
+
+        $style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="Frame">
+                    <style:graphic-properties fo:border="none" style:vertical-pos="top" style:vertical-rel="paragraph-content" style:horizontal-pos="center" style:horizontal-rel="paragraph">
+<style:columns fo:column-count="'.$columns.'" fo:column-gap="'.$gap.'">
+<style:column-sep style:style="'.$rule_style.'" style:color="'.$rule_color.'" style:width="'.$rule_width.'"/>
+<style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
+<style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
+<style:column style:rel-width="'.$width.'" fo:start-indent="0cm" fo:end-indent="0cm"/>
+</style:columns>
+</style:graphic-properties></style:style>';
+
+        // Create empty frame style.
+        // Not supported yet, so we create an "unknown" style
+        $object = new ODTUnknownStyle();
+        if ($object == NULL) {
+            return NULL;
+        }
+        $object->setStyleContent($style);
+
+        return $object;
+    }
 }

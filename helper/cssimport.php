@@ -793,14 +793,14 @@ class css_declaration {
     /**
      * @param $callback
      */
-    public function adjustLengthValues ($callback) {
+    public function adjustLengthValues ($callback, $rule=NULL) {
         switch ($this->property) {
             case 'border-width':
             case 'outline-width':
             case 'border-bottom-width':
             case 'column-rule-width':
                 $this->value =
-                    call_user_func($callback, $this->property, $this->value, CSSValueType::StrokeOrBorderWidth);
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::StrokeOrBorderWidth, $rule);
             break;
 
             case 'margin-left':
@@ -810,7 +810,7 @@ class css_declaration {
             case 'width':
             case 'column-width':
                 $this->value =
-                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueXAxis);
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueXAxis, $rule);
             break;
 
             case 'margin-top':
@@ -821,7 +821,7 @@ class css_declaration {
             case 'height':
             case 'line-height':
                 $this->value =
-                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueYAxis);
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueYAxis, $rule);
             break;
 
             case 'border':
@@ -829,7 +829,7 @@ class css_declaration {
             case 'border-right':
             case 'border-top':
             case 'border-bottom':
-                $this->adjustLengthValuesBorder ($callback);
+                $this->adjustLengthValuesBorder ($callback, $rule);
             break;
 
             // FIXME: Shorthands are currently not processed.
@@ -841,7 +841,7 @@ class css_declaration {
     /**
      * @param $callback
      */
-    protected function adjustLengthValuesBorder ($callback) {
+    protected function adjustLengthValuesBorder ($callback, $rule=NULL) {
         switch ($this->property) {
             case 'border':
             case 'border-left':
@@ -850,9 +850,19 @@ class css_declaration {
             case 'border-bottom':
                 $values = preg_split ('/\s+/', $this->value);
                 $width =
-                    call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth);
+                    call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth, $rule);
                 $this->value = $width . ' ' . $values [1] . ' ' . $values [2];
             break;
+        }
+    }
+
+    /**
+     * @param $callback
+     */
+    public function replaceURLPrefixes ($callback) {
+        if (strncmp($this->value, 'url(', 4) == 0) {
+            $url = substr($this->value, 4, -1);
+            $this->value = call_user_func($callback, $this->property, $this->value, $url);
         }
     }
 }

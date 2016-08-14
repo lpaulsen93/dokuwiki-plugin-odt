@@ -3000,8 +3000,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function _odtGetImageSizeString($src, $width = NULL, $height = NULL, $preferImage=true){
         list($width_file, $height_file) = $this->_odtGetImageSize($src);
         if ($width_file != 0 && $preferImage) {
-            $width  = $width_file;
-            $height = $height_file;
+            $width  = $width_file.'cm';
+            $height = $height_file.'cm';
         } else {
             // convert from pixel to centimeters only if no unit is
             // specified or if unit is 'px'

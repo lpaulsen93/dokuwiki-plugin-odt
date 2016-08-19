@@ -2199,7 +2199,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $highlighted_code = preg_replace('/<span[^>]*>/', "<text:span>", $highlighted_code);
         $highlighted_code = str_replace("&nbsp;", "&#xA0;", $highlighted_code);
         // Replace links with ODT link syntax
-        $highlighted_code = preg_replace_callback('/<a (href="[^"]*">.*)<\/a>/', array($this, '_convert_geshi_links'), $highlighted_code);
+        $highlighted_code = preg_replace_callback('/<a (href="[^"]*">.*?)<\/a>/', array($this, '_convert_geshi_links'), $highlighted_code);
 
         $this->_preformatted($highlighted_code, $style_name, false);
     }

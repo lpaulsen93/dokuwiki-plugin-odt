@@ -6,6 +6,7 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementSpan.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementParagraph.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementList.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementListItem.php';
+require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementListHeader.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTable.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableColumn.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableRow.php';

@@ -680,9 +680,11 @@ class ODTTable
             $style_name = $table_column_styles [$column-1];
             $style_obj = $params->document->getStyle($style_name);
 
-            $width = $style_obj->getProperty('column-width');
-            $width = trim ($width, 'pt');
-            $width -= $padding;
+            if ($style_obj !== NULL) {
+                $width = $style_obj->getProperty('column-width');
+                $width = trim ($width, 'pt');
+                $width -= $padding;
+            }
 
             // Get table width
             $table_width = $tableStyle->getProperty('width');

@@ -989,6 +989,22 @@ class ODTDocument
     }
 
     /**
+     * Open a list header
+     *
+     * @param int $level The nesting level
+     */
+    function listHeaderOpen($level, $element=NULL, $attributes=NULL) {
+        ODTList::listHeaderOpen($this->params, $level, $element, $attributes);
+    }
+
+    /**
+     * Close a list header
+     */
+    function listHeaderClose() {
+        ODTList::listHeaderClose($this->params);
+    }
+
+    /**
      * Open list content/a paragraph in a list item
      */
     function listContentOpen($element=NULL, $attributes=NULL) {

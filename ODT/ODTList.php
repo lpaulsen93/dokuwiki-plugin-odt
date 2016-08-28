@@ -109,6 +109,55 @@ class ODTList
     }
 
     /**
+     * Open a list header
+     *
+     * @param int $level The nesting level
+     */
+    static public function listHeaderOpen(ODTInternalParams $params, $level, $element=NULL, $attributes=NULL) {
+        if ($params->document->state == NULL ) {
+            // ??? Can't be...
+            return;
+        }
+        if ($element == NULL) {
+            $element = 'li';
+        }
+
+        // Set marker that list interruption has stopped!!!
+        $table = $params->document->state->getCurrentTable();
+        if ($table != NULL) {
+            $table->setListInterrupted(false);
+        }
+
+        $properties = array();
+        ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
+
+        // Attention:
+        // we save the list level here but it might be wrong.
+        // Someone can start a list with level 2 without having created
+        // a list with level 1 before.
+        // When the correct list level is needed better use
+        // $params->document->state->countClass('list'), see table_open().
+        $list_header = new ODTElementListHeader($level);
+        $params->document->state->enter($list_header);
+        $list_header->setHTMLElement ($element);
+
+        $params->content .= $list_header->getOpeningTag();
+    }
+
+    /**
+     * Close a list header
+     */
+    static public function listHeaderClose(ODTInternalParams $params) {
+        $table = $params->document->state->getCurrentTable();
+        if ($table != NULL && $table->getListInterrupted()) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+        $params->document->closeCurrentElement();
+    }
+
+    /**
      * Open list content/a paragraph in a list item
      */
     static public function listContentOpen(ODTInternalParams $params, $element=NULL, $attributes=NULL) {

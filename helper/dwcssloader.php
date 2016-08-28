@@ -40,7 +40,7 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
      * @param $template
      * @return string
      */
-    public function load($plugin_name, $format, $template, $usestyles) {
+    public function load($plugin_name, $format, $template) {
         $mediatypes = array('screen', 'all', 'print');
 
         //reusue the CSS dispatcher functions without triggering the main function
@@ -72,7 +72,7 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
                     => DOKU_BASE . 'lib/styles/',
             ),
             css_pluginstyles('all'),
-            $this->css_pluginFormatStyles($format, $usestyles),
+            $this->css_pluginFormatStyles($format),
             array(
                 DOKU_PLUGIN . $plugin_name.'/conf/style.css'
                     => DOKU_BASE . 'lib/plugins/'.$plugin_name.'/conf/',
@@ -150,30 +150,22 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
      * @param string $format
      * @return array
      */
-    protected function css_pluginFormatStyles($format, $usestyles) {
+    protected function css_pluginFormatStyles($format) {
         $list = array();
         $plugins = plugin_list();
 
-        $temp = explode(',', $usestyles);
-        $usestyle = array();
-        foreach ($temp as $entry) {
-            $usestyle [] = trim ($entry);
-        }
-        foreach($plugins as $p) {
+        foreach($plugins as $p) {            
+            // Always load normal/screen CSS code
+            // That way plugins can choose with the media selector which CSS code they like to use
+            $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
+
             // Do $format.css (e.g. odt.css) or print.css exists?
             $format_css = file_exists(DOKU_PLUGIN . $p ."/". $format .".css");
             $print_css = file_exists(DOKU_PLUGIN . $p ."/print.css");
-            
-            // If plugin is in usestyles list or if it has not got a $format.css or print.css
-            // then additionally load the screen or style.css.
-            if(in_array($p, $usestyle) || ($format_css == false && $print_css == false)) {
-                $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-                $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-            }
-
             if($format_css) {
                 $list[DOKU_PLUGIN . $p ."/". $format .".css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-            } else {
+            } else if ($print_css) {
                 $list[DOKU_PLUGIN . $p ."/print.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
             }
         }

@@ -16,7 +16,6 @@ $conf['css_usage']     = 'off (plugins only)';
 $conf['media_sel']     = 'print';
 $conf['css_font_size'] = '16';
 $conf['css_template']  = 'dokuwiki';
-$conf['usestyles']     = '';
 
 // Parameters for converting pixel to points
 $conf['twips_per_pixel_x'] = '16';

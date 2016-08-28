@@ -13,7 +13,6 @@ $meta['css_usage']     = array('multichoice', '_choices' => array('off (plugins 
 $meta['media_sel']     = array('string');
 $meta['css_font_size'] = array('numeric');
 $meta['css_template']  = array('dirchoice', '_dir' => DOKU_INC . 'lib/tpl/');
-$meta['usestyles']     = array('string');
 
 $meta['twips_per_pixel_x'] = array('numeric');
 $meta['twips_per_pixel_y'] = array('numeric');

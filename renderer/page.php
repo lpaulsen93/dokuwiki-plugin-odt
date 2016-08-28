@@ -93,7 +93,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $loader = plugin_load('helper', 'odt_dwcssloader');
         if ( $loader != NULL ) {
             $this->css = $loader->load
-                ('odt', 'odt', $this->config->getParam('css_template'), $this->config->getParam('usestyles'));
+                ('odt', 'odt', $this->config->getParam('css_template'));
         }
 
         // Import CSS (old API, deprecated)

@@ -847,6 +847,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->listClose();
     }
 
+    function list_close() {
+        $this->document->listClose();
+    }
+
     /**
      * Open a list item
      *

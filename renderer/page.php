@@ -860,6 +860,44 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->listItemClose();
     }
 
+    /**
+     * Open a list header
+     *
+     * @param int $level the nesting level
+     */
+    function listheader_open($level) {
+        if ($this->state == NULL ) {
+            // ??? Can't be...
+            return;
+        }
+
+        // Set marker that list interruption has stopped!!!
+        $table = $this->state->getCurrentTable();
+        if ($table != NULL) {
+            $table->setListInterrupted(false);
+        }
+
+        // Attention:
+        // we save the list level here but it might be wrong.
+        // Someone can start a list with level 2 without having created
+        // a list with level 1 before.
+        // When the correct list level is needed better use
+        // $this->state->countClass('list'), see table_open().
+        $list_item = new ODTElementListHeader($level);
+        $this->state->enter($list_item);
+
+        $this->doc .= $list_item->getOpeningTag();
+    }
+
+    function listheader_close() {
+        $table = $this->state->getCurrentTable();
+        if ($table != NULL && $table->getListInterrupted()) {
+            // Do not do anything as long as list is interrupted
+            return;
+        }
+        $this->closeCurrentElement();
+    }
+
     function listcontent_open() {
         $this->document->listContentOpen();
     }
@@ -1066,7 +1104,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $highlighted_code = preg_replace('/<span[^>]*>/', "<text:span>", $highlighted_code);
         $highlighted_code = str_replace("&nbsp;", "&#xA0;", $highlighted_code);
         // Replace links with ODT link syntax
-        $highlighted_code = preg_replace_callback('/<a (href="[^"]*">.*)<\/a>/', array($this, '_convert_geshi_links'), $highlighted_code);
+        $highlighted_code = preg_replace_callback('/<a (href="[^"]*">.*?)<\/a>/', array($this, '_convert_geshi_links'), $highlighted_code);
 
         $this->_preformatted($highlighted_code, $style_name, false);
     }

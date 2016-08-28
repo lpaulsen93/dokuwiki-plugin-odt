@@ -209,7 +209,7 @@ class ODTUtility
      * @param  $height
      * @return array
      */
-    public static function getImageSizeString($src, $width = NULL, $height = NULL, $preferImage=true){
+    public static function getImageSizeString($src, $width = NULL, $height = NULL, $preferImage=true, ODTUnits $units){
         list($width_file, $height_file) = self::getImageSize($src);
         if ($width_file != 0 && $preferImage) {
             $width  = $width_file.'cm';
@@ -217,8 +217,8 @@ class ODTUtility
         } else {
             // convert from pixel to centimeters only if no unit is
             // specified or if unit is 'px'
-            $unit_width = $this->units->stripDigits ($width);
-            $unit_height = $this->units->stripDigits ($height);
+            $unit_width = $units->stripDigits ($width);
+            $unit_height = $units->stripDigits ($height);
             if ((empty($unit_width) && empty($unit_height)) ||
                 ($unit_width == 'px' && $unit_height == 'px')) {
                 if ($width) $width = (($width/96.0)*2.54).'cm';

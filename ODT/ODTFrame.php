@@ -98,7 +98,7 @@ class ODTFrame
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
             $pic_link = $params->document->addFileAsPicture($picture);
-            list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture);
+            list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture, NULL, NULL, true, $params->units);
         }
 
         if ( empty($horiz_pos) ) {
@@ -451,7 +451,7 @@ class ODTFrame
             // If a picture/background-image is set in the CSS, than we insert it manually here.
             // This is a workaround because ODT does not support the background-image attribute in a span.
             $pic_link = $params->document->addFileAsPicture($picture);
-            list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture);
+            list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture, NULL, NULL, true, $params->units);
         }
 
         if ( empty($horiz_pos) ) {

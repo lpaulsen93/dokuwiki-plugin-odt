@@ -1450,8 +1450,8 @@ class ODTDocument
      * @param  $height
      * @return array
      */
-    public static function getImageSizeString($src, $width = NULL, $height = NULL){
-        return ODTUtility::getImageSizeString($src, $width, $height);
+    public function getImageSizeString($src, $width = NULL, $height = NULL){
+        return ODTUtility::getImageSizeString($src, $width, $height, false, $this->params->units);
     }
 
     /**

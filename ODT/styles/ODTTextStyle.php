@@ -212,5 +212,126 @@ class ODTTextStyle extends ODTStyleStyle
     static public function getTextProperties () {
         return self::$text_fields;
     }
+
+    /**
+     * This function creates a text style using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
+     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
+     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
+     *
+     * The currently supported properties are:
+     * background-color, color, font-style, font-weight, font-size, border, font-family, font-variant, letter-spacing,
+     * vertical-align, background-image
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     * @param $properties
+     * @param null $disabled_props
+     * @return ODTTextStyle or NULL
+     */
+    public static function createTextStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
+        // Convert 'text-decoration'.
+        if ( $properties ['text-decoration'] == 'line-through' ) {
+            $properties ['text-line-through-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'underline' ) {
+            $properties ['text-underline-style'] = 'solid';
+        }
+        if ( $properties ['text-decoration'] == 'overline' ) {
+            $properties ['text-overline-style'] = 'solid';
+        }
+
+        // If the property 'vertical-align' has the value 'sub' or 'super'
+        // then for ODT it needs to be converted to the corresponding 'text-position' property.
+        // Replace sub and super with text-position.
+        $valign = $properties ['vertical-align'];
+        if (!empty($valign)) {
+            if ( $valign == 'sub' ) {
+                $properties ['text-position'] = '-33% 100%';
+                unset($properties ['vertical-align']);
+            } elseif ( $valign == 'super' ) {
+                $properties ['text-position'] = '33% 100%';
+                unset($properties ['vertical-align']);
+            }
+        }
+
+        // Separate country from language
+        $lang = $properties ['lang'];
+        $country = $properties ['country'];
+        if ( !empty($lang) ) {
+            $parts = preg_split ('/-/', $lang);
+            $lang = $parts [0];
+            $country = $parts [1];
+            $properties ['country'] = trim($country);
+            $properties ['lang'] = trim($lang);
+        }
+        if (!empty($properties ['country'])) {
+            if (empty($properties ['country-asian'])) {
+                $properties ['country-asian'] = $properties ['country'];
+            }
+            if (empty($properties ['country-complex'])) {
+                $properties ['country-complex'] = $properties ['country'];
+            }
+        }
+
+        // Extra handling for font-size in '%'
+        $save = $disabled_props ['font-size'];
+        $odt_fo_size = '';
+        if ( empty ($disabled_props ['font-size']) ) {
+            $odt_fo_size = $properties ['font-size'];
+        }
+        $length = strlen ($odt_fo_size);
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && $doc != NULL) {
+            // A font-size in percent is only supported in common style definitions, not in automatic
+            // styles. Create a common style and set it as parent for this automatic style.
+            $name = 'Size'.trim ($odt_fo_size, '%').'pc';
+            $style_obj = self::createSizeOnlyTextStyle ($name, $odt_fo_size);
+            $doc->addStyle($style_obj);
+            $parent = $style_obj->getProperty('style-name');
+            if (!empty($parent)) {
+                $properties ['style-parent'] = $parent;
+            }
+        }
+
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) ) {
+            $style_name = self::getNewStylename ('Text');
+            $properties ['style-name'] = $style_name;
+        }
+
+        // Create empty text style.
+        $object = new ODTTextStyle();
+        if ($object == NULL) {
+            return NULL;
+        }
+        
+        // Import our properties
+        $object->importProperties($properties, $disabled_props);
+
+        // Restore $disabled_props
+        $disabled_props ['font-size'] = $save;
+        return $object;
+    }
+
+    /**
+     * Simple helper function for creating a text style $name setting the specfied font size $size.
+     *
+     * @author LarsDW223
+     *
+     * @param string $name
+     * @param string $size
+     * @return ODTTextStyle
+     */
+    public static function createSizeOnlyTextStyle ($name, $size) {
+        $properties = array();
+        $properties ['style-name'] = $name;
+        $properties ['style-display-name'] = $name;
+        $properties ['font-size'] = $size;
+        $properties ['font-size-asian'] = $size;
+        $properties ['font-size-complex'] = $size;
+        return self::createTextStyle($properties);
+    }
 }
 

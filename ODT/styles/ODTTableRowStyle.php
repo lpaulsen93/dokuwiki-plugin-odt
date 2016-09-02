@@ -136,5 +136,39 @@ class ODTTableRowStyle extends ODTStyleStyle
     static public function getTableRowProperties () {
         return self::$table_row_fields;
     }
-}
 
+    /**
+     * This function creates a table row style using the style as set in the assoziative array $properties.
+     * The parameters in the array should be named as the CSS property names e.g. 'color' or 'background-color'.
+     * Properties which shall not be used in the style can be disabled by setting the value in disabled_props
+     * to 1 e.g. $disabled_props ['color'] = 1 would block the usage of the color property.
+     *
+     * The currently supported properties are:
+     * height, background-color
+     *
+     * The function returns the name of the new style or NULL if all relevant properties are empty.
+     *
+     * @author LarsDW223
+     * @param $properties
+     * @param null $disabled_props
+     * @return ODTTableRowStyle
+     */
+    public static function createTableRowStyle(array $properties, array $disabled_props = NULL){
+        // Create style name (if not given).
+        $style_name = $properties ['style-name'];
+        if ( empty($style_name) ) {
+            $style_name = self::getNewStylename ('TableRow');
+            $properties ['style-name'] = $style_name;
+        }
+
+        // Create empty table row style.
+        $object = new ODTTableRowStyle();
+        if ($object == NULL) {
+            return NULL;
+        }
+        
+        // Import our properties
+        $object->importProperties($properties, $disabled_props);
+        return $object;
+    }
+}

@@ -378,7 +378,7 @@ class ODTTable
 
         // Eventually adjust table width.
         if ( !empty ($properties ['width']) ) {
-            if ( $properties ['width'] [$properties ['width']-1] != '%' ) {
+            if ( $properties ['width'] [strlen($properties ['width'])-1] != '%' ) {
                 // Width has got an absolute value.
                 // Some units are not supported by ODT for table width (e.g. 'px').
                 // So we better convert it to points.
@@ -599,25 +599,25 @@ class ODTTable
     }
 
     static protected function adjustColumnStyle(ODTInternalParams $params, array $properties) {
-        if (!empty($properties ['width'])) {
-            $table = $params->document->state->getCurrentTable();
-            if ($table == NULL) {
-                // ??? Error. Not table found.
-                return;
-            }
-            $curr_column = $table->getTableCurrentColumn();
-            $table_column_styles = $table->getTableColumnStyles();
-            $style_name = $table_column_styles [$curr_column-1];
-            $style_obj = $params->document->getStyle($style_name);
+        $table = $params->document->state->getCurrentTable();
+        if ($table == NULL) {
+            // ??? Error. Not table found.
+            return;
+        }
+        $curr_column = $table->getTableCurrentColumn();
+        $table_column_styles = $table->getTableColumnStyles();
+        $style_name = $table_column_styles [$curr_column-1];
+        $style_obj = $params->document->getStyle($style_name);
 
-            if ($style_obj != NULL) {
+        if ($style_obj != NULL) {
+            if (!empty($properties ['width'])) {
                 $width = $properties ['width'];
                 $length = strlen ($width);
                 $width = $params->document->toPoints($width, 'x');
                 $style_obj->setProperty('column-width', $width);
-            } else {
-                self::tableAddColumnUseProperties ($params, $properties);
             }
+        } else {
+            self::tableAddColumnUseProperties ($params, $properties);
         }
     }
 

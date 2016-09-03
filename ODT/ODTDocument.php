@@ -688,7 +688,7 @@ class ODTDocument
      */    
     public function insertUserField($name) {
         $name = $this->cleanupUserFieldName($name);
-        if (array_key_exists($name, $renderer->fields)) {
+        if (array_key_exists($name, $this->fields)) {
             $this->content .= '<text:user-field-get text:name="'.$name.'">'.$this->fields [$name].'</text:user-field-get>';
         }
     }

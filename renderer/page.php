@@ -2137,7 +2137,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @author Aurelien Bompard <aurelien@bompard.org>
      * @see ODTDocument::insertUserField for detailed desciption.
      */    
-    public function insertUserField(&$content, $name) {
+    public function insertUserField($name) {
         $this->document->insertUserField($name);
     }
 

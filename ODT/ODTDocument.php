@@ -730,6 +730,7 @@ class ODTDocument
         ODTUtility::deleteUselessElements($this->content, $this->preventDeletetionStyles);
 
         //$this->trace_dump .= $this->htmlStack->getDump();
+        //$this->trace_dump .= $this->importnew->rulesToString();
 
         if (!empty($this->trace_dump)) {
             $this->paragraphOpen();

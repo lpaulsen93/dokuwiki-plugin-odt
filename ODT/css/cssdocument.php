@@ -183,12 +183,6 @@ class cssdocument {
         $this->entries [$this->size]['state'] = 'close';
         $this->entries [$this->size]['element'] = $element;
         $this->size++;
-
-        // If the just closed element is a child of root
-        // then delete all elements up to the root index to save memory.
-        if ($this->entries [$this->size-1]['level'] == $this->rootLevel+1) {
-            $this->restoreToRoot();
-        }
     }
 
     public function getCurrentElement() {

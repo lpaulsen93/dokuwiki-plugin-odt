@@ -53,4 +53,8 @@ class helper_plugin_odt_cssdocument extends DokuWiki_Plugin {
     public function getPrecedingSibling ($current) {
         return $this->internal->getPrecedingSibling ($current);
     }
+
+    public function getDump () {
+        return $this->internal->getDump ($current);
+    }
 }

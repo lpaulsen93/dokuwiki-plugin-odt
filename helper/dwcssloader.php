@@ -158,15 +158,21 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             // Always load normal/screen CSS code
             // That way plugins can choose with the media selector which CSS code they like to use
             $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/screen.less"] = DOKU_BASE . "lib/plugins/". $p ."/";
             $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/style.less"] = DOKU_BASE . "lib/plugins/". $p ."/";
 
             // Do $format.css (e.g. odt.css) or print.css exists?
             $format_css = file_exists(DOKU_PLUGIN . $p ."/". $format .".css");
+            $format_less = file_exists(DOKU_PLUGIN . $p ."/". $format .".less");
             $print_css = file_exists(DOKU_PLUGIN . $p ."/print.css");
-            if($format_css) {
+            $print_less = file_exists(DOKU_PLUGIN . $p ."/print.less");
+            if($format_css || $format_less) {
                 $list[DOKU_PLUGIN . $p ."/". $format .".css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-            } else if ($print_css) {
+                $list[DOKU_PLUGIN . $p ."/". $format .".less"] = DOKU_BASE . "lib/plugins/". $p ."/";
+            } else if ($print_css || $print_less) {
                 $list[DOKU_PLUGIN . $p ."/print.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
+                $list[DOKU_PLUGIN . $p ."/print.less"] = DOKU_BASE . "lib/plugins/". $p ."/";
             }
         }
         return $list;

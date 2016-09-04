@@ -205,7 +205,21 @@ class ODTImage
 
         // Define graphic style for picture
         $style_name = ODTStyle::getNewStylename('span_graphic');
-        $image_style = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$params->document->getStyleName('graphics').'"><style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$bg_color.'" style:flow-with-text="true"></style:graphic-properties></style:style>';
+        $image_style  = '<style:style style:name="'.$style_name.'" style:family="graphic" style:parent-style-name="'.$params->document->getStyleName('graphics').'">';
+        $image_style .= '<style:graphic-properties style:vertical-pos="middle" style:vertical-rel="text" style:horizontal-pos="from-left" style:horizontal-rel="paragraph" fo:background-color="'.$bg_color.'" style:flow-with-text="true"';
+        if (!empty($properties ['margin-left'])) {
+            $image_style .= ' fo:margin-left="'.$properties ['margin-left'].'"';
+        }
+        if (!empty($properties ['margin-right'])) {
+            $image_style .= ' fo:margin-right="'.$properties ['margin-right'].'"';
+        }
+        if (!empty($properties ['margin-top'])) {
+            $image_style .= ' fo:margin-top="'.$properties ['margin-top'].'"';
+        }
+        if (!empty($properties ['margin-bottom'])) {
+            $image_style .= ' fo:margin-bottom="'.$properties ['margin-bottom'].'"';
+        }
+        $image_style .= '></style:graphic-properties></style:style>';
 
         // Add style and image to our document
         // (as unknown style because style-family graphic is not supported)

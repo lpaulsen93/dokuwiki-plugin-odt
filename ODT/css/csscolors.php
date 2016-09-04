@@ -322,4 +322,15 @@ class csscolors {
         }
         return $name;
     }
+
+    /**
+     * @param string $name
+     * @return boolean
+     */
+    public static function isKnownColorName ($name=NULL) {
+        if ($name != NULL) {
+            return array_key_exists(strtolower($name), self::$values);
+        }
+        return false;
+    }
 }

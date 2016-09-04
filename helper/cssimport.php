@@ -141,20 +141,30 @@ class css_declaration {
     protected function explodeBackgroundShorthand (&$decls) {
         if ( $this->property == 'background' ) {
             $values = preg_split ('/\s+/', $this->value);
-            if ( count($values) > 0 ) {
-                $decls [] = new css_declaration ('background-color', $values [0]);
+            $index = 0;
+            if ($index < count($values)) {
+                $color_done = true;
+                $value = $values [$index];
+                if ($value [0] == '#' || csscolors::isKnownColorName($value)) {
+                    $decls [] = new css_declaration ('background-color', $value);
+                    $index++;
+                }
             }
-            if ( count($values) > 1 ) {
-                $decls [] = new css_declaration ('background-image', $values [1]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-image', $values [$index]);
+                $index++;
             }
-            if ( count($values) > 2 ) {
-                $decls [] = new css_declaration ('background-repeat', $values [2]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-repeat', $values [$index]);
+                $index++;
             }
-            if ( count($values) > 3 ) {
-                $decls [] = new css_declaration ('background-attachment', $values [3]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-attachment', $values [$index]);
+                $index++;
             }
-            if ( count($values) > 4 ) {
-                $decls [] = new css_declaration ('background-position', $values [4]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-position', $values [$index]);
+                $index++;
             }
         }
     }

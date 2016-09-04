@@ -53,4 +53,12 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
     public static function getValueName ($value=NULL) {
         return csscolors::getValueName ($value);
     }
+
+    /**
+     * @param string $name
+     * @return boolean
+     */
+    public static function isKnownColorName ($name=NULL) {
+        return csscolors::isKnownColorName ($name);
+    }
 }

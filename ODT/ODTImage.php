@@ -3,7 +3,7 @@
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 
 /**
- * ODTFrame:
+ * ODTImage:
  * Class containing static code for handling images.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
@@ -11,13 +11,17 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 class ODTImage
 {
     /**
-     * @param string $src
-     * @param  $width
-     * @param  $height
-     * @param  $align
-     * @param  $title
-     * @param  $style
-     * @param  $returnonly
+     * Adds an image $src to the document.
+     * 
+     * @param string  $src        The path to the image file
+     * @param string  $width      Width of the picture (NULL=original size)
+     * @param string  $height     Height of the picture (NULL=original size)
+     * @param string  $align      Alignment
+     * @param string  $title      Title
+     * @param string  $style      Optional "draw:style-name"
+     * @param boolean $returnonly Only return code
+     * 
+     * @see ODTImage::addImage for a detailed description
      */
     public static function addImage(ODTInternalParams $params, $src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         static $z = 0;
@@ -166,6 +170,18 @@ class ODTImage
         }
     }
 
+    /**
+     * Adds an image $src to the document using the parameters set in $properties.
+     * The actually supported properties are:
+     * - width and height
+     * - title
+     * - background-color
+     * - margin-left, margin-right, margin-top, margin-bottom
+     * 
+     * @param string  $src        The path to the image file
+     * @param array   $properties Properties (width, height... see ODTImage::addImageUseProperties)
+     * @param boolean $returnonly Only return code
+     */
     public static function addImageUseProperties(ODTInternalParams $params, $src, array $properties, $returnonly = false){
         static $z = 0;
 

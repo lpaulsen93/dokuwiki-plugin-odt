@@ -1456,7 +1456,15 @@ class ODTDocument
     }
 
     /**
-     * The function adds an image.
+     * Adds an image $src to the document.
+     * 
+     * @param string  $src        The path to the image file
+     * @param string  $width      Width of the picture (NULL=original size)
+     * @param string  $height     Height of the picture (NULL=original size)
+     * @param string  $align      Alignment
+     * @param string  $title      Title
+     * @param string  $style      Optional "draw:style-name"
+     * @param boolean $returnonly Only return code
      * 
      * @see ODTImage::addImage for a detailed description
      */
@@ -1468,6 +1476,15 @@ class ODTDocument
         }
     }
 
+    /**
+     * Adds an image $src to the document using the parameters set in $properties.
+     * 
+     * @param string  $src        The path to the image file
+     * @param array   $properties Properties (width, height... see ODTImage::addImageUseProperties)
+     * @param boolean $returnonly Only return code
+     * 
+     * @see ODTImage::addImageUseProperties for a detailed description
+     */
     public function addImageUseProperties($src, $properties, $returnonly = false){
         if ($returnonly) {
             return ODTImage::addImageUseProperties($this->params, $src, $properties, $returnonly);

@@ -1577,13 +1577,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * @param string $src
-     * @param  $width
-     * @param  $height
-     * @param  $align
-     * @param  $title
-     * @param  $style
-     * @param  $returnonly
+     * Adds an image $src to the document.
+     * 
+     * @param string  $src        The path to the image file
+     * @param string  $width      Width of the picture (NULL=original size)
+     * @param string  $height     Height of the picture (NULL=original size)
+     * @param string  $align      Alignment
+     * @param string  $title      Title
+     * @param string  $style      Optional "draw:style-name"
+     * @param boolean $returnonly Only return code
+     * 
+     * @see ODTDocument::addImage for API wrapper function
+     * @see ODTImage::addImage for a detailed description
      */
     function _odtAddImage($src, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL, $returnonly = false){
         if ($returnonly) {
@@ -1593,6 +1598,16 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
     }
 
+    /**
+     * Adds an image $src to the document using the parameters set in $properties.
+     * 
+     * @param string  $src        The path to the image file
+     * @param array   $properties Properties (width, height... see ODTImage::addImageUseProperties)
+     * @param boolean $returnonly Only return code
+     * 
+     * @see ODTDocument::addImageUseProperties for API wrapper function
+     * @see ODTImage::addImageUseProperties for a detailed description
+     */
     function _odtAddImageUseProperties($src, array $properties, $returnonly = false){
         if ($returnonly) {
             return $this->document->addImageUseProperties($src, $properties, $returnonly);

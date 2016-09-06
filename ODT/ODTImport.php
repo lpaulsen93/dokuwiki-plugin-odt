@@ -45,10 +45,10 @@ class ODTImport
                                                                     'pseudo-class' => 'visited'),
                                    'local link' => array('element' => 'a', 
                                                          'attributes' => 'class="wikilink1"',
-                                                         'pseudo-class' => NULL),
+                                                         'pseudo-class' => 'link'),
                                    'visited local link' => array('element' => 'a',
                                                                  'attributes' => 'class="wikilink1"',
-                                                                 'pseudo-class' => NULL),
+                                                                 'pseudo-class' => 'visited'),
                                   );
 
     /**

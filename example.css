@@ -53,7 +53,7 @@ h5 {
 /* Normal text
  * DokuWiki syntax: Just text
  */
-body {
+p {
     font-style: normal;
     margin-top: 0cm;
     margin-bottom: 0.212cm;
@@ -153,14 +153,6 @@ table {
     margin-bottom: 0.25cm;
 }
 
-/* Table header
- * DokuWiki syntax: normal table syntax
- */
-thead {
-    border: 1pt solid black;
-    background-color: whitesmoke;
-}
-
 /* Table heading
  * DokuWiki syntax: normal table syntax
  */
@@ -198,122 +190,148 @@ hr {
 /* Un-ordered list.
  * DokuWiki syntax: * list item text
  */
-ul.level1 {
+/* Level 1
+ */
+ul {
     list-style-type: disc;
+    margin-top: 0.5cm;
+    margin-bottom: 0.5cm;
 }
 
-ul.level2 {
+/* Level 2
+ */
+ul ul {
     list-style-type: circle;
 }
 
-ul.level3 {
+/* Level 3
+ */
+ul ul ul {
     list-style-type: square;
 }
 
-ul.level4 {
+/* Level 4
+ */
+ul ul ul ul {
     list-style-type: blackcircle;
 }
 
-ul.level5 {
+/* Level 5
+ */
+ul ul ul ul ul {
     list-style-type: heavycheckmark;
 }
 
-ul.level6 {
+/* Level 6
+ */
+ul ul ul ul ul ul {
     list-style-type: ballotx;
 }
 
-ul.level7 {
+/* Level 7
+ */
+ul ul ul ul ul ul ul {
     list-style-type: heavyrightarrow;
 }
 
-ul.level8 {
+/* Level 8
+ */
+ul ul ul ul ul ul ul ul {
     list-style-type: lightedrightarrow;
 }
 
-ul.level9 {
+/* Level 9
+ */
+ul ul ul ul ul ul ul ul ul {
     list-style-type: none;
 }
 
-ul.level10 {
+/* Level 10
+ */
+ul ul ul ul ul ul ul ul ul ul {
     list-style-type: bullet;
 }
 
 /* Ordered list.
  * DokuWiki syntax: - list item text
  */
-ol.level1 {
-    list-style-type: "1";
-}
-
-ol.level2 {
-    list-style-type: "a";
-}
-
-ol.level3 {
-    list-style-type: "I";
-}
-
-ol.level4 {
-    list-style-type: "A";
-}
-
-ol.level5 {
-    list-style-type: "i";
-}
-
-ol.level6 {
-    list-style-type: "i";
-}
-
-ol.level7 {
-    list-style-type: "i";
-}
-
-ol.level8 {
-    list-style-type: "i";
-}
-
-ol.level9 {
-    list-style-type: "i";
-}
-
-ol.level10 {
-    list-style-type: "i";
-}
-
-/* Style for first paragraph of a list.
- * (ordered and unordered)
- * Can be used to set margin of the list to previous content.
+/* Level 1
  */
-.listfirstparagraph {
-    margin-top: 0.5cm;
+ol {
+    list-style-type: decimal;
 }
 
-/* Style for last paragraph of a list.
- * (ordered and unordered)
- * Can be used to set margin of the list to following content.
+/* Level 2
  */
-.listlastparagraph {
-    margin-bottom: 0.5cm;
+ol ol {
+    list-style-type: decimal-leading-zero;
 }
 
-/* Internet link
+/* Level 3
  */
-internetlink {
+ol ol ol {
+    list-style-type: lower-alpha;
+}
+
+/* Level 4
+ */
+ol ol ol ol {
+    list-style-type: lower-latin;
+}
+
+/* Level 5
+ */
+ol ol ol ol ol {
+    list-style-type: lower-roman;
+}
+
+/* Level 6
+ */
+ol ol ol ol ol ol {
+    list-style-type: none;
+}
+
+/* Level 7
+ */
+ol ol ol ol ol ol ol {
+    list-style-type: upper-alpha;
+}
+
+/* Level 8
+ */
+ol ol ol ol ol ol ol ol {
+    list-style-type: upper-latin;
+}
+
+/* Level 9
+ */
+ol ol ol ol ol ol ol ol ol {
+    list-style-type: upper-roman;
+}
+
+/* Level 10
+ */
+ol ol ol ol ol ol ol ol ol ol {
+    list-style-type: decimal;
+}
+
+/* Internet link (not visited)
+ */
+a:link {
     color: #000080;
     text-decoration: underline;
 }
 
 /* Visited internet link
  */
-visitedinternetlink {
+a:visited {
     color: #800000;
     text-decoration: underline;
 }
 
-/* Local link
+/* Local link (not visited)
  */
-locallink {
+a.wikilink1:link {
     color: #000000;
     font-weight: bold;
     text-decoration: underline;
@@ -321,7 +339,7 @@ locallink {
 
 /* Visited local link
  */
-visitedlocallink {
+a.wikilink1:visited {
     color: #000000;
     font-weight: bold;
     text-decoration: underline;

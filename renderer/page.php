@@ -2051,7 +2051,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
-        $this->document->importCSSFromString($text, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'));
+        $this->document->importCSSFromString($text, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'), true);
     }
 
     /**

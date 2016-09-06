@@ -765,10 +765,10 @@ class ODTDocument
      * @param string $mediaSel The media selector to use e.g. 'print'
      * @param string $mediaPath Local path to media files
      */
-    public function importCSSFromString($cssCode, $mediaSel=NULL, $URLCallback=NULL) {
+    public function importCSSFromString($cssCode, $mediaSel=NULL, $URLCallback=NULL, $forceStyles=false) {
         // Import CSS as styles?
         $importStyles = false;
-        if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') {
+        if ($this->CSSUsage == 'basic' || $this->CSSUsage == 'full' || $forceStyles) {
             $importStyles = true;
         }
         ODTImport::importCSSFromString ($this->params, $cssCode, $mediaSel, array($this, 'adjustLengthCallback'), $URLCallback, $this->registrations, $importStyles);

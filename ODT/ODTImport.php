@@ -215,12 +215,12 @@ class ODTImport
                         break;
                 }
                 $style->setPropertyForLevel($level, 'num-format', $numbering);
-                if ($prefix != NULL ) {
+                if ($prefix !== NULL ) {
                     $style->setPropertyForLevel($level, 'num-prefix', $prefix);
                 }
                 $style->setPropertyForLevel($level, 'num-suffix', $suffix);
 
-                if ($properties ['padding-left'] != NULL) {
+                if ($properties ['padding-left'] !== NULL) {
                     $style->setPropertyForLevel($level, 'text-min-label-distance', $properties ['padding-left']);
                 }
             }
@@ -228,12 +228,6 @@ class ODTImport
                 // It is assumed that the CSS already contains absolute path values only!
                 // (see replaceURLPrefixes)
                 $file = $properties ['list-style-image'];
-                /*$file = substr($file, 4);
-                $file = trim($file, "()'");
-                if ($media_path [strlen($media_path)-1] != '/') {
-                    $media_path .= '/';
-                }
-                $file = $media_path.$file;*/
                 
                 $this->setListStyleImage ($params, $style, $level, $file);
             }
@@ -343,13 +337,13 @@ class ODTImport
             // So we use extra paragraph styles for the first and last
             // list items to set a margin.
             if ($level == 1 &&
-                ($properties ['margin-left'] != NULL ||
-                 $properties ['margin-right'] != NULL ||
-                 $properties ['margin-top'] != NULL ||
+                ($properties ['margin-top'] != NULL ||
                  $properties ['margin-bottom'] != NULL)) {
                 $set = array ();
-                $set ['margin-left'] = $properties ['margin-left'];
-                $set ['margin-right'] = $properties ['margin-right'];
+                // Delete left and right margins as setting them
+                // would destroy list item indentation
+                $set ['margin-left'] = NULL;
+                $set ['margin-right'] = NULL;
                 $set ['margin-top'] = $properties ['margin-top'];
                 $set ['margin-bottom'] = '0pt';
                 $firstStyle->importProperties($set);

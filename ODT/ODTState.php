@@ -201,6 +201,25 @@ class ODTState
     }
 
     /**
+     * Find the closest state with class $clazz, return $index.
+     *
+     * @param string $clazz
+     * @param integer|false &$index Index of the found element or false
+     * @return ODTStateEntry|NULL
+     */
+    public function findClosestWithClassGetIndex($clazz, &$index) {
+        $index = false;
+        for ($search = $this->size-1 ; $search > 0 ; $search--) {
+            if ($this->stack [$search]->getClass() == $clazz) {
+                $index = $search;
+                return $this->stack [$search];
+            }
+        }
+        // Nothing found.
+        return NULL;
+    }
+
+    /**
      * toString() function. Only for creating debug dumps.
      * 
      * @return string
@@ -245,6 +264,20 @@ class ODTState
         }
         // Nothing found.
         return NULL;
+    }
+
+    /**
+     * Are we in a list item?
+     * 
+     * @return bool
+     */
+    public function getInListItem() {
+        $this->findClosestWithClassGetIndex('list-item', $listItemIndex);
+        $this->findClosestWithClassGetIndex('list', $listIndex);
+        if ($listItemIndex > $listIndex) {
+            return true;
+        }
+        return false;
     }
 
     /**

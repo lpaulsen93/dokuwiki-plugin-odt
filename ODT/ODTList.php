@@ -41,6 +41,12 @@ class ODTList
             return;
         }
 
+        if ($params->document->state->getInListItem()) {
+            // If we are still inside a list item then close it first,
+            // to prevent an error or broken document.
+            $params->document->listItemClose();
+        }
+
         // Eventually modify last list paragraph first
         self::replaceLastListParagraph($params);
 
@@ -107,7 +113,7 @@ class ODTList
 
         if ($params->document->state->getInListContent()) {
             // If we are still inside list content then close it first,
-            // to prevent a broken document.
+            // to prevent an error or broken document.
             $params->document->listContentClose();
         }
 

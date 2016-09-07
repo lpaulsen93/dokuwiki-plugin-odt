@@ -179,6 +179,10 @@ class ODTImport
 
             $properties = array();                
             $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
+            if (count($properties) == 0) {
+                // Nothing found. Return, DO NOT change existing style!
+                return;
+            }
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
@@ -278,6 +282,10 @@ class ODTImport
 
             $properties = array();                
             $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
+            if (count($properties) == 0) {
+                // Nothing found. Return, DO NOT change existing style!
+                return;
+            }
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
@@ -372,6 +380,7 @@ class ODTImport
         $htmlStack->restoreToRoot ();
     }
 
+
     static protected function importTableStyles(ODTInternalParams $params, cssdocument $htmlStack) {
         foreach (self::$table_styles as $style_type => $elementParams) {
             $name = $params->styleset->getStyleName($style_type);
@@ -383,8 +392,6 @@ class ODTImport
                 // Push our element to import on the stack
                 $htmlStack->open($element, $attributes);
                 $toMatch = $htmlStack->getCurrentElement();
-                
-                //$element_to_check = 'td';
 
                 $properties = array();                
                 $params->import->getPropertiesForElement($properties, $toMatch, $params->units);

@@ -104,6 +104,13 @@ class ODTList
             // Do not do anything as long as list is interrupted
             return;
         }
+
+        if ($params->document->state->getInListContent()) {
+            // If we are still inside list content then close it first,
+            // to prevent a broken document.
+            $params->document->listContentClose();
+        }
+
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->document->closeCurrentElement();
     }

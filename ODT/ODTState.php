@@ -246,7 +246,18 @@ class ODTState
         // Nothing found.
         return NULL;
     }
-    
+
+    /**
+     * Are we in list content?
+     * 
+     * @return bool
+     */
+    public function getInListContent() {
+        // listContentOpen == paragraphOpen,
+        // so we can simply call getInParagraph()
+        return $this->getInParagraph();
+    }
+
     /**
      * Are we in a paragraph?
      * 

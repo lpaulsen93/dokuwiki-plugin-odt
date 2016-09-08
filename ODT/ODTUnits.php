@@ -137,7 +137,8 @@ class ODTUnits {
      */
     public function pixelToPointsX ($pixel) {
         $pixel = self::getDigits ((string)$pixel);
-        return ($pixel * $this->twips_per_pixel_x / self::$twips_per_point).'pt';
+        $value = $pixel * $this->twips_per_pixel_x / self::$twips_per_point; 
+        return round ($value, 2).'pt';
     }
 
     /**
@@ -148,7 +149,8 @@ class ODTUnits {
      */
     public function pixelToPointsY ($pixel) {
         $pixel = self::getDigits ((string)$pixel);
-        return ($pixel * $this->twips_per_pixel_y / self::$twips_per_point).'pt';
+        $value = $pixel * $this->twips_per_pixel_y / self::$twips_per_point;
+        return round ($value, 2).'pt';
     }
 
     /**
@@ -173,16 +175,16 @@ class ODTUnits {
         $value = self::getDigits ($value);
         switch ($unit) {
             case 'cm':
-                $value = ($value/self::$point_in_cm).'pt';
+                $value = round (($value/self::$point_in_cm), 2).'pt';
             break;
             case 'mm':
-                $value = ($value/(10 * self::$point_in_cm)).'pt';
+                $value = round (($value/(10 * self::$point_in_cm)), 2).'pt';
             break;
             case 'in':
-                $value = ($value * self::$inch_in_pt).'pt';
+                $value = round (($value * self::$inch_in_pt), 2).'pt';
             break;
             case 'pc':
-                $value = ($value * self::$pc_in_pt).'pt';
+                $value = round (($value * self::$pc_in_pt), 2).'pt';
             break;
             case 'px':
                 if ( $axis == 'x' || $axis == 'X' ) {

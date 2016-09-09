@@ -291,6 +291,12 @@ class ODTTable
             $element = 'td';
         }
 
+        if ($params->document->state->getInTableCell()) {
+            // If we are still inside a table cell then close it first,
+            // to prevent an error or broken document.
+            $params->document->tableCellClose();
+        }
+
         // Are style names given? If not, use defaults.
         if (empty($cellStyle)) {
             $cellStyle = $params->document->getStyleName('table cell');

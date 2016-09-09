@@ -267,6 +267,20 @@ class ODTState
     }
 
     /**
+     * Are we in a table cell?
+     * 
+     * @return bool
+     */
+    public function getInTableCell() {
+        $this->findClosestWithClassGetIndex('table-cell', $tableCellIndex);
+        $this->findClosestWithClassGetIndex('table-row', $tableRowIndex);
+        if ($tableCellIndex > $tableRowIndex) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Are we in a list item?
      * 
      * @return bool

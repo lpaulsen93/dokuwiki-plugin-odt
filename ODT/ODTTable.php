@@ -226,6 +226,12 @@ class ODTTable
      * Close a table row
      */
     public static function tableRowClose(ODTInternalParams $params){
+        if ($params->document->state->getInTableCell()) {
+            // If we are still inside a table cell then close it first,
+            // to prevent an error or broken document.
+            $params->document->tableCellClose();
+        }
+
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->document->closeCurrentElement();
     }

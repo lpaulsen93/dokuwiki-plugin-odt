@@ -144,6 +144,12 @@ class ODTTable
             return;
         }
 
+        if ($params->document->state->getInTableRow()) {
+            // If we are still inside a table row then close it first,
+            // to prevent an error or broken document.
+            $params->document->tableRowClose();
+        }
+
         $interrupted = $table->getListInterrupted();
         $lists = NULL;
         if ($interrupted) {

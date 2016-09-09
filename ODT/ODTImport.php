@@ -348,16 +348,17 @@ class ODTImport
                 ($properties ['margin-top'] != NULL ||
                  $properties ['margin-bottom'] != NULL)) {
                 $set = array ();
+                $disabled = array ();
                 // Delete left and right margins as setting them
                 // would destroy list item indentation
                 $set ['margin-left'] = NULL;
                 $set ['margin-right'] = NULL;
                 $set ['margin-top'] = $properties ['margin-top'];
                 $set ['margin-bottom'] = '0pt';
-                $firstStyle->importProperties($set);
+                $firstStyle->importProperties($set, $disabled);
                 $set ['margin-bottom'] = $properties ['margin-bottom'];
                 $set ['margin-top'] = '0pt';
-                $lastStyle->importProperties($set);
+                $lastStyle->importProperties($set, $disabled);
             }
 
             // Import properties for list paragraph style once.
@@ -477,7 +478,8 @@ class ODTImport
                     $paragraphStyle->clearLayoutProperties();
                     $paragraphStyle->importProperties($properties, $disabled);
                 }
-                $style->importProperties($properties, NULL);
+                $disabled = array();
+                $style->importProperties($properties, $disabled);
 
                 // Reset stack to saved root so next importStyle
                 // will have the same conditions
@@ -499,7 +501,7 @@ class ODTImport
                 $htmlStack->open($element, $attributes, $pseudo_class, NULL);
                 $toMatch = $htmlStack->getCurrentElement();
 
-                $properties = array();                
+                $properties = array();
                 $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
                 if (count($properties) == 0) {
                     // Nothing found. Back to top, DO NOT change existing style!
@@ -513,7 +515,8 @@ class ODTImport
                 // Adjust values for ODT
                 ODTUtility::adjustValuesForODT ($properties, $params->units);
 
-                $style->importProperties($properties, NULL);
+                $disabled = array();
+                $style->importProperties($properties, $disabled);
 
                 // Reset stack to saved root so next importStyle
                 // will have the same conditions
@@ -560,7 +563,8 @@ class ODTImport
                 $properties ['join-border'] = 'false';
             }
 
-            $style->importProperties($properties, NULL);
+            $disabled = array();
+            $style->importProperties($properties, $disabled);
 
             // Reset stack to saved root so next importStyle
             // will have the same conditions

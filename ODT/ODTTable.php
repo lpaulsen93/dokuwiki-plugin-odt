@@ -207,6 +207,12 @@ class ODTTable
      * Open a table row
      */
     public static function tableRowOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
+        if ($params->document->state->getInTableRow()) {
+            // If we are still inside a table row then close it first,
+            // to prevent an error or broken document.
+            $params->document->tableRowClose();
+        }
+
         if ($element == NULL) {
             $element = 'tr';
         }

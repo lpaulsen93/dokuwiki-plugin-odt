@@ -2167,7 +2167,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Eventually determine ODT template file
         $ODTTemplatePath = NULL;
-        if (!empty($this->config->getParam ('odt_template'))) {
+        $template = $this->config->getParam ('odt_template');
+        if (!empty($template)) {
             $ODTTemplatePath = $this->config->getParam('mediadir').'/'.$this->config->getParam ('tpl_dir')."/".$this->config->getParam ('odt_template');
         }
     }    

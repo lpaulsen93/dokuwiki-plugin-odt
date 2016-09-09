@@ -9,6 +9,8 @@
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
+require_once DOKU_PLUGIN . 'odt/helper/csscolors.php';
+
 /**
  * Abstract class to define kind of enum for the CSS value types.
  * Actually only used by adjustLengthValues().

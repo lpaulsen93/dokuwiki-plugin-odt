@@ -322,6 +322,7 @@ class ODTDocument
      * Open a text span.
      *
      * @param string $styleName The style to use.
+     * @see ODTSpan::spanOpen for detailed documentation
      */
     function spanOpen($styleName, $element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
@@ -361,12 +362,20 @@ class ODTDocument
      * Close a text span.
      *
      * @param string $style_name The style to use.
-     */    
+     * @see ODTSpan::spanClose for detailed documentation
+     */
     function spanClose() {
         unset($this->params->elementObj);
         ODTSpan::spanClose($this->params);
     }
 
+    /**
+     * Automatically generate ODT format for $HTMLCode
+     * including text spans.
+     *
+     * @param string $style_name The style to use.
+     * @see ODTSpan::generateSpansfromHTMLCode for detailed documentation
+     */
     function generateSpansfromHTMLCode($HTMLCode){
         ODTSpan::generateSpansfromHTMLCode($this->params, $HTMLCode);
     }
@@ -375,6 +384,7 @@ class ODTDocument
      * Open a paragraph
      *
      * @param string $styleName The style to use.
+     * @see ODTParagraph::paragraphOpen for detailed documentation
      */
     function paragraphOpen($styleName=NULL, $element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
@@ -383,6 +393,8 @@ class ODTDocument
 
     /**
      * Close a paragraph
+     * 
+     * @see ODTParagraph::paragraphClose for detailed documentation
      */
     function paragraphClose(){
         unset($this->params->elementObj);
@@ -557,10 +569,15 @@ class ODTDocument
         $this->headers[] = $title;
     }
 
+    /**
+     * Insert an index into the document using the parameters in $settings.
+     * 
+     * @see ODTIndex::insertIndex for detailed documentation
+     */
     function insertIndex($type='toc', array $settings=NULL) {
         ODTIndex::insertIndex($this->params, $this->indexesData, $type, $settings);
     }
-    
+
     /**
      * Creates a reference ID for the TOC
      *
@@ -643,11 +660,12 @@ class ODTDocument
     }
 
     /**
-     * Render a heading
+     * Render a heading.
      *
      * @param string $text  the text to display
      * @param int    $level header level
      * @param int    $pos   byte position in the original source
+     * @see ODTHeading::heading for detailed documentation
      */
     function heading($text, $level, $element=NULL, $attributes=NULL){
         ODTHeading::heading($this->params, $text, $level, $element, $attributes);
@@ -902,6 +920,7 @@ class ODTDocument
      * Open/start a footnote.
      *
      * @author Andreas Gohr <andi@splitbrain.org>
+     * @see ODTFootnote::footnoteOpen for detailed documentation
      */
     function footnoteOpen() {
         ODTFootnote::footnoteOpen($this->params);
@@ -911,6 +930,7 @@ class ODTDocument
      * Close/end a footnote.
      *
      * @author Andreas Gohr
+     * @see ODTFootnote::footnoteClose for detailed documentation
      */
     function footnoteClose() {
         ODTFootnote::footnoteClose($this->params);
@@ -953,6 +973,7 @@ class ODTDocument
      * 
      * @param bool $continue Continue numbering?
      * @param string $styleName Name of style to use for the list
+     * @see ODTList::listOpen for detailed documentation
      */
     function listOpen($continue=false, $styleName, $element=NULL, $attributes=NULL) {
         if ($element == NULL) {
@@ -967,63 +988,76 @@ class ODTDocument
     }
 
     /**
-     * Close a list
+     * Close a list.
+     * 
+     * @see ODTList::listClose for detailed documentation
      */
     function listClose() {
         ODTList::listClose($this->params);
     }
 
     /**
-     * Open a list item
+     * Open a list item.
      *
      * @param int $level The nesting level
+     * @see ODTList::listItemOpen for detailed documentation
      */
     function listItemOpen($level, $element=NULL, $attributes=NULL) {
         ODTList::listItemOpen($this->params, $level, $element, $attributes);
     }
 
     /**
-     * Close a list item
+     * Close a list item.
+     * 
+     * @see ODTList::listItemClose for detailed documentation
      */
     function listItemClose() {
         ODTList::listItemClose($this->params);
     }
 
     /**
-     * Open a list header
+     * Open a list header.
      *
      * @param int $level The nesting level
+     * @see ODTList::listHeaderOpen for detailed documentation
      */
     function listHeaderOpen($level, $element=NULL, $attributes=NULL) {
         ODTList::listHeaderOpen($this->params, $level, $element, $attributes);
     }
 
     /**
-     * Close a list header
+     * Close a list header.
+     * 
+     * @see ODTList::listHeaderClose for detailed documentation
      */
     function listHeaderClose() {
         ODTList::listHeaderClose($this->params);
     }
 
     /**
-     * Open list content/a paragraph in a list item
+     * Open list content/a paragraph in a list item.
+     * 
+     * @see ODTList::listContentOpen for detailed documentation
      */
     function listContentOpen($element=NULL, $attributes=NULL) {
         ODTList::listContentOpen($this->params, $element, $attributes);
     }
 
     /**
-     * Close list content/a paragraph in a list item
+     * Close list content/a paragraph in a list item.
+     * 
+     * @see ODTList::listContentClose for detailed documentation
      */
     function listContentClose() {
         ODTList::listContentClose($this->params);
     }
 
     /**
-     * Open/start a table
+     * Open/start a table.
      *
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
+     * @see ODTTable::tableOpen for detailed documentation
      */
     function tableOpen($maxcols = NULL, $numrows = NULL, $element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
@@ -1031,10 +1065,11 @@ class ODTDocument
     }
 
     /**
-     * Close/finish a table
+     * Close/finish a table.
      *
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
+     * @see ODTTable::tableClose for detailed documentation
      */
     function tableClose(){
         unset($this->params->elementObj);
@@ -1043,6 +1078,8 @@ class ODTDocument
 
     /**
      * Add a column to a table.
+     * 
+     * @see ODTTable::tableAddColumn for detailed documentation
      */
     function tableAddColumn (){
         unset($this->params->elementObj);
@@ -1050,7 +1087,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table row
+     * Open a table row.
+     * 
+     * @see ODTTable::tableRowOpen for detailed documentation
      */
     function tableRowOpen($element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
@@ -1058,7 +1097,9 @@ class ODTDocument
     }
 
     /**
-     * Close a table row
+     * Close a table row.
+     * 
+     * @see ODTTable::tableRowClose for detailed documentation
      */
     function tableRowClose(){
         unset($this->params->elementObj);
@@ -1066,7 +1107,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table header cell
+     * Open a table header cell.
+     * 
+     * @see ODTTable::tableHeaderOpen for detailed documentation
      */
     function tableHeaderOpen($colspan = 1, $rowspan = 1, $align, $element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
@@ -1074,7 +1117,9 @@ class ODTDocument
     }
 
     /**
-     * Close a table header cell
+     * Close a table header cell.
+     * 
+     * @see ODTTable::tableHeaderClose for detailed documentation
      */
     function tableHeaderClose(){
         unset($this->params->elementObj);
@@ -1082,7 +1127,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table cell
+     * Open a table cell.
+     * 
+     * @see ODTTable::tableCellOpen for detailed documentation
      */
     function tableCellOpen($colspan, $rowspan, $align, $element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
@@ -1090,7 +1137,9 @@ class ODTDocument
     }
 
     /**
-     * Close a table cell
+     * Close a table cell.
+     * 
+     * @see ODTTable::tableCellClose for detailed documentation
      */
     function tableCellClose(){
         unset($this->params->elementObj);
@@ -1098,7 +1147,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table using CSS
+     * Open a table using CSS.
+     * 
+     * @see ODTTable::tableOpenUseCSS for detailed documentation
      */
     function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         if ($import == NULL) {
@@ -1115,7 +1166,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table using properties
+     * Open a table using properties.
+     * 
+     * @see ODTTable::tableOpenUseProperties for detailed documentation
      */
     function tableOpenUseProperties ($properties, $maxcols = 0, $numrows = 0){
         unset($this->params->elementObj);
@@ -1123,7 +1176,9 @@ class ODTDocument
     }
 
     /**
-     * Add a table column using properties
+     * Add a table column using properties.
+     * 
+     * @see ODTTable::tableAddColumnUseProperties for detailed documentation
      */
     function tableAddColumnUseProperties ($properties){
         unset($this->params->elementObj);
@@ -1131,7 +1186,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table header using CSS
+     * Open a table header using CSS.
+     * 
+     * @see ODTTable::tableHeaderOpenUseCSS for detailed documentation
      */
     function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         if ($import == NULL) {
@@ -1148,7 +1205,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table header using properties
+     * Open a table header using properties.
+     * 
+     * @see ODTTable::tableHeaderOpenUseProperties for detailed documentation
      */
     function tableHeaderOpenUseProperties($properties, $colspan = 1, $rowspan = 1){
         unset($this->params->elementObj);
@@ -1156,7 +1215,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table row using CSS
+     * Open a table row using CSS.
+     * 
+     * @see ODTTable::tableRowOpenUseCSS for detailed documentation
      */
     function tableRowOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         if ($import == NULL) {
@@ -1173,7 +1234,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table row using properties
+     * Open a table row using properties.
+     * 
+     * @see ODTTable::tableRowOpenUseProperties for detailed documentation
      */
     function tableRowOpenUseProperties($properties){
         unset($this->params->elementObj);
@@ -1181,7 +1244,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table cell using CSS
+     * Open a table cell using CSS.
+     * 
+     * @see ODTTable::tableCellOpenUseCSS for detailed documentation
      */
     function tableCellOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
         if ($import == NULL) {
@@ -1198,7 +1263,9 @@ class ODTDocument
     }
 
     /**
-     * Open a table cell using properties
+     * Open a table cell using properties.
+     * 
+     * @see ODTTable::tableCellOpenUseProperties for detailed documentation
      */
     function tableCellOpenUseProperties($properties, $colspan = 1, $rowspan = 1){
         unset($this->params->elementObj);
@@ -1320,6 +1387,7 @@ class ODTDocument
      * 
      * @param $properties The properties to use
      * @param $common Add style to common or automatic styles?
+     * @see ODTTextStyle::createTextStyle for more documentation
      */
     public function createTextStyle ($properties, $common=true) {
         $style_obj = ODTTextStyle::createTextStyle($properties, NULL, $this);
@@ -1341,6 +1409,7 @@ class ODTDocument
      * 
      * @param $properties The properties to use
      * @param $common Add style to common or automatic styles?
+     * @see ODTParagraphStyle::createParagraphStyle for more documentation
      */
     public function createParagraphStyle ($properties, $common=true) {
         $style_obj = ODTParagraphStyle::createParagraphStyle($properties, NULL, $this);
@@ -1362,6 +1431,7 @@ class ODTDocument
      * 
      * @param $properties The properties to use
      * @param $common Add style to common or automatic styles?
+     * @see ODTTableStyle::createTableTableStyle for more documentation
      */
     public function createTableStyle ($properties, $common=true) {
         $style_obj = ODTTableStyle::createTableTableStyle($properties);
@@ -1383,6 +1453,7 @@ class ODTDocument
      * 
      * @param $properties The properties to use
      * @param $common Add style to common or automatic styles?
+     * @see ODTTableRowStyle::createTableRowStyle for more documentation
      */
     public function createTableRowStyle ($properties, $common=true) {
         $style_obj = ODTTableRowStyle::createTableRowStyle($properties);
@@ -1404,6 +1475,7 @@ class ODTDocument
      * 
      * @param $properties The properties to use
      * @param $common Add style to common or automatic styles?
+     * @see ODTTableCellStyle::createTableCellStyle for more documentation
      */
     public function createTableCellStyle ($properties, $common=true) {
         $style_obj = ODTTableCellStyle::createTableCellStyle($properties);
@@ -1425,6 +1497,7 @@ class ODTDocument
      * 
      * @param $properties The properties to use
      * @param $common Add style to common or automatic styles?
+     * @see ODTTableColumnStyle::createTableColumnStyle for more documentation
      */
     public function createTableColumnStyle ($properties, $common=true) {
         $style_obj = ODTTableColumnStyle::createTableColumnStyle($properties);

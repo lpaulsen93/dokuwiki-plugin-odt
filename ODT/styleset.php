@@ -298,4 +298,18 @@ abstract class ODTStyleSet
         }
         return -1;
     }
+
+    /**
+     * @param null $source
+     */
+    public function getDefaultStyle($family) {
+        // Search for default style with same family.
+        for ($index = 0 ; $index < count($this->styles) ; $index++) {
+            if ($this->styles [$index]->isDefault() &&
+                $this->styles [$index]->getFamily() == $family) {
+                return $this->styles [$index];
+            }
+        }
+        return NULL;
+    }
 }

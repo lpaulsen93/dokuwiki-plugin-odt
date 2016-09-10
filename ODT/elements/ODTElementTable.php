@@ -17,7 +17,11 @@ class ODTElementTable extends ODTStateElement
     protected $table_autocols = false;
     protected $table_maxcols = 0;
     protected $table_curr_column = 0;
-    protected $table_column_defs = NULL;
+    protected $table_row_count = 0;
+    protected $table_is_nested = false;
+    protected $table_nested_column = 0;
+    protected $nestedTables = array();
+    protected $table_nested_cell = NULL;
 
     // Flag indicating that a table was created inside of a list
     protected $list_interrupted = false;
@@ -61,23 +65,16 @@ class ODTElementTable extends ODTStateElement
         }
         $maxcols = $this->getTableMaxColumns();
         $count = $this->getCount();
-        //for($i=0; $i<$maxcols; $i++){
-        //    $encoded .= '<table:table-column/>';
-        //}        
         if ($maxcols == 0) {
             // Try to automatically detect the number of columns.
             $this->setTableAutoColumns(true);
-            $encoded .= '<ColumnsPlaceholder'.$count.'>';
         } else {
             $this->setTableAutoColumns(false);
-
-            for ( $column = 0 ; $column < $maxcols ; $column++ ) {
-                $style_name = 'odt_auto_style_table_column_'.$count.'_'.($column+1);
-                $this->setTableColumnStyleName($column, $style_name);
-
-                $encoded .= '<table:table-column table:style-name="'.$style_name.'"/>';
-            }
         }
+        
+        // Add column definitions placeholder.
+        // This will be replaced on tabelClose()/getClosingTag()
+        $encoded .= '<ColumnsPlaceholder'.$count.'>';
 
         // We start with the first column
         $this->setTableCurrentColumn(0);
@@ -91,21 +88,25 @@ class ODTElementTable extends ODTStateElement
      * @return string The ODT XML code to close this element.
      */
     public function getClosingTag (&$content = NULL) {
-        $auto_columns = $this->getTableAutoColumns();
-        $column_defs = $this->getTableColumnDefs();
+        // Generate table column definitions and replace the placeholder with it
         $count = $this->getCount();
-
-        // Writeback temporary table content if not empty
-        if (!empty($column_defs) && $content != NULL) {
-            // First replace columns placeholder with created columns, if in auto mode.
-            if ( $auto_columns === true ) {
-                $content =
-                    str_replace ('<ColumnsPlaceholder'.$count.'>', $column_defs, $content);
-
-                $content =
-                    str_replace ('<MaxColsPlaceholder'.$count.'>', $this->getTableMaxColumns(), $content);
+        $max = $this->getTableMaxColumns();
+        if ($max > 0 && $content != NULL) {
+            $column_defs = '';
+            for ($index = 0 ; $index < $max ; $index++) {
+                $styleName = $this->getTableColumnStyleName($index);
+                if (!empty($styleName)) {
+                    $column_defs .= '<table:table-column table:style-name="'.$styleName.'"/>';
+                } else {
+                    $column_defs .= '<table:table-column/>';
+                }
             }
+            $content =
+                str_replace ('<ColumnsPlaceholder'.$count.'>', $column_defs, $content);
+            $content =
+                str_replace ('<MaxColsPlaceholder'.$count.'>', $max, $content);
         }
+
         return '</table:table>';
     }
 
@@ -122,11 +123,32 @@ class ODTElementTable extends ODTStateElement
     /**
      * Determine and set the parent for this element.
      * As a table the previous element is our parent.
+     * 
+     * If the table is nested in another table, then the surrounding
+     * table is the parent!
      *
      * @param ODTStateElement $previous
      */
     public function determineParent(ODTStateElement $previous) {
-        $this->setParent($previous);
+        $table = $previous;
+        while ($table != NULL) {
+            if ($table->getClass() == 'table-cell') {
+                $cell = $table;
+            }
+            if ($table->getClass() == 'table') {
+                break;
+            }
+            $table = $table->getParent();
+        }
+        if ($table == NULL) {
+            $this->setParent($previous);
+        } else {
+            $this->setParent($table);
+            $table->addNestedTable ($this);
+            $this->table_is_nested = true;
+            $this->table_nested_column = $table->getTableCurrentColumn();
+            $this->table_nested_cell = $cell;
+        }
     }
 
     /**
@@ -222,24 +244,6 @@ class ODTElementTable extends ODTStateElement
     }
 
     /**
-     * Set column definitions content.
-     * 
-     * @param string $value
-     */
-    public function setTableColumnDefs($value) {
-        $this->table_column_defs = $value;
-    }
-
-    /**
-     * Get column definitions content.
-     * 
-     * @return string
-     */
-    public function getTableColumnDefs() {
-        return $this->table_column_defs;
-    }
-
-    /**
      * Get the predefined style name for the current
      * table column.
      * 
@@ -267,5 +271,53 @@ class ODTElementTable extends ODTStateElement
      */
     public function getListInterrupted() {
         return $this->list_interrupted;
+    }
+
+    /**
+     * Increae the number of rows
+     * 
+     * @param boolean $value
+     */
+    public function increaseRowCount() {
+        $this->table_row_count++;
+    }
+
+    public function getRowCount() {
+        return $this->table_row_count;
+    }
+
+    /**
+     * Is this table a nested table (inserted into another table)?
+     * 
+     * @return boolean
+     */
+    public function isNested () {
+        return $this->table_is_nested;
+    }
+
+    /**
+     * Get the column number of the surrounding table in which this
+     * table has been inserted. If this table is not a nested table
+     * then -1 will be returend.
+     * 
+     * @return int Nested column number or -1
+     */
+    public function getNestedColumn () {
+        if (!$this->isNested ()) {
+            return -1;
+        }
+        return $this->table_nested_column;
+    }
+
+    public function getNestedCell () {
+        return $this->table_nested_cell;
+    }
+
+    public function addNestedTable (ODTElementTable $nested) {
+        $this->nestedTables [] = $nested;
+    }
+
+    public function getNestedTables () {
+        return $this->nestedTables;
     }
 }

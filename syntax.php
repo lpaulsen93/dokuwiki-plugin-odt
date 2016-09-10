@@ -309,7 +309,7 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         $properties = array();
         $renderer->getODTProperties ($properties, NULL, NULL, $odt_css, NULL, $odt_css_id);
                 
-        $renderer->_odtOpenTextBoxUseProperties2 ($properties);
+        $renderer->_odtOpenTextBoxUseProperties ($properties);
         $renderer->p_open();
     }
 

@@ -9,6 +9,8 @@
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
+require_once DOKU_PLUGIN . 'odt/helper/csscolors.php';
+
 /**
  * Abstract class to define kind of enum for the CSS value types.
  * Actually only used by adjustLengthValues().
@@ -141,20 +143,30 @@ class css_declaration {
     protected function explodeBackgroundShorthand (&$decls) {
         if ( $this->property == 'background' ) {
             $values = preg_split ('/\s+/', $this->value);
-            if ( count($values) > 0 ) {
-                $decls [] = new css_declaration ('background-color', $values [0]);
+            $index = 0;
+            if ($index < count($values)) {
+                $color_done = true;
+                $value = $values [$index];
+                if ($value [0] == '#' || csscolors::isKnownColorName($value)) {
+                    $decls [] = new css_declaration ('background-color', $value);
+                    $index++;
+                }
             }
-            if ( count($values) > 1 ) {
-                $decls [] = new css_declaration ('background-image', $values [1]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-image', $values [$index]);
+                $index++;
             }
-            if ( count($values) > 2 ) {
-                $decls [] = new css_declaration ('background-repeat', $values [2]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-repeat', $values [$index]);
+                $index++;
             }
-            if ( count($values) > 3 ) {
-                $decls [] = new css_declaration ('background-attachment', $values [3]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-attachment', $values [$index]);
+                $index++;
             }
-            if ( count($values) > 4 ) {
-                $decls [] = new css_declaration ('background-position', $values [4]);
+            if ($index < count($values)) {
+                $decls [] = new css_declaration ('background-position', $values [$index]);
+                $index++;
             }
         }
     }
@@ -793,14 +805,14 @@ class css_declaration {
     /**
      * @param $callback
      */
-    public function adjustLengthValues ($callback) {
+    public function adjustLengthValues ($callback, $rule=NULL) {
         switch ($this->property) {
             case 'border-width':
             case 'outline-width':
             case 'border-bottom-width':
             case 'column-rule-width':
                 $this->value =
-                    call_user_func($callback, $this->property, $this->value, CSSValueType::StrokeOrBorderWidth);
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::StrokeOrBorderWidth, $rule);
             break;
 
             case 'margin-left':
@@ -810,7 +822,7 @@ class css_declaration {
             case 'width':
             case 'column-width':
                 $this->value =
-                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueXAxis);
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueXAxis, $rule);
             break;
 
             case 'margin-top':
@@ -821,7 +833,7 @@ class css_declaration {
             case 'height':
             case 'line-height':
                 $this->value =
-                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueYAxis);
+                    call_user_func($callback, $this->property, $this->value, CSSValueType::LengthValueYAxis, $rule);
             break;
 
             case 'border':
@@ -829,7 +841,7 @@ class css_declaration {
             case 'border-right':
             case 'border-top':
             case 'border-bottom':
-                $this->adjustLengthValuesBorder ($callback);
+                $this->adjustLengthValuesBorder ($callback, $rule);
             break;
 
             // FIXME: Shorthands are currently not processed.
@@ -841,7 +853,7 @@ class css_declaration {
     /**
      * @param $callback
      */
-    protected function adjustLengthValuesBorder ($callback) {
+    protected function adjustLengthValuesBorder ($callback, $rule=NULL) {
         switch ($this->property) {
             case 'border':
             case 'border-left':
@@ -850,9 +862,19 @@ class css_declaration {
             case 'border-bottom':
                 $values = preg_split ('/\s+/', $this->value);
                 $width =
-                    call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth);
+                    call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth, $rule);
                 $this->value = $width . ' ' . $values [1] . ' ' . $values [2];
             break;
+        }
+    }
+
+    /**
+     * @param $callback
+     */
+    public function replaceURLPrefixes ($callback) {
+        if (strncmp($this->value, 'url(', 4) == 0) {
+            $url = substr($this->value, 4, -1);
+            $this->value = call_user_func($callback, $this->property, $this->value, $url);
         }
     }
 }

@@ -87,9 +87,9 @@ class plugin_odt_units_test extends DokuWikiTest {
 
         $this->assertEquals($units->getPixelPerEm(), 14);
 
-        $this->assertEquals($units->toPoints('1cm'), '28.346456514353pt');
-        $this->assertEquals($units->toPoints('1mm'), '2.8346456514353pt');
-        $this->assertEquals($units->toPoints('1in'), '0.089605556pt');
+        $this->assertEquals($units->toPoints('1cm'), '28.35pt');
+        $this->assertEquals($units->toPoints('1mm'), '2.83pt');
+        $this->assertEquals($units->toPoints('1in'), '0.09pt');
         $this->assertEquals($units->toPoints('1pc'), '12pt');
         $this->assertEquals($units->toPoints('1px', 'x'), '0.8pt');
         $this->assertEquals($units->toPoints('1px', 'y'), '1pt');

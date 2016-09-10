@@ -14,6 +14,7 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableCell.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableHeaderCell.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementFrame.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTextBox.php';
+require_once DOKU_PLUGIN.'odt/ODT/css/cssdocument.php';
 
 /**
  * ODTState: class for maintaining the ODT state stack.
@@ -34,6 +35,8 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTextBox.php';
  */
 class ODTState
 {
+    // The ODT document to which this state belongs
+    protected $document = NULL;
     protected $stack = array();
     protected $size = 0;
     protected $element_counter = array();
@@ -42,6 +45,7 @@ class ODTState
      * Constructor. Set initial 'root' state.
      */
     public function __construct() {
+        // Stack for maintaining our ODT elements
         $this->stack [$this->size] = new ODTElementRoot();
         $this->size++;
     }
@@ -115,7 +119,7 @@ class ODTState
      * @param string $element
      * @param string $clazz
      */
-    public function enter(ODTStateElement $element) {
+    public function enter(ODTStateElement $element, $attributes=NULL) {
         if ($element == NULL ) {
             return;
         }
@@ -135,6 +139,12 @@ class ODTState
         // Add new element to stack
         $this->stack [$this->size] = $element;
         $this->size++;
+
+        // Set the elements style object
+        if ($this->document != NULL) {
+            $styleObj = $this->document->getStyle($element->getStyleName());
+            $element->setStyle($styleObj);
+        }
 
         // Let the element find its parent
         $element->determineParent ($previous);
@@ -191,6 +201,25 @@ class ODTState
     }
 
     /**
+     * Find the closest state with class $clazz, return $index.
+     *
+     * @param string $clazz
+     * @param integer|false &$index Index of the found element or false
+     * @return ODTStateEntry|NULL
+     */
+    public function findClosestWithClassGetIndex($clazz, &$index) {
+        $index = false;
+        for ($search = $this->size-1 ; $search > 0 ; $search--) {
+            if ($this->stack [$search]->getClass() == $clazz) {
+                $index = $search;
+                return $this->stack [$search];
+            }
+        }
+        // Nothing found.
+        return NULL;
+    }
+
+    /**
      * toString() function. Only for creating debug dumps.
      * 
      * @return string
@@ -236,7 +265,60 @@ class ODTState
         // Nothing found.
         return NULL;
     }
-    
+
+    /**
+     * Are we in a table row?
+     * 
+     * @return bool
+     */
+    public function getInTableRow() {
+        $this->findClosestWithClassGetIndex('table-row', $tableRowIndex);
+        $this->findClosestWithClassGetIndex('table', $tableIndex);
+        if ($tableRowIndex > $tableIndex) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Are we in a table cell?
+     * 
+     * @return bool
+     */
+    public function getInTableCell() {
+        $this->findClosestWithClassGetIndex('table-cell', $tableCellIndex);
+        $this->findClosestWithClassGetIndex('table-row', $tableRowIndex);
+        if ($tableCellIndex > $tableRowIndex) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Are we in a list item?
+     * 
+     * @return bool
+     */
+    public function getInListItem() {
+        $this->findClosestWithClassGetIndex('list-item', $listItemIndex);
+        $this->findClosestWithClassGetIndex('list', $listIndex);
+        if ($listItemIndex > $listIndex) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Are we in list content?
+     * 
+     * @return bool
+     */
+    public function getInListContent() {
+        // listContentOpen == paragraphOpen,
+        // so we can simply call getInParagraph()
+        return $this->getInParagraph();
+    }
+
     /**
      * Are we in a paragraph?
      * 
@@ -249,5 +331,27 @@ class ODTState
         } else {
             return false;
         }
+    }
+
+    /**
+     * Set the ODTDocument to which this state belongs.
+     * 
+     * @param ODTDocument $doc
+     */
+    public function setDocument($doc) {
+        $this->document = $doc;
+    }
+
+    public function getHTMLElement() {
+        // Ask the current element
+        if ($this->size > 0) {
+            return $this->stack [$this->size-1]->getHTMLElement();
+        } else {
+            return NULL;
+        }
+    }
+
+    public function getElementCount($element) {
+        return $this->element_counter [$element]++;
     }
 }

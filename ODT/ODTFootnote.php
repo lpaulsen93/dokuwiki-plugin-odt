@@ -44,14 +44,17 @@ class ODTFootnote
 
         // Check to see if this footnote has been seen before
         $i = array_search($footnote, $params->document->footnotes);
+        $label = ($i+1).')';
 
         if ($i === false) {
             $i = count($params->document->footnotes);
+            $label = ($i+1).')';
+
             // Its a new footnote, add it to the $footnotes array
             $params->document->footnotes[$i] = $footnote;
 
             $params->content .= '<text:note text:id="ftn'.$i.'" text:note-class="footnote">';
-            $params->content .= '<text:note-citation>'.($i+1).'</text:note-citation>';
+            $params->content .= '<text:note-citation text:label="'.$label.'">'.$label.'</text:note-citation>';
             $params->content .= '<text:note-body>';
             $params->content .= '<text:p text:style-name="'.$params->document->getStyleName('footnote').'">';
             $params->content .= $footnote;
@@ -59,8 +62,10 @@ class ODTFootnote
             $params->content .= '</text:note-body>';
             $params->content .= '</text:note>';
         } else {
-            // Seen this one before - just reference it FIXME: style isn't correct yet
-            $params->content .= '<text:note-ref text:note-class="footnote" text:ref-name="ftn'.$i.'">'.($i+1).'</text:note-ref>';
+            // Seen this one before - just reference it
+            $params->document->spanOpen($params->document->getStyleName('footnote anchor'));
+            $params->content .= '<text:note-ref text:note-class="footnote" text:reference-format="text" text:ref-name="ftn'.$i.'">'.$label.'</text:note-ref>';
+            $params->document->spanClose();
         }
     }
 }

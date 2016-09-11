@@ -96,7 +96,7 @@
         </style:style>
         <style:style style:name="Footnote" style:family="paragraph" style:parent-style-name="Standard" style:class="extra">
             <style:paragraph-properties fo:margin-left="0.499cm" fo:margin-right="0cm" fo:text-indent="-0.499cm" style:auto-text-indent="false" text:number-lines="false" text:line-number="0"/>
-            <style:text-properties fo:font-size="10pt" style:font-size-asian="10pt" style:font-size-complex="10pt"/>
+            <style:text-properties fo:font-size="12pt" style:font-size-asian="12pt" style:font-size-complex="12pt"/>
         </style:style>
         <style:style style:name="Numbering_20_Symbols" style:display-name="Numbering Symbols" style:family="text"/>
         <style:style style:name="Bullet_20_Symbols" style:display-name="Bullet Symbols" style:family="text">
@@ -122,6 +122,12 @@
         </style:style>
         <style:style style:name="Source_20_Text" style:display-name="Source Text" style:family="text">
             <style:text-properties style:font-name="Bitstream Vera Sans Mono" fo:font-family="&apos;Bitstream Vera Sans Mono&apos;" style:font-family-generic="modern" style:font-pitch="fixed" style:font-name-asian="Bitstream Vera Sans Mono" style:font-family-asian="&apos;Bitstream Vera Sans Mono&apos;" style:font-family-generic-asian="modern" style:font-pitch-asian="fixed" style:font-name-complex="Bitstream Vera Sans Mono" style:font-family-complex="&apos;Bitstream Vera Sans Mono&apos;" style:font-family-generic-complex="modern" style:font-pitch-complex="fixed"/>
+        </style:style>
+        <style:style style:name="Footnote_20_Symbol" style:display-name="Footnote Characters" style:family="text">
+            <style:text-properties style:text-position="33% 80%" fo:color="#2b73b7"/>
+        </style:style>
+        <style:style style:name="Footnote_20_Anchor" style:display-name="Footnote Anchor" style:family="text">
+            <style:text-properties style:text-position="33% 80%" fo:color="#2b73b7"/>
         </style:style>
         <style:style style:name="Graphics" style:family="graphic">
             <style:graphic-properties text:anchor-type="paragraph" svg:x="0cm" svg:y="0cm" style:wrap="dynamic" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="paragraph" style:horizontal-pos="center" style:horizontal-rel="paragraph"/>
@@ -302,7 +308,7 @@
                 <style:text-properties style:font-name="OpenSymbol"/>
             </text:list-level-style-bullet>
         </text:list-style>
-        <text:notes-configuration text:note-class="footnote" style:num-format="1" text:start-value="0" text:footnotes-position="page" text:start-numbering-at="document"/>
+        <text:notes-configuration text:note-class="footnote" text:citation-style-name="Footnote_20_Symbol" text:citation-body-style-name="Footnote_20_Anchor" style:num-format="1" text:start-value="0" text:footnotes-position="page" text:start-numbering-at="document"/>
         <text:notes-configuration text:note-class="endnote" style:num-format="i" text:start-value="0"/>
         <text:linenumbering-configuration text:number-lines="false" text:offset="0.499cm" style:num-format="1" text:number-position="left" text:increment="5"/>
     </office:styles>

@@ -139,6 +139,8 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'source file':           return 'Source_20_File';
             case 'horizontal line':       return 'Horizontal_20_Line';
             case 'footnote':              return 'Footnote';
+            case 'footnote anchor':       return 'Footnote_20_Anchor';
+            case 'footnote characters':   return 'Footnote_20_Symbol';
             case 'emphasis':              return 'Emphasis';
             case 'strong':                return 'Strong_20_Emphasis';
             case 'underline':             return 'underline';

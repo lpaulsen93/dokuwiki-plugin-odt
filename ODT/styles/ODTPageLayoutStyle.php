@@ -176,9 +176,9 @@ class ODTPageLayoutStyle extends ODTStyle
                 ($property, self::$columns_fields [$property][0], $value, self::$columns_fields [$property][1], $this->columns_props);
             return;
         }
-        if (array_key_exists ($property, self::$footnote_props)) {
+        if (array_key_exists ($property, self::$footnote_fields)) {
             $this->setPropertyInternal
-                ($property, self::$footnote_props [$property][0], $value, self::$footnote_props [$property][1], $this->footnote_fields);
+                ($property, self::$footnote_fields [$property][0], $value, self::$footnote_fields [$property][1], $this->footnote_props);
             return;
         }
     }
@@ -202,8 +202,8 @@ class ODTPageLayoutStyle extends ODTStyle
         if (array_key_exists ($property, self::$columns_fields)) {
             return $this->columns_props [$property]['value'];
         }
-        if (array_key_exists ($property, self::$footnote_props)) {
-            return $this->footnote_fields [$property]['value'];
+        if (array_key_exists ($property, self::$footnote_fields)) {
+            return $this->footnote_props [$property]['value'];
         }
         return NULL;
     }

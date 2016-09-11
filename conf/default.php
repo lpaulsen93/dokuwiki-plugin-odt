@@ -17,6 +17,9 @@ $conf['media_sel']     = 'print';
 $conf['css_font_size'] = '16';
 $conf['css_template']  = 'dokuwiki';
 
+// Parameters CSS/Styles-Interworking
+$conf['apply_fs_to_non_css'] = false;
+
 // Parameters for converting pixel to points
 $conf['twips_per_pixel_x'] = '16';
 $conf['twips_per_pixel_y'] = '20';

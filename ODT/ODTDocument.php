@@ -2136,4 +2136,52 @@ class ODTDocument
         $subInPt = $this->units->getDigits($subInPt);
         return ($valueInPt - $subInPt).'pt';
     }
+
+    /**
+     * Adjust font sizes of all styles to $newBaseSize.
+     * The $newBaseSize will be the new default font-size and all
+     * other font-sizes will be re-calculated.
+     *
+     * @param string $newBaseSize The new base size e.g. '16pt'
+     */    
+    public function adjustFontSizes($newBaseSize) {
+        // First get the old base size
+        $default = $this->styleset->getDefaultStyle('paragraph');
+        if ($default == NULL) {
+            // ???
+            return;
+        }
+        $oldBaseSize = $default->getProperty('font-size');
+        if ($oldBaseSize === NULL) {
+            return;
+        }
+        $oldBaseSizeInPt = trim($this->units->toPoints($oldBaseSize, 'y'), 'pt');
+
+        // Convert new base size to pt        
+        $newBaseSizeInPt = trim($this->units->toPoints($newBaseSize, 'y'), 'pt');
+
+        $styles_list = array();
+        $styles_list [] = $this->styleset->getStyles();
+        $styles_list [] = $this->styleset->getAutomaticStyles();
+        $styles_list [] = $this->styleset->getMasterStyles();
+
+        // Go through the list of style arrays and adjust each one
+        // having a 'font-size' property
+        foreach ($styles_list as $styles) {
+            foreach ($styles as $style) {
+                $fontSize = $style->getProperty('font-size');
+                if ($fontSize !== NULL) {
+                    $fontSizeInPt = trim($this->units->toPoints($fontSize, 'y'), 'pt');
+                    $fontSizeInPt = ($fontSizeInPt/$oldBaseSizeInPt) * $newBaseSizeInPt;
+                    $fontSizeInPt = round($fontSizeInPt, 2);
+                    $style->setProperty('font-size', $fontSizeInPt.'pt');
+                }
+            }
+        }
+
+        $this->trace_dump .= 'newBaseSize: '.$newBaseSize."\n";
+        $this->trace_dump .= 'newBaseSizeInPt: '.$newBaseSizeInPt."\n";
+        // Also set default font-size to the new base size!
+        $default->setProperty('font-size', $newBaseSizeInPt.'pt');
+    }
 }

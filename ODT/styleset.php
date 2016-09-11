@@ -312,4 +312,25 @@ abstract class ODTStyleSet
         }
         return NULL;
     }
+
+    /**
+     * Get styles array.
+     */
+    public function getStyles() {
+        return $this->styles;
+    }
+
+    /**
+     * Get automatci/common styles array.
+     */
+    public function getAutomaticStyles() {
+        return $this->auto_styles;
+    }
+
+    /**
+     * Get master styles array.
+     */
+    public function getMasterStyles() {
+        return $this->master_styles;
+    }
 }

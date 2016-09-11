@@ -165,6 +165,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 // Document based on ODT template.
                 $this->buildODTPathes ($ODTtemplate, $temp_dir);
                 $this->document->importODTStyles($ODTtemplate, $temp_dir);
+
+                if ($this->config->getParam ('apply_fs_to_non_css')) {
+                    $this->document->adjustFontSizes($this->config->getParam('css_font_size').'pt');
+                }
                 break;
 
             case 'CSS template':
@@ -184,6 +188,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
                 // Set outline style.
                 $this->document->setOutlineStyle($this->config->getParam('outline_list_style'));
+
+                if ($this->config->getParam ('apply_fs_to_non_css')) {
+                    $this->document->adjustFontSizes($this->config->getParam('css_font_size').'pt');
+                }
                 break;
         }
 

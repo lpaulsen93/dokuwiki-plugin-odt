@@ -228,6 +228,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => true,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // Apply CSS font size to ODT template styles/scratch styles
+        $this->config ['apply_fs_to_non_css'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // Twips per pixel x and y
         $this->config ['twips_per_pixel_x'] =
             array('value'              => NULL,

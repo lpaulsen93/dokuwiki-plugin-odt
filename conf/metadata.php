@@ -14,6 +14,8 @@ $meta['media_sel']     = array('string');
 $meta['css_font_size'] = array('numeric');
 $meta['css_template']  = array('dirchoice', '_dir' => DOKU_INC . 'lib/tpl/');
 
+$meta['apply_fs_to_non_css'] = array('onoff');
+
 $meta['twips_per_pixel_x'] = array('numeric');
 $meta['twips_per_pixel_y'] = array('numeric');
 

@@ -8,10 +8,17 @@
 
 // for the configuration manager
 $lang['tpl_dir'] = 'Sub-directory for the templates in the media manager';
+$lang['odt_template'] = 'Template for style import (ODT or CSS file)';
 $lang['showexportbutton'] = 'Display ODT Export Button';
 
+$lang['css_usage'] = 'Apply imported CSS to ODT styles?';
 $lang['media_sel'] = 'Which @media selector shall be used to query CSS properties?';
+$lang['css_font_size'] = 'CSS base font size (defining 1em)';
 $lang['css_template'] = 'Which template should be used for formatting the ODT files?';
+$lang ['apply_fs_to_non_css'] = 'Apply CSS font size to ODT template and plugin default styles?';
+
+$lang ['twips_per_pixel_x'] = 'Twips per pixel (X axis)';
+$lang ['twips_per_pixel_y'] = 'Twips per pixel (Y axis)';
 
 $lang['format']                = 'Page format';
 $lang['orientation']           = 'Page orientation';
@@ -27,3 +34,8 @@ $lang['toc_leader_sign']       = 'Leader sign for the table of contents';
 $lang['toc_indents']           = 'Table of contents: Indentation per level in cm';
 $lang['toc_pagebreak']         = 'Insert a pagebreak after the table of contents?';
 $lang['toc_style']             = 'Text style for table of contents';
+$lang['index_in_browser']      = 'Display placeholder for table of contents/index in the browser?';
+
+$lang['outline_list_style']    = 'Outline style';
+
+$lang['convert_to_pdf']        = 'Command to run for PDF conversion';

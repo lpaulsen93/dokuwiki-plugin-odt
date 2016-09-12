@@ -156,6 +156,72 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $this->assertEquals($decls [3]->getValue(), 'right');
         $this->assertEquals($decls [4]->getProperty(), 'background-position');
         $this->assertEquals($decls [4]->getValue(), 'top');
+
+        /** @var css_declaration[] $decls */
+        $decls = array();
+        $decl = new css_declaration ('background', 'transparent url("img_tree.png") no-repeat right top');
+        $decl->explode ($decls);
+
+        $this->assertEquals(count($decls), 5);
+        $this->assertEquals($decls [0]->getProperty(), 'background-color');
+        $this->assertEquals($decls [0]->getValue(), 'transparent');
+        $this->assertEquals($decls [1]->getProperty(), 'background-image');
+        $this->assertEquals($decls [1]->getValue(), 'url("img_tree.png")');
+        $this->assertEquals($decls [2]->getProperty(), 'background-repeat');
+        $this->assertEquals($decls [2]->getValue(), 'no-repeat');
+        $this->assertEquals($decls [3]->getProperty(), 'background-attachment');
+        $this->assertEquals($decls [3]->getValue(), 'right');
+        $this->assertEquals($decls [4]->getProperty(), 'background-position');
+        $this->assertEquals($decls [4]->getValue(), 'top');
+
+        /** @var css_declaration[] $decls */
+        $decls = array();
+        $decl = new css_declaration ('background', 'initial url("img_tree.png") no-repeat right top');
+        $decl->explode ($decls);
+
+        $this->assertEquals(count($decls), 5);
+        $this->assertEquals($decls [0]->getProperty(), 'background-color');
+        $this->assertEquals($decls [0]->getValue(), 'initial');
+        $this->assertEquals($decls [1]->getProperty(), 'background-image');
+        $this->assertEquals($decls [1]->getValue(), 'url("img_tree.png")');
+        $this->assertEquals($decls [2]->getProperty(), 'background-repeat');
+        $this->assertEquals($decls [2]->getValue(), 'no-repeat');
+        $this->assertEquals($decls [3]->getProperty(), 'background-attachment');
+        $this->assertEquals($decls [3]->getValue(), 'right');
+        $this->assertEquals($decls [4]->getProperty(), 'background-position');
+        $this->assertEquals($decls [4]->getValue(), 'top');
+
+        /** @var css_declaration[] $decls */
+        $decls = array();
+        $decl = new css_declaration ('background', 'inherit url("img_tree.png") no-repeat right top');
+        $decl->explode ($decls);
+
+        $this->assertEquals(count($decls), 5);
+        $this->assertEquals($decls [0]->getProperty(), 'background-color');
+        $this->assertEquals($decls [0]->getValue(), 'inherit');
+        $this->assertEquals($decls [1]->getProperty(), 'background-image');
+        $this->assertEquals($decls [1]->getValue(), 'url("img_tree.png")');
+        $this->assertEquals($decls [2]->getProperty(), 'background-repeat');
+        $this->assertEquals($decls [2]->getValue(), 'no-repeat');
+        $this->assertEquals($decls [3]->getProperty(), 'background-attachment');
+        $this->assertEquals($decls [3]->getValue(), 'right');
+        $this->assertEquals($decls [4]->getProperty(), 'background-position');
+        $this->assertEquals($decls [4]->getValue(), 'top');
+
+        /** @var css_declaration[] $decls */
+        $decls = array();
+        $decl = new css_declaration ('background', 'url("img_tree.png") no-repeat right top');
+        $decl->explode ($decls);
+
+        $this->assertEquals(count($decls), 4);
+        $this->assertEquals($decls [0]->getProperty(), 'background-image');
+        $this->assertEquals($decls [0]->getValue(), 'url("img_tree.png")');
+        $this->assertEquals($decls [1]->getProperty(), 'background-repeat');
+        $this->assertEquals($decls [1]->getValue(), 'no-repeat');
+        $this->assertEquals($decls [2]->getProperty(), 'background-attachment');
+        $this->assertEquals($decls [2]->getValue(), 'right');
+        $this->assertEquals($decls [3]->getProperty(), 'background-position');
+        $this->assertEquals($decls [3]->getValue(), 'top');
     }
 
     /**

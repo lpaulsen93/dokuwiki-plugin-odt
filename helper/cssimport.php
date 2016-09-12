@@ -150,6 +150,15 @@ class css_declaration {
                 if ($value [0] == '#' || csscolors::isKnownColorName($value)) {
                     $decls [] = new css_declaration ('background-color', $value);
                     $index++;
+                } else {
+                    switch ($value) {
+                        case 'transparent':
+                        case 'inherit':
+                        case 'initial':
+                            $decls [] = new css_declaration ('background-color', $value);
+                            $index++;
+                        break;
+                    }
                 }
             }
             if ($index < count($values)) {

@@ -164,6 +164,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => false,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // Option 'showpdfexportbutton'
+        $this->config ['showpdfexportbutton'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // Template directory.
         $this->config ['tpl_dir'] =
             array('value'              => NULL,

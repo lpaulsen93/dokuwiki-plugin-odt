@@ -31,7 +31,8 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      */
     public function register(Doku_Event_Handler $controller) {
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'convert', array());
-        $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton', array());
+        $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton_odt', array());
+        $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton_pdf', array());
     }
 
     /**
@@ -39,7 +40,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      *
      * @param Doku_Event $event
      */
-    public function addbutton(Doku_Event $event) {
+    public function addbutton_odt(Doku_Event $event) {
         global $ID, $REV;
 
         if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
@@ -54,6 +55,33 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
                           '<li>'
                           . '<a href="' . wl($ID, $params) . '"  class="action export_odt" rel="nofollow" title="' . $this->getLang('export_odt_button') . '">'
                           . '<span>' . $this->getLang('export_odt_button') . '</span>'
+                          . '</a>'
+                          . '</li>'
+                ) +
+                array_slice($event->data['items'], -1, 1, true);
+        }
+    }
+
+    /**
+     * Add 'export odt=>pdf'-button to pagetools
+     *
+     * @param Doku_Event $event
+     */
+    public function addbutton_pdf(Doku_Event $event) {
+        global $ID, $REV;
+
+        if($this->getConf('showpdfexportbutton') && $event->data['view'] == 'main') {
+            $params = array('do' => 'export_odt_pdf');
+            if($REV) {
+                $params['rev'] = $REV;
+            }
+
+            // insert button at position before last (up to top)
+            $event->data['items'] = array_slice($event->data['items'], 0, -1, true) +
+                array('export_odt_pdf' =>
+                          '<li>'
+                          . '<a href="' . wl($ID, $params) . '"  class="action export_odt_pdf" rel="nofollow" title="' . $this->getLang('export_odt_pdf_button') . '">'
+                          . '<span>' . $this->getLang('export_odt_pdf_button') . '</span>'
                           . '</a>'
                           . '</li>'
                 ) +

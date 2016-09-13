@@ -10,6 +10,7 @@ $conf['tpl_dir'] = 'odt';
 $conf['odt_template'] = '';
 
 $conf['showexportbutton'] = 1;
+$conf['showpdfexportbutton'] = 0;
 
 // Parameters for CSS import
 $conf['css_usage']     = 'off (plugins only)';

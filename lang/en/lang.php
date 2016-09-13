@@ -6,7 +6,8 @@ $lang['direction']  = 'ltr';
 
 // export button
 $lang['view'] = 'Export page to Open Document format';
-$lang['export_odt_button'] = "ODT export";
+$lang['export_odt_button'] = 'ODT export';
+$lang['export_odt_pdf_button'] = 'ODT=>PDF export';
 
 // template not found in the directory
 $lang['tpl_not_found'] = 'ERROR : the ODT template "%s" was not found in the templates directory "%s". The export has been aborted.';
@@ -19,8 +20,8 @@ $lang['chapter_msg']        = 'A Chapter Index will be inserted here.';
 $lang['update_toc_msg']     = 'Please remember to update the Table Of Contents after export.';
 $lang['update_chapter_msg'] = 'Please remember to update the Chapter Index after export.';
 
-$lang['needtitle']         = "Please provide a title.";
-$lang['needns']            = "Please provide an existing namespace.";
+$lang['needtitle']         = 'Please provide a title.';
+$lang['needns']            = 'Please provide an existing namespace.';
 $lang['empty']             = "You don't have pages selected yet.";
 $lang['forbidden']         = "You have no access to these pages: %s.<br/><br/>Use option 'Skip Forbidden Pages' to create your book with the available pages.";
 

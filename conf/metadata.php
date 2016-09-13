@@ -8,6 +8,7 @@
 $meta['tpl_dir']   = array('string');
 $meta['odt_template'] = array('string');
 $meta['showexportbutton'] = array('onoff');
+$meta['showpdfexportbutton'] = array('onoff');
 
 $meta['css_usage']     = array('multichoice', '_choices' => array('off (plugins only)', 'basic style import', 'full'));
 $meta['media_sel']     = array('string');

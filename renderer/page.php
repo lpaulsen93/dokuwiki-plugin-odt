@@ -2188,6 +2188,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function subFromValue ($value, $sub) {
         return $this->document->subFromValue ($value, $sub);
     }
+
+    public function getHTMLStack () {
+        return $this->document->getHTMLStack ();
+    }
+
+    public function dumpHTMLStack () {
+        $this->document->dumpHTMLStack ();
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

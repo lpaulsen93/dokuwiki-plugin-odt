@@ -1996,6 +1996,14 @@ class ODTDocument
         $this->htmlStack->saveRootIndex ();
     }
 
+    public function getHTMLStack () {
+        return $this->htmlStack;
+    }
+
+    public function dumpHTMLStack () {
+        $this->trace_dump .= $this->htmlStack->getDump();
+    }
+
     /**
      * Check if a file already exists in the document.
      *

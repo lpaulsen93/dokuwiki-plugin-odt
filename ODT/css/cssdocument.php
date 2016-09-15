@@ -155,6 +155,19 @@ class cssdocument {
         $this->level = $this->rootLevel + 1;
     }
 
+    public function getState (array &$state) {
+        $state ['index'] = $this->size-1;
+        $state ['level'] = $this->level;
+    }
+
+    public function restoreState (array $state) {
+        for ($index = $this->size-1 ; $index > $state ['index'] ; $index--) {
+            $this->entries [$index] = NULL;
+        }
+        $this->size = $state ['index'] + 1;
+        $this->level = $state ['level'];
+    }
+
     public function open ($element, $attributes=NULL, $pseudo_classes=NULL, $pseudo_elements=NULL) {
         $this->entries [$this->size]['level'] = $this->level;
         $this->entries [$this->size]['state'] = 'open';

@@ -1,18 +1,28 @@
 <?php
+/**
+ * Handle ODT Table row elements.
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
+ * @package    ODT\Elements\ODTElementTableRow
+ */
 
+/** Include ODTStateElement */
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTStateElement.php';
 
 /**
  * ODTElementTableRow:
  * Class for handling the table row element.
  *
- * @license GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author  LarsDW223
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
  */
 class ODTElementTableRow extends ODTStateElement
 {
     /**
      * Constructor.
+     * 
+     * @param    string    $style_name    Name of the style
      */
     public function __construct($style_name=NULL) {
         parent::__construct();
@@ -25,7 +35,7 @@ class ODTElementTableRow extends ODTStateElement
     /**
      * Return the elements name.
      * 
-     * @return string The ODT XML element name.
+     * @return    string    The ODT XML element name.
      */
     public function getElementName () {
         return ('table:table-row');
@@ -34,7 +44,7 @@ class ODTElementTableRow extends ODTStateElement
     /**
      * Return string with encoded opening tag.
      * 
-     * @return string The ODT XML code to open this element.
+     * @return    string    The ODT XML code to open this element.
      */
     public function getOpeningTag () {
         $style_name = $this->getStyleName();
@@ -47,7 +57,7 @@ class ODTElementTableRow extends ODTStateElement
     /**
      * Return string with encoded closing tag.
      * 
-     * @return string The ODT XML code to close this element.
+     * @return    string    The ODT XML code to close this element.
      */
     public function getClosingTag () {
         return '</table:table-row>';
@@ -57,7 +67,7 @@ class ODTElementTableRow extends ODTStateElement
      * Are we in a paragraph or not?
      * As a table row we are not.
      * 
-     * @return boolean
+     * @return    boolean
      */
     public function getInParagraph() {
         return false;
@@ -67,7 +77,7 @@ class ODTElementTableRow extends ODTStateElement
      * Determine and set the parent for this element.
      * As a table row our parent is the table element.
      *
-     * @param ODTStateElement $previous
+     * @param    ODTStateElement    $previous
      */
     public function determineParent(ODTStateElement $previous) {
         $table = $previous;
@@ -92,7 +102,7 @@ class ODTElementTableRow extends ODTStateElement
     /**
      * Return the table to which this column belongs.
      * 
-     * @return ODTStateElement
+     * @return    ODTStateElement
      */
     public function getTable () {
         return $this->getParent();

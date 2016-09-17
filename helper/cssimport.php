@@ -26,6 +26,8 @@ abstract class CSSValueType
 
 /**
  * Class css_declaration
+ * 
+ * @package CSS\css_declaration
  */
 class css_declaration {
     protected static $css_units = array ('em', 'ex', '%', 'px', 'cm', 'mm', 'in', 'pt',
@@ -34,8 +36,10 @@ class css_declaration {
     protected $value;
 
     /**
-     * @param $property
-     * @param $value
+     * Create a new declaration (property:value).
+     * 
+     * @param string $property The property name of the declaration
+     * @param string $value    The assigned value
      */
     public function __construct($property, $value) {
         $this->property = $property;
@@ -43,13 +47,17 @@ class css_declaration {
     }
 
     /**
-     * @return mixed
+     * Get the property name of this declaration.
+     * 
+     * @return string
      */
     public function getProperty () {
         return $this->property;
     }
 
     /**
+     * Get the value assigned to the property of this declaration.
+     * 
      * @return string
      */
     public function getValue () {
@@ -890,6 +898,8 @@ class css_declaration {
 
 /**
  * Class css_rule
+ * 
+ * @package CSS\css_rule
  */
 class css_rule {
     protected $media = NULL;
@@ -1057,6 +1067,8 @@ class css_rule {
 
 /**
  * Class helper_plugin_odt_cssimport
+ * 
+ * @package helper\cssimport
  */
 class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
     protected $replacements = array();

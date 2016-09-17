@@ -5,6 +5,8 @@
  *
  * @author HyunWoo Jo <showaid@gmail.com>
  * @author Myeongjin <aranet100@gmail.com>
+ * 
+ * @package DokuWiki\lang\ko\settings
  */
 $lang['tpl_dir']               = '미디어 관리자에서 템플릿을 위한 하위 디렉터리';
 $lang['showexportbutton']      = 'ODT 내보내기 버튼 표시';

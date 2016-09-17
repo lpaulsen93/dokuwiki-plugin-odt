@@ -4,6 +4,8 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * 
  * @author Florian Lamml <info@florian-lamml.de>
+ * 
+ * @package DokuWiki\lang\de-informal\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';

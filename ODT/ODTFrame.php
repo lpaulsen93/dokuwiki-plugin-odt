@@ -1,12 +1,19 @@
 <?php
+/**
+ * ODTFrame: Frame handling.
+ * 
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
+ */
 
+/** Include ODTDocument.php */
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 
 /**
  * ODTFrame:
  * Class containing static code for handling frames.
  *
- * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @package    ODT\Frame
  */
 class ODTFrame
 {
@@ -20,9 +27,9 @@ class ODTFrame
      *
      * The text box should be closed by calling 'closeTextBox()'.
      *
-     * @author LarsDW223
-     *
-     * @param array $properties
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     string            $element    The element name, e.g. "div"
+     * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     public static function openTextBoxUseCSS (ODTInternalParams $params, $element=NULL, $attributes=NULL) {
         $frame = $params->document->state->getCurrentFrame();
@@ -48,9 +55,10 @@ class ODTFrame
      *
      * The text box should be closed by calling 'closeTextBox()'.
      *
-     * @author LarsDW223
-     *
-     * @param array $properties
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     array             $properties Properties to use for creating the text box
+     * @param     string            $element    The element name, e.g. "div"
+     * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     public static function openTextBoxUseProperties (ODTInternalParams $params, $properties, $element=NULL, $attributes=NULL) {
         $frame = $params->document->state->getCurrentFrame();
@@ -302,6 +310,8 @@ class ODTFrame
 
     /**
      * This function closes a textbox (previously opened with openTextBoxUseProperties()).
+     * 
+     * @param     ODTInternalParams $params     Commom params.
      */
     function closeTextBox (ODTInternalParams $params) {
         // Close paragraph (if open)
@@ -324,9 +334,10 @@ class ODTFrame
      * parameters in $properties. Call 'closeMultiColumnTextBox()' to
      * close the text box.
      *
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     array             $properties Properties to use
      * @see ODTUnknownStyle::createMultiColumnFrameStyle for information
      *      about supported $properties.
-     * @author LarsDW223
      */
     public static function openMultiColumnTextBoxUseProperties (ODTInternalParams $params, $properties) {
         if ($element == NULL) {
@@ -375,7 +386,7 @@ class ODTFrame
     /**
      * This function closes a multi column frame (previously opened with _odtOpenMultiColumnFrame).
      *
-     * @author LarsDW223
+     * @param     ODTInternalParams $params     Commom params.
      */
     public static function closeMultiColumnTextBox (ODTInternalParams $params) {
         // Close paragraph (if open)
@@ -401,9 +412,10 @@ class ODTFrame
      *
      * The text box should be closed by calling 'closeTextBox()'.
      *
-     * @author LarsDW223
-     *
-     * @param array $properties
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     array             $properties Properties to use for creating the frame
+     * @param     string            $element    The element name, e.g. "div"
+     * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     public static function openFrameUseProperties (ODTInternalParams $params, $properties, $element=NULL, $attributes=NULL) {
         $frame = $params->document->state->getCurrentFrame();
@@ -643,6 +655,8 @@ class ODTFrame
 
     /**
      * This function closes a textbox (previously opened with openTextBoxUseProperties()).
+     * 
+     * @param     ODTInternalParams $params     Commom params.
      */
     function closeFrame (ODTInternalParams $params) {
         // Close paragraph (if open)

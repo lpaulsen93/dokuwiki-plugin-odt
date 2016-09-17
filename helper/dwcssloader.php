@@ -13,11 +13,16 @@ if (!defined('DOKU_INC')) die();
 
 /**
  * Class helper_plugin_odt_dwcssloader
+ * 
+ * @package helper\dwcssloader
  */
 class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
+    /** var string Usually empty, can be used for debugging */
     public $trace_dump = NULL;
     
     /**
+     * Return list of implemented methods.
+     * 
      * @return array
      */
     function getMethods() {

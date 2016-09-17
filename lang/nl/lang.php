@@ -7,6 +7,8 @@
  * @author Arthur Buijs <arthur@artietee.nl>
  * @author Peter van Diest <peter.van.diest@xs4all.nl>
  * @author Marcel Bachus <marcel.bachus@ziggo.nl>
+ * 
+ * @package DokuWiki\lang\nl\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';

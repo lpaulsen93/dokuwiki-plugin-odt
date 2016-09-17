@@ -5,6 +5,8 @@
  *
  * @author Jaroslav Lichtblau <jlichtblau@seznam.cz>
  * @author Ing. Jan Kaláb <jan+dokuwiki@kalabovi.org>
+ * 
+ * @package DokuWiki\lang\cs\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';

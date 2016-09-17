@@ -3,6 +3,8 @@
  * Options for the odt plugin
  *
  * @author Andreas Gohr <andi@splitbrain.org>
+ * 
+ * @package DokuWiki\Conf\Metadata
  */
 
 $meta['tpl_dir']   = array('string');

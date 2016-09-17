@@ -17,6 +17,8 @@
  *
  * To prevent clashes with other interfaces function names all functions
  * are prefixed with iECSSM_.
+ * 
+ * @package CSS\iElementCSSMatchable
  */
 interface iElementCSSMatchable
 {

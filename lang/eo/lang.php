@@ -4,6 +4,8 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
  * @author Robert Bogenschneider <robog@gmx.de>
+ * 
+ * @package DokuWiki\lang\eo\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';

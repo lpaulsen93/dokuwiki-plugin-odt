@@ -4,6 +4,8 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
  * @author Anotheroneuser <w20151222@ya.ru>
+ * 
+ * @package DokuWiki\lang\ru\settings
  */
 $lang['tpl_dir']               = 'Подкатегория для шаблонов в организаторе аудиовизуальной информации. ';
 $lang['showexportbutton']      = 'Высветить кнопку преобразования в формат ODT';

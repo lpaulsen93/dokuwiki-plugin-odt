@@ -11,6 +11,8 @@ if(!defined('DOKU_INC')) die();
 
 /**
  * Class syntax_plugin_odt
+ * 
+ * @package DokuWiki\Syntax
  */
 class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
     protected $config = NULL;

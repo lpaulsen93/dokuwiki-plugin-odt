@@ -6,6 +6,8 @@
  * @author NicolasFriedli <nicolas@theologique.ch>
  * @author Schplurtz le Déboulonné <schplurtz@laposte.net>
  * @author Morgan <morgan.leguen@gmail.com>
+ * 
+ * @package DokuWiki\lang\fr\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'gauche à droite';

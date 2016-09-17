@@ -1,13 +1,18 @@
 <?php
 /**
- * English language file
+ * English language file for config settings.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     Aurelien Bompard <aurelien@bompard.org>
+ * @package    DokuWiki\lang\en\settings
  */
 
-// for the configuration manager
+/**
+ * @global array $lang['tpl_dir'] Translation for 'template directory'
+ */
 $lang['tpl_dir'] = 'Sub-directory for the templates in the media manager';
+
+/** @var array $lang['tpl_dir'] Translation for 'ODT template file (ODT or CSS file)' */
 $lang['odt_template'] = 'Template for style import (ODT or CSS file)';
 $lang['showexportbutton'] = 'Display ODT Export Button';
 

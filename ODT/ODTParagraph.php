@@ -1,5 +1,13 @@
 <?php
+/**
+ * ODT Paragraph handling.
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
+ * @package    ODT\Paragraph
+ */
 
+/** Include ODTDocument */
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 
 /**
@@ -13,7 +21,10 @@ class ODTParagraph
     /**
      * Open a paragraph
      *
-     * @param string $styleName The style to use.
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     string|null       $styleName  The style to use.
+     * @param     string            $element    The element name, e.g. "div"
+     * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     static public function paragraphOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
         if ($element == NULL) {
@@ -102,7 +113,9 @@ class ODTParagraph
     }
 
     /**
-     * Close a paragraph
+     * Close a paragraph.
+     * 
+     * @param     ODTInternalParams $params     Commom params.
      */
     static public function paragraphClose(ODTInternalParams $params){
         $paragraph = $params->document->state->getCurrentParagraph();
@@ -125,12 +138,10 @@ class ODTParagraph
      *
      * The span should be closed by calling '_odtParagraphClose'.
      *
-     * @author LarsDW223
-     *
-     * @param helper_plugin_odt_cssimport $import
-     * @param $classes
-     * @param $baseURL
-     * @param $element
+     * @author    LarsDW223
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     string            $element    The element name, e.g. "div"
+     * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     function paragraphOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
         $inParagraph = $params->document->state->getInParagraph();
@@ -158,7 +169,8 @@ class ODTParagraph
      *
      * @author LarsDW223
      *
-     * @param array $properties
+     * @param     ODTInternalParams $params     Commom params.
+     * @param     array             $properties Properties to use.
      */
     public static function paragraphOpenUseProperties(ODTInternalParams $params, $properties){
         $inParagraph = $params->document->state->getInParagraph();

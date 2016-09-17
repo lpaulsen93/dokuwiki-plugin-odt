@@ -3,19 +3,22 @@
  * ODTTableStyle: class for ODT table styles.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author LarsDW223
+ * @author     LarsDW223
+ * @package    ODT\Styles\ODTTableStyle
  */
 
+/** Include XMLUtil and ODTStyle */
 require_once DOKU_INC.'lib/plugins/odt/ODT/XMLUtil.php';
 require_once 'ODTStyle.php';
 
 ODTStyleStyle::register('ODTTableStyle');
 
 /**
- * The ODTTableStyle class
+ * The ODTTableStyle class.
  */
 class ODTTableStyle extends ODTStyleStyle
 {
+    /** var array List of properties belonging to an ODT table. */
     static $table_fields = array(
         'width'                      => array ('style:width',                      'table',  true),
         'rel-width'                  => array ('style:rel-width',                  'table',  true),
@@ -62,8 +65,8 @@ class ODTTableStyle extends ODTStyleStyle
      * Properties might be disabled by setting them in $disabled.
      * The style must have been previously created.
      *
-     * @param  $properties Properties to be imported
-     * @param  $disabled Properties to be ignored
+     * @param    $properties    Properties to be imported
+     * @param    $disabled      Properties to be ignored
      */
     public function importProperties($properties, $disabled) {
         $this->importPropertiesInternal(ODTStyleStyle::getStyleProperties (), $properties, $disabled);
@@ -74,7 +77,7 @@ class ODTTableStyle extends ODTStyleStyle
     /**
      * Check if a style is a common style.
      *
-     * @return bool Is common style
+     * @return    bool    Is common style
      */
     public function mustBeCommonStyle() {
         return false;
@@ -83,7 +86,7 @@ class ODTTableStyle extends ODTStyleStyle
     /**
      * Get the style family of a style.
      *
-     * @return string Style family
+     * @return    string    Style family
      */
     static public function getFamily() {
         return 'table';
@@ -92,8 +95,8 @@ class ODTTableStyle extends ODTStyleStyle
     /**
      * Set a property.
      * 
-     * @param $property The name of the property to set
-     * @param $value    New value to set
+     * @param    $property    The name of the property to set
+     * @param    $value       New value to set
      */
     public function setProperty($property, $value) {
         $style_fields = ODTStyleStyle::getStyleProperties ();
@@ -112,8 +115,8 @@ class ODTTableStyle extends ODTStyleStyle
     /**
      * Create new style by importing ODT style definition.
      *
-     * @param  $xmlCode Style definition in ODT XML format
-     * @return ODTStyle New specific style
+     * @param     $xmlCode    Style definition in ODT XML format
+     * @return    ODTStyle    New specific style
      */
     static public function importODTStyle($xmlCode) {
         $style = new ODTTableStyle();
@@ -143,6 +146,11 @@ class ODTTableStyle extends ODTStyleStyle
         return $style;
     }
 
+    /**
+     * Return an array listing the properties belonging to an ODT table.
+     *
+     * @return    array    Properties
+     */
     static public function getTableProperties () {
         return self::$table_fields;
     }
@@ -158,11 +166,11 @@ class ODTTableStyle extends ODTStyleStyle
      *
      * The function returns the name of the new style or NULL if all relevant properties are empty.
      *
-     * @author LarsDW223
-     * @param $properties
-     * @param null $disabled_props
-     * @param int $max_width_cm
-     * @return ODTTableStyle or NULL
+     * @author    LarsDW223
+     * @param     array              $properties     Properties for the table style
+     * @param     array|null         $disabled_props Ignored properties.
+     * @param     int                $max_width_cm   Max. allowed table width.
+     * @return    ODTTableStyle|NULL
      */
     public static function createTableTableStyle(array $properties, array $disabled_props = NULL, $max_width_cm = 17){
         // If we want to change the table width we must set table:align to something else

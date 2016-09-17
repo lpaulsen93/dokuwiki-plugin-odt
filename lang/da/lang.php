@@ -1,11 +1,14 @@
 <?php
-
 /**
+ * Danish language file.
+ * 
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- *
- * @author Søren Birk <soer9648@eucl.dk>
- * @author Jacob Palm <mail@jacobpalm.dk>
+ * @author     Søren Birk <soer9648@eucl.dk>
+ * @author     Jacob Palm <mail@jacobpalm.dk>
+ * @package    DokuWiki\lang\da\lang
  */
+
+/** Translations */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';
 $lang['view']                  = 'Eksportér side til Open Document format';

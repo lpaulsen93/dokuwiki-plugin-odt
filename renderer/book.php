@@ -9,7 +9,9 @@
 if(!defined('DOKU_INC')) die();
 
 /**
- * The Renderer
+ * The Book Renderer.
+ * 
+ * @package DokuWiki\Renderer\Book
  */
 class renderer_plugin_odt_book extends renderer_plugin_odt_page {
 

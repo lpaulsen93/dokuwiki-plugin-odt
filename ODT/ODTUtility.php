@@ -1,5 +1,12 @@
 <?php
+/**
+ * Utility functions.
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
+ */
 
+/** Include csscolors */
 require_once DOKU_PLUGIN . 'odt/ODT/css/csscolors.php';
 
 /**
@@ -7,12 +14,19 @@ require_once DOKU_PLUGIN . 'odt/ODT/css/csscolors.php';
  * Class containing some internal utility functions.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author LarsDW223
+ * @author     LarsDW223
+ * @package    ODT\Utility
  */
 class ODTUtility
 {
     /**
      * Replace local links with bookmark references or text
+     * 
+     * @param    string $content          The document content
+     * @param    array  $toc              The table of contents
+     * @param    array  $bookmarks        List of bookmarks
+     * @param    string $styleName        Link style name
+     * @param    string $visitedStyleName Visited link style name
      */
     public static function replaceLocalLinkPlaceholders(&$content, array $toc, array $bookmarks, $styleName, $visitedStyleName) {
         $matches = array();
@@ -107,6 +121,9 @@ class ODTUtility
      * IMPORTANT:
      * Paragraphs can be used for pagebreaks/changing page format.
      * Such paragraphs may not be deleted!
+     * 
+     * @param    string $docContent              The document content
+     * @param    array  $preventDeletetionStyles Array of style names which may not be deleted
      */
     public static function deleteUselessElements(&$docContent, array $preventDeletetionStyles) {
         $length_open = strlen ('<text:p');
@@ -204,9 +221,13 @@ class ODTUtility
     }
 
     /**
-     * @param string $src
-     * @param  $width
-     * @param  $height
+     * Return the size of an image in centimeters.
+     * 
+     * @param  string       $src         Filepath of the image
+     * @param  string|null  $width       Alternative width
+     * @param  string|null  $height      Alternative width
+     * @param  boolean|true $preferImage Prefer original image size
+     * @param  ODTUnits     $units       $ODTUnits object for unit conversion
      * @return array
      */
     public static function getImageSizeString($src, $width = NULL, $height = NULL, $preferImage=true, ODTUnits $units){
@@ -251,6 +272,16 @@ class ODTUtility
         return array($width, $height);
     }
 
+    /**
+     * Split $value by whitespace and convert any relative values (%)
+     * into an absolute value. This is done by taking the percentage of
+     * $maxWidthInPt.
+     * 
+     * @param  string       $value        String (Property value)
+     * @param  integer      $maxWidthInPt Maximum width in points
+     * @param  ODTUnits     $units        $ODTUnits object for unit conversion
+     * @return string
+     */
     protected static function adjustPercentageValueParts ($value, $maxWidthInPt, $units) {
         $values = preg_split ('/\s+/', $value);
         $value = '';
@@ -281,8 +312,9 @@ class ODTUtility
      *
      * @author LarsDW223
      *
-     * @param  array  $properties Array with property value pairs
-     * @param  ODTUnits $units Units object to use for conversion
+     * @param  array    $properties Array with property value pairs
+     * @param  ODTUnits $units      Units object to use for conversion
+     * @param  integer  $maxWidth   Units object to use for conversion
      */
     public static function adjustValuesForODT (&$properties, ODTUnits $units, $maxWidth=NULL) {
         $adjustToMaxWidth = array('margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom');
@@ -359,10 +391,10 @@ class ODTUtility
      *
      * @author LarsDW223
      *
-     * @param  string  $property The property name
-     * @param  string  $value    The value
-     * @param  integer $emValue  Factor for conversion from 'em' to 'pt'
-     * @return string  Converted value
+     * @param  string   $property   The property name
+     * @param  string   $value      The value
+     * @param  ODTUnits $units      Units object to use for conversion
+     * @return string   Converted value
      */
     public static function adjustValueForODT ($property, $value, ODTUnits $units) {
         $values = preg_split ('/\s+/', $value);
@@ -404,9 +436,11 @@ class ODTUtility
      * for the ODT format and changes URLs to local paths if required, using $baseURL).
      *
      * @author LarsDW223
-     * @param array $properties
-     * @param $style The CSS style e.g. 'color:red;'
-     * @param null $baseURL
+     * @param array       $properties
+     * @param string      $style      The CSS style e.g. 'color:red;'
+     * @param string|null $baseURL
+     * @param ODTUnits    $units      Units object to use for conversion
+     * @param integer     $maxWidth   MaximumWidth
      */
     public static function getCSSStylePropertiesForODT(&$properties, $style, $baseURL = NULL, ODTUnits $units, $maxWidth=NULL){
         // Create rule with selector '*' (doesn't matter) and declarations as set in $style
@@ -425,6 +459,19 @@ class ODTUtility
         }
     }
 
+    /**
+     * The function opens/puts a new element on the HTML stack in $params->htmlStack.
+     * The element name will be $element and it will be created with the attributes $attributes.
+     * Then CSS matching is performed and the CSS properties are returned in $dest.
+     * Finally the CSS properties are converted to ODT format if neccessary.
+     *
+     * @author LarsDW223
+     * @param ODTInternalParams $params     Commom params.
+     * @param array             $dest       Target array for properties storage
+     * @param string            $element    The element's name
+     * @param string            $attributes The element's attributes
+     * @param integer           $maxWidth   Maximum Width
+     */
     public static function openHTMLElement (ODTInternalParams $params, array &$dest, $element, $attributes, $maxWidth=NULL) {
         // Push/create our element to import on the stack
         $params->htmlStack->open($element, $attributes);
@@ -435,10 +482,33 @@ class ODTUtility
         ODTUtility::adjustValuesForODT($dest, $params->units, $maxWidth);
     }
 
+    /**
+     * The function closes element with name $element on the HTML stack in $params->htmlStack.
+     *
+     * @author LarsDW223
+     * @param ODTInternalParams $params     Commom params.
+     * @param string            $element    The element's name
+     */
     public static function closeHTMLElement (ODTInternalParams $params, $element) {
         $params->htmlStack->close($element);
     }
 
+    /**
+     * The function temporarily opens/puts a new element on the HTML stack in $params->htmlStack.
+     * Before leaving the function the element is removed from the stack.
+     * 
+     * The element name will be $element and it will be created with the attributes $attributes.
+     * After opening the element CSS matching is performed and the CSS properties are returned in $dest.
+     * Finally the CSS properties are converted to ODT format if neccessary.
+     *
+     * @author LarsDW223
+     * @param ODTInternalParams $params     Commom params.
+     * @param array             $dest       Target array for properties storage
+     * @param string            $element    The element's name
+     * @param string            $attributes The element's attributes
+     * @param integer           $maxWidth   Maximum Width
+     * @param boolean           $inherit    Enable/disable CSS inheritance
+     */
     public static function getHTMLElementProperties (ODTInternalParams $params, array &$dest, $element, $attributes, $maxWidth=NULL, $inherit=true) {
         // Push/create our element to import on the stack
         $params->htmlStack->open($element, $attributes);
@@ -452,6 +522,15 @@ class ODTUtility
         $params->htmlStack->removeCurrent();
     }
 
+    /**
+     * Small helper function for finding the next tag enclosed in <angle> brackets.
+     * Returns beginning and end of the tag as an array [0] = start, [1] = end.
+     * 
+     * @author LarsDW223
+     * @param string $content Code to search in.
+     * @param string $pos     Start position for searching.
+     * @return array
+     */
     public static function getNextTag (&$content, $pos) {
         $start = strpos ($content, '<', $pos);
         if ($start === false) {

@@ -14,6 +14,8 @@ if (!defined('DOKU_INC')) die();
 
 /**
  * Class css_document
+ * 
+ * @package helper\cssdocument
  */
 class helper_plugin_odt_cssdocument extends DokuWiki_Plugin {
     protected $internal = NULL;

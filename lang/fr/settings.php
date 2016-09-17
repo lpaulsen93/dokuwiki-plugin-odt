@@ -7,6 +7,8 @@
  * @author Schplurtz le Déboulonné <Schplurtz@laposte.net>
  * @author Schplurtz le Déboulonné <schplurtz@laposte.net>
  * @author Fabrice Dejaigher <fabrice@chtiland.com>
+ * 
+ * @package DokuWiki\lang\fr\settings
  */
 $lang['tpl_dir']               = 'Sous-répertoire dédié aux modèles dans le gestionnaire de médias';
 $lang['showexportbutton']      = 'Afficher le bouton d\'exportation ODT';

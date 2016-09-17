@@ -13,6 +13,8 @@ if (!defined('DOKU_INC')) die();
 
 /**
  * Class helper_plugin_odt_units
+ * 
+ * @package helper\units
  */
 class helper_plugin_odt_units extends DokuWiki_Plugin {
     protected $internal = NULL;

@@ -16,7 +16,9 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDefaultStyles.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
 
 /**
- * The Renderer
+ * The Page Renderer
+ * 
+ * @package DokuWiki\Renderer\Page
  */
 class renderer_plugin_odt_page extends Doku_Renderer {
     /** @var helper_plugin_odt_cssimport */

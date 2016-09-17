@@ -15,6 +15,8 @@ if(!defined('DOKU_INC')) die();
  * Class action_plugin_odt_export
  *
  * Collect pages and export these. GUI is available via bookcreator.
+ * 
+ * @package DokuWiki\Action\Export
  */
 class action_plugin_odt_export extends DokuWiki_Action_Plugin {
     protected $config = null;

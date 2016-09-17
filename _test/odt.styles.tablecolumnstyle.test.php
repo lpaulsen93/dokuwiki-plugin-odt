@@ -1,5 +1,13 @@
 <?php
+/**
+ * Tests for Table column style.
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
+ * @package    Tests\Styles\TableColumnStyle
+ */
 
+/** Include ODTStyle */
 require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyle.php';
 
 /**
@@ -9,6 +17,9 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTStyle.php';
  * @group plugins
  */
 class plugin_odt_tablecolumnstyle_test extends DokuWikiTest {
+    /**
+     * Setup.
+     */
     public function setUp() {
         $this->pluginsEnabled[] = 'odt';
         parent::setUp();

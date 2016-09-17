@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdoc>
+  <parser>
+    <target>documentation/phpDoc</target>
+    <encoding>utf8</encoding>
+    <markers>
+      <item>TODO</item>
+      <item>FIXME</item>
+    </markers>
+    <extensions>
+      <extension>php</extension>
+      <extension>css</extension>
+    </extensions>
+  </parser>
+  <transformations>
+    <template name="responsive-twig" />
+  </transformations>  <transformer>
+    <target>documentation/phpDoc</target>
+  </transformer>
+  <files>
+    <directory>.</directory>
+    <ignore>documentation/*</ignore>
+    <ignore>.git/*</ignore>
+    <ignore>_test/data/*</ignore>
+  </files>
+  <title>DokuWiki Plugin ODT</title>
+</phpdoc>

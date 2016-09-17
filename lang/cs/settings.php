@@ -5,6 +5,8 @@
  *
  * @author Jaroslav Lichtblau <jlichtblau@seznam.cz>
  * @author Ing. Jan Kaláb <jan+dokuwiki@kalabovi.org>
+ * 
+ * @package DokuWiki\lang\cs\settings
  */
 $lang['tpl_dir']               = 'Podadresář se šablonami ve správci médií';
 $lang['showexportbutton']      = 'Zobrazovat tlačítko pro export do ODT ';

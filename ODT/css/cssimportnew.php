@@ -1,6 +1,7 @@
 <?php
 /**
- * Class for importing and using CSS
+ * Class for importing and using CSS (new version).
+ * Partly uses code from the old version, e.g. css_declaration.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * @author     LarsDW223
@@ -9,13 +10,24 @@
 /**
  * Class css_attribute_selector.
  * Simple storage class to save exactly one CSS attribute selector.
+ * 
+ * @package CSS\CSSAttributeSelector
  */
 class css_attribute_selector {
+    /** var The namespace to which this attribute selector belongs */
     protected $namespaze = NULL;
+    /** var The attribute name */
     protected $attribute = NULL;
+    /** var The attribute selector operator */
     protected $operator = NULL;
+    /** var The attribute selector value */
     protected $value = NULL;
 
+    /**
+     * Construct the selector from $attribute_string.
+     * 
+     * @param    string $attribute_string String containing the selector
+     */
     public function __construct($attribute_string) {
         $attribute_string = trim ($attribute_string, '[] ');
         $found = strpos ($attribute_string, '|');
@@ -46,6 +58,13 @@ class css_attribute_selector {
         }
     }
     
+    /**
+     * The function checks if this atrribute selector matches the
+     * attributes given in $attributes as key - value pairs.
+     * 
+     * @param    string $attributes String containing the selector
+     * @return   boolean
+     */
     public function matches (array $attributes=NULL) {
         if ($this->operator == NULL) {
             // Attribute should be present
@@ -111,6 +130,12 @@ class css_attribute_selector {
         return false;
     }
 
+    /**
+     * The function returns a string representation of this attribute
+     * selector (only for debugging purpose).
+     * 
+     * @return   string
+     */
     public function toString () {
         $returnstring = '[';
         if (!empty($this->namespaze)) {
@@ -124,16 +149,32 @@ class css_attribute_selector {
 
 /**
  * Class css_simple_selector
+ * Simple storage class to save a simple CSS selector.
+ * 
+ * @package CSS\CSSSimpleSelector
  */
 class css_simple_selector {
+    /** var Element name/Type of this simple selector */
     protected $type = NULL;
+    /** var Pseudo element which this selector matches */
     protected $pseudo_element = NULL;
+    /** var Id which this selector matches */
     protected $id = NULL;
+    /** var Classes which this selector matches */
     protected $classes = array();
+    /** var Pseudo classes which this selector matches */
     protected $pseudo_classes = array();
+    /** var Attributes which this selector matches */
     protected $attributes = array();
+    /** var Specificity of this selector */
     protected $specificity = 0;
     
+    /**
+     * Internal function that checks if $sign is a sign that
+     * separates/identifies the different parts of an simple selector.
+     * 
+     * @param character $sign
+     */
     protected function isSpecialSign ($sign) {
         switch ($sign) {
             case '.':
@@ -145,6 +186,11 @@ class css_simple_selector {
         return false;
     }
     
+    /**
+     * Construct the simple selector from $simple_selector_string.
+     * 
+     * @param    string $simple_selector_string String containing the selector
+     */
     public function __construct($simple_selector_string) {
         $pos = 0;
         $simple_selector_string = trim ($simple_selector_string);
@@ -250,6 +296,14 @@ class css_simple_selector {
         $this->specificity = $a * 100 + $b *10 + $c;
     }
 
+    /**
+     * The functions checks wheter this simple selector matches the given
+     * $element or not. $element must support the interface iElementCSSMatchable
+     * to enable this class to do the CSS selector matching.
+     * 
+     * @param    iElementCSSMatchable $element Element to check
+     * @return   boolean
+     */
     public function matches_entry (iElementCSSMatchable $element) {
         $element_attrs = $element->iECSSM_getAttributes();
         
@@ -305,6 +359,12 @@ class css_simple_selector {
         return true;
     }
 
+    /**
+     * The function returns a string representation of this simple
+     * selector (only for debugging purpose).
+     * 
+     * @return   string
+     */
     public function toString () {
         $returnstring = '';
         if (!empty($this->type)) {
@@ -322,23 +382,39 @@ class css_simple_selector {
         return $returnstring;
     }
 
+    /**
+     * Return the specificity of this simple selector.
+     * 
+     * @return   integer
+     */
     public function getSpecificity () {
         return $this->specificity;
     }    
 }
 
 /**
- * Class css_selector
+ * Class css_selector.
+ * Storage class to save a complete CSS selector.
+ * The class can also store multiple selectors, e.g. like 'h1 , h2, h3 {...}'
+ * 
+ * @package CSS\CSSSelector
  */
 class css_selector {
+    /** var Known combinators */
     static protected $combinators = ' ,>+~';
+    /** var Brackets */
     static protected $brackets = '[]';
+    /** var String from which this selector was created */
     protected $selector_string = NULL;
+    /** var Array with parsed selector(s) */
     protected $selectors_parsed = array();
+    /** var Specificity of this selector */
     protected $specificity = array();
 
     /**
-     * @param $selector_string
+     * Construct the selector from $selector_string.
+     * 
+     * @param    string $selector_string String containing the selector
      */
     public function __construct($selector_string) {
         $selector_string = str_replace("\n", '', $selector_string);
@@ -409,6 +485,15 @@ class css_selector {
         }
     }
 
+    /**
+     * The function checks if the combined simple selectors in $selector
+     * match $element or not. $element must support the interface iElementCSSMatchable
+     * to enable this class to do the CSS selector matching.
+     * 
+     * @param    array                $selector Internal selector array
+     * @param    iElementCSSMatchable $element  Element to check
+     * @return   boolean
+     */
     protected function selector_matches (array $selector, iElementCSSMatchable $element) {
         $combinator = '';
         $found = 0;
@@ -536,6 +621,15 @@ class css_selector {
         return true;
     }
     
+    /**
+     * The functions checks wheter any selector stored in this object
+     * match the given $element or not. $element must support the interface
+     * iElementCSSMatchable to enable this class to do the CSS selector matching.
+     * 
+     * @param    iElementCSSMatchable $element     Element to check
+     * @param    integer              $specificity Specificity of matching selector
+     * @return   boolean
+     */
     public function matches (iElementCSSMatchable $element, &$specificity) {
         $size = count ($this->selectors_parsed);
         $match = false;
@@ -551,6 +645,12 @@ class css_selector {
         return $match;
     }
 
+    /**
+     * The function returns a string representation of this
+     * selector (only for debugging purpose).
+     * 
+     * @return   string
+     */
     public function toString () {
         $returnstring = '';
         $max = count($this->selectors_parsed);
@@ -582,18 +682,24 @@ class css_selector {
 }
 
 /**
- * Class css_rule_new
+ * Class css_rule_new.
+ * 
+ * @package CSS\CSSRuleNew
  */
 class css_rule_new {
+    /** @var Media selector to which this rule belongs */
     protected $media = NULL;
+    /** @var Selector string from which this rule was created */
     protected $selector = NULL;
-    /** @var css_declaration[]  */
+    /** @var Array of css_declaration objects */
     protected $declarations = array ();
 
     /**
-     * @param $selector
-     * @param $decls
-     * @param null $media
+     * Construct rule from strings $selector and $decls.
+     * 
+     * @param    string      $selector String containing the selector
+     * @param    string      $decls    String containing the declarations
+     * @param    string|null $media    String containing the media selector
      */
     public function __construct($selector, $decls, $media = NULL) {
 
@@ -646,7 +752,10 @@ class css_rule_new {
     }
 
     /**
-     * @return string
+     * The function returns a string representation of this
+     * rule (only for debugging purpose).
+     * 
+     * @return   string
      */
     public function toString () {
         $returnString = '';
@@ -661,10 +770,14 @@ class css_rule_new {
     }
 
     /**
-     * @param $element
-     * @param $classString
-     * @param null $media
-     * @return bool|int
+     * The functions checks wheter this rule matches the given $element
+     * or not. $element must support the interface iElementCSSMatchable
+     * to enable this class to do the CSS selector matching.
+     * 
+     * @param    iElementCSSMatchable $element     Element to check
+     * @param    integer              $specificity Specificity of matching selector
+     * @param    string               $media       Media selector to match
+     * @return   boolean
      */
     public function matches (iElementCSSMatchable $element, &$specificity, $media = NULL) {
 
@@ -682,8 +795,11 @@ class css_rule_new {
     }
 
     /**
-     * @param $name
-     * @return null
+     * The function returns the value of property $name or null if a
+     * property with that name does not exist in this rule.
+     * 
+     * @param    string $name    The property name
+     * @return string|null
      */
     public function getProperty ($name) {
         foreach ($this->declarations as $declaration) {
@@ -695,7 +811,10 @@ class css_rule_new {
     }
 
     /**
-     * @param $values
+     * The function stores all properties of this rule in the array
+     * $values as key - value pairs, e.g. $values ['color'] = 'red';
+     * 
+     * @param    array $values    Array for property storage
      * @return null
      */
     public function getProperties (&$values) {
@@ -708,7 +827,11 @@ class css_rule_new {
     }
 
     /**
-     * @param $callback
+     * The function calls $callback for each property stored in this
+     * rule containing a length value. The return value of $callback
+     * is saved as the new property value.
+     * 
+     * @param    callable $callback
      */
     public function adjustLengthValues ($callback) {
         foreach ($this->declarations as $declaration) {
@@ -717,7 +840,11 @@ class css_rule_new {
     }
 
     /**
-     * @param $callback
+     * The function calls $callback for each property stored in this
+     * rule containing a URL reference. The return value of $callback
+     * is saved as the new property value.
+     * 
+     * @param    callable $callback
      */
     public function replaceURLPrefixes ($callback) {
         foreach ($this->declarations as $declaration) {
@@ -728,17 +855,23 @@ class css_rule_new {
 
 /**
  * Class cssimportnew
+ * 
+ * @package CSS\CSSImportNew
  */
 class cssimportnew {
-    protected $replacements = array();
+    /** var Imported raw CSS code */
     protected $raw;
-    /** @var css_rule_new[]  */
+    /** @var Array of css_rule_new  */
     protected $rules = array ();
+    /** @var Actually set media selector */    
     protected $media = NULL;
 
     /**
-     * @param $contents
-     * @return bool
+     * Import CSS code from string $contents.
+     * Returns true on success or false if any error occured during CSS parsing.
+     * 
+     * @param    string      $contents
+     * @return boolean
      */
     function importFromString($contents) {
         $this->deleteComments ($contents);
@@ -748,6 +881,7 @@ class cssimportnew {
     /**
      * Delete comments in $contents. All comments are overwritten with spaces.
      * The '&' is required. DO NOT DELETE!!!
+     * 
      * @param $contents
      */
     protected function deleteComments (&$contents) {
@@ -784,17 +918,31 @@ class cssimportnew {
         }
     }
 
+    /**
+     * Set the media selector to use for CSS matching to $media.
+     * 
+     * @param    string      $media
+     */
     public function setMedia ($media) {
         $this->media = $media;
     }
 
+    /**
+     * Return the actually set media selector.
+     * 
+     * @return    string
+     */
     public function getMedia () {
         return $this->media;
     }
 
     /**
-     * @param $contents
-     * @param null $media
+     * Internal function that imports CSS code from string $contents.
+     * (The function is calling itself recursively)
+     * 
+     * @param    string      $contents
+     * @param    string|null $media     Actually valid media selector
+     * @param    integer     $processed Position to which $contents were parsed
      * @return bool
      */
     protected function importFromStringInternal($contents, $media = NULL, &$processed = NULL) {
@@ -857,8 +1005,11 @@ class cssimportnew {
     }
 
     /**
-     * @param $filename
-     * @return bool|void
+     * Import CSS code from file filename.
+     * Returns true on success or false if any error occured during CSS parsing.
+     * 
+     * @param    string      $filename
+     * @return boolean
      */
     function importFromFile($filename) {
         // Try to read in the file content
@@ -881,18 +1032,22 @@ class cssimportnew {
     }
 
     /**
-     * @return mixed
+     * Return the original CSS code that was imported.
+     * 
+     * @return string
      */
     public function getRaw () {
         return $this->raw;
     }
 
     /**
-     * @param $element
-     * @param $classString
-     * @param $name
-     * @param null $media
-     * @return null
+     * Get the value of CSS property for element $element.
+     * If $element is not matched by any rule or the rule(s) matching
+     * do not contain the property $name then null is returned.
+     * 
+     * @param    string               $name    Name of queried property
+     * @param    iElementCSSMatchable $element Element to match
+     * @return string|null
      */
     public function getPropertyForElement ($name, iElementCSSMatchable $element) {
         if ( empty ($name) ) {
@@ -919,10 +1074,16 @@ class cssimportnew {
     }
 
     /**
-     * @param $dest
-     * @param $element
-     * @param $classString
-     * @param null $media
+     * Get all properties for element $element and store them in $dest.
+     * Properties are stored as key -value pairs, e.g. $dest ['color'] = 'red';
+     * If $element is not matched by any rule then array $dest will be
+     * empty (if it was empty before the call!).
+     * 
+     * @param    array                $dest    Property storage
+     * @param    iElementCSSMatchable $element Element to match
+     * @param    ODTUnits             $units   ODTUnits object for conversion
+     * @param    boolean              $inherit Enable/disable inheritance
+     * @return string|null
      */
     public function getPropertiesForElement (&$dest, iElementCSSMatchable $element, ODTUnits $units, $inherit=true) {
         if ($element == NULL) {
@@ -965,6 +1126,15 @@ class cssimportnew {
         $dest = $temp;
     }
 
+    /**
+     * Get the value of CSS property for element $parent. If $parent has
+     * no match for the property with name $key then return the value of
+     * the property for $parent's parents.
+     * 
+     * @param    string               $key    Name of queried property
+     * @param    iElementCSSMatchable $parent Element to match
+     * @return string|null
+     */
     protected function getParentsValue($key, iElementCSSMatchable $parent) {
         $properties = $parent->getProperties ();
         if ($properties [$key] != NULL) {
@@ -979,6 +1149,14 @@ class cssimportnew {
         return NULL;
     }
 
+    /**
+     * The function calculates the absolute values for the relative
+     * property values of element $element and store them in $properties.
+     * 
+     * @param    array                $properties Property storage
+     * @param    iElementCSSMatchable $element    Element to match
+     * @param    ODTUnits             $units   ODTUnits object for conversion
+     */
     protected function calculate (array &$properties, iElementCSSMatchable $element, ODTUnits $units) {
         if ($properties ['calculated'] == '1') {
             // Already done
@@ -1066,6 +1244,13 @@ class cssimportnew {
         $element->setProperties($properties);
     }
 
+    /**
+     * The function inherits all properties of the $parents into array
+     * $dest. $parents is an array of elements (iElementCSSMatchable).
+     * 
+     * @param    array $dest    Property storage
+     * @param    array $parents Parents to inherit from
+     */
     protected function inherit (array &$dest, array $parents) {
         // Inherit properties of all parents
         // (MUST be done backwards!)
@@ -1155,6 +1340,14 @@ class cssimportnew {
         }
     }
 
+    /**
+     * Main function performing calculation and inheritance for element
+     * $element. Properties are stored in $dest.
+     * 
+     * @param    array $dest    Property storage
+     * @param    array $element Element to match
+     * @param    ODTUnits             $units   ODTUnits object for conversion
+     */
     protected function calculateAndInherit (array &$dest, iElementCSSMatchable $element, ODTUnits $units) {
         $parents = array();
         $parent = $element->iECSSM_getParent();
@@ -1187,6 +1380,9 @@ class cssimportnew {
     }
 
     /**
+     * Return a string representation of all imported rules.
+     * (String can be large)
+     * 
      * @return string
      */
     public function rulesToString () {
@@ -1198,8 +1394,11 @@ class cssimportnew {
     }
 
     /**
-     * @param $URL
-     * @param $replacement
+     * The function strips the 'url(...)' part from an URL reference
+     * and puts a $replacement path in front of the rest.
+     * 
+     * @param    string $URL         Original URL reference
+     * @param    string $replacement Replacement path to set
      * @return string
      */
     public static function replaceURLPrefix ($URL, $replacement) {
@@ -1213,7 +1412,11 @@ class cssimportnew {
     }
 
     /**
-     * @param $callback
+     * The function calls $callback for each imported property
+     * containing a length value. The return value of $callback
+     * is saved as the new property value.
+     * 
+     * @param    callable $callback
      */
     public function adjustLengthValues ($callback) {
         foreach ($this->rules as $rule) {
@@ -1222,7 +1425,11 @@ class cssimportnew {
     }
 
     /**
-     * @param $callback
+     * The function calls $callback for each property imported
+     * containing a URL reference. The return value of $callback
+     * is saved as the new property value.
+     * 
+     * @param    callable $callback
      */
     public function replaceURLPrefixes ($callback) {
         foreach ($this->rules as $rule) {

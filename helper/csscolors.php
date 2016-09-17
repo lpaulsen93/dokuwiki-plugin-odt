@@ -16,10 +16,14 @@ require_once DOKU_PLUGIN . 'odt/ODT/css/csscolors.php';
 
 /**
  * Class helper_plugin_odt_csscolors
+ * 
+ * @package helper\csscolors
  */
 class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
     /**
-     * @return array
+     * Return list of implemented methods.
+     * 
+     * @return    array
      */
     function getMethods() {
         $result = array();
@@ -39,24 +43,30 @@ class helper_plugin_odt_csscolors extends DokuWiki_Plugin {
     }
 
     /**
-     * @param string|null $name
-     * @return string
+     * Return the color value for the color with $name.
+     * 
+     * @param     string|null $name
+     * @return    string
      */
     public static function getColorValue ($name=NULL) {
         return csscolors::getColorValue ($name);
     }
 
     /**
-     * @param null $value
-     * @return string
+     * Return the color name for the given color $value.
+     * 
+     * @param     null   $value
+     * @return    string
      */
     public static function getValueName ($value=NULL) {
         return csscolors::getValueName ($value);
     }
 
     /**
-     * @param string $name
-     * @return boolean
+     * Is the given $name a known CSS color name?
+     * 
+     * @param     string  $name
+     * @return    boolean
      */
     public static function isKnownColorName ($name=NULL) {
         return csscolors::isKnownColorName ($name);

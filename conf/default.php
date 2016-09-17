@@ -1,6 +1,10 @@
 <?php
 /**
+ * Default config settings of the ODT plugin.
+ * 
  * @author Aurelien Bompard <aurelien@bompard.org>
+ * @author LarsDW223
+ * @package DokuWiki\Conf\Default
  */
 
 // Directory of the templates in the media manager

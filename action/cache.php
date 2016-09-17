@@ -11,6 +11,8 @@ if(!defined('DOKU_INC')) die();
 
 /**
  * Add the template as a page dependency for the caching system
+ * 
+ * @package DokuWiki\Action\Cache
  */
 class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
     protected $config = null;

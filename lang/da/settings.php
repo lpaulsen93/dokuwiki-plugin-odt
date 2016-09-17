@@ -1,11 +1,13 @@
 <?php
-
 /**
+ * Danish language file for config settings.
+ * 
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- *
- * @author Søren Birk <soer9648@eucl.dk>
- * @author Jacob Palm <mail@jacobpalm.dk>
+ * @author     Søren Birk <soer9648@eucl.dk>
+ * @author     Jacob Palm <mail@jacobpalm.dk>
+ * @package    DokuWiki\lang\da\settings
  */
+/** Translations */
 $lang['tpl_dir']               = 'Undermappe for skabelonerne i mediemanageren';
 $lang['showexportbutton']      = 'Vis ODT Eksportknap';
 $lang['css_template']          = 'Hvilken skabelon skal benyttes til formatering af ODT\'erne?';

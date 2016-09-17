@@ -7,6 +7,8 @@
  * @author Arthur Buijs <arthur@artietee.nl>
  * @author Peter van Diest <peter.van.diest@xs4all.nl>
  * @author Marcel Bachus <marcel.bachus@ziggo.nl>
+ * 
+ * @package DokuWiki\lang\nl\settings
  */
 $lang['tpl_dir']               = 'Subdirectory voor sjablonen in de mediabeheerder';
 $lang['showexportbutton']      = 'Toon de ODT exportknop';

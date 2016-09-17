@@ -5,6 +5,8 @@
  * 
  * @author Matthias Schulte <dokuwiki@lupo49.de>
  * @author Florian Lamml <info@florian-lamml.de>
+ * 
+ * @package DokuWiki\lang\de\settings
  */
 $lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Medienmanager';
 $lang['odt_template']          = 'Template für Style Importierung (ODT oder CSS Datei)';

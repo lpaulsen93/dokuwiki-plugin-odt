@@ -1,5 +1,13 @@
 <?php
+/**
+ * Formatting tests.
+ *
+ * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ * @author     LarsDW223
+ * @package    Tests\Renderer\Formatting
+ */
 
+/** Include ODTTestUtils */
 require_once 'ODTTestUtils.php';
 
 /**
@@ -11,11 +19,19 @@ require_once 'ODTTestUtils.php';
  * @group plugins
  */
 class plugin_odt_renderer_format_test extends DokuWikiTest {
+    /**
+     * Setup.
+     */
     public function setUp() {
         $this->pluginsEnabled[] = 'odt';
         parent::setUp();
     }
 
+    /**
+     * Setup before class.
+     * 
+     * Copy our required test files.
+     */
     public static function setUpBeforeClass(){
         parent::setUpBeforeClass();
 

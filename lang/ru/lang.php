@@ -4,6 +4,8 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
  * @author Anotheroneuser <w20151222@ya.ru>
+ * 
+ * @package DokuWiki\lang\ru\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr (нигде не смог найти перевод этой аббревиатуры. Попадалась ерунда какая-то. Извините)';

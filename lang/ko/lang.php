@@ -6,6 +6,8 @@
  * @author wkdl <chobkwonzai@gmail.com>
  * @author HyunWoo Jo <showaid@gmail.com>
  * @author Myeongjin <aranet100@gmail.com>
+ * 
+ * @package DokuWiki\lang\ko\lang
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';

@@ -18,6 +18,8 @@ require_once DOKU_INC.'lib/plugins/odt/ODT/styles/ODTTableCellStyle.php';
 
 /**
  * Class helper_plugin_odt_stylefactory
+ * 
+ * @package helper\stylefactory
  */
 class helper_plugin_odt_stylefactory extends DokuWiki_Plugin {
     protected static $style_base_name = 'PluginODTAutoStyle_';

@@ -418,6 +418,11 @@ class ODTUtility
                 $part = $units->toPoints($part, 'y');
             }
 
+            if ( $length > 2 && ($part [$length-2] != 'p' || $part [$length-1] != 't') &&
+                 strpos($property, 'border')!==false ) {
+                $part = $units->toPoints($part, 'y');
+            }
+
             // Some values can have '"' in it. These need to be converted to '&apos;'
             // e.g. 'font-family' tp specify that '"Courier New"' is one font name not two
             $part = str_replace('"', '&apos;', $part);

@@ -152,6 +152,9 @@
             <style:text-properties fo:font-size="16pt" fo:font-weight="bold" style:font-size-asian="16pt" style:font-weight-asian="bold" style:font-size-complex="16pt" style:font-weight-complex="bold"/>
         </style:style>
         <style:style style:name="List_20_Symbols" style:display-name="List Symbols" style:family="text"/>
+        <style:style style:name="Frame" style:family="graphic">
+            <style:graphic-properties text:anchor-type="paragraph" svg:x="0cm" svg:y="0cm" fo:margin-left="0.201cm" fo:margin-right="0.201cm" fo:margin-top="0.201cm" fo:margin-bottom="0.201cm" style:wrap="parallel" style:number-wrapped-paragraphs="no-limit" style:wrap-contour="false" style:vertical-pos="top" style:vertical-rel="paragraph-content" style:horizontal-pos="center" style:horizontal-rel="paragraph-content" fo:padding="0.15cm" fo:border="0.06pt solid #000000"/>
+        </style:style>
         <text:outline-style style:name="Outline">
             <text:outline-level-style text:level="1" style:num-format="">
                 <style:list-level-properties text:min-label-distance="0.381cm"/>

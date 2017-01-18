@@ -17,6 +17,41 @@ require_once DOKU_PLUGIN . 'odt/ODT/ODTDocument.php';
  */
 class ODTFrame
 {
+    static $frameCount = 0;
+    static $fields = array('background-color'           => 'fo:background-color',
+                           'fill-color'                 => 'draw:fill-color',
+                           'fill'                       => 'draw:fill',
+                           'stroke-color'               => 'svg:stroke-color',
+                           'stroke'                     => 'draw:stroke',
+                           'stroke-width'               => 'svg:stroke-width',
+                           'border'                     => 'fo:border',
+                           'border-left'                => 'fo:border-left',
+                           'border-right'               => 'fo:border-right',
+                           'border-top'                 => 'fo:border-top',
+                           'border-bottom'              => 'fo:border-bottom',
+                           'padding-left'               => 'fo:padding-left',
+                           'padding-right'              => 'fo:padding-right',
+                           'padding-top'                => 'fo:padding-top',
+                           'padding-bottom'             => 'fo:padding-bottom',
+                           'margin-left'                => 'fo:margin-left',
+                           'margin-right'               => 'fo:margin-right',
+                           'margin-top'                 => 'fo:margin-top',
+                           'margin-bottom'              => 'fo:margin-bottom',
+                           'vertical-align'             => 'draw:textarea-vertical-align',
+                           'horizontal-align'           => 'draw:textarea-horizontal-align',
+                           'min-height'                 => 'fo:min-height',
+                           'background-transparency'    => 'style:background-transparency',
+                           'textarea-horizontal-align'  => 'draw:textarea-horizontal-align',
+                           'run-through'                => 'style:run-through',
+                           'vertical-pos'               => 'style:vertical-pos',
+                           'vertical-rel'               => 'style:vertical-rel',
+                           'horizontal-pos'             => 'style:horizontal-pos',
+                           'horizontal-rel'             => 'style:horizontal-rel',
+                           'wrap'                       => 'style:wrap',
+                           'number-wrapped-paragraphs'  => 'style:number-wrapped-paragraphs',
+                           'wrap-influence-on-position' => 'draw:wrap-influence-on-position'
+    );
+    
     /**
      * This function opens a textbox in a frame using CSS.
      *
@@ -61,251 +96,20 @@ class ODTFrame
      * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     public static function openTextBoxUseProperties (ODTInternalParams $params, $properties, $element=NULL, $attributes=NULL) {
-        $frame = $params->document->state->getCurrentFrame();
-        if ($frame != NULL) {
-            // Do not open a nested frame as this will make the content ofthe nested frame disappear.
-            //return;
-        }
-        if ($element == NULL) {
-            $element = 'div';
-        }
-        $elementObj = $params->elementObj;
-
-        $params->document->div_z_index += 5;
-
-        $valign = $properties ['vertical-align'];
-        $top = $properties ['top'];
-        $left = $properties ['left'];
-        $position = $properties ['position'];
-        $bg_color = $properties ['background-color'];
-        $color = $properties ['color'];
-        $padding_left = $properties ['padding-left'];
-        $padding_right = $properties ['padding-right'];
-        $padding_top = $properties ['padding-top'];
-        $padding_bottom = $properties ['padding-bottom'];
-        $margin_left = $properties ['margin-left'];
-        $margin_right = $properties ['margin-right'];
-        $margin_top = $properties ['margin-top'];
-        $margin_bottom = $properties ['margin-bottom'];
-        $display = $properties ['display'];
-        $border = $properties ['border'];
-        $border_color = $properties ['border-color'];
-        $border_width = $properties ['border-width'];
-        $radius = $properties ['border-radius'];
-        $picture = $properties ['background-image'];
-        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
-
-        $min_height = $properties ['min-height'];
-        $width = $properties ['width'];
-        $horiz_pos = $properties ['float'];
-
-        $pic_link = '';
-        $pic_width = '';
-        $pic_height = '';
-        if ( !empty ($picture) ) {
-            // If a picture/background-image is set in the CSS, than we insert it manually here.
-            // This is a workaround because ODT does not support the background-image attribute in a span.
-            $pic_link = $params->document->addFileAsPicture($picture);
-            list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture, NULL, NULL, true, $params->units);
-        }
-
-        if ( empty($horiz_pos) ) {
-            $horiz_pos = 'center';
-        }
-        if ( empty ($width) ) {
-            $width = '100%';
-        }
-        if ( !empty($pic_positions [0]) ) {
-            $pic_positions [0] = $params->document->toPoints($pic_positions [0], 'x');
-        }
-        if ( empty($min_height) ) {
-            $min_height = '1pt';
-        }
-        if ( empty($top) ) {
-            $top = '0cm';
-        }
-        if ( empty($left) ) {
-            $left = '0cm';
-        } else {
-            $horiz_pos = 'from-left';
-        }
-
-        // Different handling for relative and absolute size...
-        if ( $width [strlen($width)-1] == '%' ) {
-            // Convert percentage values to absolute size, respecting page margins
-            $width = trim($width, '%');
-            $width_abs = $params->document->getAbsWidthMindMargins($width).'cm';
-        } else {
-            // Absolute values may include not supported units.
-            // Adjust.
-            $width_abs = $params->document->toPoints($width, 'x');
-        }
-
-
-        // Add our styles.
-        $style_name = ODTStyle::getNewStylename('Frame');
-
-        switch ($position) {
-            case 'absolute':
-                $anchor_type = 'page';
-                break;
-            case 'relative':
-                $anchor_type = 'paragraph';
-                break;
-            case 'static':
-            default:
-                $anchor_type = 'paragraph';
-                $top = '0cm';
-                $left = '0cm';
-                break;
-        }
-        // FIXME: Later try to get nested frames working - probably with anchor = as-char
-        //$frame = $this->document->state->getCurrentFrame();
-        //if ($frame != NULL) {
-        //    $anchor_type = 'as-char';
-        //}
-        switch ($anchor_type) {
-            case 'page':
-                $style =
-                '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-                     <style:graphic-properties style:run-through="foreground" style:wrap="run-through"
-                      style:number-wrapped-paragraphs="no-limit" style:vertical-pos="from-top" style:vertical-rel="page"
-                      style:horizontal-pos="from-left" style:horizontal-rel="page"
-                      draw:wrap-influence-on-position="once-concurrent" style:flow-with-text="false" ';
-                break;
-            default:
-                $style =
-                '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-                     <style:graphic-properties
-                      draw:textarea-horizontal-align="left"
-                    style:horizontal-pos="'.$horiz_pos.'" style:background-transparency="100%" style:wrap="none" ';
-                break;
-        }
-
-        if ( !empty($valign) ) {
-            $style .= 'draw:textarea-vertical-align="'.$valign.'" ';
-        }
-        if ( !empty($bg_color) ) {
-            $style .= 'fo:background-color="'.$bg_color.'" ';
-            $style .= 'draw:fill="solid" draw:fill-color="'.$bg_color.'" ';
-        } else {
-            $style .= 'draw:fill="none" ';
-        }
-        if ( !empty($border_color) ) {
-            $style .= 'svg:stroke-color="'.$border_color.'" ';
-        } else {
-            $style .= 'draw:stroke="none" ';
-        }
-        if ( !empty($border_width) ) {
-            $style .= 'svg:stroke-width="'.$border_width.'" ';
-        }
-        if ( !empty($padding_left) ) {
-            $style .= 'fo:padding-left="'.$padding_left.'" ';
-        }
-        if ( !empty($padding_right) ) {
-            $style .= 'fo:padding-right="'.$padding_right.'" ';
-        }
-        if ( !empty($padding_top) ) {
-            $style .= 'fo:padding-top="'.$padding_top.'" ';
-        }
-        if ( !empty($padding_bottom) ) {
-            $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
-        }
-        if ( !empty($margin_left) ) {
-            $style .= 'fo:margin-left="'.$margin_left.'" ';
-        }
-        if ( !empty($margin_right) ) {
-            $style .= 'fo:margin-right="'.$margin_right.'" ';
-        }
-        if ( !empty($margin_top) ) {
-            $style .= 'fo:margin-top="'.$margin_top.'" ';
-        }
-        if ( !empty($margin_bottom) ) {
-            $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
-        }
-        if ( !empty ($fo_border) ) {
-            $style .= 'fo:border="'.$fo_border.'" ';
-        }
-        $style .= 'fo:min-height="'.$min_height.'" ';
-        $style .= '>';
-
-        // FIXME: Delete the part below 'if ( $picture != NULL ) {...}'
-        // and use this background-image definition. For some reason the background-image is not displayed.
-        // Help is welcome.
-        /*$style .= '<style:background-image ';
-        $style .= 'xlink:href="'.$pic_link.'" xlink:type="simple" xlink:actuate="onLoad"
-                   style:position="center center" style:repeat="no-repeat" draw:opacity="100%"/>';*/
-        $style .= '</style:graphic-properties>';
-        $style .= '</style:style>';
-        $style .= '<style:style style:name="'.$style_name.'_image_frame" style:family="graphic">
-             <style:graphic-properties
-                 draw:stroke="none"
-                 draw:fill="none"
-                 draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
-                 style:wrap="none"/>
-         </style:style>';
-
-        // Add style to our document
-        // (as unknown style because style-family graphic is not supported)
-        $style_obj = ODTUnknownStyle::importODTStyle($style);
-        $params->document->addAutomaticStyle($style_obj);
-
-        // Group the frame so that they are stacked one on each other.
-        $params->document->paragraphClose();
-        $params->document->paragraphOpen();
-        $params->document->linebreak();
-        if ( $display == NULL ) {
-            $params->content .= '<draw:g draw:z-index="'.($params->document->div_z_index + 0).'">';
-        } else {
-            $params->content .= '<draw:g draw:display="' . $display . '">';
-        }
-
-        // Draw a frame with the image in it, if required.
-        // FIXME: delete this part if 'background-image' in graphic style is working.
-        if ( $picture != NULL )
-        {
-            $params->content .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
-                                     svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
-                                     svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                     draw:z-index="'.($params->document->div_z_index + 1).'">
-                                 <draw:image xlink:href="'.$pic_link.'"
-                                     xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-                                 </draw:frame>';
-        }
-
-        // Draw a frame with a text box in it. the text box will be left opened
-        // to grow with the content (requires fo:min-height in $style_name).
-
-        if ($elementObj == NULL) {
-            $throwAway = array();
-            ODTUtility::openHTMLElement ($params, $throwAway, $element, $attributes);
-        }
-
-        // Create frame
-        $frame = new ODTElementFrame($style_name.'_text_frame');
-        $frame_attrs .= 'draw:name="Bild1"
-                         svg:x="'.$left.'" svg:y="'.$top.'"
-                         svg:width="'.$width_abs.'" svg:height="'.$min_height.'"
-                         draw:z-index="'.($params->document->div_z_index + 0).'">';
-        $frame->setAttributes($frame_attrs);
-        $params->document->state->enter($frame);
-        $frame->setHTMLElement ($element);
-
         // Encode frame
-        $params->content .= $frame->getOpeningTag();
+        self::openFrameUseProperties ($params, $properties, $element, $attributes);
         
         // Create text box
         $box = new ODTElementTextBox();
         $box_attrs = '';
         // If required use round corners.
-        if ( !empty($radius) )
-            $box_attrs .= 'draw:corner-radius="'.$radius.'"';
+        if ( !empty($properties ['border-radius']) )
+            $box_attrs .= 'draw:corner-radius="'.$properties ['border-radius'].'"';
         $box->setAttributes($box_attrs);
         $params->document->state->enter($box);
 
         // Encode box
-        $params->content .= $box->getOpeningTag();
+        $params->content .= $box->getOpeningTag($params);
     }
 
     /**
@@ -319,14 +123,7 @@ class ODTFrame
         // Close text box
         $params->document->closeCurrentElement();
         // Close frame
-        $element = $params->document->state->getHTMLElement();
-        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
-        $params->document->closeCurrentElement();
-
-        $params->content .= '</draw:g>';
-        $params->document->paragraphClose();
-
-        $params->document->div_z_index -= 5;
+        self::closeFrame($params);
     }
 
     /**
@@ -365,13 +162,14 @@ class ODTFrame
 
         // Create frame
         $frame = new ODTElementFrame($style_name);
-        $frame_attrs = 'draw:name="Frame1" text:anchor-type="paragraph" svg:width="'.$width_abs.'cm" draw:z-index="0">';
+        self::$frameCount++;
+        $frame_attrs = 'draw:name="Frame'.self::$frameCount.'" text:anchor-type="paragraph" svg:width="'.$width_abs.'cm" draw:z-index="0">';
         $frame->setAttributes($frame_attrs);
         $params->document->state->enter($frame);
         $frame->setHTMLElement ($element);
 
         // Encode frame
-        $params->content .= $frame->getOpeningTag();
+        $params->content .= $frame->getOpeningTag($params);
         
         // Create text box
         $box = new ODTElementTextBox();
@@ -380,7 +178,7 @@ class ODTFrame
         $params->document->state->enter($box);
 
         // Encode box
-        $params->content .= $box->getOpeningTag();
+        $params->content .= $box->getOpeningTag($params);
     }
 
     /**
@@ -428,33 +226,17 @@ class ODTFrame
         }
         $elementObj = $params->elementObj;
 
-        $params->document->div_z_index += 5;
+        // If we are not in a paragraph then open one.
+        $inParagraph = $params->document->state->getInParagraph();
+        if (!$inParagraph) {
+            $params->document->paragraphOpen();
+        }
 
-        $valign = $properties ['vertical-align'];
-        $top = $properties ['top'];
-        $left = $properties ['left'];
         $position = $properties ['position'];
-        $bg_color = $properties ['background-color'];
-        $color = $properties ['color'];
-        $padding_left = $properties ['padding-left'];
-        $padding_right = $properties ['padding-right'];
-        $padding_top = $properties ['padding-top'];
-        $padding_bottom = $properties ['padding-bottom'];
-        $margin_left = $properties ['margin-left'];
-        $margin_right = $properties ['margin-right'];
-        $margin_top = $properties ['margin-top'];
-        $margin_bottom = $properties ['margin-bottom'];
-        $display = $properties ['display'];
-        $border = $properties ['border'];
-        $border_color = $properties ['border-color'];
-        $border_width = $properties ['border-width'];
-        $radius = $properties ['border-radius'];
         $picture = $properties ['background-image'];
         $pic_positions = preg_split ('/\s/', $properties ['background-position']);
-
-        $min_height = $properties ['min-height'];
+        //$min_height = $properties ['min-height'];
         $width = $properties ['width'];
-        $horiz_pos = $properties ['float'];
 
         $pic_link = '';
         $pic_width = '';
@@ -466,42 +248,40 @@ class ODTFrame
             list($pic_width, $pic_height) = ODTUtility::getImageSizeString($picture, NULL, NULL, true, $params->units);
         }
 
-        if ( empty($horiz_pos) ) {
-            $horiz_pos = 'center';
-        }
         if ( empty ($width) ) {
             $width = '100%';
         }
         if ( !empty($pic_positions [0]) ) {
             $pic_positions [0] = $params->document->toPoints($pic_positions [0], 'x');
         }
-        if ( empty($min_height) ) {
-            $min_height = '1pt';
+        //if ( empty($min_height) ) {
+        //    $min_height = '1pt';
+        //}
+
+        // Get anchor type
+        $anchor_type = 'paragraph';
+        if (!empty($properties ['anchor-type'])) {
+            $anchor_type = $properties ['anchor-type'];
         }
-        if ( empty($top) ) {
-            $top = '0cm';
+        
+        // Get X and Y position.
+        // X and Y position can be set using 'x' or 'left' and 'y' or 'top'.
+        $svgX = null;
+        $svgY = null;
+        if (!empty($properties ['x'])) {
+            $svgX = $properties ['x'];
         }
-        if ( empty($left) ) {
-            $left = '0cm';
-        } else {
-            $horiz_pos = 'from-left';
+        if (!empty($properties ['left'])) {
+            $svgX = $properties ['left'];
+        }
+        if (!empty($properties ['y'])) {
+            $svgY = $properties ['y'];
+        }
+        if (!empty($properties ['top'])) {
+            $svgY = $properties ['top'];
         }
 
-        // Different handling for relative and absolute size...
-        if ( $width [strlen($width)-1] == '%' ) {
-            // Convert percentage values to absolute size, respecting page margins
-            $width = trim($width, '%');
-            $width_abs = $params->document->getAbsWidthMindMargins($width).'cm';
-        } else {
-            // Absolute values may include not supported units.
-            // Adjust.
-            $width_abs = $params->document->toPoints($width, 'x');
-        }
-
-
-        // Add our styles.
-        $style_name = ODTStyle::getNewStylename('Frame');
-
+        // Adjust properties for CSS property 'position' if given
         switch ($position) {
             case 'absolute':
                 $anchor_type = 'page';
@@ -510,130 +290,33 @@ class ODTFrame
                 $anchor_type = 'paragraph';
                 break;
             case 'static':
-            default:
                 $anchor_type = 'paragraph';
-                $top = '0cm';
-                $left = '0cm';
-                break;
-        }
-        // FIXME: Later try to get nested frames working - probably with anchor = as-char
-        //$frame = $this->document->state->getCurrentFrame();
-        //if ($frame != NULL) {
-        //    $anchor_type = 'as-char';
-        //}
-        switch ($anchor_type) {
-            case 'page':
-                $style =
-                '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-                     <style:graphic-properties style:run-through="foreground" style:wrap="run-through"
-                      style:number-wrapped-paragraphs="no-limit" style:vertical-pos="from-top" style:vertical-rel="page"
-                      style:horizontal-pos="from-left" style:horizontal-rel="page"
-                      draw:wrap-influence-on-position="once-concurrent" style:flow-with-text="false" ';
-                break;
-            default:
-                $style =
-                '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic">
-                     <style:graphic-properties
-                      draw:textarea-horizontal-align="left"
-                    style:horizontal-pos="'.$horiz_pos.'" style:background-transparency="100%" style:wrap="none" ';
+                $svgX = '0cm';
+                $svgY = '0cm';
                 break;
         }
 
-        if ( !empty($valign) ) {
-            $style .= 'draw:textarea-vertical-align="'.$valign.'" ';
+        // Add our styles.
+        $style_name = ODTStyle::getNewStylename('Frame');
+        $style  = '<style:style style:name="'.$style_name.'_text_frame" style:family="graphic" style:parent-style-name="Frame">';
+        $style .= '<style:graphic-properties ';
+
+        foreach (self::$fields as $name => $odtName) {
+            if (!empty($properties [$name])) {
+                $style .= $odtName.'="'.$properties [$name].'" ';
+            }
         }
-        if ( !empty($bg_color) ) {
-            $style .= 'fo:background-color="'.$bg_color.'" ';
-            $style .= 'draw:fill="solid" draw:fill-color="'.$bg_color.'" ';
-        } else {
-            $style .= 'draw:fill="none" ';
-        }
-        if ( !empty($border_color) ) {
-            $style .= 'svg:stroke-color="'.$border_color.'" ';
-        } else {
-            $style .= 'draw:stroke="none" ';
-        }
-        if ( !empty($border_width) ) {
-            $style .= 'svg:stroke-width="'.$border_width.'" ';
-        }
-        if ( !empty($padding_left) ) {
-            $style .= 'fo:padding-left="'.$padding_left.'" ';
-        }
-        if ( !empty($padding_right) ) {
-            $style .= 'fo:padding-right="'.$padding_right.'" ';
-        }
-        if ( !empty($padding_top) ) {
-            $style .= 'fo:padding-top="'.$padding_top.'" ';
-        }
-        if ( !empty($padding_bottom) ) {
-            $style .= 'fo:padding-bottom="'.$padding_bottom.'" ';
-        }
-        if ( !empty($margin_left) ) {
-            $style .= 'fo:margin-left="'.$margin_left.'" ';
-        }
-        if ( !empty($margin_right) ) {
-            $style .= 'fo:margin-right="'.$margin_right.'" ';
-        }
-        if ( !empty($margin_top) ) {
-            $style .= 'fo:margin-top="'.$margin_top.'" ';
-        }
-        if ( !empty($margin_bottom) ) {
-            $style .= 'fo:margin-bottom="'.$margin_bottom.'" ';
-        }
-        if ( !empty ($fo_border) ) {
-            $style .= 'fo:border="'.$fo_border.'" ';
-        }
-        $style .= 'fo:min-height="'.$min_height.'" ';
         $style .= '>';
-
-        // FIXME: Delete the part below 'if ( $picture != NULL ) {...}'
-        // and use this background-image definition. For some reason the background-image is not displayed.
-        // Help is welcome.
-        /*$style .= '<style:background-image ';
-        $style .= 'xlink:href="'.$pic_link.'" xlink:type="simple" xlink:actuate="onLoad"
-                   style:position="center center" style:repeat="no-repeat" draw:opacity="100%"/>';*/
         $style .= '</style:graphic-properties>';
         $style .= '</style:style>';
-        $style .= '<style:style style:name="'.$style_name.'_image_frame" style:family="graphic">
-             <style:graphic-properties
-                 draw:stroke="none"
-                 draw:fill="none"
-                 draw:textarea-horizontal-align="left"
-                 draw:textarea-vertical-align="center"
-                 style:wrap="none"/>
-         </style:style>';
 
         // Add style to our document
         // (as unknown style because style-family graphic is not supported)
         $style_obj = ODTUnknownStyle::importODTStyle($style);
         $params->document->addAutomaticStyle($style_obj);
 
-        // Group the frame so that they are stacked one on each other.
-        //$params->document->paragraphClose();
-        //$params->document->paragraphOpen();
-        //$params->document->linebreak();
-        //if ( $display == NULL ) {
-        //    $params->content .= '<draw:g draw:z-index="'.($params->document->div_z_index + 0).'">';
-        //} else {
-        //    $params->content .= '<draw:g draw:display="' . $display . '">';
-        //}
-
-        // Draw a frame with the image in it, if required.
-        // FIXME: delete this part if 'background-image' in graphic style is working.
-        if ( $picture != NULL )
-        {
-            $params->content .= '<draw:frame draw:style-name="'.$style_name.'_image_frame" draw:name="Bild1"
-                                     svg:x="'.$pic_positions [0].'" svg:y="'.$pic_positions [0].'"
-                                     svg:width="'.$pic_width.'" svg:height="'.$pic_height.'"
-                                     draw:z-index="'.($params->document->div_z_index + 1).'">
-                                 <draw:image xlink:href="'.$pic_link.'"
-                                     xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
-                                 </draw:frame>';
-        }
-
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
-
         if ($elementObj == NULL) {
             $throwAway = array();
             ODTUtility::openHTMLElement ($params, $throwAway, $element, $attributes);
@@ -641,16 +324,36 @@ class ODTFrame
 
         // Create frame
         $frame = new ODTElementFrame($style_name.'_text_frame');
-        $frame_attrs .= 'draw:name="Bild1"
-                         svg:x="'.$left.'" svg:y="'.$top.'"
-                         svg:width="'.$width_abs.'" svg:height="'.$min_height.'"
-                         draw:z-index="'.($params->document->div_z_index + 0).'">';
+        self::$frameCount++;
+        /*$frame_attrs .= 'draw:name="Frame'.self::$frameCount.'"
+                         text:anchor-type="'.$anchor_type.'"
+                         svg:width="'.$width.'" svg:min-height="'.$min_height.'"
+                         draw:z-index="'.($params->document->div_z_index + 0).'"';*/
+        $frame_attrs .= 'draw:name="Frame'.self::$frameCount.'"
+                         text:anchor-type="'.$anchor_type.'"
+                         svg:width="'.$width.'" 
+                         draw:z-index="'.($params->document->div_z_index + 0).'"';
+        if ($svgX !== NULL) {
+            $frame_attrs .= ' svg:x="'.$svgX.'"';
+        }
+        if ($svgY !== NULL) {
+            $frame_attrs .= ' svg:y="'.$svgY.'"';
+        }
+        if (!empty($properties ['min-height'])) {
+            $frame_attrs .= ' svg:min-height="'.$properties ['min-height'].'"';
+        }
+        if (!empty($properties ['height'])) {
+            $frame_attrs .= ' svg:height="'.$properties ['height'].'"';
+        }
+
         $frame->setAttributes($frame_attrs);
         $params->document->state->enter($frame);
         $frame->setHTMLElement ($element);
 
         // Encode frame
-        $params->content .= $frame->getOpeningTag();        
+        $params->content .= $frame->getOpeningTag($params);        
+
+        $params->document->div_z_index += 1;
     }
 
     /**
@@ -659,15 +362,25 @@ class ODTFrame
      * @param     ODTInternalParams $params     Commom params.
      */
     function closeFrame (ODTInternalParams $params) {
+        $frame = $params->document->state->getCurrentFrame();
+        if ($frame == NULL) {
+            // ??? Error. Not table found.
+            return;
+        }
+
         // Close paragraph (if open)
         $params->document->paragraphClose();
+
+        // Eventually adjust frame width.
+        $frame->adjustWidth ($params);
+
         // Close frame
         $element = $params->document->state->getHTMLElement();
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $params->document->closeCurrentElement();
 
-        $params->document->paragraphClose();
+        // Do not close the open paragraph here as it may lead to extra empty lines.
 
-        $params->document->div_z_index -= 5;
+        $params->document->div_z_index -= 1;
     }
 }

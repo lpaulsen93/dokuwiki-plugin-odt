@@ -309,7 +309,75 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
         }
         
         $properties = array();
-        $renderer->getODTProperties ($properties, NULL, NULL, $odt_css, NULL, $odt_css_id);
+        
+        $renderer->getODTPropertiesNew ($properties, NULL, 'id="'.$odt_css_id.'" style="'.$odt_css.'"');
+
+        if (empty($properties ['page'])) {
+            $properties ['anchor-type'] = 'page';
+        }
+        if (empty($properties ['wrap'])) {
+            $properties ['wrap'] = 'run-through';
+        }
+        if (empty($properties ['number-wrapped-paragraphs'])) {
+            $properties ['number-wrapped-paragraphs'] = 'no-limit';
+        }
+        if (empty($properties ['vertical-pos'])) {
+            $properties ['vertical-pos'] = 'from-top';
+        }
+        if (empty($properties ['vertical-rel'])) {
+            $properties ['vertical-rel'] = 'page';
+        }
+        if (empty($properties ['horizontal-pos'])) {
+            $properties ['horizontal-pos'] = 'from-left';
+        }
+        if (empty($properties ['horizontal-rel'])) {
+            $properties ['horizontal-rel'] = 'page';
+        }
+        if (empty($properties ['wrap-influence-on-position'])) {
+            $properties ['wrap-influence-on-position'] = 'once-concurrent';
+        }
+        if (empty($properties ['flow-with-text'])) {
+            $properties ['flow-with-text'] = 'false';
+        }
+        if (empty($properties ['margin-top'])) {
+            $properties ['margin-top'] = '0cm';
+        }
+        if (empty($properties ['margin-right'])) {
+            $properties ['margin-right'] = '0cm';
+        }
+        if (empty($properties ['margin-bottom'])) {
+            $properties ['margin-bottom'] = '0cm';
+        }
+        if (empty($properties ['margin-left'])) {
+            $properties ['margin-left'] = '0cm';
+        }
+        if (empty($properties ['padding-top'])) {
+            $properties ['padding-top'] = '0cm';
+        }
+        if (empty($properties ['padding-right'])) {
+            $properties ['padding-right'] = '0cm';
+        }
+        if (empty($properties ['padding-bottom'])) {
+            $properties ['padding-bottom'] = '0cm';
+        }
+        if (empty($properties ['padding-left'])) {
+            $properties ['padding-left'] = '0cm';
+        }
+        if (empty($properties ['border-top'])) {
+            $properties ['border-top'] = 'none';
+        }
+        if (empty($properties ['border-right'])) {
+            $properties ['border-right'] = 'none';
+        }
+        if (empty($properties ['border-bottom'])) {
+            $properties ['border-bottom'] = 'none';
+        }
+        if (empty($properties ['border-left'])) {
+            $properties ['border-left'] = 'none';
+        }
+        if (empty($properties ['horizontal-align'])) {
+            $properties ['horizontal-align'] = 'left';
+        }
                 
         $renderer->_odtOpenTextBoxUseProperties ($properties);
         $renderer->p_open();

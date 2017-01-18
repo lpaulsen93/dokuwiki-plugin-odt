@@ -220,10 +220,9 @@ class ODTDocument
 
         if ( $unit == 'px' ) {
             // Replace px with pt (px does not seem to be supported by ODT)
-            $number = trim($value, 'px');
             switch ($type) {
                 case CSSValueType::LengthValueXAxis:
-                    $adjusted = $this->toPoints($number, 'x');
+                    $adjusted = $this->toPoints($value, 'x');
                 break;
 
                 case CSSValueType::StrokeOrBorderWidth:
@@ -234,7 +233,7 @@ class ODTDocument
                         case 'border-top':
                         case 'border-bottom':
                             // border in ODT spans does not support 'px' units, so we convert it.
-                            $adjusted = $this->toPoints($number, 'y');
+                            $adjusted = $this->toPoints($value, 'y');
                         break;
 
                         default:
@@ -247,10 +246,10 @@ class ODTDocument
                 default:
                     switch ($property) {
                         case 'line-height':
-                            $adjusted = $this->toPoints($number, 'y');
+                            $adjusted = $this->toPoints($value, 'y');
                         break;
                         default:
-                            $adjusted = $this->toPoints($number, 'y');
+                            $adjusted = $this->toPoints($value, 'y');
                         break;
                     }
                 break;

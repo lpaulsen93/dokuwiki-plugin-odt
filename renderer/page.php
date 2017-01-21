@@ -1159,6 +1159,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         resolve_mediaid(getNS($ID),$src, $exists);
         list(/* $ext */,$mime) = mimetype($src);
 
+        if ($linking == 'linkonly') {
+            $url = str_replace('doku.php?id=','lib/exe/fetch.php?media=',wl($src,'',true));
+            if (empty($title)) {
+                $title = $src;
+            }
+            if ($returnonly) {
+                return $this->externallink($url, $title, true);
+            } else {
+                $this->externallink($url, $title);
+            }
+            return;
+        }
+
         if(substr($mime,0,5) == 'image'){
             $file = mediaFN($src);
             if($returnonly) {
@@ -1199,6 +1212,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function externalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
                             $height=NULL, $cache=NULL, $linking=NULL, $returnonly = false) {
         list($ext,$mime) = mimetype($src);
+
+        if ($linking == 'linkonly') {
+            $url = $src;
+            if (empty($title)) {
+                $title = $src;
+            }
+            if ($returnonly) {
+                return $this->externallink($url, $title, true);
+            } else {
+                $this->externallink($url, $title);
+            }
+            return;
+        }
 
         if(substr($mime,0,5) == 'image'){
             $tmp_dir = $this->config->getParam ('tmpdir')."/odt";

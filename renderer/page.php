@@ -1242,14 +1242,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                     fclose($tmp_img);
                 }
             }
-            if($returnonly) {
-              $ret = $this->_odtAddImage($tmp_name, $width, $height, $align, $title, true);
-              if (file_exists($tmp_name)) unlink($tmp_name);
-              return $ret;
-            } else {
-              $this->_odtAddImage($tmp_name, $width, $height, $align, $title);
-              if (file_exists($tmp_name)) unlink($tmp_name);
+
+            $doc = '';
+            if ($linking != 'nolink') {
+                $doc .= $this->document->openImageLink ($src, $returnonly);
             }
+            $doc .= $this->_odtAddImage($tmp_name, $width, $height, $align, $title, $returnonly);
+            if ($linking != 'nolink') {
+                $doc .= $this->document->closeImageLink ($returnonly);
+            }
+            if (file_exists($tmp_name)) unlink($tmp_name);
+
+            return $doc;
         }else{
             if($returnonly) {
               return $this->externallink($src,$title,true);

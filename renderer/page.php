@@ -1229,18 +1229,15 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if(substr($mime,0,5) == 'image'){
             $tmp_dir = $this->config->getParam ('tmpdir')."/odt";
             $tmp_name = $tmp_dir."/".md5($src).'.'.$ext;
-            $final_name = 'Pictures/'.md5($tmp_name).'.'.$ext;
-            if(!$this->document->fileExists($final_name)){
-                $client = new DokuHTTPClient;
-                $img = $client->get($src);
-                if ($img === FALSE) {
-                    $tmp_name = $src; // fallback to a simple link
-                } else {
-                    if (!is_dir($tmp_dir)) io_mkdir_p($tmp_dir);
-                    $tmp_img = fopen($tmp_name, "w") or die("Can't create temp file $tmp_img");
-                    fwrite($tmp_img, $img);
-                    fclose($tmp_img);
-                }
+            $client = new DokuHTTPClient;
+            $img = $client->get($src);
+            if ($img === FALSE) {
+                $tmp_name = $src; // fallback to a simple link
+            } else {
+                if (!is_dir($tmp_dir)) io_mkdir_p($tmp_dir);
+                $tmp_img = fopen($tmp_name, "w") or die("Can't create temp file $tmp_img");
+                fwrite($tmp_img, $img);
+                fclose($tmp_img);
             }
 
             $doc = '';

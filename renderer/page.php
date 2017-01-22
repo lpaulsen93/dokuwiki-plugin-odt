@@ -145,11 +145,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->setTwipsPerPixelX($this->config->getParam ('twips_per_pixel_x'));
         $this->document->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
     }
-    
+
     /**
-     * Initialize the rendering
+     * Initialize the document,
+     * Do the things that are common to all documents regardless of the
+     * output format (ODT or PDF).
      */
-    function document_start() {
+    function document_setup()
+    {
         global $ID;
 
         // First, get export mode.
@@ -223,33 +226,27 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->info["cache"] = false;
         }
 
+        $this->set_page_bookmark($ID);
+    }
+    
+    /**
+     * Initialize the rendering
+     */
+    function document_start() {
+        global $ID;
 
-        //$headers = array('Content-Type'=>'text/plain'); p_set_metadata($ID,array('format' => array('odt' => $headers) )); return ; // DEBUG
-        // send the content type header, new method after 2007-06-26 (handles caching)
-        $format = $this->config->getConvertTo ();
-        switch ($format) {
-            case 'pdf':
-                $output_filename = str_replace(':','-',$ID).'.pdf';
-                $headers = array(
-                    'Content-Type' => 'application/pdf',
-                    'Cache-Control' => 'must-revalidate, no-transform, post-check=0, pre-check=0',
-                    'Pragma' => 'public',
-                    'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
-                );
-                break;
-            case 'odt':
-            default:
-                $output_filename = str_replace(':','-',$ID).'.odt';
-                $headers = array(
-                    'Content-Type' => 'application/vnd.oasis.opendocument.text',
-                    'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
-                );
-                break;
-        }
+        // Initialize the document
+        $this->document_setup();
+
+        // Create HTTP headers
+        $output_filename = str_replace(':','-',$ID).'.odt';
+        $headers = array(
+            'Content-Type' => 'application/vnd.oasis.opendocument.text',
+            'Content-Disposition' => 'attachment; filename="'.$output_filename.'";',
+        );
+
         // store the content type headers in metadata
         p_set_metadata($ID,array('format' => array('odt_page' => $headers) ));
-
-        $this->set_page_bookmark($ID);
     }
 
     /**

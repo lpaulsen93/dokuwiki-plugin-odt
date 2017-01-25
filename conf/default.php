@@ -51,5 +51,8 @@ $conf['index_in_browser'] = 'hide';
 // Outline settings
 $conf['outline_list_style'] = 'Normal';
 
+// List-Label-Alignment (ordered lists)
+$conf['olist_label_align'] = 'right';
+
 // Conversion options
 $conf['convert_to_pdf'] = 'libreoffice --headless --convert-to pdf --outdir %outdir% %sourcefile% 2>&1';

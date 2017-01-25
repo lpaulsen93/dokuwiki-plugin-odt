@@ -186,6 +186,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
                 // Set outline style.
                 $this->document->setOutlineStyle($this->config->getParam('outline_list_style'));
+
+                // Set ordered list alignment.
+                $this->document->setOrderedListAlignment($this->config->getParam('olist_label_align'));
                 break;
 
             default:
@@ -193,6 +196,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
                 // Set outline style.
                 $this->document->setOutlineStyle($this->config->getParam('outline_list_style'));
+
+                // Set ordered list alignment.
+                $this->document->setOrderedListAlignment($this->config->getParam('olist_label_align'));
 
                 if ($this->config->getParam ('apply_fs_to_non_css')) {
                     $this->document->adjustFontSizes($this->config->getParam('css_font_size').'pt');
@@ -2221,6 +2227,10 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     public function dumpHTMLStack () {
         $this->document->dumpHTMLStack ();
+    }
+
+    public function setOrderedListAlignment ($align) {
+        $this->document->setOrderedListAlignment($align);
     }
 }
 

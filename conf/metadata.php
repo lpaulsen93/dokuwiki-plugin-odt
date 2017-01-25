@@ -49,4 +49,6 @@ $meta['index_in_browser'] = array('multichoice', '_choices' => array('hide', 'di
 
 $meta['outline_list_style'] = array('multichoice', '_choices' => array('Normal', 'Numbers'));
 
+$meta['olist_label_align'] = array('multichoice', '_choices' => array('left', 'center', 'right'));
+
 $meta['convert_to_pdf'] = array('string');

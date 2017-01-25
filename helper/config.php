@@ -409,6 +409,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => false,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // List-Label-Alignment (ordered lists)
+        $this->config ['olist_label_align'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => true,
+                  'hasURL'             => true,
+                  'hasMeta'            => true,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
     }
 
     /**

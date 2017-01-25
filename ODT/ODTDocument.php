@@ -2191,4 +2191,55 @@ class ODTDocument
         // Also set default font-size to the new base size!
         $default->setProperty('font-size', $newBaseSizeInPt.'pt');
     }
+
+    /**
+     * The function sets the alignment for ordered lists.
+     * This means the alignment of the numbers if front of each list item.
+     * For each alignment predefined values for the attributes 'list-tab-stop-position',
+     * 'text-indent' and 'margin-left' is set.
+     *
+     * @param string $align Alignemnt to set ('left'/'start', 'center', 'right'/'end')
+     */    
+    public function setOrderedListAlignment($align) {
+        if (empty($align)) {
+            return;
+        }
+        $name = $this->styleset->getStyleName('numbering');
+        $style = $this->styleset->getStyle($name);
+        if ($style == NULL ) {
+            return;
+        }
+
+        for ($level = 1 ; $level < 11 ; $level++) {
+            switch ($align) {
+                case 'left':
+                case 'start':
+                    $style->setPropertyForLevel($level, 'text-align', 'left');
+                    $style->setPropertyForLevel($level, 'text-min-label-distance', NULL);
+                    $style->setPropertyForLevel($level, 'label-followed-by', 'listtab');
+                    $style->setPropertyForLevel($level, 'list-tab-stop-position', (0.75*$level).'cm');
+                    $style->setPropertyForLevel($level, 'text-indent', '-1cm');
+                    $style->setPropertyForLevel($level, 'margin-left', (0.75*$level).'cm');
+                    break;
+                case 'center':
+                    $style->setPropertyForLevel($level, 'text-align', 'center');
+                    $style->setPropertyForLevel($level, 'text-min-label-distance', NULL);
+                    $style->setPropertyForLevel($level, 'label-followed-by', 'listtab');
+                    $style->setPropertyForLevel($level, 'list-tab-stop-position', (0.5*$level).'cm');
+                    $style->setPropertyForLevel($level, 'text-indent', '0cm');
+                    $style->setPropertyForLevel($level, 'margin-left', (0.5*$level).'cm');
+                    break;
+                case 'right':
+                case 'end':
+                default:
+                    $style->setPropertyForLevel($level, 'text-align', 'end');
+                    $style->setPropertyForLevel($level, 'text-min-label-distance', NULL);
+                    $style->setPropertyForLevel($level, 'label-followed-by', 'listtab');
+                    $style->setPropertyForLevel($level, 'list-tab-stop-position', (0.5*$level).'cm');
+                    $style->setPropertyForLevel($level, 'text-indent', '-0.201cm');
+                    $style->setPropertyForLevel($level, 'margin-left', (0.5*$level).'cm');
+                    break;
+            }
+        }
+    }
 }

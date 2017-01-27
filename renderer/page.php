@@ -1141,7 +1141,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $url = str_replace('&amp;', '&', $url);
         $url = str_replace('%3A', ':', $url);
 
-        return $this->_doLink($url, $content);
+        return $this->_doLink($url, $content, true);
     }
 
     /**
@@ -1466,7 +1466,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $doc .= $this->document->closeImageLink ($returnonly);
         }else{
             // Text
-            $this->document->insertHyperlink ($url, $name, NULL, NULL, $returnonly);
+            $doc .= $this->document->insertHyperlink ($url, $name, NULL, NULL, $returnonly);
         }
         return $doc;
     }

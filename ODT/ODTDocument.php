@@ -1,6 +1,5 @@
 <?php
 
-require_once DOKU_INC . 'inc/ZipLib.class.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTState.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTUtility.php';
 require_once DOKU_PLUGIN . 'odt/ODT/ODTList.php';

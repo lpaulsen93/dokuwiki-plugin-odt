@@ -8,6 +8,8 @@
 
 /** Include csscolors */
 require_once DOKU_PLUGIN . 'odt/ODT/css/csscolors.php';
+/** Include cssborder */
+require_once DOKU_PLUGIN . 'odt/ODT/css/cssborder.php';
 
 /**
  * ODTUtility:
@@ -329,6 +331,9 @@ class ODTUtility
         if ( $properties ['text-decoration'] == 'overline' ) {
             $properties ['text-overline-style'] = 'solid';
         }
+
+        // Normalize border properties
+        cssborder::normalize($properties);
 
         // First do simple adjustments per property
         foreach ($properties as $property => $value) {

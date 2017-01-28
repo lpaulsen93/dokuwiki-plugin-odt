@@ -564,6 +564,19 @@ class ODTImport
             }
 
             $disabled = array();
+            if ($style_type == 'horizontal line') {
+                // Do not use margin and padding on horizontal line paragraph style!
+                $disabled ['margin'] = 1;
+                $disabled ['margin-top'] = 1;
+                $disabled ['margin-right'] = 1;
+                $disabled ['margin-bottom'] = 1;
+                $disabled ['margin-left'] = 1;
+                $disabled ['padding'] = 1;
+                $disabled ['padding-top'] = 1;
+                $disabled ['padding-right'] = 1;
+                $disabled ['padding-bottom'] = 1;
+                $disabled ['padding-left'] = 1;
+            }
             $style->importProperties($properties, $disabled);
 
             // Reset stack to saved root so next importStyle

@@ -26,11 +26,6 @@ class ODTImport
                                     'preformatted' => array('element' => 'pre', 'attributes' => NULL),
                                     'source code' => array('element' => 'pre', 'attributes' => 'class="code"'),
                                     'source file' => array('element' => 'pre', 'attributes' => 'class="file"'),
-                                    'quotation1' => array('element' => 'quotation1', 'attributes' => NULL),
-                                    'quotation2' => array('element' => 'quotation1', 'attributes' => NULL),
-                                    'quotation3' => array('element' => 'quotation1', 'attributes' => NULL),
-                                    'quotation4' => array('element' => 'quotation1', 'attributes' => NULL),
-                                    'quotation5' => array('element' => 'quotation1', 'attributes' => NULL),
                                    );
     static protected $table_styles = array('table' => array('element' => 'table', 'attributes' => NULL),
                                     'table header' => array('element' => 'th', 'attributes' => NULL),
@@ -120,6 +115,39 @@ class ODTImport
         if ($importStyles) {
             self::import_styles_from_css ($params, $media_sel, $registrations);
         }
+    }
+
+    static protected function importQuotationStyles(ODTInternalParams $params, cssdocument $htmlStack) {
+        // Reset stack to saved root so next importStyle
+        // will have the same conditions
+        $htmlStack->restoreToRoot ();
+
+        for ($level = 1 ; $level < 6 ; $level++) {
+            $name = $params->styleset->getStyleName('quotation'.$level);
+            $style = $params->styleset->getStyle($name);
+            if ($style == NULL ) {
+                continue;
+            }
+
+            // Push our element to import on the stack
+            $htmlStack->open('blockquote');
+            $toMatch = $htmlStack->getCurrentElement();
+
+            $properties = array();                
+            $params->import->getPropertiesForElement($properties, $toMatch, $params->units);
+            if (count($properties) == 0) {
+                // Nothing found. Go to next, DO NOT change existing style!
+                continue;
+            }
+
+            // Adjust values for ODT
+            ODTUtility::adjustValuesForODT ($properties, $params->units);
+            $style->importProperties($properties);
+        }
+
+        // Reset stack to saved root so next importStyle
+        // will have the same conditions
+        $htmlStack->restoreToRoot ();
     }
 
     static protected function setListStyleImage (ODTInternalParams $params, $style, $level, $file) {
@@ -736,6 +764,8 @@ class ODTImport
 
         self::importParagraphDefaultStyle($params);
         self::importFootnoteStyle($params);
+
+        self::importQuotationStyles($params, $htmlStack);
     }
 
     static public function importODTStyles(ODTInternalParams $params, $template=NULL, $tempDir=NULL){

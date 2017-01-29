@@ -76,6 +76,36 @@ class ODTDefaultStyles extends ODTStyleSet
             <style:style style:name="legendcenter" style:family="paragraph" style:parent-style-name="Illustration">
                 <style:paragraph-properties fo:text-align="center"/>
             </style:style>
+            <style:style style:name="Table_Quotation1" style:family="table">
+                <style:table-properties table:border-model="collapsing" fo:margin-top="0pt" fo:margin-bottom="16.8pt"/>
+            </style:style>
+            <style:style style:name="Table_Quotation2" style:family="table">
+                <style:table-properties table:border-model="collapsing" fo:margin-top="0pt" fo:margin-bottom="0pt"/>
+            </style:style>
+            <style:style style:name="Table_Quotation3" style:family="table">
+                <style:table-properties table:border-model="collapsing" fo:margin-top="0pt" fo:margin-bottom="0pt"/>
+            </style:style>
+            <style:style style:name="Table_Quotation4" style:family="table">
+                <style:table-properties table:border-model="collapsing" fo:margin-top="0pt" fo:margin-bottom="0pt"/>
+            </style:style>
+            <style:style style:name="Table_Quotation5" style:family="table">
+                <style:table-properties table:border-model="collapsing" fo:margin-top="0pt" fo:margin-bottom="0pt"/>
+            </style:style>
+            <style:style style:name="Cell_Quotation1" style:family="table-cell">
+                <style:table-cell-properties fo:margin="0cm" fo:padding-left="6pt" fo:padding-right="6pt" fo:padding-top="0pt" fo:padding-bottom="0pt" fo:border-left="3pt solid #cccccc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+            </style:style>
+            <style:style style:name="Cell_Quotation2" style:family="table-cell">
+                <style:table-cell-properties fo:margin="0cm" fo:padding-left="6pt" fo:padding-right="6pt" fo:padding-top="0pt" fo:padding-bottom="0pt" fo:border-left="3pt solid #cccccc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+            </style:style>
+            <style:style style:name="Cell_Quotation3" style:family="table-cell">
+                <style:table-cell-properties fo:margin="0cm" fo:padding-left="6pt" fo:padding-right="6pt" fo:padding-top="0pt" fo:padding-bottom="0pt" fo:border-left="3pt solid #cccccc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+            </style:style>
+            <style:style style:name="Cell_Quotation4" style:family="table-cell">
+                <style:table-cell-properties fo:margin="0cm" fo:padding-left="6pt" fo:padding-right="6pt" fo:padding-top="0pt" fo:padding-bottom="0pt" fo:border-left="3pt solid #cccccc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+            </style:style>
+            <style:style style:name="Cell_Quotation5" style:family="table-cell">
+                <style:table-cell-properties fo:margin="0cm" fo:padding-left="6pt" fo:padding-right="6pt" fo:padding-top="0pt" fo:padding-bottom="0pt" fo:border-left="3pt solid #cccccc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
+            </style:style>
         </office:automatic-styles>';
 
     // Font definitions. May not be present if in template mode, in which case they will be added to styles.xml
@@ -154,11 +184,16 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'legend center':         return 'legendcenter';
             case 'graphics':              return 'Graphics';
             case 'monospace':             return 'Source_20_Text';
-            case 'quotation1':            return 'Quotation_20_1';
-            case 'quotation2':            return 'Quotation_20_2';
-            case 'quotation3':            return 'Quotation_20_3';
-            case 'quotation4':            return 'Quotation_20_4';
-            case 'quotation5':            return 'Quotation_20_5';
+            case 'table quotation1':      return 'Table_Quotation1';
+            case 'table quotation2':      return 'Table_Quotation2';
+            case 'table quotation3':      return 'Table_Quotation3';
+            case 'table quotation4':      return 'Table_Quotation4';
+            case 'table quotation5':      return 'Table_Quotation5';
+            case 'cell quotation1':       return 'Cell_Quotation1';
+            case 'cell quotation2':       return 'Cell_Quotation2';
+            case 'cell quotation3':       return 'Cell_Quotation3';
+            case 'cell quotation4':       return 'Cell_Quotation4';
+            case 'cell quotation5':       return 'Cell_Quotation5';
             case 'list first paragraph':  return 'List_First_Paragraph';
             case 'list last paragraph':   return 'List_Last_Paragraph';
             case 'first page':            return 'pm1';

@@ -91,7 +91,6 @@ class ODTDocument
     /** @var array */
     public $footnotes = array();
     protected $quote_depth = 0;
-    protected $quote_pos = 0;
     protected $linksEnabled = true;
     // Used by Fields Plugin
     protected $fields = array();
@@ -939,29 +938,20 @@ class ODTDocument
         if ( $this->quote_depth < 5 ) {
             $this->quote_depth++;
         }
-        $quotation1 = $this->getStyleName('quotation1');
-        if ($this->quote_depth == 1) {
-            // On quote level 1 open a new paragraph with 'quotation1' style
-            $this->paragraphClose();
-            $this->quote_pos = strlen ($this->content);
-            $this->paragraphOpen($quotation1);
-            $this->quote_pos = strpos ($this->content, $quotation1, $this->quote_pos);
-            $this->quote_pos += strlen($quotation1) - 1;
-        } else {
-            // Quote level is greater than 1. Set new style by just changing the number.
-            // This is possible because the styles in style.xml are named 'Quotation 1', 'Quotation 2'...
-            // FIXME: Unsafe as we now use freely choosen names per template class
-            $this->content [$this->quote_pos] = $this->quote_depth;
-        }
+        unset($this->params->elementObj);
+        ODTTable::tableOpen($this->params, 1, 1, 'Table_Quotation'.$this->quote_depth, 'blockquote', NULL);
+        $this->tableRowOpen();
+        unset($this->params->elementObj);
+        ODTTable::tableCellOpen($this->params, 1, 1, 'left', 'Cell_Quotation'.$this->quote_depth, NULL, NULL, NULL);
     }
 
     function quoteClose() {
+        $this->paragraphClose();
+        $this->tableCellClose();
+        $this->tableRowClose();
+        $this->tableClose();
         if ( $this->quote_depth > 0 ) {
             $this->quote_depth--;
-        }
-        if ($this->quote_depth == 0) {
-            // This will only close the paragraph if we're actually in one
-            $this->paragraphClose();
         }
     }
 

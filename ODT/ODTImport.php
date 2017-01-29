@@ -122,13 +122,19 @@ class ODTImport
         // will have the same conditions
         $htmlStack->restoreToRoot ();
 
-        for ($level = 1 ; $level < 6 ; $level++) {
-            $name = $params->styleset->getStyleName('quotation'.$level);
-            $style = $params->styleset->getStyle($name);
-            if ($style == NULL ) {
-                continue;
-            }
+        $disabled = array();
+        $disabled ['margin']         = 1;
+        $disabled ['margin-left']    = 1;
+        $disabled ['margin-right']   = 1;
+        $disabled ['margin-top']     = 1;
+        $disabled ['margin-bottom']  = 1;
+        $disabled ['padding']        = 1;
+        $disabled ['padding-left']   = 1;
+        $disabled ['padding-right']  = 1;
+        $disabled ['padding-top']    = 1;
+        $disabled ['padding-bottom'] = 1;
 
+        for ($level = 1 ; $level < 6 ; $level++) {
             // Push our element to import on the stack
             $htmlStack->open('blockquote');
             $toMatch = $htmlStack->getCurrentElement();
@@ -142,7 +148,22 @@ class ODTImport
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
-            $style->importProperties($properties);
+
+            $name = $params->styleset->getStyleName('table quotation'.$level);
+            $style = $params->styleset->getStyle($name);
+            if ($style != NULL ) {
+                if ($level == 1) {
+                    $style->importProperties($properties);
+                } else {
+                    $style->importProperties($properties, $disabled);
+                }
+            }
+
+            $name = $params->styleset->getStyleName('cell quotation'.$level);
+            $style = $params->styleset->getStyle($name);
+            if ($style != NULL ) {
+                $style->importProperties($properties);
+            }
         }
 
         // Reset stack to saved root so next importStyle

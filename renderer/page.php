@@ -133,7 +133,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->addHTMLElement ('div', 'class="page group"');
 
         // Import CSS (new API)
-        $this->document->importCSSFromString($this->css, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'));
+        $this->document->importCSSFromString
+            ($this->css, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'), false, $this->config->getParam('olist_label_align'));
     }
 
     /**
@@ -162,6 +163,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // Setup Units before CSS import!
         $this->setupUnits();
 
+        switch($mode) {
+            case 'ODT template':
+            case 'CSS template':
+                break;
+            default:
+                // Set ordered list alignment before calling load_css().
+                // load_css() will eventually overwrite the list settings!
+                $this->document->setOrderedListParams(NULL, $this->config->getParam('olist_label_align'));
+                $this->document->setUnorderedListParams(NULL, $this->config->getParam('olist_label_align'));
+                break;
+        }
+
         // Import CSS files
         $this->load_css();
 
@@ -182,13 +195,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $template = $this->config->getParam ('odt_template');
                 $directory = $this->config->getParam ('tpl_dir');
                 $template_path = $this->config->getParam('mediadir').'/'.$directory."/".$template;
-                $this->document->importCSSFromFile($template_path, $media_sel, array($this, 'replaceURLPrefixesCallback'));
+                $this->document->importCSSFromFile
+                    ($template_path, $media_sel, array($this, 'replaceURLPrefixesCallback'), $this->config->getParam('olist_label_align'));
 
                 // Set outline style.
                 $this->document->setOutlineStyle($this->config->getParam('outline_list_style'));
-
-                // Set ordered list alignment.
-                $this->document->setOrderedListAlignment($this->config->getParam('olist_label_align'));
                 break;
 
             default:
@@ -196,9 +207,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
                 // Set outline style.
                 $this->document->setOutlineStyle($this->config->getParam('outline_list_style'));
-
-                // Set ordered list alignment.
-                $this->document->setOrderedListAlignment($this->config->getParam('olist_label_align'));
 
                 if ($this->config->getParam ('apply_fs_to_non_css')) {
                     $this->document->adjustFontSizes($this->config->getParam('css_font_size').'pt');
@@ -2091,7 +2099,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             }
         }
 
-        $this->document->importCSSFromString($text, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'), true);
+        $this->document->importCSSFromString
+            ($text, $this->config->getParam('media_sel'), array($this, 'replaceURLPrefixesCallback'), true, $this->config->getParam('olist_label_align'));
     }
 
     /**
@@ -2229,8 +2238,12 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->dumpHTMLStack ();
     }
 
-    public function setOrderedListAlignment ($align) {
-        $this->document->setOrderedListAlignment($align);
+    public function setOrderedListParams ($setLevel, $align, $paddingLeft=0, $marginLeft=1) {
+        $this->document->setOrderedListParams($setLevel, $align, $paddingLeft, $marginLeft);
+    }
+
+    public function setUnorderedListParams ($setLevel, $align, $paddingLeft=0, $marginLeft=1) {
+        $this->document->setUnorderedListParams($setLevel, $align, $paddingLeft, $marginLeft);
     }
 }
 

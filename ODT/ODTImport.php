@@ -95,10 +95,10 @@ class ODTImport
      * @param string $media_sel String containing the media selector to use for import (e.g. 'print' or 'screen')
      * @param callable $callback Callback for adjusting length values
      */
-    static public function importCSSFromFile (ODTInternalParams $params, $CSSTemplate, $media_sel=NULL, $lengthCallback=NULL, $URLCallback=NULL, $registrations=NULL, $importStyles=true) {
+    static public function importCSSFromFile (ODTInternalParams $params, $CSSTemplate, $media_sel=NULL, $lengthCallback=NULL, $URLCallback=NULL, $registrations=NULL, $importStyles=true, $listAlign='right') {
         self::importCSSCodeInternal ($params, true, $CSSTemplate, $media_sel, $lengthCallback, $URLCallback);
         if ($importStyles) {
-            self::import_styles_from_css ($params, $media_sel, $registrations);
+            self::import_styles_from_css ($params, $media_sel, $registrations, $listAlign);
         }
     }
 
@@ -109,11 +109,11 @@ class ODTImport
      * @param string $mediaSel The media selector to use e.g. 'print'
      * @param string $mediaPath Local path to media files
      */
-    static public function importCSSFromString(ODTInternalParams $params, $cssCode, $media_sel=NULL, $lengthCallback=NULL, $URLCallback=NULL, $registrations=NULL, $importStyles=true)
+    static public function importCSSFromString(ODTInternalParams $params, $cssCode, $media_sel=NULL, $lengthCallback=NULL, $URLCallback=NULL, $registrations=NULL, $importStyles=true, $listAlign='right')
     {
         self::importCSSCodeInternal ($params, false, $cssCode, $media_sel, $lengthCallback, $URLCallback);
         if ($importStyles) {
-            self::import_styles_from_css ($params, $media_sel, $registrations);
+            self::import_styles_from_css ($params, $media_sel, $registrations, $listAlign);
         }
     }
 
@@ -210,7 +210,7 @@ class ODTImport
         }
     }
 
-    static protected function importOrderedListStyles(ODTInternalParams $params, cssdocument $htmlStack) {
+    static protected function importOrderedListStyles(ODTInternalParams $params, cssdocument $htmlStack, $listAlign='right') {
         $name = $params->styleset->getStyleName('numbering');
         $style = $params->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -232,6 +232,14 @@ class ODTImport
                 // Nothing found. Return, DO NOT change existing style!
                 return;
             }
+
+            // Push list item element to import on the stack
+            // (Required to get left margin)
+            $htmlStack->open('li');
+            $toMatch = $htmlStack->getCurrentElement();
+
+            $li_properties = array();                
+            $params->import->getPropertiesForElement($li_properties, $toMatch, $params->units);
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
@@ -273,9 +281,21 @@ class ODTImport
                 }
                 $style->setPropertyForLevel($level, 'num-suffix', $suffix);
 
-                if ($properties ['padding-left'] !== NULL) {
-                    $style->setPropertyForLevel($level, 'text-min-label-distance', $properties ['padding-left']);
+                // Padding is not inherited so we will only get it for the list root!
+                if ($level == 1 ) {
+                    $paddingLeft = 0;
+                    if ($properties ['padding-left'] !== NULL) {
+                        $paddingLeft = $params->units->toCentimeters($properties ['padding-left'], 'y');
+                        $paddingLeft = substr($paddingLeft, 0, -2);
+                    }
                 }
+                $marginLeft = 1;
+                if ($li_properties ['margin-left'] !== NULL) {
+                    $marginLeft = $params->units->toCentimeters($li_properties ['margin-left'], 'y');
+                    $marginLeft = substr($marginLeft, 0, -2);
+                }
+                // Set list params.
+                $params->document->setOrderedListParams($level, $listAlign, $paddingLeft, $marginLeft);
             }
             if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
                 // It is assumed that the CSS already contains absolute path values only!
@@ -307,7 +327,7 @@ class ODTImport
         $htmlStack->restoreToRoot ();
     }
 
-    static protected function importUnorderedListStyles(ODTInternalParams $params, cssdocument $htmlStack) {
+    static protected function importUnorderedListStyles(ODTInternalParams $params, cssdocument $htmlStack, $listAlign='right') {
         $name = $params->styleset->getStyleName('list');
         $style = $params->styleset->getStyle($name);
         if ($style == NULL ) {
@@ -335,6 +355,14 @@ class ODTImport
                 // Nothing found. Return, DO NOT change existing style!
                 return;
             }
+
+            // Push list item element to import on the stack
+            // (Required to get left margin)
+            $htmlStack->open('li');
+            $toMatch = $htmlStack->getCurrentElement();
+
+            $li_properties = array();                
+            $params->import->getPropertiesForElement($li_properties, $toMatch, $params->units);
 
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
@@ -374,6 +402,22 @@ class ODTImport
                         break;
                 }
                 $style->setPropertyForLevel($level, 'text-bullet-char', $sign);
+
+                // Padding is not inherited so we will only get it for the list root!
+                if ($level == 1 ) {
+                    $paddingLeft = 0;
+                    if ($properties ['padding-left'] !== NULL) {
+                        $paddingLeft = $params->units->toCentimeters($properties ['padding-left'], 'y');
+                        $paddingLeft = substr($paddingLeft, 0, -2);
+                    }
+                }
+                $marginLeft = 1;
+                if ($li_properties ['margin-left'] !== NULL) {
+                    $marginLeft = $params->units->toCentimeters($li_properties ['margin-left'], 'y');
+                    $marginLeft = substr($marginLeft, 0, -2);
+                }
+                // Set list params.
+                $params->document->setUnorderedListParams($level, $listAlign, $paddingLeft, $marginLeft);
             }
             if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
                 // It is assumed that the CSS already contains absolute path values only!
@@ -634,7 +678,7 @@ class ODTImport
         }
     }
 
-    static public function import_styles_from_css (ODTInternalParams $params, $media_sel=NULL, $registrations=NULL) {
+    static public function import_styles_from_css (ODTInternalParams $params, $media_sel=NULL, $registrations=NULL, $listAlign='right') {
         if ( $params->import != NULL ) {
             $save = $params->import->getMedia ();
             $params->import->setMedia ($media_sel);
@@ -643,7 +687,7 @@ class ODTImport
             $stack = clone $params->htmlStack;
             $stack->restoreToRoot ();
 
-            self::import_styles_from_css_internal ($params, $stack, $registrations);
+            self::import_styles_from_css_internal ($params, $stack, $registrations, $listAlign);
 
             $params->import->setMedia ($save);
         }
@@ -737,7 +781,7 @@ class ODTImport
         }
     }
 
-    static protected function import_styles_from_css_internal(ODTInternalParams $params, $htmlStack, $registrations=NULL) {
+    static protected function import_styles_from_css_internal(ODTInternalParams $params, $htmlStack, $registrations=NULL, $listAlign='right') {
         // Import page layout
         $name = $params->styleset->getStyleName('first page');
         $first_page = $params->styleset->getStyle($name);
@@ -780,8 +824,8 @@ class ODTImport
         self::importLinkStyles($params, $htmlStack);
 
         // Import list styles and list paragraph styles
-        self::importUnorderedListStyles($params, $htmlStack);
-        self::importOrderedListStyles($params, $htmlStack);
+        self::importUnorderedListStyles($params, $htmlStack, $listAlign);
+        self::importOrderedListStyles($params, $htmlStack, $listAlign);
 
         self::importParagraphDefaultStyle($params);
         self::importFootnoteStyle($params);

@@ -200,6 +200,31 @@ class ODTUnits {
         return $value;
     }
 
+    /**
+     * Convert length value with valid XSL unit to points.
+     *
+     * @param string $value  String with length value, e.g. '20px', '20pt'...
+     * @param string $axis   Is the value to be converted a value on the X or Y axis? Default is 'y'.
+     *        Only relevant for conversion from 'px' or 'em'.
+     * @return string The current value.
+     */
+    public function toCentimeters ($value, $axis = 'y') {
+        $unit = self::stripDigits ($value);
+        if ( $unit == 'cm' ) {
+            return $value;
+        }
+
+        if ( self::isValidXSLUnit ($unit) === false  ) {
+            // Not a vlaid/supported unit. Return original value.
+            return $value;
+        }
+
+        $value = self::toPoints ($value, $axis);
+        $value = substr($value, 0, -2);
+        $value = round (($value * self::$point_in_cm), 2).'cm';
+        return $value;
+    }
+
     public function getAbsoluteValue ($value, $base) {
         $unit = self::stripDigits ($value);
 

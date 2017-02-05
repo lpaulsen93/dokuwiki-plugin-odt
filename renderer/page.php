@@ -58,13 +58,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Return version info
-     */
-    function getInfo(){
-        return confToHash(dirname(__FILE__).'/plugin.info.txt');
-    }
-
-    /**
      * Returns the format produced by this renderer.
      */
     function getFormat(){
@@ -232,12 +225,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $this->document->disableLinks();
         } else {
             $this->document->enableLinks();
-        }
-
-        // If older or equal to 2007-06-26, we need to disable caching
-        $dw_version = preg_replace('/[^\d]/', '', getversion());  //FIXME DEPRECATED
-        if (version_compare($dw_version, "20070626", "<=")) {
-            $this->info["cache"] = false;
         }
 
         $this->set_page_bookmark($ID);

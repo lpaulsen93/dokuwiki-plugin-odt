@@ -30,11 +30,12 @@ class ODTTestUtils {
         }
 
         io_savefile(TMP_DIR.'/odt/temp_test_doc.odt', $renderer->doc);
-        $ZIP = new ZipLib();
-        $ok = $ZIP->Extract(TMP_DIR.'/odt/temp_test_doc.odt', TMP_DIR.'/odt/unpacked');
-        if ($ok == -1 ) {
-            // Error unzipping document
-            return false;
+        try {
+            $ZIPextract = new \splitbrain\PHPArchive\Zip();
+            $ZIPextract->open(TMP_DIR.'/odt/temp_test_doc.odt');
+            $ZIPextract->extract(TMP_DIR.'/odt/unpacked');
+        } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
+            throw new Exception(' Error extracting the zip archive:'.$template.' to '.$tempDir);
         }
         
         $files ['content-xml'] = file_get_contents(TMP_DIR.'/odt/unpacked/content.xml');

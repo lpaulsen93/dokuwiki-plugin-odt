@@ -843,9 +843,13 @@ class ODTImport
         io_mkdir_p($tempDir);
 
         // Extract template
-        $ok = $params->ZIP->Extract($template, $tempDir);
-        if($ok == -1){
-            throw new Exception(' Error extracting the zip archive:'.$template_path.' to '.$tempDir);
+        try {
+            $ZIPextract = new \splitbrain\PHPArchive\Zip();
+            $ZIPextract->open($template);
+            $ZIPextract->extract($tempDir);
+            $ZIPextract->close();
+        } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
+            throw new Exception(' Error extracting the zip archive:'.$template.' to '.$tempDir);
         }
 
         // Import styles from ODT template        

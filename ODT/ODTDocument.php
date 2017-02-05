@@ -138,8 +138,11 @@ class ODTDocument
         // Setup manifest data
         $this->manifest = new ODTManifest();
 
-        // prepare the zipper
-        $this->ZIP = new ZipLib();
+        // Prepare the zipper
+        // (This instance is only for our to-be-created ODT-ZIP-Archive
+        //  - NOT to be used for extracting any ODT-Templates!)
+        $this->ZIP = new \splitbrain\PHPArchive\Zip();
+        $this->ZIP->create();
 
         $this->params = new ODTInternalParams();
     }
@@ -770,7 +773,7 @@ class ODTDocument
                                 $tempDir);
 
         // Return document
-        return $this->ZIP->get_file();
+        return $this->ZIP->getArchive();
     }
 
     /**
@@ -2014,7 +2017,7 @@ class ODTDocument
     public function addFile($fileName, $mime, $content) {
         if(!$this->manifest->exists($fileName)){
             $this->manifest->add($fileName, $mime);
-            $this->ZIP->add_File($content, $fileName, 0);
+            $this->ZIP->addData($fileName, $content);
             return true;
         }
 

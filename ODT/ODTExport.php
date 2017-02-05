@@ -23,9 +23,9 @@ class ODTExport
     protected static function buildFromScratch(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null){
         // add defaults
         $settings = new ODTSettings();
-        $params->ZIP->add_File('application/vnd.oasis.opendocument.text', 'mimetype', 0);
-        $params->ZIP->add_File($meta,'meta.xml');
-        $params->ZIP->add_File($settings->getContent(),'settings.xml');
+        $params->ZIP->addData('mimetype', 'application/vnd.oasis.opendocument.text', 'mimetype');
+        $params->ZIP->addData('meta.xml', $meta);
+        $params->ZIP->addData('settings.xml', $settings->getContent());
 
         $autostyles = $params->styleset->export('office:automatic-styles');
         $commonstyles = $params->styleset->export('office:styles');
@@ -95,7 +95,7 @@ class ODTExport
         $value .=       '</office:body>';
         $value .=   '</office:document-content>';
 
-        $params->ZIP->add_File($value,'content.xml');
+        $params->ZIP->addData('content.xml', $value);
 
         // Edit 'styles.xml'
         $value = io_readFile(DOKU_PLUGIN.'odt/styles.xml');
@@ -115,10 +115,10 @@ class ODTExport
 
         // Add automatic styles.
         $value = str_replace('<office:automatic-styles/>', $autostyles, $value);
-        $params->ZIP->add_File($value,'styles.xml');
+        $params->ZIP->addData('styles.xml', $value);
 
         // build final manifest
-        $params->ZIP->add_File($params->manifest->getContent(),'META-INF/manifest.xml');
+        $params->ZIP->addData('META-INF/manifest.xml', $params->manifest->getContent());
     }
 
     /**
@@ -143,8 +143,13 @@ class ODTExport
         io_mkdir_p($tempDir);
 
         // Extract template
-        $ok = $params->ZIP->Extract($template, $tempDir);
-        if($ok == -1){
+        try {
+            $ZIPextract = new \splitbrain\PHPArchive\Zip();
+            $ZIPextract->open($template);
+            $ZIPextract->extract($tempDir);
+            $ZIPextract->open($template);
+            $templateContents = $ZIPextract->contents();
+        } catch (\splitbrain\PHPArchive\ArchiveIOException $e) {
             throw new Exception(' Error extracting the zip archive:'.$template.' to '.$tempDir);
         }
 
@@ -225,7 +230,11 @@ class ODTExport
         self::replaceInFile('</manifest:manifest>', $params->manifest->getExtraContent() . '</manifest:manifest>', $tempDir . '/META-INF/manifest.xml');
 
         // Build the Zip
-        $params->ZIP->Compress(null, $tempDir, null);
+        foreach ($templateContents as $fileInfo) {
+            if (!$fileInfo->getIsdir()) {
+                $params->ZIP->addFile($tempDir.'/'.$fileInfo->getPath(), $fileInfo);
+            }
+        }
         io_rmdir($tempDir,true);
     }
 
@@ -244,6 +253,7 @@ class ODTExport
         } else {
             self::buildFromODTTemplate($params, $meta, $userfields, $pagestyles, $template, $tempDir);
         }
+        $params->ZIP->close();
     }
 
     /**

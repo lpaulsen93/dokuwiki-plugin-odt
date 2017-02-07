@@ -552,4 +552,48 @@ class ODTUtility
         }
         return array($start, $end);
     }
+
+    /**
+     * The function returns $value as a valid IRI and replaces some signs
+     * if neccessary, e.g. '&' will be replaced by '&amp;'.
+     * The function will not do double replacements, e.g. if the string
+     * already includes a '&amp;' it will NOT become '&amp;amp;'.
+     * 
+     * @author LarsDW223
+     * @param string $value String to be converted to IRI
+     * @return string
+     */
+    public static function stringToIRI ($value) {
+        $max = strlen ($value);
+        for ($pos = 0 ; $pos < $max ; $pos++) {
+            switch ($value [$pos]) {
+                case '&':
+                    if ($max - $pos >= 4 &&
+                        $value [$pos+1] == '#' &&
+                        $value [$pos+2] == '3' &&
+                        $value [$pos+3] == '8' &&
+                        $value [$pos+4] == ';') {
+                        // '&#38;' must be replaced with "&amp;"
+                        $value [$pos+1] = 'a';
+                        $value [$pos+2] = 'm';
+                        $value [$pos+3] = 'p';
+                        $pos += 4;
+                    } else if ($max - $pos < 4 ||
+                        $value [$pos+1] != 'a' ||
+                        $value [$pos+2] != 'm' ||
+                        $value [$pos+3] != 'p' ||
+                        $value [$pos+4] != ';' ) {
+                        // '&' must be replaced with "&amp;"
+                        $new = substr($value, 0, $pos+1);
+                        $new .= 'amp;';
+                        $new .= substr($value, $pos+1);
+                        $value = $new;
+                        $max += 4;
+                        $pos += 4;
+                    }
+                    break;
+            }
+        }
+        return $value;
+    }
 }

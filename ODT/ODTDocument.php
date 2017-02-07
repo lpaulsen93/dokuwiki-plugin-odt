@@ -1878,6 +1878,7 @@ class ODTDocument
     function openImageLink ($url, $returnonly = false) {
         $encoded = '';
         if ($this->linksEnabled) {
+            $url = ODTUtility::stringToIRI($url);
             $encoded = '<draw:a xlink:type="simple" xlink:href="'.$url.'">';
         }
         if ($returnonly) {
@@ -1906,6 +1907,7 @@ class ODTDocument
             if (empty($visitedStyleName)) {
                 $visitedStyleName = $this->getStyleName('visited internet link');
             }
+            $url = ODTUtility::stringToIRI($url);
             $encoded .= '<text:a xlink:type="simple" xlink:href="'.$url.'"';
             $encoded .= ' text:style-name="'.$styleName.'"';
             $encoded .= ' text:visited-style-name="'.$visitedStyleName.'"';

@@ -227,13 +227,20 @@ class ODTUtility
      * 
      * @param  string       $src         Filepath of the image
      * @param  string|null  $width       Alternative width
-     * @param  string|null  $height      Alternative width
+     * @param  string|null  $height      Alternative height
      * @param  boolean|true $preferImage Prefer original image size
      * @param  ODTUnits     $units       $ODTUnits object for unit conversion
      * @return array
      */
     public static function getImageSizeString($src, $width = NULL, $height = NULL, $preferImage=true, ODTUnits $units){
         list($width_file, $height_file) = self::getImageSize($src);
+
+        // Get original ratio if possible
+        $ratio = 1;
+        if ($width_file != 0 && $height_file != 0) {
+            $ratio = $height_file/$width_file;
+        }
+
         if ($width_file != 0 && $preferImage) {
             $width  = $width_file.'cm';
             $height = $height_file.'cm';
@@ -244,8 +251,11 @@ class ODTUtility
             $unit_height = $units->stripDigits ($height);
             if ((empty($unit_width) && empty($unit_height)) ||
                 ($unit_width == 'px' && $unit_height == 'px')) {
+                if (!$height) {
+                    $height = $width * $ratio;
+                }
+                $height = (($height/96.0)*2.54).'cm';
                 if ($width) $width = (($width/96.0)*2.54).'cm';
-                if ($height) $height = (($height/96.0)*2.54).'cm';
             }
         }
 

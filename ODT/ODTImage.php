@@ -35,7 +35,7 @@ class ODTImage
             $name = $src;
         }
         // make sure width and height are available
-        if (!$width || !$height) {
+        if (!$width && !$height) {
             list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height, true, $params->units);
         } else {
             list($width, $height) = ODTUtility::getImageSizeString($src, $width, $height, false, $params->units);

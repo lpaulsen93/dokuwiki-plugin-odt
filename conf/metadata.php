@@ -12,7 +12,7 @@ $meta['odt_template'] = array('string');
 $meta['showexportbutton'] = array('onoff');
 $meta['showpdfexportbutton'] = array('onoff');
 
-$meta['css_usage']     = array('multichoice', '_choices' => array('off (plugins only)', 'basic style import', 'full'));
+$meta['css_usage']     = array('multichoice', '_choices' => array('off (plugins only)', 'basic style import'));
 $meta['media_sel']     = array('string');
 $meta['css_font_size'] = array('numeric');
 $meta['css_template']  = array('dirchoice', '_dir' => DOKU_INC . 'lib/tpl/');

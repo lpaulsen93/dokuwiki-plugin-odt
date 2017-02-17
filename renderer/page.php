@@ -473,11 +473,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if ( preg_match('/pagebreak=[^;]+;/', $settings, $matches) === 1 ) {
             $temp = substr ($matches [0], 10);
             $temp = trim ($temp, ';');
-            $data ['pagebreak'] = false;            
+            $data ['pagebreak'] = 'false';            
             if ( $temp == '1' ) {
-                $data ['pagebreak'] = true;
+                $data ['pagebreak'] = 'true';
             } else if ( strcasecmp($temp, 'true') == 0 ) {
-                $data ['pagebreak'] = true;
+                $data ['pagebreak'] = 'true';
             }
         }
 

@@ -50,3 +50,14 @@ Error message:
 <code>%errormessage%</code>
 
 [[%pageid%|Back to previous page]]';
+
+// Error message for failed conversion.
+$lang['init_failed_msg'] =
+'====== An error occured during initialization of the ODT document: ======
+
+Is your DokuWiki version compatible to the ODT plugin?
+
+Since release 2017-02-11 the ODT plugin requires DokuWiki release “Detritus” or newer!
+For detailed requirements information please see the [[https://www.dokuwiki.org/plugin:odt#requirements|Requirements section]] of the ODT plugin page at DokuWiki.org.
+
+(Your DokuWiki release is %DWVERSION%)';

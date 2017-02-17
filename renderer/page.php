@@ -28,6 +28,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     protected $document = null;
     /** @var string */
     protected $css;
+    /** @var bool */
+    protected $init_ok;
 
     /**
      * Constructor. Loads helper plugins.
@@ -38,7 +40,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Create and initialize document
         $this->document = new ODTDocument();
-        $this->document->initialize ();
+        $this->init_ok = $this->document->initialize ();
     }
 
     /**
@@ -235,6 +237,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      */
     function document_start() {
         global $ID;
+
+        if (!$this->init_ok) {
+            // Initialization of the ODT document failed!
+            // Send "Internal Server Error"
+            http_status(500);
+            $message = $this->getLang('init_failed_msg');
+            $message = str_replace('%DWVERSION%', getVersion(), $message);
+            $instructions = p_get_instructions($message);
+            print p_render('xhtml', $instructions, $info);
+
+            exit;
+        }
 
         // Initialize the document
         $this->document_setup();

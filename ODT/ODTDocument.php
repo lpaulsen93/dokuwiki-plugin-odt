@@ -141,8 +141,11 @@ class ODTDocument
         // Prepare the zipper
         // (This instance is only for our to-be-created ODT-ZIP-Archive
         //  - NOT to be used for extracting any ODT-Templates!)
-        $this->ZIP = new \splitbrain\PHPArchive\Zip();
-        $this->ZIP->create();
+        if (class_exists('\splitbrain\PHPArchive\Zip'))
+        {
+            $this->ZIP = new \splitbrain\PHPArchive\Zip();
+            $this->ZIP->create();
+        }
 
         $this->params = new ODTInternalParams();
     }
@@ -160,6 +163,11 @@ class ODTDocument
         $this->params->ZIP       = $this->ZIP;
         $this->params->manifest  = $this->manifest;
         $this->params->styleset  = $this->styleset;
+
+        if ($this->ZIP === NULL) {
+            return false;
+        }
+        return true;
     }
 
     /**

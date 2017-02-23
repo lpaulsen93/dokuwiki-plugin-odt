@@ -142,6 +142,54 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $this->document->setTwipsPerPixelY($this->config->getParam ('twips_per_pixel_y'));
     }
 
+    protected function getDraftText($publish) {
+        $revision = $publish->getRevision();
+
+        if ($publish->isCurrentRevisionApproved()) {
+            return;
+        }
+
+        $approvals = $publish->getApprovalsOnRevision($publish->getRevision());
+        $approvalCount = count($approvals);
+
+        $ret  = 'This version ('.dformat($revision).') is a draft.';
+        $ret .= ' Approvals: '.$approvalCount.'/'.$publish->getConf('number_of_approved');
+        if ($approvalCount != 0) {
+            $ret .= 'Approved by: '.implode(', ', $publish->getApprovers());
+        }
+
+        return $ret;
+    }
+
+    protected function getApprovedText($publish) {
+        if (!$publish->isCurrentRevisionApproved()) {
+            return;
+        }
+
+        $ret  = 'This version ('.dformat($publish->getApprovalDate()).') was approved by ';
+        $ret .= implode(', ', $publish->getApprovers()).'.';
+        return $ret;
+    }
+
+    /**
+     * Import available external data into fields.
+     * Actually this is only done for the publish plugin data.
+     */
+    protected function importExternalFields() {
+        $publish = plugin_load('helper', 'publish');
+        if ($publish) {
+            if ($publish->isCurrentRevisionApproved()) {
+                $this->addUserField('Publish-Plugin-Page-Is-Approved', 'Yes');
+                $this->addUserField('Publish-Plugin-Approval-State', 'Approved');
+                $this->addUserField('Publish-Plugin-Approval-Text', $this->getApprovedText($publish));
+            } else {
+                $this->addUserField('Publish-Plugin-Page-Is-Approved', 'No');
+                $this->addUserField('Publish-Plugin-Approval-State', 'Draft');
+                $this->addUserField('Publish-Plugin-Approval-Text', $this->getDraftText($publish));
+            }
+        }
+    }
+
     /**
      * Initialize the document,
      * Do the things that are common to all documents regardless of the
@@ -230,6 +278,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         $this->set_page_bookmark($ID);
+
+        $this->importExternalFields();
     }
     
     /**

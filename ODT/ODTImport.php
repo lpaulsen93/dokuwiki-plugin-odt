@@ -640,6 +640,10 @@ class ODTImport
                     // They may have default values from the browser only.
                     // In that case do not import the style otherwise
                     // 'em' and 'del' will look like plain text.
+
+                    // Reset stack to saved root so next importStyle
+                    // will have the same conditions
+                    $htmlStack->restoreToRoot ();
                     return;
                 }
             }

@@ -412,40 +412,52 @@ class ODTUtility
      * @return string   Converted value
      */
     public static function adjustValueForODT ($property, $value, ODTUnits $units) {
-        $values = preg_split ('/\s+/', $value);
-        $value = '';
-        foreach ($values as $part) {
-            $length = strlen ($part);
+        if ($property == 'font-family') {
+            // There might be several font/font-families included.
+            // Only take the first one.
+            $value = trim($value, '"');
+            if (strpos($value, ',') !== false) {
+                $values = explode(',', $value);
+                $value = trim ($values [0], '"');
+                $value = trim ($value, "'");
+                $value = trim ($value);
+            }
+        } else {
+            $values = preg_split ('/\s+/', $value);
+            $value = '';
+            foreach ($values as $part) {
+                $length = strlen ($part);
 
-            // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
-            // (ODT does not support the short form)
-            if ( $part [0] == '#' && $length == 4 ) {
-                $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
-            } else {
-                // If it is a CSS color name, get it's real color value
-                $color = csscolors::getColorValue ($part);
-                if ( $part == 'black' || $color != '#000000' ) {
-                    $part = $color;
+                // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
+                // (ODT does not support the short form)
+                if ( $part [0] == '#' && $length == 4 ) {
+                    $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
+                } else {
+                    // If it is a CSS color name, get it's real color value
+                    $color = csscolors::getColorValue ($part);
+                    if ( $part == 'black' || $color != '#000000' ) {
+                        $part = $color;
+                    }
                 }
+
+                if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
+                    $part = $units->toPoints($part, 'y');
+                }
+
+                if ( $length > 2 && ($part [$length-2] != 'p' || $part [$length-1] != 't') &&
+                     strpos($property, 'border')!==false ) {
+                    $part = $units->toPoints($part, 'y');
+                }
+
+                // Some values can have '"' in it. These need to be converted to '&apos;'
+                // e.g. 'font-family' tp specify that '"Courier New"' is one font name not two
+                $part = str_replace('"', '&apos;', $part);
+
+                $value .= ' '.$part;
             }
-
-            if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
-                $part = $units->toPoints($part, 'y');
-            }
-
-            if ( $length > 2 && ($part [$length-2] != 'p' || $part [$length-1] != 't') &&
-                 strpos($property, 'border')!==false ) {
-                $part = $units->toPoints($part, 'y');
-            }
-
-            // Some values can have '"' in it. These need to be converted to '&apos;'
-            // e.g. 'font-family' tp specify that '"Courier New"' is one font name not two
-            $part = str_replace('"', '&apos;', $part);
-
-            $value .= ' '.$part;
+            $value = trim($value);
+            $value = trim($value, '"');
         }
-        $value = trim($value);
-        $value = trim($value, '"');
 
         return $value;
     }

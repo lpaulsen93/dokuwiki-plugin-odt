@@ -191,7 +191,7 @@ class css_declaration {
     /**
      * @param css_declaration[] $decls
      */
-    protected function explodeFontShorthand (&$decls) {
+    protected function explodeFontShorthand (&$decls, $setDefaults=false) {
         if ( $this->property == 'font' ) {
             $values = preg_split ('/\s+/', $this->value);
 
@@ -200,7 +200,6 @@ class css_declaration {
             $font_weight_set = false;
             $font_size_set = false;
 
-            $font_family = '';
             foreach ($values as $value) {
                 if ( $font_style_set === false ) {
                     $default = false;
@@ -214,7 +213,9 @@ class css_declaration {
                         break;
                         default:
                             $default = true;
-                            $decls [] = new css_declaration ('font-style', 'normal');
+                            if ($setDefaults) {
+                                $decls [] = new css_declaration ('font-style', 'normal');
+                            }
                         break;
                     }
                     $font_style_set = true;
@@ -233,7 +234,9 @@ class css_declaration {
                         break;
                         default:
                             $default = true;
-                            $decls [] = new css_declaration ('font-variant', 'normal');
+                            if ($setDefaults) {
+                                $decls [] = new css_declaration ('font-variant', 'normal');
+                            }
                         break;
                     }
                     $font_variant_set = true;
@@ -263,7 +266,9 @@ class css_declaration {
                         break;
                         default:
                             $default = true;
-                            $decls [] = new css_declaration ('font-weight', 'normal');
+                            if ($setDefaults) {
+                                $decls [] = new css_declaration ('font-weight', 'normal');
+                            }
                         break;
                     }
                     $font_weight_set = true;
@@ -299,7 +304,9 @@ class css_declaration {
                             }
                             if ( $found === false ) {
                                 $default = true;
-                                $decls [] = new css_declaration ('font-size', 'medium');
+                                if ($setDefaults) {
+                                    $decls [] = new css_declaration ('font-size', 'medium');
+                                }
                             }
                         break;
                     }
@@ -316,13 +323,10 @@ class css_declaration {
 
                 // All other properties are found.
                 // The rest is assumed to be a font-family.
-                if ( empty ($font_family) ) {
-                    $font_family .= $value;
-                } else {
-                    $font_family .= ' '.$value;
+                if (!empty ($value) ) {
+                    $decls [] = new css_declaration ('font-family', $value);
                 }
             }
-            $decls [] = new css_declaration ('font-family', $font_family);
         }
     }
 

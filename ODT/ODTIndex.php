@@ -196,7 +196,7 @@ class ODTIndex
             $doc->getCSSStylePropertiesForODT ($properties, $stylesL [$count+1]);
             $properties ['style-parent'] = 'Index';
             $properties ['style-class'] = 'index';
-            $properties ['style-position'] = 17 - $indent .'cm';
+            $properties ['style-position'] = $doc->getAbsWidthMindMargins() - $indent .'cm';
             $properties ['style-type'] = 'right';
             $properties ['style-leader-style'] = 'dotted';
             $properties ['style-leader-text'] = $leader_sign;

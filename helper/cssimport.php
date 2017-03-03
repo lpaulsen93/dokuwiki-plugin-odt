@@ -199,6 +199,7 @@ class css_declaration {
             $font_variant_set = false;
             $font_weight_set = false;
             $font_size_set = false;
+            $font_family = '';
 
             foreach ($values as $value) {
                 if ( $font_style_set === false ) {
@@ -313,7 +314,9 @@ class css_declaration {
                     if ( !empty($params [1]) ) {
                         $decls [] = new css_declaration ('line-height', $params [1]);
                     } else {
-                        $decls [] = new css_declaration ('line-height', 'normal');
+                        if ($setDefaults) {
+                            $decls [] = new css_declaration ('line-height', 'normal');
+                        }
                     }
                     $font_size_set = true;
                     if ( $default === false ) {
@@ -323,9 +326,14 @@ class css_declaration {
 
                 // All other properties are found.
                 // The rest is assumed to be a font-family.
-                if (!empty ($value) ) {
-                    $decls [] = new css_declaration ('font-family', $value);
+                if (empty ($font_family)) {
+                    $font_family = $value;
+                } else {
+                    $font_family .= ' '.$value;
                 }
+            }
+            if (!empty ($font_family)) {
+                $decls [] = new css_declaration ('font-family', $font_family);
             }
         }
     }

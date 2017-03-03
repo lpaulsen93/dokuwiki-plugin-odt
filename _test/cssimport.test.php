@@ -96,19 +96,11 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $decl = new css_declaration ('font', '15px arial, sans-serif;');
         $decl->explode ($decls);
 
-        $this->assertEquals(count($decls), 6);
-        $this->assertEquals($decls [0]->getProperty(), 'font-style');
-        $this->assertEquals($decls [0]->getValue(), 'normal');
-        $this->assertEquals($decls [1]->getProperty(), 'font-variant');
-        $this->assertEquals($decls [1]->getValue(), 'normal');
-        $this->assertEquals($decls [2]->getProperty(), 'font-weight');
-        $this->assertEquals($decls [2]->getValue(), 'normal');
-        $this->assertEquals($decls [3]->getProperty(), 'font-size');
-        $this->assertEquals($decls [3]->getValue(), '15px');
-        $this->assertEquals($decls [4]->getProperty(), 'line-height');
-        $this->assertEquals($decls [4]->getValue(), 'normal');
-        $this->assertEquals($decls [5]->getProperty(), 'font-family');
-        $this->assertEquals($decls [5]->getValue(), 'arial, sans-serif');
+        $this->assertEquals(count($decls), 2);
+        $this->assertEquals($decls [0]->getProperty(), 'font-size');
+        $this->assertEquals($decls [0]->getValue(), '15px');
+        $this->assertEquals($decls [1]->getProperty(), 'font-family');
+        $this->assertEquals($decls [1]->getValue(), 'arial, sans-serif');
     }
 
     /**
@@ -121,19 +113,17 @@ class plugin_odt_cssimport_test extends DokuWikiTest {
         $decl = new css_declaration ('font', 'italic bold 12px/30px Georgia, serif;');
         $decl->explode ($decls);
 
-        $this->assertEquals(count($decls), 6);
+        $this->assertEquals(count($decls), 5);
         $this->assertEquals($decls [0]->getProperty(), 'font-style');
         $this->assertEquals($decls [0]->getValue(), 'italic');
-        $this->assertEquals($decls [1]->getProperty(), 'font-variant');
-        $this->assertEquals($decls [1]->getValue(), 'normal');
-        $this->assertEquals($decls [2]->getProperty(), 'font-weight');
-        $this->assertEquals($decls [2]->getValue(), 'bold');
-        $this->assertEquals($decls [3]->getProperty(), 'font-size');
-        $this->assertEquals($decls [3]->getValue(), '12px');
-        $this->assertEquals($decls [4]->getProperty(), 'line-height');
-        $this->assertEquals($decls [4]->getValue(), '30px');
-        $this->assertEquals($decls [5]->getProperty(), 'font-family');
-        $this->assertEquals($decls [5]->getValue(), 'Georgia, serif');
+        $this->assertEquals($decls [1]->getProperty(), 'font-weight');
+        $this->assertEquals($decls [1]->getValue(), 'bold');
+        $this->assertEquals($decls [2]->getProperty(), 'font-size');
+        $this->assertEquals($decls [2]->getValue(), '12px');
+        $this->assertEquals($decls [3]->getProperty(), 'line-height');
+        $this->assertEquals($decls [3]->getValue(), '30px');
+        $this->assertEquals($decls [4]->getProperty(), 'font-family');
+        $this->assertEquals($decls [4]->getValue(), 'Georgia, serif');
     }
 
     /**

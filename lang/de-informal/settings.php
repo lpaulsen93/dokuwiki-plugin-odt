@@ -2,9 +2,9 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Florian Lamml <info@florian-lamml.de>
- * 
+ *
  * @package DokuWiki\lang\de-informal\settings
  */
 $lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Media Manager';
@@ -15,10 +15,10 @@ $lang['css_usage']             = 'Importiertes CSS auf ODT-Styles anwenden?';
 $lang['media_sel']             = 'Welcher @media Selektor soll verwendet werden um CSS-Eigenschaften abzufragen?';
 $lang['css_font_size']         = 'CSS Basis-Schriftgröße (definiert 1em)';
 $lang['css_template']          = 'Welches Template soll zur Formatierung der ODT-Dateien verwendet werden?';
-$lang ['apply_fs_to_non_css']  = 'CSS Basis-Schriftgröße auf ODT-Template und Plugin Default-Styles anwenden?';
+$lang['apply_fs_to_non_css']   = 'CSS Basis-Schriftgröße auf ODT-Template und Plugin Default-Styles anwenden?';
 
-$lang ['twips_per_pixel_x']    = 'Twips pro Pixel (X-Achse)';
-$lang ['twips_per_pixel_y']    = 'Twips pro Pixel (Y-Achse)';
+$lang['twips_per_pixel_x']     = 'Twips pro Pixel (X-Achse)';
+$lang['twips_per_pixel_y']     = 'Twips pro Pixel (Y-Achse)';
 
 $lang['format']                = 'Seitenformat';
 $lang['orientation']           = 'Seiten-Ausrichtung';

@@ -20,10 +20,10 @@ $lang['css_usage'] = 'Apply imported CSS to ODT styles?';
 $lang['media_sel'] = 'Which @media selector shall be used to query CSS properties?';
 $lang['css_font_size'] = 'CSS base font size (defining 1em)';
 $lang['css_template'] = 'Which template should be used for formatting the ODT files?';
-$lang ['apply_fs_to_non_css'] = 'Apply CSS font size to ODT template and plugin default styles?';
+$lang['apply_fs_to_non_css'] = 'Apply CSS font size to ODT template and plugin default styles?';
 
-$lang ['twips_per_pixel_x'] = 'Twips per pixel (X axis)';
-$lang ['twips_per_pixel_y'] = 'Twips per pixel (Y axis)';
+$lang['twips_per_pixel_x'] = 'Twips per pixel (X axis)';
+$lang['twips_per_pixel_y'] = 'Twips per pixel (Y axis)';
 
 $lang['format']                = 'Page format';
 $lang['orientation']           = 'Page orientation';

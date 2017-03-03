@@ -1367,8 +1367,8 @@ class ODTDocument
             case 'Numbers':
                 for ($level = 1 ; $level < 11 ; $level++) {
                     $outline_style->setPropertyForLevel($level, 'num-format', '1');
-                    $outline_style->setPropertyForLevel($level, 'num-suffix', '.');
-                    $outline_style->setPropertyForLevel($level, 'num-prefix', ' ');
+                    $outline_style->setPropertyForLevel($level, 'num-suffix', NULL);
+                    $outline_style->setPropertyForLevel($level, 'num-prefix', NULL);
                     $outline_style->setPropertyForLevel($level, 'display-levels', $level);
                 }
                 break;

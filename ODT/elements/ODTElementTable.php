@@ -427,6 +427,8 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $width.'pt');
+            $rel_width = round(($width * 100)/$max_width);
+            $style_obj->setProperty('rel-width', $rel_width.'%');
         }
 
         // Now adjust all nested containers too
@@ -439,6 +441,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
     public function adjustWidthInternal (ODTInternalParams $params, $maxWidth) {
         $empty = array();
         $relative = array();
+        $onlyAbsWidthFound = true;
 
         $tableStyle = $this->getStyle();
 
@@ -466,6 +469,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
                     $relative [] = $entry;
 
                     $abs_sum += (($width/10)/100) * $maxWidth;
+                    $onlyAbsWidthFound = false;
                 } else if ($style_obj->getProperty('column-width') != NULL) {
                     $width = $style_obj->getProperty('column-width');
                     $length = strlen ($width);
@@ -475,6 +479,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
                     // Add column style object to empty array
                     // We need to assign a width to this column
                     $empty [] = $style_obj;
+                    $onlyAbsWidthFound = false;
                 }
             }
         }
@@ -508,6 +513,12 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
             $column ['obj']->setProperty('rel-column-width', NULL);
         }
 
+        // If all columns have a fixed absolute width set then that means
+        // the table shall have the width of all comuns added together
+        // and not the maximum available width. Return $abs_sum.
+        if ($onlyAbsWidthFound) {
+            return $abs_sum;
+        }
         return $maxWidth;
     }
 }

@@ -2,9 +2,9 @@
 
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * 
+ *
  * @author Florian Lamml <info@florian-lamml.de>
- * 
+ *
  * @package DokuWiki\lang\de-informal\lang
  */
 $lang['encoding']              = 'utf-8';
@@ -28,7 +28,6 @@ $lang['empty']                 = 'Sie haben noch keine Seiten gewählt.';
 // %command%      = the complete command line which was executed
 // %errorcode%    = the error code reported after executing the command
 // %errormessage% = the detailed error message reported after executing the command
-$lang['conversion_failed_msg'] =
 $lang['conversion_failed_msg'] =
 '====== Bei der Konvertierung des ODT-Dokuments ist ein Fehler aufgetreten: ======
 

@@ -1112,7 +1112,7 @@ class ODTDocument
      */
     function tableHeaderOpen($colspan = 1, $rowspan = 1, $align, $element=NULL, $attributes=NULL){
         unset($this->params->elementObj);
-        ODTTable::tableHeaderOpen($this->params, $colspan = 1, $rowspan = 1, $align, NULL, NULL, $element, $attributes);
+        ODTTable::tableHeaderOpen($this->params, $colspan, $rowspan, $align, NULL, NULL, $element, $attributes);
     }
 
     /**

@@ -1079,78 +1079,108 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
+     * This function creates the styles required for Geshi-Syntax highlighting.
+     * We need two non-standard-ODT-Plugin-styles:
+     * Paragraph-Style: We need a paragraph style without top and bottom margin.
+     *                  Otherwise there would be a sapce betwwen the source code lines.
+     * List-Style: Usually lists are indented. Our list shall not be indented.
+     *             (A list will only be created by Geshi if line numbering is enabled)
+     */
+    protected function createGeshiListStyle () {
+        $style_name = 'highlight_list_paragraph_style';
+        if (!$this->document->styleExists($style_name)) {
+            // For the list paragrpah copy body style and remove margins
+            $body = $this->document->getStyleName('body');
+            $style = clone($this->document->getStyle($body));
+            if ($style != NULL) {
+                $style->setProperty('style-name', $style_name);
+                $style->setProperty('margin-top', NULL);
+                $style->setProperty('margin-bottom', NULL);
+                $this->document->addAutomaticStyle($style);
+            }
+        }
+        $style_name = 'highlight_list_numbers_text_style';
+        if (!$this->document->styleExists($style_name)) {
+            $source_code_style = $this->document->getStyleByAlias('source code');
+            $properties = array();
+            $properties ['style-name'] = $style_name;
+            $properties ['style-display-name'] = 'Source Code Numbers style';
+            $properties ['color'] = $source_code_style->getProperty('color');
+            $this->document->createTextStyle ($properties, true);
+        }
+        $style_name = 'highlight_list_ol_style';
+        if (!$this->document->styleExists($style_name)) {
+            // For the list style copy numbering list style and
+            // set indentation for level 1 to '0cm'
+            $ol = $this->document->getStyleName('numbering');
+            $style = clone($this->document->getStyle($ol));
+            if ($style != NULL) {
+                $style->setProperty('style-name', $style_name);
+                $style->setPropertyForLevel(1, 'text-style-name', 'highlight_list_numbers_text_style');
+                $style->setPropertyForLevel(1, 'text-align', 'left');
+                $style->setPropertyForLevel(1, 'list-level-position-and-space-mode', 'label-alignment');
+                $style->setPropertyForLevel(1, 'label-followed-by', 'listtab');
+                $style->setPropertyForLevel(1, 'list-tab-stop-position', '1cm');
+                $style->setPropertyForLevel(1, 'text-indent', '0cm');
+                $style->setPropertyForLevel(1, 'margin-left', '1cm');
+                $this->document->addAutomaticStyle($style);
+            }
+        }
+    }
+
+    /**
      * @param string $type
      * @param string $text
      * @param string $language
      */
     function _highlight($type, $text, $language=null) {
-        $style_name = $this->document->getStyleName('source code');
-        if ($type == "file") $style_name = $this->document->getStyleName('source file');
-
-        if (is_null($language)) {
-            $this->_preformatted($text, $style_name);
-            return;
-        }
-
-        // Use cahched geshi
+        // Use cached geshi
         $highlighted_code = p_xhtml_cached_geshi($text, $language, '');
 
-        // remove useless leading and trailing whitespace-newlines
-        $highlighted_code = preg_replace('/^&nbsp;\n/','',$highlighted_code);
-        $highlighted_code = preg_replace('/\n&nbsp;$/','',$highlighted_code);
-        // replace styles
-        $highlighted_code = str_replace("</span>", "</text:span>", $highlighted_code);
-        $highlighted_code = preg_replace_callback('/<span class="([^"]+)">/', array($this, '_convert_css_styles'), $highlighted_code);
-        // cleanup leftover span tags
-        $highlighted_code = preg_replace('/<span[^>]*>/', "<text:span>", $highlighted_code);
-        $highlighted_code = str_replace("&nbsp;", "&#xA0;", $highlighted_code);
-        // Replace links with ODT link syntax
-        $highlighted_code = preg_replace_callback('/<a (href="[^"]*">.*?)<\/a>/', array($this, '_convert_geshi_links'), $highlighted_code);
+        // Create Geshi styles required for ODT and get ODT sourcecode style
+        $this->createGeshiListStyle ();
+        $source_code_style = $this->document->getStyleByAlias('source code');
 
-        $this->_preformatted($highlighted_code, $style_name, false);
-    }
-
-    /**
-     * @param array $matches
-     * @return string
-     */
-    function _convert_css_styles($matches) {
-        $class = $matches[1];
-        
-        // Get CSS properties for that geshi class and create
-        // the text style (if not already done)
-        $style_name = 'highlight_'.$class;
-        if (!$this->document->styleExists($style_name)) {
-            $properties = array();
-            $properties ['style-name'] = $style_name;
-            $this->getODTProperties ($properties, NULL, 'code '.$class, NULL, 'screen');
-
-            // Create automatic style
-            $this->document->createTextStyle($properties, false);
+        $options = array();
+        $options ['escape_content'] = 'false';
+        $options ['space'] = 'preserve';
+        $options ['media_selector'] = 'screen';
+        $options ['element'] = 'pre';
+        $options ['style_names'] = 'prefix_and_class';
+        $options ['style_names_prefix'] = 'highlight_';
+        if (empty($language)) {
+            $options ['attributes'] = 'class="code"';
+        } else {
+            $options ['attributes'] = 'class="code '.$language.'"';
         }
-        
-        // Now make use of the new style
-        return '<text:span text:style-name="'.$style_name.'">';
-    }
+        $options ['list_ol_style'] = 'highlight_list_ol_style';
+        $options ['list_p_style'] = 'highlight_list_paragraph_style';
 
-    /**
-     * Callback function which creates a link from the part 'href="[^"]*">.*'
-     * in the pattern /<a (href="[^"]*">.*)<\/a>/. See function _highlight().
-     * 
-     * @param array $matches
-     * @return string
-     */
-    function _convert_geshi_links($matches) {
-        $content_start = strpos ($matches[1], '>');
-        $content = substr ($matches[1], $content_start+1);
-        preg_match ('/href="[^"]*"/', $matches[1], $urls);
-        $url = substr ($urls[0], 5);
-        $url = trim($url, '"');
-        // Keep '&' and ':' in the link unescaped, otherwise url parameter passing will not work
-        $url = str_replace('&amp;', '&', $url);
-        $url = str_replace('%3A', ':', $url);
+        // Open table with just one cell
+        $this->document->tableOpen();
+        $this->document->tableRowOpen();
+        $properties = array();
+        $properties ['border']           = $source_code_style->getProperty('border');
+        $properties ['border-top']       = $source_code_style->getProperty('border-top');
+        $properties ['border-right']     = $source_code_style->getProperty('border-right');
+        $properties ['border-bottom']    = $source_code_style->getProperty('border-bottom');
+        $properties ['border-left']      = $source_code_style->getProperty('border-left');
+        $properties ['padding']          = $source_code_style->getProperty('padding');
+        $properties ['padding-top']      = $source_code_style->getProperty('padding-top');
+        $properties ['padding-right']    = $source_code_style->getProperty('padding-right');
+        $properties ['padding-bottom']   = $source_code_style->getProperty('padding-bottom');
+        $properties ['padding-left']     = $source_code_style->getProperty('padding-left');
+        $properties ['background-color'] = $source_code_style->getProperty('background-color');
 
-        return $this->_doLink($url, $content, true);
+        $this->document->tableCellOpenUseProperties($properties);
+
+        // Generate ODT content from Geshi's HTML code
+        $this->document->generateODTfromHTMLCode($highlighted_code, $options);
+
+        // Close table
+        $this->document->tableCellClose();
+        $this->document->tableRowClose();
+        $this->document->tableClose();
     }
 
     /**

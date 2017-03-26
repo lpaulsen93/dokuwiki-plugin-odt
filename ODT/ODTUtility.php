@@ -618,4 +618,311 @@ class ODTUtility
         }
         return $value;
     }
+
+    protected static function getLinkURL ($search) {
+        preg_match ('/href="[^"]*"/', $search, $matches);
+        $url = substr ($matches[0], 5);
+        $url = trim($url, '"');
+        // Keep '&' and ':' in the link URL unescaped, otherwise url parameter passing will not work
+        $url = str_replace('&amp;', '&', $url);
+        $url = str_replace('%3A', ':', $url);
+
+        return $url;
+    }
+
+    /**
+     * static call back to replace spaces
+     *
+     * @param array $matches
+     * @return string
+     */
+    function _preserveSpace($matches){
+        $spaces = $matches[1];
+        $len    = strlen($spaces);
+        return '<text:s text:c="'.$len.'"/>';
+    }
+
+    protected static function createTextStyle (ODTInternalParams $params, $element, $attributes, $styleName=NULL) {
+        // Create automatic style
+        if ($styleName == NULL || !$params->document->styleExists($styleName)) {
+            // Get properties
+            $properties = array();        
+            ODTUtility::getHTMLElementProperties ($params, $properties, $element, $attributes);
+
+            if ($styleName == NULL) {
+                $properties ['style-name'] = ODTStyle::getNewStylename ('span');
+            } else {
+                // Use callers style name. He needs to be sure that it's unique!
+                $properties ['style-name'] = $styleName;
+            }
+            $params->document->createTextStyle($properties, false);
+
+            // Return style name
+            return $properties ['style-name'];
+        } else {
+            // Style already exists
+            return $styleName;
+        }
+    }
+
+    public static function generateODTfromHTMLCode(ODTInternalParams $params, $HTMLCode, array $options){
+        $elements = array ('sup' => array ('open' => '<text:span text:style-name="sup">',
+                                           'close' => '</text:span>'),
+                           'sub' => array ('open' => '<text:span text:style-name="sub">',
+                                           'close' => '</text:span>'),
+                           'u' => array ('open' => '<text:span text:style-name="underline">',
+                                         'close' => '</text:span>'),
+                           'em' => array ('open' => '<text:span text:style-name="Emphasis">',
+                                          'close' => '</text:span>'),
+                           'strong' => array ('open' => '<text:span text:style-name="Strong_20_Emphasis">',
+                                              'close' => '</text:span>'),
+                           'del' => array ('open' => '<text:span text:style-name="del">',
+                                           'close' => '</text:span>'),
+                           'a' => array ('open' => '',
+                                         'close' => ''),
+                           'ol' => array ('open' => '',
+                                          'close' => ''),
+                           'ul' => array ('open' => '',
+                                          'close' => ''),
+                           'li' => array ('open' => '<text:list-item><text:p text:style-name="Text_20_body">',
+                                          'close' => '</text:p></text:list-item>'),
+                           // In the moment only remove divs
+                           'div' => array ('open' => '', 'close' => ''),
+                       );
+        $parsed = array();
+
+        // Get default list style names
+        if (!empty($options ['list_p_style'])) {
+            $p_list_style = $options ['list_p_style'];
+        } else {
+            $p_list_style = $params->document->getStyleName('body');
+        }
+        if (!empty($options ['list_ol_style'])) {
+            $ol_list_style = $options ['list_ol_style'];
+        } else {
+            $ol_list_style = $params->document->getStyleName('numbering');
+        }
+        if (!empty($options ['list_ul_style'])) {
+            $ul_list_style = $options ['list_ul_style'];
+        } else {
+            $ul_list_style = $params->document->getStyleName('list');
+        }
+
+        // Set new media selector (remember old one)
+        $media = $params->import->getMedia ();
+        if (!empty($options ['media_selector'])) {
+            $params->import->setMedia ($options ['media_selector']);
+        }
+
+        if (!empty($options ['element'])) {
+            $params->htmlStack->open($options ['element'], $options ['attributes']);
+        }
+
+        // First examine $HTMLCode and differ between normal content,
+        // opening tags and closing tags.
+        $max = strlen ($HTMLCode);
+        $pos = 0;
+        while ($pos < $max) {
+            $found = ODTUtility::getNextTag($HTMLCode, $pos);
+            if ($found !== false) {
+                $entry = array();
+                $entry ['content'] = substr($HTMLCode, $pos, $found [0]-$pos);
+                if ($entry ['content'] === false) {
+                    $entry ['content'] = '';
+                }
+                $parsed [] = $entry;
+
+                $tagged = substr($HTMLCode, $found [0], $found [1]-$found [0]+1);
+                $entry = array();
+
+                if ($HTMLCode [$found[1]-1] == '/') {
+                    // Element without content <abc/>, doesn'T make sense, save as content
+                    $entry ['content'] = $tagged;
+                } else {
+                    if ($HTMLCode [$found[0]+1] != '/') {
+                        $parts = explode(' ', trim($tagged, '<> '), 2);
+                        $entry ['tag-open'] = $parts [0];
+                        if ($parts [1] !== NULL ) {
+                            $entry ['attributes'] = $parts [1];
+                        }
+                        $entry ['tag-orig'] = $tagged;
+                    } else {
+                        $entry ['tag-close'] = trim ($tagged, '<>/ ');
+                        $entry ['tag-orig'] = $tagged;
+                    }
+                }
+                $parsed [] = $entry;
+
+                $pos = $found [1]+1;
+            } else {
+                $entry = array();
+                $entry ['content'] = substr($HTMLCode, $pos);
+                $parsed [] = $entry;
+                break;
+            }
+        }
+
+        // Check each array entry.
+        $checked = array();
+        $first = true;
+        $firstTag = '';
+        for ($out = 0 ; $out < count($parsed) ; $out++) {
+            if ($checked [$out] !== NULL) {
+                continue;
+            }
+            $found = $parsed [$out];
+            if ($found ['content'] !== NULL) {
+                if ($options ['escape_content'] !== 'false') {
+                    $checked [$out] = $params->document->replaceXMLEntities($found ['content']);
+                } else {
+                    $checked [$out] = $found ['content'];
+                }
+            } else if ($found ['tag-open'] !== NULL) {
+                $closed = false;
+
+                for ($in = $out+1 ; $in < count($parsed) ; $in++) {
+                    $search = $parsed [$in];
+                    if ($search ['tag-close'] !== NULL &&
+                        $found ['tag-open'] == $search ['tag-close'] &&
+                        (array_key_exists($found ['tag-open'], $elements) || $found ['tag-open'] == 'span')) {
+                        $closed = true;
+
+                        // Remeber the first element
+                        if ($first) {
+                            $first = false;
+                            $firstTag = $found ['tag-open'];
+                        }
+
+                        // Known and closed tag, convert to ODT
+                        switch ($found ['tag-open']) {
+                            case 'span':
+                                // Create ODT span using CSS style from attributes
+                                if (!empty($options ['class'])) {
+                                    if (preg_match('/class="[^"]*"/', $found ['attributes'], $matches) == 1) {
+                                        $class_attr = substr($matches [0], 7);
+                                        $class_attr = trim($class_attr, '"');
+                                        $class_attr = 'class="'.$options ['class'].' '.$class_attr.'"';
+                                        $found ['attributes'] = str_replace($matches [0], $class_attr, $found ['attributes']);
+                                    }
+                                }
+                                $style_name = NULL;
+                                if ($options ['style_names'] == 'prefix_and_class') {
+                                    if (preg_match('/class="[^"]*"/', $found ['attributes'], $matches) == 1) {
+                                        $class_attr = substr($matches [0], 7);
+                                        $class_attr = trim($class_attr, '"');
+                                        $style_name = $options ['style_names_prefix'].$class_attr;
+                                    }
+                                }
+                                $style_name = self::createTextStyle ($params, 'span', $found ['attributes'], $style_name);
+                                $checked [$out] = '<text:span text:style-name="'.$style_name.'">';
+                                $checked [$in] = '</text:span>';
+                                break;
+                            case 'a':
+                                $url = self::getLinkURL($found ['attributes']);
+                                if (empty($url)) {
+                                    $url = 'URLNotFoundInXHTMLLink';
+                                }
+                                $checked [$out] = $params->document->openHyperlink ($url, NULL, NULL, true);
+                                $checked [$in] = $params->document->closeHyperlink (true);
+                                break;
+                            case 'ul':
+                                $checked [$out] = '<text:list text:style-name="'.$ul_list_style.'" text:continue-numbering="false">';
+                                $checked [$in] = '</text:list>';
+                                break;
+                            case 'ol':
+                                $checked [$out] = '<text:list text:style-name="'.$ol_list_style.'" text:continue-numbering="false">';
+                                $checked [$in] = '</text:list>';
+                                break;
+                            case 'li':
+                                $checked [$out] = '<text:list-item><text:p text:style-name="'.$p_list_style.'">';
+                                $checked [$in] = '</text:p></text:list-item>';
+                                break;
+                            default:
+                                // Simple replacement
+                                $checked [$out] = $elements [$found ['tag-open']]['open'];
+                                $checked [$in] = $elements [$found ['tag-open']]['close'];
+                                break;
+                        }
+                        break;
+                    }
+                }
+
+                // Known tag? Closing tag found?
+                if (!$closed) {
+                    // No, save as content
+                    if ($options ['escape_content'] !== 'false') {
+                        $checked [$out] = $params->document->replaceXMLEntities($found ['tag-orig']);
+                    } else {
+                        $checked [$out] = $found ['tag-orig'];
+                    }
+                }
+            } else if ($found ['tag-close'] !== NULL) {
+                // If we find a closing tag it means it did not match
+                // an opening tag. Convert to content!
+                $checked [$out] = $params->document->replaceXMLEntities($found ['tag-orig']);
+            }
+        }
+
+        // Eventually we need to create an enclosing element, open it
+        switch ($firstTag) {
+            case 'ol':
+            case 'ul':
+                // Close an eventually open paragraph
+                $params->document->paragraphClose();
+                break;
+            default:
+                $params->document->paragraphOpen();
+                break;
+        }
+
+
+        // Add checked entries to content
+        $content = '';
+        for ($index = 0 ; $index < count($checked) ; $index++) {
+            $content .= $checked [$index];
+        }
+
+        // Handle newlines
+        if ($options ['linebreaks'] !== 'remove') {
+            $content = str_replace("\n",'<text:line-break/>',$content);
+        } else {
+            $content = str_replace("\n",'',$content);
+        }
+
+        // Handle tabs
+        if ($options ['tabs'] !== 'remove') {
+            $content = str_replace("\t",'<text:tab/>',$content);
+        } else {
+            $content = str_replace("\t",'',$content);
+        }
+
+        // Preserve space?
+        if ($options ['space'] === 'preserve') {
+            $content = preg_replace_callback('/(  +)/',array('ODTUtility','_preserveSpace'),$content);
+        }
+
+        $params->content .= $content;
+
+
+        // Eventually we need to create an enclosing element, close it
+        switch ($firstTag) {
+            case 'ol':
+            case 'ul':
+                // Nothing to do
+                break;
+            default:
+                $params->document->paragraphClose();
+                break;
+        }
+
+        // Remove current element from stack, if we created one
+        if (!empty($options ['element'])) {
+            $params->htmlStack->removeCurrent();
+        }
+
+        // Restore media selector
+        if (!empty($options ['media_selector'])) {
+            $params->import->setMedia ($media);
+        }
+    }
 }

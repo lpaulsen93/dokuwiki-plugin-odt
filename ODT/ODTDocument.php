@@ -1906,6 +1906,38 @@ class ODTDocument
         $this->content .= $encoded;
     }
 
+    function openHyperlink ($url, $styleName = NULL, $visitedStyleName = NULL, $returnonly = false) {
+        $encoded = '';
+        if ($url && $this->linksEnabled) {
+            if (empty($styleName)) {
+                $styleName = $this->getStyleName('internet link');
+            }
+            if (empty($visitedStyleName)) {
+                $visitedStyleName = $this->getStyleName('visited internet link');
+            }
+            $url = ODTUtility::stringToIRI($url);
+            $encoded .= '<text:a xlink:type="simple" xlink:href="'.$url.'"';
+            $encoded .= ' text:style-name="'.$styleName.'"';
+            $encoded .= ' text:visited-style-name="'.$visitedStyleName.'"';
+            $encoded .= '>';
+        }
+        if ($returnonly) {
+            return $encoded;
+        }
+        $this->content .= $encoded;
+    }
+
+    function closeHyperlink ($returnonly = false) {
+        $encoded = '';
+        if ($this->linksEnabled) {
+            $encoded .= '</text:a>';
+        }
+        if ($returnonly) {
+            return $encoded;
+        }
+        $this->content .= $encoded;
+    }
+
     function insertHyperlink ($url, $text, $styleName = NULL, $visitedStyleName = NULL, $returnonly = false) {
         $encoded = '';
         if ($url && $this->linksEnabled) {
@@ -2338,5 +2370,15 @@ class ODTDocument
             $style->setPropertyForLevel($setLevel, 'text-indent', ($dist*-1).'cm');
             $style->setPropertyForLevel($setLevel, 'margin-left', $position.'cm');
         }
+    }
+
+    /**
+     * Automatically generate ODT format for given $HTMLCode.
+     *
+     * @param string $HTMLCode
+     * @see ODTUtility::generateODTfromHTMLCode for detailed documentation
+     */
+    public function generateODTfromHTMLCode($HTMLCode, array $options){
+        ODTUtility::generateODTfromHTMLCode($this->params, $HTMLCode, $options);
     }
 }

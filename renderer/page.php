@@ -1106,6 +1106,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             $properties ['style-name'] = $style_name;
             $properties ['style-display-name'] = 'Source Code Numbers style';
             $properties ['color'] = $source_code_style->getProperty('color');
+            if (empty($properties ['color'])) {
+                $properties ['color'] = '#000000';
+            }
             $this->document->createTextStyle ($properties, true);
         }
         $style_name = 'highlight_list_ol_style';
@@ -1121,7 +1124,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 $style->setPropertyForLevel(1, 'list-level-position-and-space-mode', 'label-alignment');
                 $style->setPropertyForLevel(1, 'label-followed-by', 'listtab');
                 $style->setPropertyForLevel(1, 'list-tab-stop-position', '1cm');
-                $style->setPropertyForLevel(1, 'text-indent', '0cm');
+                $style->setPropertyForLevel(1, 'text-indent', '-1cm');
                 $style->setPropertyForLevel(1, 'margin-left', '1cm');
                 $this->document->addAutomaticStyle($style);
             }

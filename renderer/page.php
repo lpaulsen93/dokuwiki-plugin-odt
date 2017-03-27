@@ -1137,6 +1137,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $language
      */
     function _highlight($type, $text, $language=null) {
+        if (is_null($language)) {
+            $this->_preformatted($text, $style_name);
+            return;
+        }
+
         // Use cached geshi
         $highlighted_code = p_xhtml_cached_geshi($text, $language, '');
 

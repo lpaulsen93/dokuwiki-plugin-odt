@@ -691,6 +691,11 @@ class ODTUtility
                        );
         $parsed = array();
 
+        // remove useless leading and trailing whitespace-newlines
+        $HTMLCode = preg_replace('/^&nbsp;\n/', '', $HTMLCode);
+        $HTMLCode = preg_replace('/\n&nbsp;$/', '', $HTMLCode);
+        $HTMLCode = str_replace('&nbsp;', '&#xA0;', $HTMLCode);
+
         // Get default list style names
         if (!empty($options ['list_p_style'])) {
             $p_list_style = $options ['list_p_style'];

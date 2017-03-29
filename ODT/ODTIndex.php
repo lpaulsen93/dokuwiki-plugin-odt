@@ -30,6 +30,7 @@ class ODTIndex
             $new [$key] = $value;
         }
         $new ['type'] = $type;
+        $new ['width'] = $params->document->getAbsWidthMindMargins();
 
         if ($type == 'chapter') {
             $new ['start_ref'] = $params->document->getPreviousToCItem(1);
@@ -184,7 +185,7 @@ class ODTIndex
             $doc->addStyle($style_obj);
             $title_style = $style_obj->getProperty('style-name');
         }
-        
+
         // Create paragraph styles
         $p_styles = array();
         $p_styles_auto = array();
@@ -196,7 +197,7 @@ class ODTIndex
             $doc->getCSSStylePropertiesForODT ($properties, $stylesL [$count+1]);
             $properties ['style-parent'] = 'Index';
             $properties ['style-class'] = 'index';
-            $properties ['style-position'] = $doc->getAbsWidthMindMargins() - $indent .'cm';
+            $properties ['style-position'] = $settings ['width'] - $indent .'cm';
             $properties ['style-type'] = 'right';
             $properties ['style-leader-style'] = 'dotted';
             $properties ['style-leader-text'] = $leader_sign;

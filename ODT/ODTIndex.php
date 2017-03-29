@@ -274,6 +274,9 @@ class ODTIndex
             $content .= '<text:'.$tag.'-entry-template text:outline-level="'.$level.'" text:style-name="'.$p_styles [$level].'">';
             $content .= '<text:index-entry-link-start text:style-name="'.$stylesLNames [$level].'"/>';
             $content .= '<text:index-entry-chapter/>';
+            if ($settings ['numbered_headings'] == true) {
+                $content .= '<text:index-entry-span> </text:index-entry-span>';
+            }
             $content .= '<text:index-entry-text/>';
             $content .= '<text:index-entry-tab-stop style:type="right" style:leader-char="'.$leader_sign.'"/>';
             $content .= '<text:index-entry-page-number/>';

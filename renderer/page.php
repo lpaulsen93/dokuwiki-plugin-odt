@@ -426,6 +426,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $matches = array();
         $data = array();
 
+        $data ['numbered_headings'] = false;
+        if ($this->config->getParam('outline_list_style') == 'Numbers') {
+            $data ['numbered_headings'] = true;
+        }
+
         // It seems to be not supported in ODT to have a different start
         // outline level than 1.
         $data ['maxlevel'] = $this->config->getParam('toc_maxlevel');

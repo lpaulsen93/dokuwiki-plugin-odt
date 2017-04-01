@@ -175,6 +175,7 @@ class ODTSpan
                         $entry ['tag-orig'] = $tagged;
                     }
                 }
+                $entry ['matched'] = false;
                 $parsed [] = $entry;
 
                 $pos = $found [1]+1;
@@ -192,18 +193,21 @@ class ODTSpan
             if ($checked [$out] !== NULL) {
                 continue;
             }
-            $found = $parsed [$out];
+            $found = &$parsed [$out];
             if ($found ['content'] !== NULL) {
                 $checked [$out] = $params->document->replaceXMLEntities($found ['content']);
             } else if ($found ['tag-open'] !== NULL) {
                 $closed = false;
 
                 for ($in = $out+1 ; $in < count($parsed) ; $in++) {
-                    $search = $parsed [$in];
+                    $search = &$parsed [$in];
                     if ($search ['tag-close'] !== NULL &&
                         $found ['tag-open'] == $search ['tag-close'] &&
+                        $search ['matched'] === false &&
                         (array_key_exists($found ['tag-open'], $spans) || $found ['tag-open'] == 'span')) {
+
                         $closed = true;
+                        $search ['matched'] = true;
 
                         // Known and closed tag, convert to ODT
                         if ($found ['tag-open'] != 'span') {

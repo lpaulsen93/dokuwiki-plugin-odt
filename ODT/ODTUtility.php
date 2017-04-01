@@ -678,6 +678,8 @@ class ODTUtility
                                               'close' => '</text:span>'),
                            'del' => array ('open' => '<text:span text:style-name="del">',
                                            'close' => '</text:span>'),
+                           'span' => array ('open' => '',
+                                         'close' => ''),
                            'a' => array ('open' => '',
                                          'close' => ''),
                            'ol' => array ('open' => '',
@@ -756,6 +758,7 @@ class ODTUtility
                         $entry ['tag-orig'] = $tagged;
                     }
                 }
+                $entry ['matched'] = false;
                 $parsed [] = $entry;
 
                 $pos = $found [1]+1;
@@ -775,7 +778,7 @@ class ODTUtility
             if ($checked [$out] !== NULL) {
                 continue;
             }
-            $found = $parsed [$out];
+            $found = &$parsed [$out];
             if ($found ['content'] !== NULL) {
                 if ($options ['escape_content'] !== 'false') {
                     $checked [$out] = $params->document->replaceXMLEntities($found ['content']);
@@ -786,11 +789,14 @@ class ODTUtility
                 $closed = false;
 
                 for ($in = $out+1 ; $in < count($parsed) ; $in++) {
-                    $search = $parsed [$in];
+                    $search = &$parsed [$in];
                     if ($search ['tag-close'] !== NULL &&
                         $found ['tag-open'] == $search ['tag-close'] &&
-                        (array_key_exists($found ['tag-open'], $elements) || $found ['tag-open'] == 'span')) {
+                        $search ['matched'] === false &&
+                        array_key_exists($found ['tag-open'], $elements)) {
+
                         $closed = true;
+                        $search ['matched'] = true;
 
                         // Remeber the first element
                         if ($first) {

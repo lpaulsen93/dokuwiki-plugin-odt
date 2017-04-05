@@ -435,7 +435,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // outline level than 1.
         $data ['maxlevel'] = $this->config->getParam('toc_maxlevel');
         if ( preg_match('/maxlevel=[^;]+;/', $settings, $matches) === 1 ) {
-            $temp = substr ($matches [0], 12);
+            $temp = substr ($matches [0], 9);
             $temp = trim ($temp, ';');
             $data ['maxlevel'] = $temp;
         }

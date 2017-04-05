@@ -364,7 +364,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
             // Get table left margin
             $leftMargin = $tableStyle->getProperty('margin-left');
-            if ($leftMargin == NULL) {
+            if ($leftMargin === NULL) {
                 $leftMarginPt = 0;
             } else {
                 $leftMarginPt = $params->units->getDigits ($params->units->toPoints($leftMargin));
@@ -372,7 +372,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
             // Get table right margin
             $rightMargin = $tableStyle->getProperty('margin-right');
-            if ($rightMargin == NULL) {
+            if ($rightMargin === NULL) {
                 $rightMarginPt = 0;
             } else {
                 $rightMarginPt = $params->units->getDigits ($params->units->toPoints($rightMargin));
@@ -380,11 +380,11 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
             // Get table width
             $width = $tableStyle->getProperty('width');
-            if ($width != NULL) {
+            if ($width !== NULL) {
                 $widthPt = $params->units->getDigits ($params->units->toPoints($width));
             }
 
-            if ($width == NULL) {
+            if ($width === NULL) {
                 $width = $maxPageWidthPt - $leftMarginPt - $rightMarginPt;
             } else {
                 $width = $widthPt;
@@ -427,7 +427,9 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $width.'pt');
-            $rel_width = round(($width * 100)/$max_width);
+            if ($max_width != 0) {
+                $rel_width = round(($width * 100)/$max_width);
+            }
             $style_obj->setProperty('rel-width', $rel_width.'%');
         }
 
@@ -441,6 +443,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
     public function adjustWidthInternal (ODTInternalParams $params, $maxWidth) {
         $empty = array();
         $relative = array();
+        $anyWidthFound = false;
         $onlyAbsWidthFound = true;
 
         $tableStyle = $this->getStyle();
@@ -470,11 +473,13 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
                     $abs_sum += (($width/10)/100) * $maxWidth;
                     $onlyAbsWidthFound = false;
+                    $anyWidthFound = true;
                 } else if ($style_obj->getProperty('column-width') != NULL) {
                     $width = $style_obj->getProperty('column-width');
                     $length = strlen ($width);
                     $width = $params->document->toPoints($width, 'x');
                     $abs_sum += (float) trim ($width, 'pt');
+                    $anyWidthFound = true;
                 } else {
                     // Add column style object to empty array
                     // We need to assign a width to this column
@@ -495,7 +500,9 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         // Calculate the relative width left
         // (e.g. if the absolute width is the half of the max width
         //  then the relative width left if 50%)
-        $relWidthLeft = 100-(($absWidthLeft/$maxWidth)*100);
+        if ($maxWidth != 0) {
+            $relWidthLeft = 100-(($absWidthLeft/$maxWidth)*100);
+        }
 
         // Give all empty columns a width
         $maxEmpty = count($empty);
@@ -516,7 +523,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         // If all columns have a fixed absolute width set then that means
         // the table shall have the width of all comuns added together
         // and not the maximum available width. Return $abs_sum.
-        if ($onlyAbsWidthFound) {
+        if ($onlyAbsWidthFound && $anyWidthFound) {
             return $abs_sum;
         }
         return $maxWidth;

@@ -17,7 +17,7 @@ class ODTIndex
      *
      * @return string
      */
-    function insertIndex(ODTInternalParams $params, array &$indexesData, $type='toc', array $settings=NULL) {        
+    public static function insertIndex(ODTInternalParams $params, array &$indexesData, $type='toc', array $settings=NULL) {        
         // Insert placeholder
         $index_count = count ($indexesData);
 
@@ -178,9 +178,8 @@ class ODTIndex
             $doc->getCSSStylePropertiesForODT ($properties, $styleH);
             $properties ['style-parent'] = 'Heading';
             $properties ['style-class'] = 'index';
-            $this->style_count++;
-            $properties ['style-name'] = 'Contents_20_Heading_'.$this->style_count;
-            $properties ['style-display-name'] = 'Contents Heading '.$this->style_count;
+            $properties ['style-name'] = 'Contents_20_Heading_'.$indexNo;
+            $properties ['style-display-name'] = 'Contents Heading '.$indexNo;
             $style_obj = ODTParagraphStyle::createParagraphStyle($properties);
             $doc->addStyle($style_obj);
             $title_style = $style_obj->getProperty('style-name');
@@ -325,7 +324,7 @@ class ODTIndex
      * @param boolean $links               Shall links be created.
      * @return string TOC body entries
      */
-    protected function getTOCBody(array $toc, $p_styles, $stylesLNames, $max_outline_level, $links) {
+    protected static function getTOCBody(array $toc, $p_styles, $stylesLNames, $max_outline_level, $links) {
         $page = 0;
         $content = '';
         foreach ($toc as $item) {
@@ -362,7 +361,7 @@ class ODTIndex
      * @param string  $startRef            Reference-ID of chapter main heading.
      * @return string TOC body entries
      */
-    protected function getChapterIndexBody(array $toc, $p_styles, $stylesLNames, $max_outline_level, $links, $startRef) {
+    protected static function getChapterIndexBody(array $toc, $p_styles, $stylesLNames, $max_outline_level, $links, $startRef) {
         $start_outline = 1;
         $in_chapter = false;
         $first = true;

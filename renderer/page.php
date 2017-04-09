@@ -1370,6 +1370,9 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         if($hash) $url .='#'.$hash;
 
         if ($ID == $id) {
+            if ($hash) {
+                $id = $hash;
+            }
             if($returnonly) {
                 return $this->locallink_with_text($hash, $id, $name, $returnonly);
             } else {

@@ -154,8 +154,12 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'heading5':              return 'Heading_20_5';
             case 'list':                  return 'List_20_1';
             case 'list content':          return 'List_20_1_Content';
+            case 'list first':            return 'List_20_1_Content_First';
+            case 'list last':             return 'List_20_1_Content_Last';
             case 'numbering':             return 'Numbering_20_1';
             case 'numbering content':     return 'Numbering_20_1_Content';
+            case 'numbering first':       return 'Numbering_20_1_Content_First';
+            case 'numbering last':        return 'Numbering_20_1_Content_Last';
             case 'table':                 return 'Table';
             case 'table content':         return 'Table_20_Contents';
             case 'table heading':         return 'Table_20_Heading';
@@ -194,8 +198,6 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'cell quotation3':       return 'Cell_Quotation3';
             case 'cell quotation4':       return 'Cell_Quotation4';
             case 'cell quotation5':       return 'Cell_Quotation5';
-            case 'list first paragraph':  return 'List_First_Paragraph';
-            case 'list last paragraph':   return 'List_Last_Paragraph';
             case 'first page':            return 'pm1';
             case 'internet link':         return 'Internet_20_link';
             case 'visited internet link': return 'Visited_20_Internet_20_Link';

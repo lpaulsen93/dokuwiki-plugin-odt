@@ -217,6 +217,12 @@ class ODTImport
             return;
         }
 
+        // Workaround for ODT format, see end of loop
+        $name = $params->styleset->getStyleName('numbering first');
+        $firstStyle = $params->styleset->getStyle($name);
+        $name = $params->styleset->getStyleName('numbering last');
+        $lastStyle = $params->styleset->getStyle($name);
+
         // Reset stack to saved root so next importStyle
         // will have the same conditions
         $htmlStack->restoreToRoot ();
@@ -305,10 +311,29 @@ class ODTImport
                 $this->setListStyleImage ($params, $style, $level, $file);
             }
 
+            // Workaround for ODT format:
+            // We can not set margins on the list itself.
+            // So we use extra paragraph styles for the first and last
+            // list items to set a margin.
+            if ($level == 1 &&
+                ($properties ['margin-top'] != NULL ||
+                 $properties ['margin-bottom'] != NULL)) {
+                $set = array ();
+                $disabled = array ();
+                // Delete left and right margins as setting them
+                // would destroy list item indentation
+                $set ['margin-left'] = NULL;
+                $set ['margin-right'] = NULL;
+                $set ['margin-top'] = $properties ['margin-top'];
+                $set ['margin-bottom'] = '0pt';
+                $firstStyle->importProperties($set, $disabled);
+                $set ['margin-bottom'] = $properties ['margin-bottom'];
+                $set ['margin-top'] = '0pt';
+                $lastStyle->importProperties($set, $disabled);
+            }
+
             // Import properties for list paragraph style once.
-            // Margins MUST be ignored!
-            // See extra handling in importUnorderedListStyles() for
-            // paragraph styles 'list first paragraph' and 'list last paragraph'
+            // Margins MUST be ignored! See extra handling above.
             if ($level == 1) {
                 $disabled = array();
                 $disabled ['margin-left'] = 1;
@@ -335,9 +360,9 @@ class ODTImport
         }
 
         // Workaround for ODT format, see end of loop
-        $name = $params->styleset->getStyleName('list first paragraph');
+        $name = $params->styleset->getStyleName('list first');
         $firstStyle = $params->styleset->getStyle($name);
-        $name = $params->styleset->getStyleName('list last paragraph');
+        $name = $params->styleset->getStyleName('list last');
         $lastStyle = $params->styleset->getStyle($name);
 
         // Reset stack to saved root so next importStyle

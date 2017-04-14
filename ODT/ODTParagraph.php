@@ -48,32 +48,44 @@ class ODTParagraph
                 // Create a style for putting a top margin for this first paragraph of the list
                 // (if not done yet, the name must be unique!)
                 if ($listCount == 1 && $isFirst) {
-                    
-                    // Has the style already been created...
-                    $styleNameFirst = 'FirstListParagraph_'.$styleName;
-                    if (!$params->document->styleExists($styleNameFirst)) {
-
-                        // ...no, create style as copy of style 'list first paragraph'
-                        $styleFirstTemplate = $params->document->getStyleByAlias('list first paragraph');
-                        if ($styleFirstTemplate != NULL) {
-                            $styleBody = $params->document->getStyle($styleName);
-                            $styleDisplayName = 'First '.$styleBody->getProperty('style-display-name');
-                            $styleObj = clone $styleFirstTemplate;
-                            if ($styleObj != NULL) {
-                                $styleObj->setProperty('style-name', $styleNameFirst);
-                                $styleObj->setProperty('style-parent', $styleName);
-                                $styleObj->setProperty('style-display-name', $styleDisplayName);
-                                $bottom = $styleFirstTemplate->getProperty('margin-bottom');
-                                if ($bottom === NULL) {
-                                    $styleObj->setProperty('margin-bottom', $styleBody->getProperty('margin-bottom'));
-                                }
-                                $params->document->addStyle($styleObj);
-                                $styleName = $styleNameFirst;
-                            }
-                        }
+                    // If we have a standard list content paragraph style then we use the
+                    // corresponding always existing first and last default styles
+                    if ($styleName == $params->document->getStyleName('list content')) {
+                        $styleName = $params->document->getStyleName('list first');
+                    } else if ($styleName == $params->document->getStyleName('numbering content')) {
+                        $styleName = $params->document->getStyleName('numbering first');
                     } else {
-                        // ...yes, just use the name
-                        $styleName = $styleNameFirst;
+                        // No standard list paragraph style.
+                        // Has a clone for the first paragraph's style already been created...
+                        $styleNameFirst = 'FirstListParagraph_'.$styleName;
+                        if (!$params->document->styleExists($styleNameFirst)) {
+
+                            // ...no, create style as copy of style 'list first' or 'numbering first'
+                            if ($list->getStyleName() == $params->document->getStyleName('list')) {
+                                $styleFirstTemplate = $params->document->getStyleByAlias('list first');
+                            } else {
+                                $styleFirstTemplate = $params->document->getStyleByAlias('numbering first');
+                            }
+                            if ($styleFirstTemplate != NULL) {
+                                $styleBody = $params->document->getStyle($styleName);
+                                $styleDisplayName = 'First '.$styleBody->getProperty('style-display-name');
+                                $styleObj = clone $styleFirstTemplate;
+                                if ($styleObj != NULL) {
+                                    $styleObj->setProperty('style-name', $styleNameFirst);
+                                    $styleObj->setProperty('style-parent', $styleName);
+                                    $styleObj->setProperty('style-display-name', $styleDisplayName);
+                                    $bottom = $styleFirstTemplate->getProperty('margin-bottom');
+                                    if ($bottom === NULL) {
+                                        $styleObj->setProperty('margin-bottom', $styleBody->getProperty('margin-bottom'));
+                                    }
+                                    $params->document->addStyle($styleObj);
+                                    $styleName = $styleNameFirst;
+                                }
+                            }
+                        } else {
+                            // ...yes, just use the name
+                            $styleName = $styleNameFirst;
+                        }
                     }
                 }
             }

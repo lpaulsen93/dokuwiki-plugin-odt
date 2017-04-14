@@ -233,23 +233,37 @@ class ODTList
 
             // Create a style for putting a bottom margin for this last paragraph of the list
             // (if not done yet, the name must be unique!)
-            $style_name = 'LastListParagraph_'.$last_p_style;
-            $style_last = $params->document->getStyleByAlias('list last paragraph');
-            if (!$params->document->styleExists($style_name)) {
-                if ($style_last != NULL) {
-                    $style_body = $params->document->getStyle($last_p_style);
-                    $style_display_name = 'Last '.$style_body->getProperty('style-display-name');
-                    $style_obj = clone $style_last;
 
-                    if ($style_obj != NULL) {
-                        $style_obj->setProperty('style-name', $style_name);
-                        $style_obj->setProperty('style-parent', $last_p_style);
-                        $style_obj->setProperty('style-display-name', $style_display_name);
-                        $top = $style_last->getProperty('margin-top');
-                        if ($top === NULL) {
-                            $style_obj->setProperty('margin-top', $style_body->getProperty('margin-top'));
+            // If we have a standard list content paragraph style then we use the
+            // corresponding always existing first and last default styles
+            if ($last_p_style == $params->document->getStyleName('list content')) {
+                $style_name = $params->document->getStyleName('list last');
+            } else if ($last_p_style == $params->document->getStyleName('numbering content')) {
+                $style_name = $params->document->getStyleName('numbering last');
+            } else {
+                $style_name = 'LastListParagraph_'.$last_p_style;
+                if (!$params->document->styleExists($style_name)) {
+                    // ...no, create style as copy of style 'list first' or 'numbering first'
+                    if ($list->getStyleName() == $params->document->getStyleName('list')) {
+                        $style_last = $params->document->getStyleByAlias('list first');
+                    } else {
+                        $style_last = $params->document->getStyleByAlias('numbering first');
+                    }
+                    if ($style_last != NULL) {
+                        $style_body = $params->document->getStyle($last_p_style);
+                        $style_display_name = 'Last '.$style_body->getProperty('style-display-name');
+                        $style_obj = clone $style_last;
+
+                        if ($style_obj != NULL) {
+                            $style_obj->setProperty('style-name', $style_name);
+                            $style_obj->setProperty('style-parent', $last_p_style);
+                            $style_obj->setProperty('style-display-name', $style_display_name);
+                            $top = $style_last->getProperty('margin-top');
+                            if ($top === NULL) {
+                                $style_obj->setProperty('margin-top', $style_body->getProperty('margin-top'));
+                            }
+                            $params->document->addStyle($style_obj);
                         }
-                        $params->document->addStyle($style_obj);
                     }
                 }
             }

@@ -640,6 +640,23 @@ class ODTDocument
     }
 
     /**
+     * Insert a bookmark. If $now is true then the bookmark will be created
+     * immediately. This eventually causes a paragraph to be opened.
+     * If $now is false then the bookmark will be inserted with the next
+     * cdata text.
+     *
+     * @param string $id    ID of the bookmark
+     * @param string $now   Insert bookmark immediately?
+     */
+    public function insertBookmark($id, $now) {
+        if ($now) {
+            $this->insertBookmarkInternal($id);
+        } else {
+            $this->pageBookmark = $id;
+        }
+    }
+
+    /**
      * Insert a bookmark.
      *
      * @param string $id    ID of the bookmark

@@ -2292,6 +2292,17 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function setUnorderedListParams ($setLevel, $align, $paddingLeft=0, $marginLeft=1) {
         $this->document->setUnorderedListParams($setLevel, $align, $paddingLeft, $marginLeft);
     }
+
+    /**
+     * Insert a bookmark.
+     *
+     * @param string $id    ID of the bookmark
+     * @param string $now   Insert bookmark immediately?
+     * @see ODTDocument::insertBookmark for detailed desciption.
+     */
+    public function insertBookmark($id, $now=true) {
+        $this->document->insertBookmark($id, $now);
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

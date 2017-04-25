@@ -4,13 +4,13 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
  * @author Anotheroneuser <w20151222@ya.ru>
- * 
- * @package DokuWiki\lang\ru\lang
+ * @author Wirbel78 <bryanskmap@yandex.ru>
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr (нигде не смог найти перевод этой аббревиатуры. Попадалась ерунда какая-то. Извините)';
 $lang['view']                  = 'Преобразовать страницу в формат Open Document';
 $lang['export_odt_button']     = 'ODT преобразование';
+$lang['export_odt_pdf_button'] = 'экспорт ODT=>PDF';
 $lang['tpl_not_found']         = 'ОШИБКА: шаблон ODT "%s" в каталоге шаблонов не обнаружен. Преобразование отменено. ';
 $lang['toc_title']             = 'Оглавление';
 $lang['chapter_title']         = 'Индекс главы';

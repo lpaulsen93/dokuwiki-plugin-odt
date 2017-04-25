@@ -4,10 +4,10 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
  * @author Anotheroneuser <w20151222@ya.ru>
- * 
- * @package DokuWiki\lang\ru\settings
+ * @author Wirbel78 <bryanskmap@yandex.ru>
  */
 $lang['tpl_dir']               = 'Подкатегория для шаблонов в организаторе аудиовизуальной информации. ';
+$lang['odt_template']          = 'Шаблон стиля импорта (файл ODT CSS)';
 $lang['showexportbutton']      = 'Высветить кнопку преобразования в формат ODT';
 $lang['media_sel']             = 'Какой @media переключатель должен быть использован для запроса свойств CSS? ';
 $lang['css_template']          = 'Какой шаблон должен быть использован для форматирования материалов ODT? ';

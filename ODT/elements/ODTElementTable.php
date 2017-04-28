@@ -427,8 +427,10 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $style_obj = $params->document->getStyle($table_style_name);
         if ($style_obj != NULL) {
             $style_obj->setProperty('width', $width.'pt');
-            if ($max_width != 0) {
-                $rel_width = round(($width * 100)/$max_width);
+            $maxPageWidth = $params->document->getAbsWidthMindMargins ();
+            $maxPageWidth = $params->units->getDigits ($params->units->toPoints($maxPageWidth.'cm'));
+            if ($maxPageWidth != 0) {
+                $rel_width = round(($width * 100)/$maxPageWidth);
             }
             $style_obj->setProperty('rel-width', $rel_width.'%');
         }

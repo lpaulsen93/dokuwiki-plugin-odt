@@ -225,6 +225,35 @@ class ODTUnits {
         return $value;
     }
 
+    /**
+     * Convert length value with valid XSL unit to pixel.
+     *
+     * @param string $value  String with length value, e.g. '20pt'...
+     * @param string $axis   Is the value to be converted a value on the X or Y axis? Default is 'y'.
+     *        Only relevant for conversion from 'px' or 'em'.
+     * @return string The current value.
+     */
+    public function toPixel ($value, $axis = 'y') {
+        $unit = self::stripDigits ($value);
+        if ( $unit == 'px' ) {
+            return $value;
+        }
+
+        if ( self::isValidXSLUnit ($unit) === false  ) {
+            // Not a vlaid/supported unit. Return original value.
+            return $value;
+        }
+
+        $value = self::toPoints ($value, $axis);
+        $value = substr($value, 0, -2);
+        if ($axis == 'x') {
+            $value = round ((($value*self::$twips_per_point)/$this->twips_per_pixel_x), 2).'px';
+        } else {
+            $value = round ((($value*self::$twips_per_point)/$this->twips_per_pixel_y), 2).'px';
+        }
+        return $value;
+    }
+
     public function getAbsoluteValue ($value, $base) {
         $unit = self::stripDigits ($value);
 

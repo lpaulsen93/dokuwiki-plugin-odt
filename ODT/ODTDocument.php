@@ -1859,6 +1859,18 @@ class ODTDocument
         return $this->units->toPoints ($value, $axis);
     }
 
+    /**
+     * Convert length value with valid XSL unit to pixel.
+     *
+     * @param string $value  String with length value, e.g. '20pt', '20cm'...
+     * @param string $axis   Is the value to be converted a value on the X or Y axis? Default is 'y'.
+     *        Only relevant for conversion from 'px' or 'em'.
+     * @return string The current value.
+     */
+    public function toPixel ($value, $axis = 'y') {
+        return $this->units->toPixel ($value, $axis);
+    }
+
     public function setTitle ($title) {
         // Set title in meta info.
         $this->meta->setTitle($title);

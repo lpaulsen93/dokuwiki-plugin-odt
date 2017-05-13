@@ -209,6 +209,22 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 break;
         }
 
+        // If we are using ODT for style import (a template or the default 'styles.xml')
+        // then adjust the pixel per em value to the font-size of the default paragraph style
+        // otherwise plugins might inherit a wrong font-size on CSS import!
+        if ($mode != 'CSS template') {
+            $default = $this->document->getDefaultStyle ('paragraph');
+            if ($default != NULL) {
+                $fontFize = $default->getProperty('font-size');
+                if (!empty($fontFize)) {
+                    $fontFizeInPx = $this->document->toPixel($fontFize);
+                    if (!empty($fontFizeInPx)) {
+                        $this->document->setPixelPerEm($fontFizeInPx);
+                    }
+                }
+            }
+        }
+
         // Setup page format.
         $this->document->setStartPageFormat ($this->config->getParam ('format'),
                                              $this->config->getParam ('orientation'),

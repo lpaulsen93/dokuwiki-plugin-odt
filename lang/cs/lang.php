@@ -5,13 +5,13 @@
  *
  * @author Jaroslav Lichtblau <jlichtblau@seznam.cz>
  * @author Ing. Jan Kaláb <jan+dokuwiki@kalabovi.org>
- * 
- * @package DokuWiki\lang\cs\lang
+ * @author Vojta Olsan <olsh0@seznam.cz>
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';
 $lang['view']                  = 'Exportovat stránku ve formátu Open Document';
 $lang['export_odt_button']     = 'ODT export';
+$lang['export_odt_pdf_button'] = 'Export ODT=>PDF';
 $lang['tpl_not_found']         = 'CHYBA : ODT šablona "%s" nebyla nalezena v adresáři se šablonami "%s". Bude použita výchozí šablona.';
 $lang['toc_title']             = 'Obsah';
 $lang['chapter_title']         = 'Index kapitol';

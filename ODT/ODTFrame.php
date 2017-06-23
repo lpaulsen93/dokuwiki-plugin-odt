@@ -117,7 +117,7 @@ class ODTFrame
      * 
      * @param     ODTInternalParams $params     Commom params.
      */
-    function closeTextBox (ODTInternalParams $params) {
+    public static function closeTextBox (ODTInternalParams $params) {
         // Close paragraph (if open)
         $params->document->paragraphClose();
         // Close text box
@@ -361,7 +361,7 @@ class ODTFrame
      * 
      * @param     ODTInternalParams $params     Commom params.
      */
-    function closeFrame (ODTInternalParams $params) {
+    public static function closeFrame (ODTInternalParams $params) {
         $frame = $params->document->state->getCurrentFrame();
         if ($frame == NULL) {
             // ??? Error. Not table found.

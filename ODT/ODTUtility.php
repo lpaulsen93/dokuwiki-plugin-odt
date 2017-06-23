@@ -347,7 +347,7 @@ class ODTUtility
 
         // First do simple adjustments per property
         foreach ($properties as $property => $value) {
-            $properties [$property] = ODTUtility::adjustValueForODT ($property, $value, $units);
+            $properties [$property] = self::adjustValueForODT ($property, $value, $units);
         }
 
         // Adjust relative margins if $maxWidth is given.
@@ -511,7 +511,7 @@ class ODTUtility
         $params->import->getPropertiesForElement($dest, $toMatch, $params->units);
 
         // Adjust values for ODT
-        ODTUtility::adjustValuesForODT($dest, $params->units, $maxWidth);
+        self::adjustValuesForODT($dest, $params->units, $maxWidth);
     }
 
     /**
@@ -548,7 +548,7 @@ class ODTUtility
         $params->import->getPropertiesForElement($dest, $toMatch, $params->units, $inherit);
 
         // Adjust values for ODT
-        ODTUtility::adjustValuesForODT($dest, $params->units, $maxWidth);
+        self::adjustValuesForODT($dest, $params->units, $maxWidth);
 
         // Remove element from stack
         $params->htmlStack->removeCurrent();
@@ -636,7 +636,7 @@ class ODTUtility
      * @param array $matches
      * @return string
      */
-    function _preserveSpace($matches){
+    protected static function _preserveSpace($matches){
         $spaces = $matches[1];
         $len    = strlen($spaces);
         return '<text:s text:c="'.$len.'"/>';
@@ -647,7 +647,7 @@ class ODTUtility
         if ($styleName == NULL || !$params->document->styleExists($styleName)) {
             // Get properties
             $properties = array();        
-            ODTUtility::getHTMLElementProperties ($params, $properties, $element, $attributes);
+            self::getHTMLElementProperties ($params, $properties, $element, $attributes);
 
             if ($styleName == NULL) {
                 $properties ['style-name'] = ODTStyle::getNewStylename ('span');
@@ -730,7 +730,7 @@ class ODTUtility
         $max = strlen ($HTMLCode);
         $pos = 0;
         while ($pos < $max) {
-            $found = ODTUtility::getNextTag($HTMLCode, $pos);
+            $found = self::getNextTag($HTMLCode, $pos);
             if ($found !== false) {
                 $entry = array();
                 $entry ['content'] = substr($HTMLCode, $pos, $found [0]-$pos);
@@ -909,7 +909,7 @@ class ODTUtility
 
         // Preserve space?
         if ($options ['space'] === 'preserve') {
-            $content = preg_replace_callback('/(  +)/',array('ODTUtility','_preserveSpace'),$content);
+            $content = preg_replace_callback('/(  +)/',array(self,'_preserveSpace'),$content);
         }
 
         $params->content .= $content;

@@ -68,7 +68,7 @@ class css_attribute_selector {
     public function matches (array $attributes=NULL) {
         if ($this->operator == NULL) {
             // Attribute should be present
-            return array_key_exists($this->attribute, $attributes);
+            return isset($attributes) && array_key_exists($this->attribute, $attributes);
         } else {
             switch ($this->operator) {
                 case '=':

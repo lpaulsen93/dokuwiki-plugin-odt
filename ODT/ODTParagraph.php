@@ -26,7 +26,7 @@ class ODTParagraph
      * @param     string            $element    The element name, e.g. "div"
      * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
-    static public function paragraphOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
+    public static function paragraphOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
         if ($element == NULL) {
             $element = 'p';
         }
@@ -129,7 +129,7 @@ class ODTParagraph
      * 
      * @param     ODTInternalParams $params     Commom params.
      */
-    static public function paragraphClose(ODTInternalParams $params){
+    public static function paragraphClose(ODTInternalParams $params){
         $paragraph = $params->document->state->getCurrentParagraph();
         if ($paragraph != NULL) {
             ODTUtility::closeHTMLElement ($params, $paragraph->getHTMLElement());
@@ -155,7 +155,7 @@ class ODTParagraph
      * @param     string            $element    The element name, e.g. "div"
      * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
-    function paragraphOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
+    public static function paragraphOpenUseCSS(ODTInternalParams $params, $element=NULL, $attributes=NULL){
         $inParagraph = $params->document->state->getInParagraph();
         if ($inParagraph) {
             return;

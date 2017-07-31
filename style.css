@@ -33,13 +33,14 @@
 #dokuwiki__pagetools ul li a.export_odt_pdf:focus {
     background-position: right -45px;
 }
+
 /*Keep pagetool icon on left side for rtl languages*/
 [dir=rtl] #dokuwiki__pagetools ul li a.export_odt:hover,
-#dokuwiki__pagetools ul li a.export_odt:active,
-#dokuwiki__pagetools ul li a.export_odt:focus,
+[dir=rtl] #dokuwiki__pagetools ul li a.export_odt:active,
+[dir=rtl] #dokuwiki__pagetools ul li a.export_odt:focus,
 [dir=rtl] #dokuwiki__pagetools ul li a.export_odt_pdf:hover,
-#dokuwiki__pagetools ul li a.export_odt_pdf:active,
-#dokuwiki__pagetools ul li a.export_odt_pdf:focus {
+[dir=rtl] #dokuwiki__pagetools ul li a.export_odt_pdf:active,
+[dir=rtl] #dokuwiki__pagetools ul li a.export_odt_pdf:focus {
     background-position: left -45px;
 }
 

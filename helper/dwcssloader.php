@@ -91,6 +91,23 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         $css .= $this->get_css_for_filetypes();
 
         // build the stylesheet
+        foreach($files as $file => $location) {
+            $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
+            $css_content = "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
+            $css_content = css_loadfile($file, $location);
+            if ( strpos ($file, 'screen.css') !== false ) {
+                $css .= "\n@media screen {\n" . $css_content . "\n}\n";
+            } else if ( strpos ($file, 'style.css') !== false ) {
+                $css .= "\n@media screen {\n" . $css_content . "\n}\n";
+            } else if ( strpos ($file, $format.'.css') !== false ) {
+                $css .= "\n@media print {\n" . $css_content . "\n}\n";
+            } else if ( strpos ($file, 'print.css') !== false ) {
+                $css .= "\n@media print {\n" . $css_content . "\n}\n";
+            } else {
+                $css .= $css_content;
+            }
+        }
+
         foreach ($mediatypes as $mediatype) {
             // load files
             $css_content = '';
@@ -111,23 +128,6 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
                 default:
                     $css .= NL.'/* START rest styles */ '.NL.$css_content.NL.'/* END rest styles */'.NL;
                     break;
-            }
-        }
-
-        foreach($files as $file => $location) {
-            $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
-            $css_content = "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
-            $css_content = css_loadfile($file, $location);
-            if ( strpos ($file, 'screen.css') !== false ) {
-                $css .= "\n@media screen {\n" . $css_content . "\n}\n";
-            } else if ( strpos ($file, 'style.css') !== false ) {
-                $css .= "\n@media screen {\n" . $css_content . "\n}\n";
-            } else if ( strpos ($file, $format.'.css') !== false ) {
-                $css .= "\n@media print {\n" . $css_content . "\n}\n";
-            } else if ( strpos ($file, 'print.css') !== false ) {
-                $css .= "\n@media print {\n" . $css_content . "\n}\n";
-            } else {
-                $css .= $css_content;
             }
         }
 
@@ -159,13 +159,13 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         $list = array();
         $plugins = plugin_list();
 
-        foreach($plugins as $p) {            
+        foreach($plugins as $p) {
             // Always load normal/screen CSS code
             // That way plugins can choose with the media selector which CSS code they like to use
-            $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-            $list[DOKU_PLUGIN . $p ."/screen.less"] = DOKU_BASE . "lib/plugins/". $p ."/";
-            $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-            $list[DOKU_PLUGIN . $p ."/style.less"] = DOKU_BASE . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/screen.css"] = DOKU_INC . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/screen.less"] = DOKU_INC . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/style.css"] = DOKU_INC . "lib/plugins/". $p ."/";
+            $list[DOKU_PLUGIN . $p ."/style.less"] = DOKU_INC . "lib/plugins/". $p ."/";
 
             // Do $format.css (e.g. odt.css) or print.css exists?
             $format_css = file_exists(DOKU_PLUGIN . $p ."/". $format .".css");
@@ -173,11 +173,11 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             $print_css = file_exists(DOKU_PLUGIN . $p ."/print.css");
             $print_less = file_exists(DOKU_PLUGIN . $p ."/print.less");
             if($format_css || $format_less) {
-                $list[DOKU_PLUGIN . $p ."/". $format .".css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-                $list[DOKU_PLUGIN . $p ."/". $format .".less"] = DOKU_BASE . "lib/plugins/". $p ."/";
+                $list[DOKU_PLUGIN . $p ."/". $format .".css"] = DOKU_INC . "lib/plugins/". $p ."/";
+                $list[DOKU_PLUGIN . $p ."/". $format .".less"] = DOKU_INC . "lib/plugins/". $p ."/";
             } else if ($print_css || $print_less) {
-                $list[DOKU_PLUGIN . $p ."/print.css"] = DOKU_BASE . "lib/plugins/". $p ."/";
-                $list[DOKU_PLUGIN . $p ."/print.less"] = DOKU_BASE . "lib/plugins/". $p ."/";
+                $list[DOKU_PLUGIN . $p ."/print.css"] = DOKU_INC . "lib/plugins/". $p ."/";
+                $list[DOKU_PLUGIN . $p ."/print.less"] = DOKU_INC . "lib/plugins/". $p ."/";
             }
         }
         return $list;

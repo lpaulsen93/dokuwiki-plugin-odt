@@ -116,30 +116,31 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @return bool
      */
     public function convert(Doku_Event $event) {
-        global $ACT;
         global $ID;
         $format = NULL;
-        $ACT = act_clean($ACT);
+
+        $action = act_clean($event->data);
 
         // Any kind of ODT export?
         $odt_export = false;
-        if (strncmp($ACT, 'export_odt', strlen('export_odt')) == 0) {
+        if (strncmp($action, 'export_odt', strlen('export_odt')) == 0) {
             $odt_export = true;
         }
 
-        // check conversion format and adjust $ACT
-        if ($odt_export && strpos($ACT, '_pdf') !== false) {
+        // check conversion format
+        if ($odt_export && strpos($action, '_pdf') !== false) {
             $format = 'pdf';
         }
 
-        // single page export: rename to the actual renderer component
-        if($ACT == 'export_odt') {
-            $ACT = 'export_odt_page';
-        } else if ($ACT == 'export_odt_pdf') {
-            $ACT = 'export_odt_pagepdf';
+        // single page export:
+        // rename action to the actual renderer component
+        if($action == 'export_odt') {
+            $event->data = 'export_odt_page';
+        } else if ($action == 'export_odt_pdf') {
+            $event->data = 'export_odt_pagepdf';
         }
 
-        if( !is_array($ACT) && $odt_export ) {
+        if( !is_array($action) && $odt_export ) {
             // On export to ODT load config helper if not done yet
             // and stop on errors.
             if ( $this->config == NULL ) {
@@ -154,16 +155,8 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
             $this->config->setConvertTo($format);
         }
 
-        // How should a new action be triggered?
-        // old action=export_odt, new action=$ACT
-        // The code below gives an infinite loop in the ActionRouter
-        /*if ($ACT == 'export_odt_page' || $ACT == 'export_odt_pdf') {
-            //throw new ActionAbort($ACT);
-            throw new ActionException($ACT);
-        }*/
-
         // the book export?
-        if(($ACT != 'export_odtbook') && ($ACT != 'export_odtns')) return false;
+        if(($action != 'export_odtbook') && ($action != 'export_odtns')) return false;
 
         // check user's rights
         if(auth_quickaclcheck($ID) < AUTH_READ) return false;
@@ -199,7 +192,6 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @return string|bool
      */
     protected function collectExportPages(Doku_Event $event) {
-        global $ACT;
         global $ID;
         global $INPUT;
 
@@ -212,14 +204,15 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         // list of one or multiple pages
         $list = array();
 
-        if($ACT == 'export_odt') {
+        $action = $event->data;
+        if($action == 'export_odt') {
             $list[0] = $ID;
             $title = $INPUT->str('book_title');
             if(!$title) {
                 $title = p_get_first_heading($ID);
             }
 
-        } elseif($ACT == 'export_odtns') {
+        } elseif($action == 'export_odtns') {
             //check input for title and ns
             if(!$title = $INPUT->str('book_title')) {
                 $this->showPageWithErrorMsg($event, 'needtitle');
@@ -264,7 +257,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
             }
 
         } elseif(isset($_COOKIE['list-pagelist']) && !empty($_COOKIE['list-pagelist'])) {
-            // Here is $ACT == 'export_odtbook'
+            // Here is $action == 'export_odtbook'
 
             /** @deprecated  April 2016 replaced by localStorage version of Bookcreator*/
 

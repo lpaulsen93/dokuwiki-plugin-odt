@@ -312,58 +312,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     }
 
     /**
-     * Convert exported ODT file if required.
-     * Supported formats: pdf
-     */
-    protected function convert () {
-        global $ID;
-                
-        $format = $this->config->getConvertTo ();
-        if ($format == 'pdf') {
-            // Prepare temp directory
-            $temp_dir = $this->config->getParam('tmpdir');
-            $temp_dir = $temp_dir."/odt/".str_replace(':','-',$ID);
-            if (is_dir($temp_dir)) { io_rmdir($temp_dir,true); }
-            io_mkdir_p($temp_dir);
-
-            // Set source and dest file path
-            $file = $temp_dir.'/convert.odt';
-            $pdf_file = $temp_dir.'/convert.pdf';
-
-            // Prepare command line
-            $command = $this->config->getParam('convert_to_pdf');
-            $command = str_replace('%outdir%', $temp_dir, $command);
-            $command = str_replace('%sourcefile%', $file, $command);
-
-            // Convert file
-            io_saveFile($file, $this->doc);
-            exec ($command, $output, $result);
-            if ($result) {
-                $errormessage = '';
-                foreach ($output as $line) {
-                    $errormessage .= $this->_xmlEntities($line);
-                }
-                $message = $this->getLang('conversion_failed_msg');
-                $message = str_replace('%command%', $command, $message);
-                $message = str_replace('%errorcode%', $result, $message);
-                $message = str_replace('%errormessage%', $errormessage, $message);
-                $message = str_replace('%pageid%', $ID, $message);
-                
-                $instructions = p_get_instructions($message);
-                $this->doc = p_render('xhtml', $instructions, $info);
-
-                $headers = array(
-                    'Content-Type' =>  'text/html; charset=utf-8',
-                );
-                p_set_metadata($ID,array('format' => array('odt_page' => $headers) ));
-            } else {
-                $this->doc = io_readFile($pdf_file, false);
-            }
-            io_rmdir($temp_dir,true);
-        }
-    }
-
-    /**
      * Completes the ODT file.
      */
     public function finalize_ODTfile() {
@@ -373,8 +321,6 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         // Build/assign the document
         $this->doc = $this->document->getODTFileAsString ($ODTtemplate, $temp_dir);
-
-        $this->convert();
     }
 
     /**

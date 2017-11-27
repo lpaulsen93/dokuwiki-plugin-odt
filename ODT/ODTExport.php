@@ -153,6 +153,9 @@ class ODTExport
             throw new Exception(' Error extracting the zip archive:'.$template.' to '.$tempDir);
         }
 
+        // Replace metadata
+        io_saveFile($tempDir.'/meta.xml', $meta);
+
         // Evtl. copy page format of first page to different style
         $first_master = $params->styleset->getStyleAtIndex ('office:master-styles', 0);
         if ($first_master != NULL &&

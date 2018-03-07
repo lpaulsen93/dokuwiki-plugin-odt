@@ -3,6 +3,7 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @author Andreas Zieske <zieske@eaf-bund.de>
  * @author F. Mueller-Donath <j.felix@mueller-donath.de>
  * @author Florian Lamml <info@florian-lamml.de>
  */

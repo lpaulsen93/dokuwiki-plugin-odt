@@ -5,6 +5,7 @@
  *
  * @package DokuWiki\lang\nl\lang
  *
+ * @author G. Uitslag <klapinklapin@gmail.com>
  * @author Coen Eisma <info@coeneisma.nl>
  * @author Wouter Wijsman <wwijsman@live.nl>
  * @author Arthur Buijs <arthur@artietee.nl>
@@ -27,3 +28,25 @@ $lang['needtitle']             = 'Er moet een titel ingevuld worden';
 $lang['needns']                = 'Geef een bestaande namespace.';
 $lang['empty']                 = 'Er zijn nog geen pagina\'s geselecteerd.';
 $lang['forbidden']             = 'Je hebt geen toegang tot deze pagina\'s: %s.<br/><br/>Gebruik de optie \'Sla verboden pagina\'s over\' om je boek met de beschikbare pagina\'s aan te maken.';
+$lang['conversion_failed_msg'] = '====== Een fout tijdens de omzetting van het ODT document: ======
+
+Uitgevoerde commandoregel:
+
+<code>%command%</code>
+
+Foutcode: %errorcode%
+
+Foutmelding:
+
+<code>%errormessage%</code>
+
+[[%pageid%|Terug naar de vorige pagina]]';
+$lang['init_failed_msg']       = '====== Een fout tijdens het initialiseren van het ODT document: ======
+
+Is je DokuWiki versie compatibel met de ODT plugin?
+
+Sinds release 2017-02-11 heeft de ODT plugin DokuWiki versie "Detritus" of nieuwer nodig!
+Voor gedetailleerde informatie over de vereisten, zie alsjeblieft de 
+ [[https://www.dokuwiki.org/plugin:odt#requirements|Requirements sectie]] van de ODT plugin pagina op DokuWiki.org.
+
+(Je DokuWiki versie is %DWVERSION%)';

@@ -3,6 +3,8 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @package DokuWiki\lang\de-informal\settings
+ *
  * @author Florian Lamml <info@florian-lamml.de>
  */
 $lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Media Manager';

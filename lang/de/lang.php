@@ -3,9 +3,10 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
- * @author Florian Lamml <info@florian-lamml.de>
- * 
  * @package DokuWiki\lang\de\lang
+ *
+ * @author F. Mueller-Donath <j.felix@mueller-donath.de>
+ * @author Florian Lamml <info@florian-lamml.de>
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';
@@ -22,14 +23,8 @@ $lang['update_chapter_msg']    = 'Bitte vergessen Sie nicht, das Kapitelverzeich
 $lang['needtitle']             = 'Bitte Titel angeben!';
 $lang['needns']                = 'Bitte geben Sie einen vorhandenen Namensraum an.';
 $lang['empty']                 = 'Sie haben noch keine Seiten gewählt.';
-
-// Error message for failed conversion.
-// The following replacments are supported:
-// %command%      = the complete command line which was executed
-// %errorcode%    = the error code reported after executing the command
-// %errormessage% = the detailed error message reported after executing the command
-$lang['conversion_failed_msg'] =
-'====== Bei der Konvertierung des ODT-Dokuments ist ein Fehler aufgetreten: ======
+$lang['forbidden']             = 'Sie haben keine Berechtigung die folgenden Seiten zu lesen: %s.<br/><br/>Benutzen Sie die Option \'Verbotene Seiten überspringen\' um das Buch mit den verfügbaren Seiten zu erstellen.';
+$lang['conversion_failed_msg'] = '====== Bei der Konvertierung des ODT-Dokuments ist ein Fehler aufgetreten: ======
 
 Ausgeführte Kommando-Zeile:
 
@@ -42,10 +37,7 @@ Fehlerausgabe:
 <code>%errormessage%</code>
 
 [[%pageid%|Zurück zur vorherigen Seite]]';
-
-// Error message for failed conversion.
-$lang['init_failed_msg'] =
-'====== Ein Fehler ist bei der Initialisierung des ODT-Dokuments aufgetreten: ======
+$lang['init_failed_msg']       = '====== Ein Fehler ist bei der Initialisierung des ODT-Dokuments aufgetreten: ======
 
 Ist Ihre DokuWiki-Version kompatibel zum ODT-Plugin?
 

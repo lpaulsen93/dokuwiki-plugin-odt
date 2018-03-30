@@ -3,6 +3,8 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @package DokuWiki\lang\de\settings
+ *
  * @author Matthias Schulte <dokuwiki@lupo49.de>
  * @author Florian Lamml <info@florian-lamml.de>
  */

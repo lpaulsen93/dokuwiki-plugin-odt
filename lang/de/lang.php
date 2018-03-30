@@ -3,6 +3,8 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @package DokuWiki\lang\de\lang
+ *
  * @author F. Mueller-Donath <j.felix@mueller-donath.de>
  * @author Florian Lamml <info@florian-lamml.de>
  */
@@ -20,8 +22,8 @@ $lang['update_toc_msg']        = 'Bitte vergessen Sie nicht, das Inhaltsverzeich
 $lang['update_chapter_msg']    = 'Bitte vergessen Sie nicht, das Kapitelverzeichnis nach dem Export zu aktualisieren.';
 $lang['needtitle']             = 'Bitte Titel angeben!';
 $lang['needns']                = 'Bitte geben Sie einen vorhandenen Namensraum an.';
-$lang['empty']                 = 'Sie haben noch keine Seiten ausgewählt.';
-$lang['forbidden']             = 'Sie haben keine Berechtigungen für folgende Seiten: %s.<br/><br/>Benutzen Sie die Option "Verbotene Seiten überspringen" um ein Buch nur mit den verfügbaren Seiten zu erstellen.';
+$lang['empty']                 = 'Sie haben noch keine Seiten gewählt.';
+$lang['forbidden']             = 'Sie haben keine Berechtigung die folgenden Seiten zu lesen: %s.<br/><br/>Benutzen Sie die Option \'Verbotene Seiten überspringen\' um das Buch mit den verfügbaren Seiten zu erstellen.';
 $lang['conversion_failed_msg'] = '====== Bei der Konvertierung des ODT-Dokuments ist ein Fehler aufgetreten: ======
 
 Ausgeführte Kommando-Zeile:

@@ -333,6 +333,9 @@ class ODTDocument
      * @see ODTSpan::spanOpen for detailed documentation
      */
     function spanOpen($styleName, $element=NULL, $attributes=NULL){
+        if ( !$in_paragraph ) {
+            $this->paragraphOpen();
+        }
         unset($this->params->elementObj);
         ODTSpan::spanOpen($this->params, $styleName, $element, $attributes);
     }
@@ -343,6 +346,9 @@ class ODTDocument
      * @see ODTSpan::spanOpenUseCSS for detailed documentation
      */
     function spanOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
+        if ( !$in_paragraph ) {
+            $this->paragraphOpen();
+        }
         if ($import == NULL) {
             $import = $this->importnew;
         }
@@ -361,6 +367,9 @@ class ODTDocument
      * @see ODTSpan::spanOpenUseProperties for detailed documentation
      */
     function spanOpenUseProperties($properties){
+        if ( !$in_paragraph ) {
+            $this->paragraphOpen();
+        }
         ODTUtility::adjustValuesForODT($properties, $this->units);
         unset($this->params->elementObj);
         ODTSpan::spanOpenUseProperties($this->params, $properties);

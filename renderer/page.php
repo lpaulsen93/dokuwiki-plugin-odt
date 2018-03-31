@@ -1104,6 +1104,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $language
      */
     function _highlight($type, $text, $language=null) {
+
         if (is_null($language)) {
             $this->_preformatted($text, $style_name);
             return;
@@ -1130,6 +1131,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
         $options ['list_ol_style'] = 'highlight_list_ol_style';
         $options ['list_p_style'] = 'highlight_list_paragraph_style';
+        $options ['p_style'] = $this->document->getStyleName('preformatted');
 
         // Open table with just one cell
         $this->document->tableOpen();

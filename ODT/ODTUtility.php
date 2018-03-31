@@ -698,6 +698,13 @@ class ODTUtility
         $HTMLCode = preg_replace('/\n&nbsp;$/', '', $HTMLCode);
         $HTMLCode = str_replace('&nbsp;', '&#xA0;', $HTMLCode);
 
+        // Get default paragraph style
+        if (!empty($options ['p_style'])) {
+            $p_style = $options ['p_style'];
+        } else {
+            $p_style = $params->document->getStyleName('body');
+        }
+
         // Get default list style names
         if (!empty($options ['list_p_style'])) {
             $p_list_style = $options ['list_p_style'];
@@ -882,7 +889,8 @@ class ODTUtility
                 $params->document->paragraphClose();
                 break;
             default:
-                $params->document->paragraphOpen();
+                $params->document->paragraphClose();
+                $params->document->paragraphOpen($p_style);
                 break;
         }
 

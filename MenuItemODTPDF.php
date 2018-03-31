@@ -11,13 +11,13 @@ use dokuwiki\Menu\Item\AbstractItem;
  *
  * @package dokuwiki\plugin\odt
  */
-class MenuItemODT extends AbstractItem {
+class MenuItemODTPDF extends AbstractItem {
 
     /** @var string do action for this plugin */
-    protected $type = 'export_odt';
+    protected $type = 'export_odt_pdf';
 
     /** @var string icon file */
-    protected $svg = DOKU_INC . 'lib/plugins/odt/menu-odt.svg';
+    protected $svg = DOKU_INC . 'lib/plugins/odt/menu-odt-pdf.svg';
 
     /**
      * MenuItem constructor.
@@ -35,6 +35,6 @@ class MenuItemODT extends AbstractItem {
      */
     public function getLabel() {
         $hlp = plugin_load('action', 'odt_export');
-        return $hlp->getLang('export_odt_button');
+        return $hlp->getLang('export_odt_pdf_button');
     }
 }

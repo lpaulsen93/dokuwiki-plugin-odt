@@ -11,6 +11,9 @@
 // must be run within Dokuwiki
 if(!defined('DOKU_INC')) die();
 
+use dokuwiki\Action\Exception\ActionException;
+use dokuwiki\Action\Exception\ActionAbort;
+
 /**
  * Class action_plugin_odt_export
  *
@@ -35,6 +38,8 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         $controller->register_hook('ACTION_ACT_PREPROCESS', 'BEFORE', $this, 'convert', array());
         $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton_odt', array());
         $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton_pdf', array());
+        $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addbutton_odt_new', array());
+        $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addbutton_pdf_new', array());
     }
 
     /**
@@ -89,6 +94,26 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
                 ) +
                 array_slice($event->data['items'], -1, 1, true);
         }
+    }
+
+    /**
+     * Add 'export odt' button to page tools, new SVG based mechanism
+     *
+     * @param Doku_Event $event
+     */
+    public function addbutton_odt_new(Doku_Event $event) {
+        if($event->data['view'] != 'page') return;
+        array_splice($event->data['items'], -1, 0, [new \dokuwiki\plugin\odt\MenuItemODT()]);
+    }
+
+    /**
+     * Add 'export odt pdf' button to page tools, new SVG based mechanism
+     *
+     * @param Doku_Event $event
+     */
+    public function addbutton_pdf_new(Doku_Event $event) {
+        if($event->data['view'] != 'page') return;
+        array_splice($event->data['items'], -1, 0, [new \dokuwiki\plugin\odt\MenuItemODTPDF()]);
     }
 
     /***********************************************************************************

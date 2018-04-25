@@ -55,8 +55,15 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
         // Always only use small letters in format
         $format = strtolower ($format);
 
-        // load styl.ini
-        $styleini = css_styleini($template);
+        // load style.ini
+        if (function_exists('css_styleini')) {
+            // compatiblity layer for pre-Greebo releases of DokuWiki
+            $styleini = css_styleini($template);
+        } else {
+            // Greebo functionality
+            $styleUtils = new \dokuwiki\StyleUtils();
+            $styleini = $styleUtils->cssStyleini($template);
+        }
 
         $template_files = array();
         foreach($mediatypes as $mediatype) {

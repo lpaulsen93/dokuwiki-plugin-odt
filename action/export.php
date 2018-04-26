@@ -39,7 +39,9 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton_odt', array());
         $controller->register_hook('TEMPLATE_PAGETOOLS_DISPLAY', 'BEFORE', $this, 'addbutton_pdf', array());
         $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addbutton_odt_new', array());
-        $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addbutton_pdf_new', array());
+        if($this->getConf('showpdfexportbutton')) {
+            $controller->register_hook('MENU_ITEMS_ASSEMBLY', 'AFTER', $this, 'addbutton_pdf_new', array());
+        }
     }
 
     /**

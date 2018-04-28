@@ -1013,8 +1013,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $language programming language to use for syntax highlighting
      * @param string $filename file path label
      */
-    function file($text, $language=null, $filename=null) {
-        $this->_highlight('file', $text, $language);
+    function file($text, $language=null, $filename=null, $options=null) {
+        $this->_highlight('file', $text, $language, $options);
     }
 
     function quote_open() {
@@ -1032,8 +1032,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $language programming language to use for syntax highlighting
      * @param string $filename file path label
      */
-    function code($text, $language=null, $filename=null) {
-        $this->_highlight('code', $text, $language);
+    function code($text, $language=null, $filename=null, $options=null) {
+        $this->_highlight('code', $text, $language, $options);
     }
 
     /**
@@ -1103,7 +1103,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $text
      * @param string $language
      */
-    function _highlight($type, $text, $language=null) {
+    function _highlight($type, $text, $language=null, $options = null) {
 
         if (is_null($language)) {
             $this->_preformatted($text, $style_name);
@@ -1111,7 +1111,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         }
 
         // Use cached geshi
-        $highlighted_code = p_xhtml_cached_geshi($text, $language, '');
+        $highlighted_code = p_xhtml_cached_geshi($text, $language, '', $options);
 
         // Create Geshi styles required for ODT and get ODT sourcecode style
         $this->createGeshiListStyle ();

@@ -665,6 +665,29 @@ class ODTUtility
         }
     }
 
+    protected static function createParagraphStyle (ODTInternalParams $params, $element, $attributes, $styleName=NULL) {
+        // Create automatic style
+        if ($styleName == NULL || !$params->document->styleExists($styleName)) {
+            // Get properties
+            $properties = array();        
+            self::getHTMLElementProperties ($params, $properties, $element, $attributes);
+
+            if ($styleName == NULL) {
+                $properties ['style-name'] = ODTStyle::getNewStylename ('span');
+            } else {
+                // Use callers style name. He needs to be sure that it's unique!
+                $properties ['style-name'] = $styleName;
+            }
+            $params->document->createParagraphStyle($properties, false);
+
+            // Return style name
+            return $properties ['style-name'];
+        } else {
+            // Style already exists
+            return $styleName;
+        }
+    }
+
     public static function generateODTfromHTMLCode(ODTInternalParams $params, $HTMLCode, array $options){
         $elements = array ('sup' => array ('open' => '<text:span text:style-name="sup">',
                                            'close' => '</text:span>'),
@@ -781,6 +804,7 @@ class ODTUtility
         $checked = array();
         $first = true;
         $firstTag = '';
+        $olStartValue = NULL;
         for ($out = 0 ; $out < count($parsed) ; $out++) {
             if ($checked [$out] !== NULL) {
                 continue;
@@ -850,9 +874,44 @@ class ODTUtility
                             case 'ol':
                                 $checked [$out] = '<text:list text:style-name="'.$ol_list_style.'" text:continue-numbering="false">';
                                 $checked [$in] = '</text:list>';
+                                if (preg_match('/start="[^"]*"/', $found ['attributes'], $matches) == 1) {
+                                    $olStartValue = substr($matches [0], 7);
+                                    $olStartValue = trim($olStartValue, '"');
+                                }
                                 break;
                             case 'li':
-                                $checked [$out] = '<text:list-item><text:p text:style-name="'.$p_list_style.'">';
+                                // Create ODT span using CSS style from attributes
+                                $haveClass = false;
+                                if (!empty($options ['class'])) {
+                                    if (preg_match('/class="[^"]*"/', $found ['attributes'], $matches) == 1) {
+                                        $class_attr = substr($matches [0], 7);
+                                        $class_attr = trim($class_attr, '"');
+                                        $class_attr = 'class="'.$options ['class'].' '.$class_attr.'"';
+                                        $found ['attributes'] = str_replace($matches [0], $class_attr, $found ['attributes']);
+                                        $haveClass = true;
+                                    }
+                                }
+                                $style_name = NULL;
+                                if ($options ['style_names'] == 'prefix_and_class') {
+                                    if (preg_match('/class="[^"]*"/', $found ['attributes'], $matches) == 1) {
+                                        $class_attr = substr($matches [0], 7);
+                                        $class_attr = trim($class_attr, '"');
+                                        $style_name = $options ['style_names_prefix'].$class_attr;
+                                        $haveClass = true;
+                                    }
+                                }
+                                if ($haveClass) {
+                                    $style_name = self::createParagraphStyle ($params, 'li', $found ['attributes'], $style_name);
+                                } else {
+                                    $style_name = $p_list_style;
+                                }
+
+                                $checked [$out] = '<text:list-item';
+                                if ($olStartValue !== NULL) {
+                                    $checked [$out] .= ' text:start-value="'.$olStartValue.'"';
+                                    $olStartValue = NULL;
+                                }
+                                $checked [$out] .= '><text:p text:style-name="'.$style_name.'">';
                                 $checked [$in] = '</text:p></text:list-item>';
                                 break;
                             default:

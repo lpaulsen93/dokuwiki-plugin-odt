@@ -64,7 +64,12 @@ class ODTElementTableCell extends ODTStateElement
      * @return string The ODT XML code to close this element.
      */
     public function getClosingTag () {
-        return '</table:table-cell>';
+        $content = '</table:table-cell>';
+        $colspan = $this->getColumnSpan();
+        for ($i = 1 ; $i < $colspan ; $i++) {
+            $content .= '<table:covered-table-cell/>';
+        }
+        return $content;
     }
 
     /**

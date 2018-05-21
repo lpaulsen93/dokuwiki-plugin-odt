@@ -58,6 +58,8 @@ class ODTDefaultStyles extends ODTStyleSet
             <style:style style:name="Table" style:family="table">
                 <style:table-properties table:border-model="collapsing" fo:margin-top="0.25cm" fo:margin-bottom="0.25cm"/>
             </style:style>
+            <style:style style:name="Table_20_Column" style:family="table-column">
+            </style:style>
             <style:style style:name="tablealigncenter" style:family="paragraph" style:parent-style-name="Table_20_Contents">
                 <style:paragraph-properties fo:text-align="center"/>
             </style:style>
@@ -161,6 +163,7 @@ class ODTDefaultStyles extends ODTStyleSet
             case 'numbering first':       return 'Numbering_20_1_Content_First';
             case 'numbering last':        return 'Numbering_20_1_Content_Last';
             case 'table':                 return 'Table';
+            case 'table column':          return 'Table_20_Column';
             case 'table content':         return 'Table_20_Contents';
             case 'table heading':         return 'Table_20_Heading';
             case 'table header':          return 'tableheader';

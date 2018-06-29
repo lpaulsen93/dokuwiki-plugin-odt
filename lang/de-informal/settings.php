@@ -5,30 +5,48 @@
  *
  * @package DokuWiki\lang\de-informal\settings
  *
+ * @author Buy soundcloud reposts <jodi.tran@gmx.de>
  * @author Florian Lamml <info@florian-lamml.de>
  */
-$lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Media Manager';
-$lang['odt_template']          = 'Template für Style Importierung (ODT oder CSS Datei)';
-$lang['showexportbutton']      = 'Den ODT Export Button anzeigen';
-$lang['css_usage']             = 'Importiertes CSS auf ODT-Styles anwenden?';
-$lang['media_sel']             = 'Welcher @media Selektor soll verwendet werden um CSS-Eigenschaften abzufragen?';
-$lang['css_font_size']         = 'CSS Basis-Schriftgröße (definiert 1em)';
-$lang['css_template']          = 'Welches Template soll zur Formatierung der ODT-Dateien verwendet werden?';
-$lang['apply_fs_to_non_css']   = 'CSS Basis-Schriftgröße auf ODT-Template und Plugin Default-Styles anwenden?';
-$lang['twips_per_pixel_x']     = 'Twips pro Pixel (X-Achse)';
-$lang['twips_per_pixel_y']     = 'Twips pro Pixel (Y-Achse)';
-$lang['format']                = 'Seitenformat';
-$lang['orientation']           = 'Seiten-Ausrichtung';
-$lang['margin_top']            = 'Seitenrand Oben';
-$lang['margin_right']          = 'Seitenrand Rechts';
-$lang['margin_bottom']         = 'Seitenrand Unten';
-$lang['margin_left']           = 'Seitenrand Links';
-$lang['disable_links']         = 'Link-Generierung ausschalten?';
-$lang['toc_maxlevel']          = 'Maximale Tiefe des Inhaltsverzeichnis';
-$lang['toc_leader_sign']       = 'Füllzeichen für das Inhaltsverzeichnis';
-$lang['toc_indents']           = 'Inhaltsverzeichnis: Einzüge der Ebenen in cm';
-$lang['toc_pagebreak']         = 'Nach dem Inhaltsverzeichnis einen Seitenumbruch einfügen?';
-$lang['toc_style']             = 'Text-Stil für das Inhaltsverzeichnis';
-$lang['index_in_browser']      = 'Platzhalter für Inhaltsverzeichnis/Index im Browser anzeigen?';
-$lang['outline_list_style']    = 'Darstellung der Überschriften';
-$lang['convert_to_pdf']        = 'Auszuführendes Kommando für die Konvertierung nach PDF';
+$lang['tpl_dir']               = 'Just wanted to say Hello.';
+$lang['odt_template']          = 'Miami Springs';
+$lang['showexportbutton']      = 'Miami Springs';
+$lang['css_usage']             = 'Miami Springs';
+$lang['media_sel']             = 'It\'s going to be end of mine day, except before finish I am reading this great post to 
+increase my knowledge.';
+$lang['css_font_size']         = 'It\'s going to be end of mine day, except before finish I am 
+reading this great post to increase my knowledge.';
+$lang['css_template']          = 'It\'s going to be end of mine day, except before finish I 
+am reading this great post to increase my knowledge.';
+$lang['apply_fs_to_non_css']   = 'It\'s going to be end of mine day, except before finish 
+I am reading this great post to increase my knowledge.';
+$lang['twips_per_pixel_x']     = 'It\'s going to be end of mine day, except before finish I am reading this great post 
+to increase my knowledge.';
+$lang['twips_per_pixel_y']     = 'It\'s going to be end of mine day, except before finish I am 
+reading this great post to increase my knowledge.';
+$lang['format']                = 'It\'s going to be end of mine day, except before finish I am reading this great 
+post to increase my knowledge.';
+$lang['orientation']           = 'It\'s going to be end of mine day, except before finish 
+I am reading this great post to increase my knowledge.';
+$lang['margin_top']            = 'It\'s going to be end of mine day, except before finish I am reading this great post to increase my knowledge.';
+$lang['margin_right']          = 'It\'s going to be end of mine day, except before finish I am reading this great post to increase 
+my knowledge.';
+$lang['margin_bottom']         = 'It\'s going to be end of mine day, except before finish I am 
+reading this great post to increase my knowledge.';
+$lang['margin_left']           = 'It\'s going to be end of mine day, except before finish I am reading this great post to increase my knowledge.';
+$lang['disable_links']         = 'http://Electromusicnetwork.com/';
+$lang['toc_maxlevel']          = 'It\'s going to be end of mine day, except before finish I am reading this great post to 
+increase my knowledge.';
+$lang['toc_leader_sign']       = 'It\'s going to be end of mine day, except before finish I am reading this 
+great post to increase my knowledge.';
+$lang['toc_indents']           = 'It\'s going to be end of mine day, except before finish I am reading 
+this great post to increase my knowledge.';
+$lang['toc_pagebreak']         = 'It\'s going to be end of mine day, except before finish I am reading 
+this great post to increase my knowledge.';
+$lang['toc_style']             = 'It\'s going to be end of mine day, except before finish I am reading this 
+great post to increase my knowledge.';
+$lang['index_in_browser']      = 'It\'s going to be end of mine day, except before finish 
+I am reading this great post to increase my knowledge.';
+$lang['outline_list_style']    = 'It\'s going to be end of mine day, except before finish I am reading this 
+great post to increase my knowledge.';
+$lang['convert_to_pdf']        = 'It\'s going to be end of mine day, except before finish I am reading this great post to increase my knowledge.';

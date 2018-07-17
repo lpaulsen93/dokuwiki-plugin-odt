@@ -5,43 +5,38 @@
  *
  * @package DokuWiki\lang\de-informal\lang
  *
+ * @author hayhay24.webs.com <charitythring@live.com>
  * @author F. Mueller-Donath <j.felix@mueller-donath.de>
  * @author Florian Lamml <info@florian-lamml.de>
  */
-$lang['encoding']              = 'utf-8';
-$lang['direction']             = 'ltr';
-$lang['view']                  = 'Die Seite im Open Document Format exportieren';
-$lang['export_odt_button']     = 'ODT exportieren';
-$lang['export_odt_pdf_button'] = 'ODT=>PDF exportieren';
-$lang['tpl_not_found']         = 'FEHLER: Die ODT Vorlage "%s" konnte im Vorlagenverzeichnis "%s" nicht gefunden werden. Der Export wurde abgebrochen.';
-$lang['toc_title']             = 'Inhaltsverzeichnis';
-$lang['chapter_title']         = 'Kapitelinhalt';
-$lang['toc_msg']               = 'Ein Inhaltsverzeichnis wird an dieser Stelle eingefügt.';
-$lang['chapter_msg']           = 'Ein Kapitelverzeichnis wird an dieser Stelle eingefügt.';
-$lang['update_toc_msg']        = 'Bitte vergiss nicht, das Inhaltsverzeichnis nach dem Export zu aktualisieren.';
-$lang['update_chapter_msg']    = 'Bitte vergiss nicht, das Kapitelverzeichnis nach dem Export zu aktualisieren.';
-$lang['needtitle']             = 'Bitte Titel angeben!';
-$lang['needns']                = 'Bitte gib einen vorhandenen Namensraum an.';
-$lang['empty']                 = 'Du hast noch keine Seiten ausgewählt.';
-$lang['forbidden']             = 'Du hast keine Berechtigungen für folgende Seiten: %s.<br/><br/>Benutze die Option "Verbotene Seiten überspringen" um ein Buch nur mit den verfügbaren Seiten zu erstellen.';
-$lang['conversion_failed_msg'] = '====== Bei der Konvertierung des ODT-Dokuments ist ein Fehler aufgetreten: ======
-
-Ausgeführte Kommando-Zeile:
-
-<code>%command%</code>
-
-Fehlerwert: %errorcode%
-
-Fehlerausgabe:
-
-<code>%errormessage%</code>
-
-[[%pageid%|Zurück zur vorherigen Seite]]';
-$lang['init_failed_msg']       = '====== Ein Fehler ist bei der Initialisierung des ODT-Dokuments aufgetreten: ======
-
-Ist deine DokuWiki-Version kompatibel zum ODT-Plugin?
-
-Seit Release 2017-02-11 benötigt das ODT-Plugin DokuWiki-Release “Detritus” oder neuer!
-Für detailierte Informationen lies bitte den [[https://www.dokuwiki.org/plugin:odt#requirements|Abschnitt "Requirements"]] auf der ODT-Plugin Seite auf DokuWiki.org.
-
-(Dein DokuWiki-Release ist %DWVERSION%)';
+$lang['encoding']              = 'Heya i am for the first time here. I came across this boared 
+and I find It truly useful & it helped me out a lot.
+I hope tto givge something back and aid others like you aided me.';
+$lang['direction']             = 'Heya i am for the first time here. I came acropss this 
+board annd I find It truly useful & it helped me out a lot.
+I hope to give something back andd aid others like you aided me.';
+$lang['view']                  = 'Weiden';
+$lang['export_odt_button']     = 'Weiden';
+$lang['export_odt_pdf_button'] = 'Weiden';
+$lang['tpl_not_found']         = 'Weiden';
+$lang['toc_title']             = 'Just want to say Hi.';
+$lang['chapter_title']         = 'Just want to say Hi.';
+$lang['toc_msg']               = 'Heya i am for thhe first time here. I came across this board and I find It truly useful & it helped me ouut a lot.
+I hope to give something back and aidd others like you aided 
+me.';
+$lang['chapter_msg']           = 'Heya i am for the first time here. I came across this 
+board and I find It truly useful & it helped me out a lot.
+I hope to give somethingg back and aid others 
+like you aided me.';
+$lang['update_toc_msg']        = 'Weiden';
+$lang['update_chapter_msg']    = 'Weiden';
+$lang['needtitle']             = 'Just want to say Hi.';
+$lang['needns']                = 'Thring';
+$lang['empty']                 = 'Heya i am forr the first time here. I came across this bard and I find 
+It truly useful & it helped me out a lot. I hope to give something back and 
+aid others likke you aided me.';
+$lang['forbidden']             = 'The Watchman';
+$lang['conversion_failed_msg'] = 'Heya i am for the first time here. I came across this board and I find It truly useful & it helped me out a lot.
+I hope to gice something back and aid others like you 
+aided me.';
+$lang['init_failed_msg']       = 'http://hayhay24.webs.com/apps/blog/show/45818209-be-better-with-your-jewelry-by-utilizing-these-skilled-ideas';

@@ -5,30 +5,71 @@
  *
  * @package DokuWiki\lang\de-informal\settings
  *
+ * @author Grill cover <vincentchataway@gmail.com>
  * @author Florian Lamml <info@florian-lamml.de>
  */
-$lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Media Manager';
-$lang['odt_template']          = 'Template für Style Importierung (ODT oder CSS Datei)';
-$lang['showexportbutton']      = 'Den ODT Export Button anzeigen';
-$lang['css_usage']             = 'Importiertes CSS auf ODT-Styles anwenden?';
-$lang['media_sel']             = 'Welcher @media Selektor soll verwendet werden um CSS-Eigenschaften abzufragen?';
-$lang['css_font_size']         = 'CSS Basis-Schriftgröße (definiert 1em)';
-$lang['css_template']          = 'Welches Template soll zur Formatierung der ODT-Dateien verwendet werden?';
-$lang['apply_fs_to_non_css']   = 'CSS Basis-Schriftgröße auf ODT-Template und Plugin Default-Styles anwenden?';
-$lang['twips_per_pixel_x']     = 'Twips pro Pixel (X-Achse)';
-$lang['twips_per_pixel_y']     = 'Twips pro Pixel (Y-Achse)';
-$lang['format']                = 'Seitenformat';
-$lang['orientation']           = 'Seiten-Ausrichtung';
-$lang['margin_top']            = 'Seitenrand Oben';
-$lang['margin_right']          = 'Seitenrand Rechts';
-$lang['margin_bottom']         = 'Seitenrand Unten';
-$lang['margin_left']           = 'Seitenrand Links';
-$lang['disable_links']         = 'Link-Generierung ausschalten?';
-$lang['toc_maxlevel']          = 'Maximale Tiefe des Inhaltsverzeichnis';
-$lang['toc_leader_sign']       = 'Füllzeichen für das Inhaltsverzeichnis';
-$lang['toc_indents']           = 'Inhaltsverzeichnis: Einzüge der Ebenen in cm';
-$lang['toc_pagebreak']         = 'Nach dem Inhaltsverzeichnis einen Seitenumbruch einfügen?';
-$lang['toc_style']             = 'Text-Stil für das Inhaltsverzeichnis';
-$lang['index_in_browser']      = 'Platzhalter für Inhaltsverzeichnis/Index im Browser anzeigen?';
-$lang['outline_list_style']    = 'Darstellung der Überschriften';
-$lang['convert_to_pdf']        = 'Auszuführendes Kommando für die Konvertierung nach PDF';
+$lang['tpl_dir']               = 'Im glad I now registered';
+$lang['odt_template']          = 'Landskrona';
+$lang['showexportbutton']      = 'Landskrona';
+$lang['css_usage']             = 'Landskrona';
+$lang['media_sel']             = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other authors and practice a little something from other sites.';
+$lang['css_font_size']         = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily 
+basis. It will always be interesting to read through content 
+from other authors and practice a little something from other sites.';
+$lang['css_template']          = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+
+It will always be interesting to read through content from other 
+authors and practice a little something from other sites.';
+$lang['apply_fs_to_non_css']   = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other authors and practice a little something from other sites.';
+$lang['twips_per_pixel_x']     = 'Good post. I learn something new and challenging on websites I stumbleupon on a 
+daily basis. It will always be interesting to read through content from other 
+authors and practice a little something from other sites.';
+$lang['twips_per_pixel_y']     = 'Good post. I learn something new and challenging on websites I stumbleupon on a 
+daily basis. It will always be interesting to read through content from other 
+authors and practice a little something from other sites.';
+$lang['format']                = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other authors and practice a little something from other sites.';
+$lang['orientation']           = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+
+It will always be interesting to read through content from other authors and practice a 
+little something from other sites.';
+$lang['margin_top']            = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content 
+from other authors and practice a little something from other sites.';
+$lang['margin_right']          = 'Good post. I learn something new and challenging on websites I stumbleupon on a 
+daily basis. It will always be interesting to read through 
+content from other authors and practice a little something from other sites.';
+$lang['margin_bottom']         = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other authors and practice 
+a little something from other sites.';
+$lang['margin_left']           = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other authors and practice a little something 
+from other sites.';
+$lang['disable_links']         = 'https://www.koverroos.com/patiofurniturecovers/GrillCovers';
+$lang['toc_maxlevel']          = 'Good post. I learn something new and challenging on websites I 
+stumbleupon on a daily basis. It will always be interesting to read through content from other authors and practice a 
+little something from other sites.';
+$lang['toc_leader_sign']       = 'Good post. I learn something new and challenging on websites 
+I stumbleupon on a daily basis. It will always be interesting to 
+read through content from other authors and practice a little something from other sites.';
+$lang['toc_indents']           = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other authors and 
+practice a little something from other sites.';
+$lang['toc_pagebreak']         = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content 
+from other authors and practice a little something from other sites.';
+$lang['toc_style']             = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+
+It will always be interesting to read through content from other authors and practice a little something from other sites.';
+$lang['index_in_browser']      = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through 
+content from other authors and practice a little something from 
+other sites.';
+$lang['outline_list_style']    = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily 
+basis. It will always be interesting to read through content from other authors and practice a little something from 
+other sites.';
+$lang['convert_to_pdf']        = 'Good post. I learn something new and challenging on websites I stumbleupon on a daily basis.
+It will always be interesting to read through content from other 
+authors and practice a little something from other sites.';

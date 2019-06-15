@@ -102,13 +102,17 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             $display = str_replace(fullpath(DOKU_INC), '', fullpath($file));
             $css_content = "\n/* XXXXXXXXX $display XXXXXXXXX */\n";
             $css_content = css_loadfile($file, $location);
-            if ( strpos ($file, 'screen.css') !== false ) {
+            if (strpos ($file, 'screen.css') !== false ||
+                strpos ($file, 'screen.less') !== false) {
                 $css .= "\n@media screen {\n" . $css_content . "\n}\n";
-            } else if ( strpos ($file, 'style.css') !== false ) {
+            } else if (strpos ($file, 'style.css') !== false ||
+                       strpos ($file, 'style.less') !== false) {
                 $css .= "\n@media screen {\n" . $css_content . "\n}\n";
-            } else if ( strpos ($file, $format.'.css') !== false ) {
+            } else if (strpos ($file, $format.'.css') !== false ||
+                       strpos ($file, $format.'.less') !== false) {
                 $css .= "\n@media print {\n" . $css_content . "\n}\n";
-            } else if ( strpos ($file, 'print.css') !== false ) {
+            } else if (strpos ($file, 'print.css') !== false ||
+                       strpos ($file, 'print.less') !== false) {
                 $css .= "\n@media print {\n" . $css_content . "\n}\n";
             } else {
                 $css .= $css_content;

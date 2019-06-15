@@ -970,23 +970,23 @@ class cssimportnew {
             // (or the start of the string).
             $before_open_bracket = substr ($contents, $pos, $bracket_open - $pos);
 
-            // Is it a @media rule?
+            // Is it a @something rule?
             $before_open_bracket = trim ($before_open_bracket);
-            $mediapos = stripos($before_open_bracket, '@media');
-            if ( $mediapos !== false ) {
+            $at_rule_pos = stripos($before_open_bracket, '@');
+            $at_rule_end = stripos($at_rule_pos, ' ');
+            if ( $at_rule_pos !== false ) {
 
-                // Yes, decode content as normal rules with @media ... { ... }
-                //$new_media = substr_replace ($before_open_bracket, NULL, $mediapos, strlen ('@media'));
-                $new_media = substr ($before_open_bracket, $mediapos + strlen ('@media'));
+                // Yes, decode content as normal rules with @something ... { ... }
+                $at_rule_name = substr ($before_open_bracket, $at_rule_end);
                 $contents_in_media = substr ($contents, $bracket_open + 1);
 
                 $nested_processed = 0;
-                $result = $this->importFromStringInternal ($contents_in_media, $new_media, $nested_processed);
+                $result = $this->importFromStringInternal ($contents_in_media, $at_rule_name, $nested_processed);
                 if ( $result !== true ) {
                     // Stop parsing on error.
                     return false;
                 }
-                unset ($new_media);
+                unset ($at_rule_name);
                 $pos = $bracket_open + 1 + $nested_processed;
             } else {
 

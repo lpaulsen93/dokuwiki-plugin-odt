@@ -976,7 +976,7 @@ class ODTUtility
 
         // Preserve space?
         if ($options ['space'] === 'preserve') {
-            $content = preg_replace_callback('/(  +)/',array(self,'_preserveSpace'),$content);
+            $content = preg_replace_callback('/(  +)/',array(__CLASS__, '_preserveSpace'), $content);
         }
 
         $params->content .= $content;

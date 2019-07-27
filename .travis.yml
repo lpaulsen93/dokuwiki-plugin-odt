@@ -1,11 +1,29 @@
 language: php
+sudo: false
 php:
+  - "7.3"
+  - "7.2"
   - "7.1"
   - "7.0"
   - "5.6"
 env:
   - DOKUWIKI=master
   - DOKUWIKI=stable
-before_install: wget https://raw.github.com/splitbrain/dokuwiki-travis/master/travis.sh && rm .gitignore
-install: sh travis.sh
-script: cd _test && phpunit --stderr --group plugin_odt
+before_install:
+  wget https://raw.github.com/splitbrain/dokuwiki-travis/master/travis.sh && rm .gitignore
+install:
+  # Force PHPUnit 7 if $TRAVIS_PHP_VERSION > '7.1'
+  - if [[ $TRAVIS_PHP_VERSION > '7.1' ]]; then wget -O ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit https://phar.phpunit.de/phpunit-7.phar; fi
+  - if [[ $TRAVIS_PHP_VERSION > '7.1' ]]; then chmod 755 ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit; fi
+  # Force PHPUnit 6.4.3 if $TRAVIS_PHP_VERSION <= '7.1'
+  - if [[ $TRAVIS_PHP_VERSION = '7.0' || $TRAVIS_PHP_VERSION = '7.1' ]]; then wget -O ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit https://phar.phpunit.de/phpunit-6.4.3.phar; fi
+  - if [[ $TRAVIS_PHP_VERSION = '7.0' || $TRAVIS_PHP_VERSION = '7.1' ]]; then chmod 755 ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit; fi
+  # Force PHPUnit 5.7.9 if $TRAVIS_PHP_VERSION < '7.0'
+  - if [[ $TRAVIS_PHP_VERSION < '7.0' ]]; then wget -O ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit https://phar.phpunit.de/phpunit-5.7.9.phar; fi
+  - if [[ $TRAVIS_PHP_VERSION < '7.0' ]]; then chmod 755 ~/.phpenv/versions/$(phpenv version-name)/bin/phpunit; fi
+  - sh travis.sh
+before_script:
+  - test -z "$DISABLE_FUNCTIONS" || echo "disable_functions=$DISABLE_FUNCTIONS" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini
+  - phpunit --version
+script:
+  - cd _test && phpunit --verbose --stderr --group plugin_odt

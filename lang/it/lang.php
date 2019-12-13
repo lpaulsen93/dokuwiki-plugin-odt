@@ -3,13 +3,14 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @author Giuseppe Di Terlizzi <giuseppe.diterlizzi@gmail.com>
  * @author Gianfranco <gpd@iol.it>
  */
 $lang['encoding']              = 'utf-8';
 $lang['direction']             = 'ltr';
 $lang['view']                  = 'Esporta pagina in formato Open Document';
-$lang['export_odt_button']     = 'esportazione ODT';
-$lang['export_odt_pdf_button'] = 'esportazione ODT=>PDF';
+$lang['export_odt_button']     = 'Esportazione in ODT';
+$lang['export_odt_pdf_button'] = 'Esportazione ODT=>PDF';
 $lang['tpl_not_found']         = 'ERRORE : il modello ODT "%s" non è stato trovato nella directory dei modelli "%s". L\'esportazione non è andata a buon fine.';
 $lang['toc_title']             = 'Indice';
 $lang['chapter_title']         = 'Indice di Capitolo';

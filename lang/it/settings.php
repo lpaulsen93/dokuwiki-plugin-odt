@@ -3,11 +3,12 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @author Giuseppe Di Terlizzi <giuseppe.diterlizzi@gmail.com>
  * @author Gianfranco <gpd@iol.it>
  */
 $lang['tpl_dir']               = 'Sub-directory per i modelli nel media manager';
-$lang['odt_template']          = 'Template pe rimportare lo stile (file ODT o CSS)	';
-$lang['showexportbutton']      = 'Mostra pulsante  esportazione in ODT';
+$lang['odt_template']          = 'Template per importare lo stile (file ODT o CSS)	';
+$lang['showexportbutton']      = 'Mostra pulsante Esportazione in ODT';
 $lang['css_usage']             = 'Applicare il CSS importato agli stili ODT?';
 $lang['media_sel']             = 'Quale selettore @media vuoi usare per riscontrare le proprietà del CSS?';
 $lang['css_font_size']         = 'Grandezza carattere (font size) base in CSS (definire 1em)	';

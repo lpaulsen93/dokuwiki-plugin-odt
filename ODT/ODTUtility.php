@@ -688,6 +688,69 @@ class ODTUtility
         }
     }
 
+    /**
+     * Convenience function for converting some HTML code to ODT format.
+     * The function will try to automatically create any needed ODT styles
+     * from the CSS code found in the HTML code.
+     *
+     * Also some special settings can be passed in the options array:
+     *
+     * $options ['p_style']:
+     * The default paragraph style. If empty 'body' will be used.
+     *
+     * $options ['list_p_style']:
+     * The default paragraph style in lists. If empty 'body' will be used.
+     *
+     * $options ['list_ol_style']:
+     * The default style for ordered lists. If empty 'numbering' will be used.
+     *
+     * $options ['list_ul_style']:
+     * The default style for un-ordered lists. If empty 'list' will be used.
+     *
+     * $options ['media_selector']:
+     * The media selector used for CSS handling (e.g. 'screen' or 'print').
+     * If empty the current/configured one will be used.
+     *
+     * $options ['element']:
+     * If not empty an HTML tag named '$options ['element']' will be pushed
+     * on the internal HTML stack before converting the $HTMLCode.
+     * This influences CSS handling.
+     *
+     * $options ['attributes']:
+     * The attributes to set for '$options ['element']'.
+     *
+     * $options ['escape_content']:
+     * Should have the value 'true' or 'false' (as string!). If 'true'
+     * XML entities will be escaped. Otherwise it is assumed that it
+     * already has been done.
+     *
+     * $options ['class']:
+     * Optional CSS class to add to found 'class="..."' attributes in
+     * the HTML code.
+     *
+     * $options ['style_names']:
+     * If set to 'prefix_and_class' then ODT style names will not be
+     * generated dynamically but are constructed from '$options ['style_names_prefix']'
+     * following the CSS class name(s).
+     *
+     * $options ['linebreaks']:
+     * If set to 'remove' then linebreaks will be ignored. Otherwise
+     * they will be kept and converted to proper ODT linebreaks.
+     *
+     * $options ['tabs']:
+     * If set to 'remove' then tabs will be ignored. Otherwise they
+     * will be kept and converted to proper ODT tabs.
+     *
+     * $options ['space']:
+     * If set to 'preserve' then space is preserved like for preformatted
+     * code blocks. Otherwise space is not preserved and multiple spaces
+     * will apear as only one space.
+     *
+     * @author LarsDW223
+     * @param ODTInternalParams $params   The internal params
+     * @param string            $HTMLCode The HTML code to convert
+     * @param array             $options  Array of options
+     */
     public static function generateODTfromHTMLCode(ODTInternalParams $params, $HTMLCode, array $options){
         $elements = array ('sup' => array ('open' => '<text:span text:style-name="sup">',
                                            'close' => '</text:span>'),
@@ -976,7 +1039,7 @@ class ODTUtility
 
         // Preserve space?
         if ($options ['space'] === 'preserve') {
-            $content = preg_replace_callback('/(  +)/',array(self,'_preserveSpace'),$content);
+            $content = preg_replace_callback('/(  +)/',array(__CLASS__, '_preserveSpace'), $content);
         }
 
         $params->content .= $content;

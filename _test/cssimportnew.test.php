@@ -645,6 +645,49 @@ class plugin_odt_cssimportnew_test extends DokuWikiTest {
     }
 
     /**
+     * Ensure that @ rules other than @mredia are parsed properly.
+     */
+    public function test_non_media_at_rules() {
+        $properties = array();
+        $css_code = 'p {
+                         background-color:blue;
+                     }
+
+                     @keyframes wtFadeInFromNone{0%{display:none;opacity:0;}1%{display:block;opacity:0;}100%{display:block;opacity:1;}}
+
+                     @media print {
+                     p {
+                         background-color:white;
+                     }
+                     }';
+
+        $units = new helper_plugin_odt_units ();
+        $units->setPixelPerEm(16);
+
+        // Import CSS code
+        $import = new helper_plugin_odt_cssimportnew ();
+        $import->importFromString ($css_code);
+
+        // Create element to match
+        $state = new helper_plugin_odt_cssdocument();
+        $state->open('p');
+
+        // Query properties.
+        $import->setMedia('print');
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
+
+        $this->assertEquals(count($properties), 1);
+        $this->assertEquals('white', $properties ['background-color']);
+
+        // Query properties.
+        $import->setMedia('screen');
+        $import->getPropertiesForElement ($properties, $state->getCurrentElement(), $units);
+
+        $this->assertEquals(count($properties), 1);
+        $this->assertEquals('blue', $properties ['background-color']);
+    }
+
+    /**
      * Test if selector properly matches type/element.
      */
     public function test_selector_type() {

@@ -26,6 +26,10 @@ class ODTFootnote
         // Move current content to store and record footnote
         $params->document->store = $params->content;
         $params->content = '';
+
+        $note = new ODTElementNote();
+        $params->document->state->enter($note);
+        $note->setHTMLElement ($element);
     }
 
     /**
@@ -37,6 +41,12 @@ class ODTFootnote
      * @author Andreas Gohr
      */
     function footnoteClose(ODTInternalParams $params) {
+        // Close any open paragraph first
+        $params->document->paragraphClose();
+
+        ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+        $params->document->closeCurrentElement();
+
         // Recover footnote into the stack and restore old content
         $footnote = $params->content;
         $params->content = $params->document->store;
@@ -56,9 +66,7 @@ class ODTFootnote
             $params->content .= '<text:note text:id="ftn'.$i.'" text:note-class="footnote">';
             $params->content .= '<text:note-citation text:label="'.$label.'">'.$label.'</text:note-citation>';
             $params->content .= '<text:note-body>';
-            $params->content .= '<text:p text:style-name="'.$params->document->getStyleName('footnote').'">';
             $params->content .= $footnote;
-            $params->content .= '</text:p>';
             $params->content .= '</text:note-body>';
             $params->content .= '</text:note>';
         } else {
@@ -67,5 +75,8 @@ class ODTFootnote
             $params->content .= '<text:note-ref text:note-class="footnote" text:reference-format="text" text:ref-name="ftn'.$i.'">'.$label.'</text:note-ref>';
             $params->document->spanClose();
         }
+
+        // Only for debugging...
+        //$params->document->trace_dump .= $params->document->state->toString();
     }
 }

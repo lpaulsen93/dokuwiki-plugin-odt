@@ -2267,6 +2267,18 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     public function insertBookmark($id, $now=true) {
         $this->document->insertBookmark($id, $now);
     }
+
+    /**
+     * Automatically generate ODT elements from HTML code.
+     *
+     * @param string $html_code The HTML code to convert
+     * @param array  $options   Options array (FIXME: documentation needed)
+     * @see ODTUtility::generateODTfromHTMLCode for detailed desciption.
+     */
+    public function generateODTfromHTMLCode($html_code, $options=null) {
+        // Generate ODT content from Geshi's HTML code
+        $this->document->generateODTfromHTMLCode($html_code, $options);
+    }
 }
 
 //Setup VIM: ex: et ts=4 enc=utf-8 :

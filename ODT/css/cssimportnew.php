@@ -973,11 +973,14 @@ class cssimportnew {
             // Is it a @something rule?
             $before_open_bracket = trim ($before_open_bracket);
             $at_rule_pos = stripos($before_open_bracket, '@');
-            $at_rule_end = stripos($at_rule_pos, ' ');
             if ( $at_rule_pos !== false ) {
+                $at_rule_end = stripos($before_open_bracket, ' ');
 
                 // Yes, decode content as normal rules with @something ... { ... }
-                $at_rule_name = substr ($before_open_bracket, $at_rule_end);
+                $at_rule_name = substr ($before_open_bracket, $at_rule_pos, $at_rule_end - $at_rule_pos);
+                if ($at_rule_name == '@media') {
+                    $at_rule_name = substr ($before_open_bracket, $at_rule_end);
+                }
                 $contents_in_media = substr ($contents, $bracket_open + 1);
 
                 $nested_processed = 0;

@@ -14,6 +14,7 @@ require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableCell.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTableHeaderCell.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementFrame.php';
 require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementTextBox.php';
+require_once DOKU_PLUGIN.'odt/ODT/elements/ODTElementNote.php';
 require_once DOKU_PLUGIN.'odt/ODT/css/cssdocument.php';
 
 /**
@@ -226,9 +227,9 @@ class ODTState
      */
     public function toString () {
         $indent = '';
-        $string = 'Stackdump:';
+        $string = "Stackdump:\n";
         for ($search = 0 ; $search < $this->size ; $search++) {
-            $string .= $indent . $this->stack [$search]->getElementName().';';
+            $string .= $indent . $this->stack [$search]->getElementName().";\n";
             $indent .= '    ';
         }
         return $string;

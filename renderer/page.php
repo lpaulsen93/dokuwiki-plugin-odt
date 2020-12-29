@@ -910,7 +910,11 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string $entity
      */
     function entity($entity) {
-        // Add plain text will replace entities
+        if (array_key_exists($entity, $this->entities)) {
+            $entity = $this->entities[$entity];
+        }
+
+        // Add plain text will replace XML entities
         $this->document->addPlainText($entity);
     }
 

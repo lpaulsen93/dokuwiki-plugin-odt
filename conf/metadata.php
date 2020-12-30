@@ -33,10 +33,10 @@ $meta['format']        = array('multichoice', '_choices' => array('A6', 'A5', 'A
                                                                   '#9 Envelope', '#10 Envelope', '#11 Envelope', '#12 Envelope',
                                                                   'Japanese Postcard'));
 $meta['orientation']   = array('multichoice', '_choices' => array('portrait', 'landscape'));
-$meta['margin_top']    = array('numeric');
-$meta['margin_right']  = array('numeric');
-$meta['margin_bottom'] = array('numeric');
-$meta['margin_left']   = array('numeric');
+$meta['margin_top']    = array('string', '_pattern' => '/^\d+(\.\d+)?$/');
+$meta['margin_right']  = array('string', '_pattern' => '/^\d+(\.\d+)?$/');
+$meta['margin_bottom'] = array('string', '_pattern' => '/^\d+(\.\d+)?$/');
+$meta['margin_left']   = array('string', '_pattern' => '/^\d+(\.\d+)?$/');
 
 $meta['disable_links'] = array('multichoice', '_choices' => array('No', 'Yes'));
 

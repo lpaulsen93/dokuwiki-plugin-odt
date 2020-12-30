@@ -98,8 +98,6 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
                 $styleName = $this->getTableColumnStyleName($index);
                 if (!empty($styleName)) {
                     $column_defs .= '<table:table-column table:style-name="'.$styleName.'"/>';
-                } else {
-                    $column_defs .= '<table:table-column table:style-name="tablecolumn"/>';
                 }
             }
             $content =

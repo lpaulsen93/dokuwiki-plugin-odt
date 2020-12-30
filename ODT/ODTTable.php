@@ -156,6 +156,9 @@ class ODTTable
             $lists = $table->getTemp();
         }
 
+        // Ensure default column style
+        self::ensureColumnStyle($params, $table);
+
         // Eventually adjust table width.
         $table->adjustWidth ($params);
 
@@ -601,6 +604,27 @@ class ODTTable
             }
         } else {
             self::tableAddColumnUseProperties ($params, $properties);
+        }
+    }
+
+    static protected function ensureColumnStyle(ODTInternalParams $params, ODTElementTable $table) {
+        $count = $table->getCount();
+        $max = $table->getTableMaxColumns();
+        if ($max > 0) {
+            $column_defs = '';
+            for ($index = 0 ; $index < $max ; $index++) {
+                $styleName = $table->getTableColumnStyleName($index);
+                if (empty($styleName)) {
+                    // Create default column style for actual column
+                    $properties = array();
+                    $properties ['style-name'] = 'odt_auto_style_table_column_'.$count.'_'.($index+1);
+                    $style_obj = ODTTableColumnStyle::createTableColumnStyle ($properties);
+                    $params->document->addAutomaticStyle($style_obj);
+
+                    $column_defs .= '<table:table-column table:style-name="tablecolumn"/>';
+                    $table->setTableColumnStyleName($index, $properties ['style-name']);
+                }
+            }
         }
     }
 }

@@ -106,6 +106,9 @@ class ODTDefaultStyles extends ODTStyleSet
             <style:style style:name="Cell_Quotation5" style:family="table-cell">
                 <style:table-cell-properties fo:margin="0cm" fo:padding-left="6pt" fo:padding-right="6pt" fo:padding-top="0pt" fo:padding-bottom="0pt" fo:border-left="3pt solid #cccccc" fo:border-right="none" fo:border-top="none" fo:border-bottom="none"/>
             </style:style>
+            <style:style style:name="tablecolumn" style:family="table-column">
+                <style:table-column-properties style:rel-column-width="32768*"/>
+            </style:style>
         </office:automatic-styles>';
 
     // Font definitions. May not be present if in template mode, in which case they will be added to styles.xml

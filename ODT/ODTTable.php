@@ -156,11 +156,11 @@ class ODTTable
             $lists = $table->getTemp();
         }
 
-        // Ensure default column style
-        self::ensureColumnStyle($params, $table);
-
         // Eventually adjust table width.
         $table->adjustWidth ($params);
+
+        // Ensure default column style
+        self::ensureColumnStyle($params, $table);
 
         // Close the table.
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());

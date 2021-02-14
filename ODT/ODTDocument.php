@@ -899,7 +899,7 @@ class ODTDocument
         
         // It is iassumed the proper media selector has been set by calling setMediaSelector()
         if (($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') && $this->importnew != NULL) {
-            ODTImport::set_page_properties ($this->params, $style_obj);
+            ODTImport::set_page_properties($this->params, $style_obj);
         }
         
         // Save style data in page style array, in common styles and set current page format

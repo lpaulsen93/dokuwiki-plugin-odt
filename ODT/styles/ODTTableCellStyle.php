@@ -81,7 +81,7 @@ class ODTTableCellStyle extends ODTStyleStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    public function importProperties($properties, $disabled) {
+    public function importProperties($properties, $disabled=array()) {
         $this->importPropertiesInternal(ODTStyleStyle::getStyleProperties (), $properties, $disabled);
         $this->importPropertiesInternal(ODTTextStyle::getTextProperties (), $properties, $disabled);
         $this->importPropertiesInternal(ODTParagraphStyle::getParagraphProperties (), $properties, $disabled);

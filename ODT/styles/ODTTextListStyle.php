@@ -93,7 +93,7 @@ class ODTTextListStyle extends ODTStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    public function importProperties($properties, $disabled) {
+    public function importProperties($properties, $disabled=array()) {
         $this->importPropertiesInternal(ODTTextStyle::getTextProperties (), $properties, $disabled);
         $this->importPropertiesInternal(self::$list_fields, $properties, $disabled);
     }

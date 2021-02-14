@@ -102,7 +102,7 @@ class ODTParagraphStyle extends ODTStyleStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    public function importProperties($properties, $disabled) {
+    public function importProperties($properties, $disabled=array()) {
         foreach ($properties as $property => $value) {
             if ($disabled [$property] == 0) {
                 $this->setProperty($property, $value);

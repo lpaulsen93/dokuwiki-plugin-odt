@@ -44,7 +44,7 @@ abstract class ODTStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    abstract public function importProperties($properties, $disabled);
+    abstract public function importProperties($properties, $disabled=array());
 
     /**
      * Check if a style is a common style.

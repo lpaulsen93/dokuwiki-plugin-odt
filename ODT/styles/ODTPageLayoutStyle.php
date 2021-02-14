@@ -132,7 +132,7 @@ class ODTPageLayoutStyle extends ODTStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    public function importProperties($properties, $disabled) {
+    public function importProperties($properties, $disabled=array()) {
         $this->importPropertiesInternal(self::$page_layout_fields, $properties, $disabled, $this->page_layout_style);
         $this->importPropertiesInternal(self::$layout_props_fields, $properties, $disabled, $this->layout_props);
         $this->importPropertiesInternal(self::$bgi_fields, $properties, $disabled, $this->bgi_props);

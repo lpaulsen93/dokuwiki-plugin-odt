@@ -810,8 +810,8 @@ class ODTUtility
 
         // Set new media selector (remember old one)
         $media = $params->import->getMedia ();
-        if (!empty($options ['media_selector'])) {
-            $params->import->setMedia ($options ['media_selector']);
+        if (!empty($options['media_selector'])) {
+            $params->import->setMedia($options['media_selector']);
         }
 
         if (!empty($options ['element'])) {

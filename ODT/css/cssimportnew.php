@@ -779,10 +779,9 @@ class css_rule_new {
      * @param    string               $media       Media selector to match
      * @return   boolean
      */
-    public function matches (iElementCSSMatchable $element, &$specificity, $media = NULL) {
-
-        $media = trim ($media);
-        if ( !empty($this->media) && $media != $this->media ) {
+    public function matches(iElementCSSMatchable $element, &$specificity, $media = NULL) {
+        $media = trim($media);
+        if ( !empty($this->media) && $media !== $this->media ) {
             // Wrong media
             //print ("\nNo-Match ".$this->media."==".$media); //Debuging
             return false;
@@ -923,7 +922,7 @@ class cssimportnew {
      * 
      * @param    string      $media
      */
-    public function setMedia ($media) {
+    public function setMedia($media) {
         $this->media = $media;
     }
 
@@ -932,7 +931,7 @@ class cssimportnew {
      * 
      * @return    string
      */
-    public function getMedia () {
+    public function getMedia() {
         return $this->media;
     }
 
@@ -1060,7 +1059,7 @@ class cssimportnew {
         $value = NULL;
         $highest = 0;
         foreach ($this->rules as $rule) {
-            $matched = $rule->matches ($element, $specificity, $this->media);
+            $matched = $rule->matches($element, $specificity, $this->media);
             if ( $matched !== false ) {
                 $current = $rule->getProperty ($name);
 

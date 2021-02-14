@@ -55,7 +55,7 @@ class ODTUnknownStyle extends ODTStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    public function importProperties($properties, $disabled) {
+    public function importProperties($properties, $disabled=array()) {
     }
 
     /**

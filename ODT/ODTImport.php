@@ -709,24 +709,28 @@ class ODTImport
 
     static public function import_styles_from_css (ODTInternalParams $params, $media_sel=NULL, $registrations=NULL, $listAlign='right') {
         if ( $params->import != NULL ) {
-            $save = $params->import->getMedia ();
-            $params->import->setMedia ($media_sel);
+            if (!empty($media_sel)) {
+                $save = $params->import->getMedia();
+                $params->import->setMedia($media_sel);
+            }
             
             // Make a copy of the stack to be sure we do not leave anything behind after import.
             $stack = clone $params->htmlStack;
-            $stack->restoreToRoot ();
+            $stack->restoreToRoot();
 
-            self::import_styles_from_css_internal ($params, $stack, $registrations, $listAlign);
+            self::import_styles_from_css_internal($params, $stack, $registrations, $listAlign);
 
-            $params->import->setMedia ($save);
+            if (!empty($media_sel)) {
+                $params->import->setMedia($save);
+            }
         }
     }
 
-    static public function set_page_properties (ODTInternalParams $params, ODTPageLayoutStyle $pageStyle, $media_sel=NULL) {
+    static public function set_page_properties(ODTInternalParams $params, ODTPageLayoutStyle $pageStyle, $media_sel=NULL) {
         if ( $params->import != NULL ) {
-            if ($media_sel != NULL ) {
+            if (!empty($media_sel)) {
                 $save = $params->import->getMedia ();
-                $params->import->setMedia ($media_sel);
+                $params->import->setMedia($media_sel);
             }
 
             $stack = clone $params->htmlStack;
@@ -745,7 +749,7 @@ class ODTImport
                 }
             }
 
-            if ($media_sel != NULL ) {
+            if (!empty($media_sel)) {
                 $params->import->setMedia ($save);
             }
         }
@@ -802,8 +806,8 @@ class ODTImport
         $disabled ['padding-right'] = 1;
         $disabled ['padding-bottom'] = 1;
         $disabled ['padding-left'] = 1;
-        
-        $styleName = $params->styleset->getStyleName (footnote);
+
+        $styleName = $params->styleset->getStyleName('footnote');
         $footnote = $params->styleset->getStyle($styleName);
         if ($footnote != NULL && $body != NULL) {
             ODTParagraphStyle::copyLayoutProperties ($body, $footnote, $disabled);
@@ -815,7 +819,7 @@ class ODTImport
         $name = $params->styleset->getStyleName('first page');
         $first_page = $params->styleset->getStyle($name);
         if ($first_page != NULL) {
-            self::set_page_properties ($params, $first_page, $htmlStack, NULL);
+            self::set_page_properties($params, $first_page);
         }
 
         // Import styles which only require a simple import based on element name and attributes

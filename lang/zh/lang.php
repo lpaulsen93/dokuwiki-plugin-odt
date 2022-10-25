@@ -9,7 +9,7 @@
  * @author 2576562185 <2576562185@qq.com>
  */
 $lang['encoding']              = 'UTF-8';
-$lang['direction']             = '由右至左';
+$lang['direction']             = 'ltr';
 $lang['view']                  = '將頁面以Open Document格式輸出';
 $lang['export_odt_button']     = '輸出ODT檔';
 $lang['export_odt_pdf_button'] = '輸出PDF檔';

@@ -9,6 +9,7 @@
 
 // Directory of the templates in the media manager
 $conf['tpl_dir'] = 'odt';
+$conf['firsttemplatedefinitionwins'] = 1;
 
 // Default ODT template (filename only)
 $conf['odt_template'] = '';

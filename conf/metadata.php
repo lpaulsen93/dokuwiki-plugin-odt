@@ -8,6 +8,7 @@
  */
 
 $meta['tpl_dir']   = array('string');
+$meta['firsttemplatedefinitionwins']   = array('onoff');
 $meta['odt_template'] = array('string');
 $meta['showexportbutton'] = array('onoff');
 $meta['showpdfexportbutton'] = array('onoff');

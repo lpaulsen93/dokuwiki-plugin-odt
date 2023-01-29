@@ -16,7 +16,6 @@ if(!defined('DOKU_INC')) die();
  */
 class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
     protected $config = NULL;
-	protected $templateIsSet = false;
     
     /**
      * What kind of syntax are we?
@@ -108,10 +107,10 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
             list($info_type, $info_value, $pos) = $data;
 
 			if ($info_type == "template" && $this->config->getParam('firsttemplatedefinitionwins')) {
-				if ($this->templateIsSet) {
+				if ($this->config->getParam('templateIsSet')) {
 					return true;
 				} else {
-					$this->templateIsSet = true;
+					$this->config->setParam('templateIsSet',true);
 				}
 			}
 			

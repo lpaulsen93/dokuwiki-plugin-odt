@@ -193,6 +193,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => false,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // templateIsSet: tracks if a template has already been set
+        $this->config ['templateIsSet'] =
+            array('value'              => false,
+                  'DWGlobalName'       => NULL,
+                  'hasGlobal'          => false,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // ODT template.
         $this->config ['odt_template'] =
             array('value'              => NULL,
@@ -558,6 +567,9 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         if ( $this->mode == null ) {
             $this->mode = 'scratch';
         }
+		
+		// always reset 'templateIsSet' to false - it can only be set by calling setParam from the outside. I.e. the config does store the value, but the logic has to be handled elsewhere
+		$this->setParam('templateIsSet',false);
 
         // Get all known config parameters, see __construct().
         $odt_meta = p_get_metadata($ID, 'relation odt');

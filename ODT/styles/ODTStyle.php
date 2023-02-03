@@ -44,7 +44,7 @@ abstract class ODTStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    abstract public function importProperties($properties, $disabled=array());
+    abstract public function importProperties($properties, $disabled);
 
     /**
      * Check if a style is a common style.
@@ -75,7 +75,7 @@ abstract class ODTStyle
      * @return string The current value of the property
      */
     public function getProperty($property) {
-        return $this->properties [$property]['value'];
+        return (isset($this->properties [$property]['value']) ? $this->properties [$property]['value'] : NULL);
     }
 
     /**

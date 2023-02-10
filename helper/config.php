@@ -558,7 +558,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
 
                 // Check DokuWiki global configuration.
                 $dw_name = $this->hasDWGlobalSetting ($name);
-                if (!$value && $conf[$dw_name]) {
+                if (!$value && isset($conf[$dw_name])) {
                     $this->setParam ($name, $conf[$dw_name]);
                 }
                 
@@ -575,7 +575,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
 
                 // Check meta data in case syntax tags have written
                 // the config parameters to it.
-                $value = $odt_meta[$name];
+                if(isset($odt_meta[$name])) $value = $odt_meta[$name];
                 if($this->isMetaSetting($name) && !empty($value)) {
                     $this->setParam ($name, $value);
                 }

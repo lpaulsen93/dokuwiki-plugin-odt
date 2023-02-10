@@ -3,7 +3,6 @@
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  * 
  * @author Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>
- * @package DokuWiki\lang\en\lang
  */
 
 // settings must be present and set appropriately for the language

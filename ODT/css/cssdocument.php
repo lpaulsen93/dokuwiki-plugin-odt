@@ -35,10 +35,9 @@ class css_doc_element implements iElementCSSMatchable {
      * @return    array
      */
     public function iECSSM_getAttributes() {
-        if (isset($this->doc->entries [$this->index]['attributes_array'])) {
+        if(isset($this->index['attributes_array'])) {
             return $this->doc->entries [$this->index]['attributes_array'];
         }
-        return false;
     }
 
     /**
@@ -116,10 +115,9 @@ class css_doc_element implements iElementCSSMatchable {
      * @return    array
      */
     public function getProperties () {
-        if (isset($this->doc->entries [$this->index]['properties'])) {
-            return $this->doc->entries [$this->index]['properties'];
-        }
-        return NULL;
+	    if(isset($this->index['properties'])) {
+	        return $this->doc->entries [$this->index]['properties'];
+	    }
     }
 
     /**

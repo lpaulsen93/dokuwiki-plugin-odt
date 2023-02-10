@@ -3,8 +3,7 @@
  * English language file for config settings.
  *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
- * @author     Aurelien Bompard <aurelien@bompard.org>
- * @package    DokuWiki\lang\en\settings
+ * @author     Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>
  */
 
 /**

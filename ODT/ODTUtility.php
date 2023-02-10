@@ -335,9 +335,13 @@ class ODTUtility
         if (isset($properties ['text-decoration'])) {
             switch ($properties ['text-decoration']) {
                 case 'line-through':
-                case 'underline':
-                case 'overline':
                     $properties ['text-line-through-style'] = 'solid';
+                    break;
+                case 'underline':
+                    $properties ['text-underline-style'] = 'solid';
+                    break;
+                case 'overline':
+                    $properties ['text-overline-style'] = 'solid';
                     break;
             }
         }

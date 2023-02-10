@@ -213,7 +213,7 @@ class ODTTableCellStyle extends ODTStyleStyle
 
         // Create empty table cell style.
         $object = new ODTTableCellStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         

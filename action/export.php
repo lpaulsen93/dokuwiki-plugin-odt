@@ -158,7 +158,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         if( !is_array($action) && $odt_export ) {
             // On export to ODT load config helper if not done yet
             // and stop on errors.
-            if ( $this->config == NULL ) {
+            if ( !isset($this->config) ) {
                 $this->config = plugin_load('helper', 'odt_config');
                 $this->config->load($warning);
 
@@ -211,7 +211,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
         global $INPUT;
 
         // Load config helper if not done yet
-        if ( $this->config == NULL ) {
+        if ( !isset($this->config) ) {
             $this->config = plugin_load('helper', 'odt_config');
             $this->config->load($warning);
         }

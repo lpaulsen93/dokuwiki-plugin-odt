@@ -25,7 +25,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     public function __construct($style_name=NULL) {
         parent::__construct();
         $this->setClass ('frame');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
         $this->container = new ODTContainerElement($this);
@@ -48,7 +48,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     public function getOpeningTag (ODTInternalParams $params=NULL) {
         // Convert width to points
         $width = $this->getWidth();
-        if ($width !== NULL) {
+        if (isset($width)) {
             $width = $params->units->toPoints($width);
             $this->setWidth($width);
         }
@@ -144,7 +144,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     }
 
     public function getMaxWidthOfNestedContainer (ODTInternalParams $params, array $data) {
-        if ($this->own_max_width === NULL) {
+        if (!isset($this->own_max_width)) {
             // We do not know our own width yet. Calculate it first.
             $this->own_max_width = $this->getMaxWidth($params);
 
@@ -161,7 +161,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
         }
 
         // Convert to points
-        if ($this->own_max_width !== NULL) {
+        if (isset($this->own_max_width)) {
             $width = $params->units->getDigits ($params->units->toPoints($this->own_max_width));
         }
 
@@ -169,14 +169,14 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     }
 
     public function getMaxWidth (ODTInternalParams $params) {
-        if ($this->own_max_width !== NULL) {
+        if (isset($this->own_max_width)) {
             return $this->own_max_width;
         }
         $frameStyle = $this->getStyle();
 
         // Get frame left margin
         $leftMargin = $frameStyle->getProperty('margin-left');
-        if ($leftMargin == NULL) {
+        if (!isset($leftMargin)) {
             $leftMarginPt = 0;
         } else {
             $leftMarginPt = $params->units->getDigits ($params->units->toPoints($leftMargin));
@@ -184,7 +184,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
 
         // Get frame right margin
         $rightMargin = $frameStyle->getProperty('margin-right');
-        if ($rightMargin == NULL) {
+        if (!isset($rightMargin)) {
             $rightMarginPt = 0;
         } else {
             $rightMarginPt = $params->units->getDigits ($params->units->toPoints($rightMargin));
@@ -204,7 +204,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
 
         // Get frame width
         $width = $this->getWidth();
-        if ($width !== NULL) {
+        if (isset($width)) {
             if ($width [strlen($width)-1] != '%') {
                 $widthPt = $params->units->getDigits ($params->units->toPoints($width));
             } else {
@@ -217,7 +217,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
         // If no frame width is set or the frame width is greater than
         // the calculated max width then use the max width.
         $maxWidthPt = $maxWidthPt - $leftMarginPt - $rightMarginPt;
-        if ($width == NULL || $widthPt > $maxWidthPt) {
+        if (!isset($width) || $widthPt > $maxWidthPt) {
             $width = $maxWidthPt - $leftMarginPt - $rightMarginPt;
         } else {
             $width = $widthPt;
@@ -228,7 +228,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     }
     
     public function getWidth() {
-        if ($this->attributes !== NULL) {
+        if (isset($this->attributes)) {
             if ( preg_match('/svg:width="[^"]+"/', $this->attributes, $matches) === 1 ) {
                 $width = substr ($matches [0], 11);
                 $width = trim ($width, '"');
@@ -239,7 +239,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     }
 
     public function setWidth($width) {
-        if ($this->attributes !== NULL) {
+        if (isset($this->attributes)) {
             if ( preg_match('/svg:width="[^"]+"/', $this->attributes, $matches) === 1 ) {
                 $widthAttr = 'svg:width="'.$width.'"';
                 $this->attributes = str_replace($matches [0], $widthAttr, $this->attributes);
@@ -250,7 +250,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     }
 
     public function getNameAttribute() {
-        if ($this->attributes !== NULL) {
+        if (isset($this->attributes)) {
             if ( preg_match('/draw:name="[^"]+"/', $this->attributes, $matches) === 1 ) {
                 return $matches [0];
             }
@@ -259,7 +259,7 @@ class ODTElementFrame extends ODTStateElement implements iContainerAccess
     }
 
     public function getName() {
-        if ($this->attributes !== NULL) {
+        if (isset($this->attributes)) {
             if ( preg_match('/draw:name="[^"]+"/', $this->attributes, $matches) === 1 ) {
                 $name = substr ($matches [0], 10);
                 $name = trim ($name, '"');

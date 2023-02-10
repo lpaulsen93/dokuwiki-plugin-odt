@@ -301,10 +301,12 @@ class csscolors {
      */
     public static function getColorValue ($name=NULL) {
         $value = '#000000';
-        if ($name != NULL) {
-            $value = self::$values [strtolower($name)];
-            if ($value == NULL)
+        if (isset($name)) {
+            if (isset(self::$values [strtolower($name)])) {
+                $value = self::$values [strtolower($name)];
+            } else {
                 $value = '#000000';
+            }
         }
         return $value;
     }
@@ -315,9 +317,9 @@ class csscolors {
      */
     public static function getValueName ($value=NULL) {
         $name = 'Black';
-        if ($value != NULL) {
+        if (isset($value)) {
             $name = self::$names [$value];
-            if ($name == NULL)
+            if (!isset($name))
                 $name = 'Black';
         }
         return $name;
@@ -328,7 +330,7 @@ class csscolors {
      * @return boolean
      */
     public static function isKnownColorName ($name=NULL) {
-        if ($name != NULL) {
+        if (isset($name)) {
             return array_key_exists(strtolower($name), self::$values);
         }
         return false;

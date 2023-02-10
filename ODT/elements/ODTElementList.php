@@ -23,7 +23,7 @@ class ODTElementList extends ODTStateElement
     public function __construct($style_name=NULL, $continue=false) {
         parent::__construct();
         $this->setClass ('list');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
         $this->setContinueNumbering ($continue);
@@ -85,13 +85,13 @@ class ODTElementList extends ODTStateElement
         $this->setParent($previous);
 
         // Check if this is a nested list
-        while ($previous != NULL) {
+        while (isset($previous)) {
             if ($previous->getClass() == 'list') {
                 break;
             }
             $previous = $previous->getParent();
         }
-        if ($previous != NULL) {
+        if (isset($previous)) {
             // Yes, nested list.
             $this->in_list = true;
         }

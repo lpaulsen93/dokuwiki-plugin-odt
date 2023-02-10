@@ -27,7 +27,7 @@ class ODTParagraph
      * @param     string            $attributes The attributes belonging o the element, e.g. 'class="example"'
      */
     public static function paragraphOpen(ODTInternalParams $params, $styleName=NULL, $element=NULL, $attributes=NULL){
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'p';
         }
         if ( empty($styleName) ) {
@@ -36,10 +36,10 @@ class ODTParagraph
 
         $list = NULL;
         $listItem = $params->document->state->getCurrentListItem();
-        if ($listItem != NULL) {
+        if (isset($listItem)) {
             // We are in a list item. Is this the list start?
             $list = $listItem->getList();
-            if ($list != NULL) {
+            if (isset($list)) {
                 // Get list count and Flag if this is the first paragraph in the list
                 $listCount = $params->document->state->countClass('list');
                 $isFirst = $list->getListFirstParagraph();
@@ -66,16 +66,16 @@ class ODTParagraph
                             } else {
                                 $styleFirstTemplate = $params->document->getStyleByAlias('numbering first');
                             }
-                            if ($styleFirstTemplate != NULL) {
+                            if (isset($styleFirstTemplate)) {
                                 $styleBody = $params->document->getStyle($styleName);
                                 $styleDisplayName = 'First '.$styleBody->getProperty('style-display-name');
                                 $styleObj = clone $styleFirstTemplate;
-                                if ($styleObj != NULL) {
+                                if (isset($styleObj)) {
                                     $styleObj->setProperty('style-name', $styleNameFirst);
                                     $styleObj->setProperty('style-parent', $styleName);
                                     $styleObj->setProperty('style-display-name', $styleDisplayName);
                                     $bottom = $styleFirstTemplate->getProperty('margin-bottom');
-                                    if ($bottom === NULL) {
+                                    if (!isset($bottom)) {
                                         $styleObj->setProperty('margin-bottom', $styleBody->getProperty('margin-bottom'));
                                     }
                                     $params->document->addStyle($styleObj);
@@ -96,7 +96,7 @@ class ODTParagraph
         if (!$inParagraph) {
             if ( $params->document->pageFormatChangeIsPending() ) {
                 $pageStyle = $params->document->doPageFormatChange($styleName);
-                if ( $pageStyle != NULL ) {
+                if ( isset($pageStyle) ) {
                     $styleName = $pageStyle;
                     // Delete pagebreak, the format change will also introduce a pagebreak.
                     $params->document->setPagebreakPending(false);
@@ -108,11 +108,11 @@ class ODTParagraph
             }
             
             // If we are in a list remember paragraph position
-            if ($list != NULL) {
+            if (isset($list)) {
                 $list->setListLastParagraphPosition(strlen($params->content));
             }
 
-            if ($params->elementObj == NULL) {
+            if (!isset($params->elementObj)) {
                 $properties = array();
                 ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
             }
@@ -131,7 +131,7 @@ class ODTParagraph
      */
     public static function paragraphClose(ODTInternalParams $params){
         $paragraph = $params->document->state->getCurrentParagraph();
-        if ($paragraph != NULL) {
+        if (isset($paragraph)) {
             ODTUtility::closeHTMLElement ($params, $paragraph->getHTMLElement());
             $params->content .= $paragraph->getClosingTag();
             $params->document->state->leave();

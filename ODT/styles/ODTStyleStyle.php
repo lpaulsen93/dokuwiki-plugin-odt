@@ -49,9 +49,9 @@ abstract class ODTStyleStyle extends ODTStyle
      * Constructor.
      */
     public function __construct() {
-        if (self::$get_family_callbacks === NULL)
+        if (!isset(self::$get_family_callbacks))
             self::$get_family_callbacks = array();
-        if (self::$import_odt_callbacks === NULL)
+        if (!isset(self::$import_odt_callbacks))
             self::$import_odt_callbacks = array();
     }
 

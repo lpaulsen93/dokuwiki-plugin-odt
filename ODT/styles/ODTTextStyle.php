@@ -282,7 +282,7 @@ class ODTTextStyle extends ODTStyleStyle
             $odt_fo_size = $properties ['font-size'];
         }
         $length = strlen ($odt_fo_size);
-        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && $doc != NULL) {
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && isset($doc)) {
             // A font-size in percent is only supported in common style definitions, not in automatic
             // styles. Create a common style and set it as parent for this automatic style.
             $name = 'Size'.trim ($odt_fo_size, '%').'pc';
@@ -303,7 +303,7 @@ class ODTTextStyle extends ODTStyleStyle
 
         // Create empty text style.
         $object = new ODTTextStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         

@@ -16,10 +16,10 @@ class ODTSpan
      * @param string $styleName The style to use.
      */
     public static function spanOpen(ODTInternalParams $params, $styleName, $element=NULL, $attributes=NULL){
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'span';
         }
-        if ($params->elementObj == NULL) {
+        if (!isset($params->elementObj)) {
             $properties = array();
             ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
         }
@@ -166,7 +166,7 @@ class ODTSpan
                     if ($HTMLCode [$found[0]+1] != '/') {
                         $parts = explode(' ', trim($tagged, '<> '), 2);
                         $entry ['tag-open'] = $parts [0];
-                        if ($parts [1] !== NULL ) {
+                        if ( isset($parts [1]) ) {
                             $entry ['attributes'] = $parts [1];
                         }
                         $entry ['tag-orig'] = $tagged;
@@ -190,18 +190,18 @@ class ODTSpan
         // Check each array entry.
         $checked = array();
         for ($out = 0 ; $out < count($parsed) ; $out++) {
-            if ($checked [$out] !== NULL) {
+            if (isset($checked [$out])) {
                 continue;
             }
             $found = &$parsed [$out];
-            if ($found ['content'] !== NULL) {
+            if (isset($found ['content'])) {
                 $checked [$out] = $params->document->replaceXMLEntities($found ['content']);
-            } else if ($found ['tag-open'] !== NULL) {
+            } else if (isset($found ['tag-open'])) {
                 $closed = false;
 
                 for ($in = $out+1 ; $in < count($parsed) ; $in++) {
                     $search = &$parsed [$in];
-                    if ($search ['tag-close'] !== NULL &&
+                    if (isset($search ['tag-close']) &&
                         $found ['tag-open'] == $search ['tag-close'] &&
                         $search ['matched'] === false &&
                         (array_key_exists($found ['tag-open'], $spans) || $found ['tag-open'] == 'span')) {
@@ -227,7 +227,7 @@ class ODTSpan
                     // No, save as content
                     $checked [$out] = $params->document->replaceXMLEntities($found ['tag-orig']);
                 }
-            } else if ($found ['tag-close'] !== NULL) {
+            } else if (isset($found ['tag-close'])) {
                 // If we find a closing tag it means it did not match
                 // an opening tag. Convert to content!
                 $checked [$out] = $params->document->replaceXMLEntities($found ['tag-orig']);

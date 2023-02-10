@@ -88,14 +88,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
         /** @var helper_plugin_odt_dwcssloader $loader */
         $loader = plugin_load('helper', 'odt_dwcssloader');
-        if ( $loader != NULL ) {
+        if ( isset($loader) ) {
             $this->css = $loader->load
                 ('odt', 'odt', $this->config->getParam('css_template'));
         }
 
         // Import CSS (old API, deprecated)
         $this->import = plugin_load('helper', 'odt_cssimport');
-        if ( $this->import != NULL ) {
+        if ( isset($this->import) ) {
             $this->import->importFromString ($this->css);
 
             // Call adjustLengthValues to make our callback function being called for every
@@ -214,7 +214,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // otherwise plugins might inherit a wrong font-size on CSS import!
         if ($mode != 'CSS template') {
             $default = $this->document->getDefaultStyle ('paragraph');
-            if ($default != NULL) {
+            if (isset($default)) {
                 $fontFize = $default->getProperty('font-size');
                 if (!empty($fontFize)) {
                     $fontFizeInPx = $this->document->toPixel($fontFize);
@@ -1063,7 +1063,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // For the list paragrpah copy body style and remove margins
             $body = $this->document->getStyleName('body');
             $style = clone($this->document->getStyle($body));
-            if ($style != NULL) {
+            if (isset($style)) {
                 $style->setProperty('style-name', $style_name);
                 $style->setProperty('margin-top', NULL);
                 $style->setProperty('margin-bottom', NULL);
@@ -1088,7 +1088,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
             // set indentation for level 1 to '0cm'
             $ol = $this->document->getStyleName('numbering');
             $style = clone($this->document->getStyle($ol));
-            if ($style != NULL) {
+            if (isset($style)) {
                 $style->setProperty('style-name', $style_name);
                 $style->setPropertyForLevel(1, 'text-style-name', 'highlight_list_numbers_text_style');
                 $style->setPropertyForLevel(1, 'text-align', 'left');
@@ -1983,7 +1983,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param $inlineStyle
      */
     public function getODTProperties (&$dest, $element, $classString, $inlineStyle, $media_sel=NULL, $cssId=NULL) {
-        if ($media_sel === NULL) {
+        if (!isset($media_sel)) {
             $media_sel = $this->config->getParam ('media_sel');
         }
         // Get properties for our class/element from imported CSS
@@ -2124,14 +2124,14 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @see ODTDocument::getODTProperties for more information
      */
     public function getODTPropertiesNew (&$dest, $element, $attributes=NULL, $media_sel=NULL, $inherit=true) {
-        if ($media_sel === NULL) {
+        if (!isset($media_sel)) {
             $media_sel = $this->config->getParam ('media_sel');
         }
         $this->document->getODTProperties ($dest, $element, $attributes, $media_sel, $inherit);
     }
 
     public function getODTPropertiesFromElement (&$dest, iElementCSSMatchable $element, $media_sel=NULL, $inherit=true) {
-        if ($media_sel === NULL) {
+        if (!isset($media_sel)) {
             $media_sel = $this->config->getParam ('media_sel');
         }
         $this->document->getODTPropertiesFromElement ($dest, $element, $media_sel, $inherit);

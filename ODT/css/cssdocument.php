@@ -35,7 +35,10 @@ class css_doc_element implements iElementCSSMatchable {
      * @return    array
      */
     public function iECSSM_getAttributes() {
-        return $this->doc->entries [$this->index]['attributes_array'];
+        if (isset($this->doc->entries [$this->index]['attributes_array'])) {
+            return $this->doc->entries [$this->index]['attributes_array'];
+        }
+        return false;
     }
 
     /**
@@ -77,7 +80,7 @@ class css_doc_element implements iElementCSSMatchable {
      * @return    boolean
      */
     public function iECSSM_has_pseudo_class($class) {
-        if ($this->doc->entries [$this->index]['pseudo_classes'] == NULL) {
+        if (!isset($this->doc->entries [$this->index]['pseudo_classes'])) {
             return false;
         }
         $result = array_search($class, 
@@ -95,7 +98,7 @@ class css_doc_element implements iElementCSSMatchable {
      * @return    boolean
      */
     public function iECSSM_has_pseudo_element($element) {
-        if ($this->doc->entries [$this->index]['pseudo_elements'] == NULL) {
+        if (!isset($this->doc->entries [$this->index]['pseudo_elements'])) {
             return false;
         }
         $result = array_search($element, 
@@ -113,7 +116,10 @@ class css_doc_element implements iElementCSSMatchable {
      * @return    array
      */
     public function getProperties () {
-        return $this->doc->entries [$this->index]['properties'];
+        if (isset($this->doc->entries [$this->index]['properties'])) {
+            return $this->doc->entries [$this->index]['properties'];
+        }
+        return NULL;
     }
 
     /**
@@ -189,7 +195,7 @@ class cssdocument {
      * @return    array Array of attributes
      */
     protected function get_attributes_array ($attributes) {
-        if ($attributes == NULL) {
+        if (!isset($attributes)) {
             return NULL;
         }
         
@@ -279,7 +285,7 @@ class cssdocument {
         }
         
         // Build attribute array/parse attributes
-        if ($attributes != NULL) {
+        if (isset($attributes)) {
             $this->entries [$this->size]['attributes_array'] =
                 $this->get_attributes_array ($attributes);
         }

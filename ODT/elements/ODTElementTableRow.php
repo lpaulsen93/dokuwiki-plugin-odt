@@ -27,7 +27,7 @@ class ODTElementTableRow extends ODTStateElement
     public function __construct($style_name=NULL) {
         parent::__construct();
         $this->setClass ('table-row');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
     }
@@ -48,7 +48,7 @@ class ODTElementTableRow extends ODTStateElement
      */
     public function getOpeningTag () {
         $style_name = $this->getStyleName();
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             return '<table:table-row table:style-name="'.$style_name.'">';
         }
         return '<table:table-row>';
@@ -81,7 +81,7 @@ class ODTElementTableRow extends ODTStateElement
      */
     public function determineParent(ODTStateElement $previous) {
         $table = $previous;
-        while ($table != NULL) {
+        while (isset($table)) {
             if ($table->getClass() == 'table') {
                 break;
             }
@@ -89,7 +89,7 @@ class ODTElementTableRow extends ODTStateElement
         }
         $this->setParent($table);
 
-        if ($table == NULL) {
+        if (!isset($table)) {
             // ??? Should not be...
             return;
         }

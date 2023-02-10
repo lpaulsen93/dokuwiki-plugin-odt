@@ -1,8 +1,7 @@
 <?php
 /**
- * English language file for config settings.
- *
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
+ *
  * @author     Eduardo Mozart de Oliveira <eduardomozart182@gmail.com>
  */
 

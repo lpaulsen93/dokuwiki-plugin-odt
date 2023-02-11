@@ -167,7 +167,7 @@ class ODTTableColumnStyle extends ODTStyleStyle
 
         // Create empty table column style.
         $object = new ODTTableColumnStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         

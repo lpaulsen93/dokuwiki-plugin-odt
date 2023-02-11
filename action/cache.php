@@ -33,7 +33,7 @@ class action_plugin_odt_cache extends DokuWiki_Action_Plugin {
      */
     public function handle_cache_prepare(Doku_Event $event) {
         // Load config helper if not done yet
-        if ( $this->config == NULL ) {
+        if ( !isset($this->config) ) {
             $this->config = plugin_load('helper', 'odt_config');
             $this->config->load($warning);
         }

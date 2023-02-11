@@ -332,14 +332,18 @@ class ODTUtility
         $adjustToMaxWidth = array('margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom');
 
         // Convert 'text-decoration'.
-        if ( $properties ['text-decoration'] == 'line-through' ) {
-            $properties ['text-line-through-style'] = 'solid';
-        }
-        if ( $properties ['text-decoration'] == 'underline' ) {
-            $properties ['text-underline-style'] = 'solid';
-        }
-        if ( $properties ['text-decoration'] == 'overline' ) {
-            $properties ['text-overline-style'] = 'solid';
+        if (isset($properties ['text-decoration'])) {
+            switch ($properties ['text-decoration']) {
+                case 'line-through':
+                    $properties ['text-line-through-style'] = 'solid';
+                    break;
+                case 'underline':
+                    $properties ['text-underline-style'] = 'solid';
+                    break;
+                case 'overline':
+                    $properties ['text-overline-style'] = 'solid';
+                    break;
+            }
         }
 
         // Normalize border properties
@@ -352,7 +356,7 @@ class ODTUtility
 
         // Adjust relative margins if $maxWidth is given.
         // $maxWidth is expected to be the width of the surrounding element.
-        if ($maxWidth != NULL) {
+        if (isset($maxWidth)) {
             $maxWidthInPt = $units->toPoints($maxWidth, 'y');
             $maxWidthInPt = $units->getDigits($maxWidthInPt);
             
@@ -366,12 +370,12 @@ class ODTUtility
         // Now we do the adjustments for which one value depends on another
 
         // Do we have font-size or line-height set?
-        if ($properties ['font-size'] != NULL || $properties ['line-height'] != NULL) {
+        if (isset($properties ['font-size']) || isset($properties ['line-height'])) {
             // First get absolute font-size in points
             $base_font_size_in_pt = $units->getPixelPerEm ().'px';
             $base_font_size_in_pt = $units->toPoints($base_font_size_in_pt, 'y');
             $base_font_size_in_pt = $units->getDigits($base_font_size_in_pt);
-            if ($properties ['font-size'] != NULL) {
+            if (isset($properties ['font-size'])) {
                 $font_size_unit = $units->stripDigits($properties ['font-size']);
                 $font_size_digits = $units->getDigits($properties ['font-size']);
                 if ($font_size_unit == '%') {
@@ -386,7 +390,7 @@ class ODTUtility
             }
 
             // Convert relative line-heights to absolute
-            if ($properties ['line-height'] != NULL) {
+            if (isset($properties ['line-height'])) {
                 $line_height_unit = $units->stripDigits($properties ['line-height']);
                 $line_height_digits = $units->getDigits($properties ['line-height']);
                 if ($line_height_unit == '%') {
@@ -644,12 +648,12 @@ class ODTUtility
 
     protected static function createTextStyle (ODTInternalParams $params, $element, $attributes, $styleName=NULL) {
         // Create automatic style
-        if ($styleName == NULL || !$params->document->styleExists($styleName)) {
+        if (!isset($styleName) || !$params->document->styleExists($styleName)) {
             // Get properties
             $properties = array();        
             self::getHTMLElementProperties ($params, $properties, $element, $attributes);
 
-            if ($styleName == NULL) {
+            if (!isset($styleName)) {
                 $properties ['style-name'] = ODTStyle::getNewStylename ('span');
             } else {
                 // Use callers style name. He needs to be sure that it's unique!
@@ -667,12 +671,12 @@ class ODTUtility
 
     protected static function createParagraphStyle (ODTInternalParams $params, $element, $attributes, $styleName=NULL) {
         // Create automatic style
-        if ($styleName == NULL || !$params->document->styleExists($styleName)) {
+        if (!isset($styleName) || !$params->document->styleExists($styleName)) {
             // Get properties
             $properties = array();        
             self::getHTMLElementProperties ($params, $properties, $element, $attributes);
 
-            if ($styleName == NULL) {
+            if (!isset($styleName)) {
                 $properties ['style-name'] = ODTStyle::getNewStylename ('span');
             } else {
                 // Use callers style name. He needs to be sure that it's unique!
@@ -842,7 +846,7 @@ class ODTUtility
                     if ($HTMLCode [$found[0]+1] != '/') {
                         $parts = explode(' ', trim($tagged, '<> '), 2);
                         $entry ['tag-open'] = $parts [0];
-                        if ($parts [1] !== NULL ) {
+                        if ( isset($parts [1]) ) {
                             $entry ['attributes'] = $parts [1];
                         }
                         $entry ['tag-orig'] = $tagged;
@@ -869,22 +873,22 @@ class ODTUtility
         $firstTag = '';
         $olStartValue = NULL;
         for ($out = 0 ; $out < count($parsed) ; $out++) {
-            if ($checked [$out] !== NULL) {
+            if (isset($checked [$out])) {
                 continue;
             }
             $found = &$parsed [$out];
-            if ($found ['content'] !== NULL) {
+            if (isset($found ['content'])) {
                 if ($options ['escape_content'] !== 'false') {
                     $checked [$out] = $params->document->replaceXMLEntities($found ['content']);
                 } else {
                     $checked [$out] = $found ['content'];
                 }
-            } else if ($found ['tag-open'] !== NULL) {
+            } else if (isset($found ['tag-open'])) {
                 $closed = false;
 
                 for ($in = $out+1 ; $in < count($parsed) ; $in++) {
                     $search = &$parsed [$in];
-                    if ($search ['tag-close'] !== NULL &&
+                    if (isset($search ['tag-close']) &&
                         $found ['tag-open'] == $search ['tag-close'] &&
                         $search ['matched'] === false &&
                         array_key_exists($found ['tag-open'], $elements)) {
@@ -970,7 +974,7 @@ class ODTUtility
                                 }
 
                                 $checked [$out] = '<text:list-item';
-                                if ($olStartValue !== NULL) {
+                                if (isset($olStartValue)) {
                                     $checked [$out] .= ' text:start-value="'.$olStartValue.'"';
                                     $olStartValue = NULL;
                                 }
@@ -996,7 +1000,7 @@ class ODTUtility
                         $checked [$out] = $found ['tag-orig'];
                     }
                 }
-            } else if ($found ['tag-close'] !== NULL) {
+            } else if (isset($found ['tag-close'])) {
                 // If we find a closing tag it means it did not match
                 // an opening tag. Convert to content!
                 $checked [$out] = $params->document->replaceXMLEntities($found ['tag-orig']);

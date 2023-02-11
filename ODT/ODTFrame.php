@@ -68,7 +68,7 @@ class ODTFrame
      */
     public static function openTextBoxUseCSS (ODTInternalParams $params, $element=NULL, $attributes=NULL) {
         $frame = $params->document->state->getCurrentFrame();
-        if ($frame != NULL) {
+        if (isset($frame)) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
             //return;
         }
@@ -137,7 +137,7 @@ class ODTFrame
      *      about supported $properties.
      */
     public static function openMultiColumnTextBoxUseProperties (ODTInternalParams $params, $properties) {
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'div';
         }
 
@@ -155,7 +155,7 @@ class ODTFrame
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
 
-        if ($params->elementObj == NULL) {
+        if (!isset($params->elementObj)) {
             $properties = array();
             ODTUtility::openHTMLElement ($params, $properties, $element, $attributes);
         }
@@ -217,11 +217,11 @@ class ODTFrame
      */
     public static function openFrameUseProperties (ODTInternalParams $params, $properties, $element=NULL, $attributes=NULL) {
         $frame = $params->document->state->getCurrentFrame();
-        if ($frame != NULL) {
+        if (isset($frame)) {
             // Do not open a nested frame as this will make the content ofthe nested frame disappear.
             //return;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'div';
         }
         $elementObj = $params->elementObj;
@@ -317,7 +317,7 @@ class ODTFrame
 
         // Draw a frame with a text box in it. the text box will be left opened
         // to grow with the content (requires fo:min-height in $style_name).
-        if ($elementObj == NULL) {
+        if (!isset($elementObj)) {
             $throwAway = array();
             ODTUtility::openHTMLElement ($params, $throwAway, $element, $attributes);
         }
@@ -333,10 +333,10 @@ class ODTFrame
                          text:anchor-type="'.$anchor_type.'"
                          svg:width="'.$width.'" 
                          draw:z-index="'.($params->document->div_z_index + 0).'"';
-        if ($svgX !== NULL) {
+        if (isset($svgX)) {
             $frame_attrs .= ' svg:x="'.$svgX.'"';
         }
-        if ($svgY !== NULL) {
+        if (isset($svgY)) {
             $frame_attrs .= ' svg:y="'.$svgY.'"';
         }
         if (!empty($properties ['min-height'])) {
@@ -363,7 +363,7 @@ class ODTFrame
      */
     public static function closeFrame (ODTInternalParams $params) {
         $frame = $params->document->state->getCurrentFrame();
-        if ($frame == NULL) {
+        if (!isset($frame)) {
             // ??? Error. Not table found.
             return;
         }

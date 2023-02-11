@@ -17,7 +17,7 @@ class ODTElementParagraph extends ODTStateElement
     public function __construct($style_name=NULL) {
         parent::__construct();
         $this->setClass ('paragraph');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
     }

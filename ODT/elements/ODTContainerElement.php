@@ -51,7 +51,7 @@ class ODTContainerElement
      */
     public function determineParent(ODTStateElement $previous) {
         $container = $previous;
-        while ($container != NULL) {
+        while (isset($container)) {
             if ($container->getClass() == 'table-cell') {
                 $cell = $container;
             }
@@ -63,7 +63,7 @@ class ODTContainerElement
             }
             $container = $container->getParent();
         }
-        if ($container == NULL) {
+        if (!isset($container)) {
             $this->owner->setParent($previous);
         } else {
             $this->owner->setParent($container);

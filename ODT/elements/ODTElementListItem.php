@@ -68,7 +68,7 @@ class ODTElementListItem extends ODTStateElement
      * @param ODTStateElement $previous
      */
     public function determineParent(ODTStateElement $previous) {
-        while ($previous != NULL) {
+        while (isset($previous)) {
             if ($previous->getClass() == 'list') {
                 break;
             }

@@ -171,7 +171,7 @@ class ODTTableRowStyle extends ODTStyleStyle
 
         // Create empty table row style.
         $object = new ODTTableRowStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         

@@ -74,7 +74,7 @@ class plugin_odt_renderer_start_test extends DokuWikiTest {
         $this->assertFalse($found != 1, "Heading does not include first line!");
 
         // If there is a paragraph, it should start behind the heading
-        if ( $paragraph !== NULL ) {
+        if ( isset($paragraph) ) {
             $this->assertFalse($paragraph_end >= $heading_end, "Paragraph before heading found!");
         }
     }

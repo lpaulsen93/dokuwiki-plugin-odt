@@ -164,7 +164,7 @@ class ODTDocument
         $this->params->manifest  = $this->manifest;
         $this->params->styleset  = $this->styleset;
 
-        if ($this->ZIP === NULL) {
+        if (!isset($this->ZIP)) {
             return false;
         }
         return true;
@@ -188,10 +188,10 @@ class ODTDocument
     }
 
     protected function setupImport() {
-        if ($this->importnew == NULL) {
+        if (!isset($this->importnew)) {
             // No CSS imported yet. Create object.
             $this->importnew = new cssimportnew();
-            if ($this->importnew == NULL) {
+            if (!isset($this->importnew)) {
                 return;
             }
         }
@@ -204,7 +204,7 @@ class ODTDocument
      * @param string $mediaSel
      */
     public function setMediaSelector ($mediaSel) {
-        if ($this->importnew == NULL) {
+        if (!isset($this->importnew)) {
             $this->setupImport();
         }
         $this->importnew->setMedia ($mediaSel);
@@ -280,7 +280,7 @@ class ODTDocument
     }
 
     public function replaceURLPrefixes ($callback) {
-        if ($this->importnew != NULL) {
+        if (isset($this->importnew)) {
             $this->importnew->replaceURLPrefixes ($callback);
         }
     }
@@ -351,10 +351,10 @@ class ODTDocument
         if ( !$in_paragraph ) {
             $this->paragraphOpen();
         }
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'span';
         }
         unset($this->params->elementObj);
@@ -427,10 +427,10 @@ class ODTDocument
      * @see ODTParagraph::paragraphOpenUseCSS for detailed documentation
      */
     function paragraphOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'p';
         }
         unset($this->params->elementObj);
@@ -506,7 +506,7 @@ class ODTDocument
         $text = preg_replace_callback('/(  +)/',array($this,'_preserveSpace'),$text);
 
         $list_item = $this->state->getCurrentListItem();
-        if ($list_item != NULL) {
+        if (isset($list_item)) {
             // if we're in a list item, we must close the <text:p> tag
             $this->paragraphClose();
             $this->paragraphOpen($style);
@@ -556,7 +556,7 @@ class ODTDocument
      * @return bool
      */
     function pageFormatChangeIsPending() {
-        if ($this->changePageFormat != NULL) {
+        if (isset($this->changePageFormat)) {
             return true;
         }
         return false;
@@ -857,7 +857,7 @@ class ODTDocument
      */
     public function closeCurrentElement() {
         $current = $this->state->getCurrent();
-        if ($current != NULL) {
+        if (isset($current)) {
             $this->content .= $current->getClosingTag($this->content);
             $this->state->leave();
         }
@@ -874,7 +874,7 @@ class ODTDocument
      * FIXME: make protected as soon as function header is moved here also!
      */
     public function doPageFormatChange ($parent = NULL) {
-        if ( $this->changePageFormat == NULL ) {
+        if ( !isset($this->changePageFormat) ) {
             // Error.
             return NULL;
         }
@@ -898,7 +898,7 @@ class ODTDocument
         $style_name = $style_obj->getProperty('style-name');
         
         // It is iassumed the proper media selector has been set by calling setMediaSelector()
-        if (($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') && $this->importnew != NULL) {
+        if (($this->CSSUsage == 'basic' || $this->CSSUsage == 'full') && isset($this->importnew)) {
             ODTImport::set_page_properties($this->params, $style_obj);
         }
         
@@ -1004,7 +1004,7 @@ class ODTDocument
      * @see ODTList::listOpen for detailed documentation
      */
     function listOpen($continue=false, $styleName, $element=NULL, $attributes=NULL) {
-        if ($element == NULL) {
+        if (!isset($element)) {
             if ($styleName == $this->getStyleName('list')) {
                 $element = 'ul';
             }
@@ -1180,10 +1180,10 @@ class ODTDocument
      * @see ODTTable::tableOpenUseCSS for detailed documentation
      */
     function tableOpenUseCSS($maxcols=NULL, $numrows=NULL, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'table';
         }
 
@@ -1219,10 +1219,10 @@ class ODTDocument
      * @see ODTTable::tableHeaderOpenUseCSS for detailed documentation
      */
     function tableHeaderOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'th';
         }
 
@@ -1248,10 +1248,10 @@ class ODTDocument
      * @see ODTTable::tableRowOpenUseCSS for detailed documentation
      */
     function tableRowOpenUseCSS($element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'tr';
         }
 
@@ -1277,10 +1277,10 @@ class ODTDocument
      * @see ODTTable::tableCellOpenUseCSS for detailed documentation
      */
     function tableCellOpenUseCSS($colspan = 1, $rowspan = 1, $element=NULL, $attributes=NULL, cssimportnew $import=NULL){
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'td';
         }
 
@@ -1306,10 +1306,10 @@ class ODTDocument
      * @see ODTFrame::openTextBoxUseCSS for detailed documentation
      */
     function openTextBoxUseCSS ($element=NULL, $attributes=NULL, cssimportnew $import=NULL) {
-        if ($import == NULL) {
+        if (!isset($import)) {
             $import = $this->importnew;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'div';
         }
 
@@ -1388,7 +1388,7 @@ class ODTDocument
      */
     public function setOutlineStyle ($type) {
         $outline_style = $this->getStyle('Outline');
-        if ($outline_style == NULL) {
+        if (!isset($outline_style)) {
             // Outline style not found!
             return;
         }
@@ -1642,7 +1642,7 @@ class ODTDocument
 
         // Change the standard page layout style
         $first_page = $this->getStyleByAlias('first page');
-        if ($first_page != NULL) {
+        if (isset($first_page)) {
             $first_page->setProperty('width', $this->page->getWidth().'cm');
             $first_page->setProperty('height', $this->page->getHeight().'cm');
             $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
@@ -1700,7 +1700,7 @@ class ODTDocument
             // If the text is still empty, then we change the start page format now.
             $this->page->setFormat($data ['format'], $data ['orientation'], $data['margin-top'], $data['margin-right'], $data['margin-bottom'], $data['margin-left']);
             $first_page = $this->getStyleByAlias('first page');
-            if ($first_page != NULL) {
+            if (isset($first_page)) {
                 $first_page->setProperty('width', $this->page->getWidth().'cm');
                 $first_page->setProperty('height', $this->page->getHeight().'cm');
                 $first_page->setProperty('margin-top', $this->page->getMarginTop().'cm');
@@ -2016,7 +2016,7 @@ class ODTDocument
      * @param string $media_sel The media selector to use for the query e.g. 'print'. May be empty.
      */
     public function getODTProperties (array &$dest, $element, $attributes=NULL, $media_sel=NULL, $inherit=true) {
-        if ($this->importnew == NULL) {
+        if (!isset($this->importnew)) {
             return;
         }
 
@@ -2030,7 +2030,7 @@ class ODTDocument
     }
 
     public function getODTPropertiesFromElement (array &$dest, iElementCSSMatchable $element, $media_sel=NULL, $inherit=true) {
-        if ($this->importnew == NULL) {
+        if (!isset($this->importnew)) {
             return;
         }
 
@@ -2229,12 +2229,12 @@ class ODTDocument
     public function adjustFontSizes($newBaseSize) {
         // First get the old base size
         $default = $this->styleset->getDefaultStyle('paragraph');
-        if ($default == NULL) {
+        if (!isset($default)) {
             // ???
             return;
         }
         $oldBaseSize = $default->getProperty('font-size');
-        if ($oldBaseSize === NULL) {
+        if (!isset($oldBaseSize)) {
             return;
         }
         $oldBaseSizeInPt = trim($this->units->toPoints($oldBaseSize, 'y'), 'pt');
@@ -2252,7 +2252,7 @@ class ODTDocument
         foreach ($styles_list as $styles) {
             foreach ($styles as $style) {
                 $fontSize = $style->getProperty('font-size');
-                if ($fontSize !== NULL) {
+                if (isset($fontSize)) {
                     $fontSizeInPt = trim($this->units->toPoints($fontSize, 'y'), 'pt');
                     $fontSizeInPt = ($fontSizeInPt/$oldBaseSizeInPt) * $newBaseSizeInPt;
                     $fontSizeInPt = round($fontSizeInPt, 2);
@@ -2283,11 +2283,11 @@ class ODTDocument
         }
         $name = $this->styleset->getStyleName('numbering');
         $style = $this->styleset->getStyle($name);
-        if ($style == NULL ) {
+        if ( !isset($style) ) {
             return;
         }
 
-        if ($setLevel === NULL ) {
+        if ( !isset($setLevel) ) {
             for ($level = 1 ; $level < 11 ; $level++) {
                 switch ($align) {
                     case 'left':
@@ -2356,11 +2356,11 @@ class ODTDocument
         }
         $name = $this->styleset->getStyleName('list');
         $style = $this->styleset->getStyle($name);
-        if ($style == NULL ) {
+        if ( !isset($style) ) {
             return;
         }
 
-        if ($setLevel === NULL) {
+        if ( !isset($setLevel) ) {
             for ($level = 1 ; $level < 11 ; $level++) {
                 switch ($align) {
                     case 'left':

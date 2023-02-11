@@ -36,7 +36,7 @@ class ODTElementTableHeaderCell extends ODTElementTableCell
         $table = $this->getTable();
         $auto_columns = false;
         $count = 0;
-        if ($table != NULL) {
+        if (isset($table)) {
             $auto_columns = $table->getTableAutoColumns();
             $count = $table->getCount();
         }

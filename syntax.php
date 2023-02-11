@@ -100,7 +100,7 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
 
         } else { // Extended info
             // Load config helper if not done yet
-            if ( $this->config == NULL ) {
+            if ( !isset($this->config) ) {
                 $this->config = plugin_load('helper', 'odt_config');
             }
 

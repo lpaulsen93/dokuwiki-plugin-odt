@@ -36,7 +36,7 @@ class ODTList
      */
     static public function listClose(ODTInternalParams $params) {
         $table = $params->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
+        if (isset($table) && $table->getListInterrupted()) {
             // Do not do anything as long as list is interrupted
             return;
         }
@@ -60,7 +60,7 @@ class ODTList
         // If we are still in a list save the last paragraph position
         // in the current list (needed for nested lists!).
         $list = $params->document->state->getCurrentList();
-        if ($list != NULL) {
+        if (isset($list)) {
             $list->setListLastParagraphPosition($position);
         }
     }
@@ -71,17 +71,17 @@ class ODTList
      * @param int $level The nesting level
      */
     static public function listItemOpen(ODTInternalParams $params, $level, $element=NULL, $attributes=NULL) {
-        if ($params->document->state == NULL ) {
+        if (!isset($params->document->state)) {
             // ??? Can't be...
             return;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'li';
         }
 
         // Set marker that list interruption has stopped!!!
         $table = $params->document->state->getCurrentTable();
-        if ($table != NULL) {
+        if (isset($table)) {
             $table->setListInterrupted(false);
         }
 
@@ -106,7 +106,7 @@ class ODTList
      */
     static public function listItemClose(ODTInternalParams $params) {
         $table = $params->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
+        if (isset($table) && $table->getListInterrupted()) {
             // Do not do anything as long as list is interrupted
             return;
         }
@@ -127,17 +127,17 @@ class ODTList
      * @param int $level The nesting level
      */
     static public function listHeaderOpen(ODTInternalParams $params, $level, $element=NULL, $attributes=NULL) {
-        if ($params->document->state == NULL ) {
+        if ( !isset($params->document->state) ) {
             // ??? Can't be...
             return;
         }
-        if ($element == NULL) {
+        if (!isset($element)) {
             $element = 'li';
         }
 
         // Set marker that list interruption has stopped!!!
         $table = $params->document->state->getCurrentTable();
-        if ($table != NULL) {
+        if (isset($table)) {
             $table->setListInterrupted(false);
         }
 
@@ -162,7 +162,7 @@ class ODTList
      */
     static public function listHeaderClose(ODTInternalParams $params) {
         $table = $params->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
+        if (isset($table) && $table->getListInterrupted()) {
             // Do not do anything as long as list is interrupted
             return;
         }
@@ -179,7 +179,7 @@ class ODTList
         // always set in case of an error also.
         $styleName = $params->document->getStyleName('body');
         $list = $params->document->state->getCurrentList();
-        if ($list != NULL) {
+        if (isset($list)) {
             $listStyleName = $list->getStyleName();
             if ($listStyleName == $params->document->getStyleName('list')) {
                 $styleName = $params->document->getStyleName('list content');
@@ -197,7 +197,7 @@ class ODTList
      */
     static public function listContentClose(ODTInternalParams $params) {
         $table = $params->document->state->getCurrentTable();
-        if ($table != NULL && $table->getListInterrupted()) {
+        if (isset($table) && $table->getListInterrupted()) {
             // Do not do anything as long as list is interrupted
             return;
         }
@@ -212,7 +212,7 @@ class ODTList
      */
     static protected function replaceLastListParagraph(ODTInternalParams $params) {
         $list = $params->document->state->getCurrentList();
-        if ($list != NULL) {
+        if (isset($list)) {
             // We are in a list.
             $list_count = $params->document->state->countClass('list');
             $position = $list->getListLastParagraphPosition();
@@ -249,17 +249,17 @@ class ODTList
                     } else {
                         $style_last = $params->document->getStyleByAlias('numbering first');
                     }
-                    if ($style_last != NULL) {
+                    if (isset($style_last)) {
                         $style_body = $params->document->getStyle($last_p_style);
                         $style_display_name = 'Last '.$style_body->getProperty('style-display-name');
                         $style_obj = clone $style_last;
 
-                        if ($style_obj != NULL) {
+                        if (isset($style_obj)) {
                             $style_obj->setProperty('style-name', $style_name);
                             $style_obj->setProperty('style-parent', $last_p_style);
                             $style_obj->setProperty('style-display-name', $style_display_name);
                             $top = $style_last->getProperty('margin-top');
-                            if ($top === NULL) {
+                            if (!isset($top)) {
                                 $style_obj->setProperty('margin-top', $style_body->getProperty('margin-top'));
                             }
                             $params->document->addStyle($style_obj);

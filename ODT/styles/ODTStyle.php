@@ -44,7 +44,7 @@ abstract class ODTStyle
      * @param  $properties Properties to be imported
      * @param  $disabled Properties to be ignored
      */
-    abstract public function importProperties($properties, $disabled=array());
+    abstract public function importProperties($properties, $disabled);
 
     /**
      * Check if a style is a common style.
@@ -75,7 +75,7 @@ abstract class ODTStyle
      * @return string The current value of the property
      */
     public function getProperty($property) {
-        return $this->properties [$property]['value'];
+        return (isset($this->properties [$property]['value']) ? $this->properties [$property]['value'] : NULL);
     }
 
     /**
@@ -87,7 +87,7 @@ abstract class ODTStyle
      * @return string      The current value of the property
      */
     public function getPropertyInternal($property, $properties=NULL) {
-        if ( $properties === NULL ) {
+        if ( !isset($properties) ) {
             return $this->properties [$property]['value'];
         } else {
             return $properties [$property]['value'];
@@ -139,7 +139,7 @@ abstract class ODTStyle
             default:
                 break;
         }
-        if ($style != NULL ) {
+        if ( isset($style) ) {
             return $style;
         }
 
@@ -157,8 +157,8 @@ abstract class ODTStyle
      * @param $value New value to set
      */
     protected function setPropertyInternal($property, $odt_property, $value, $section, &$dest=NULL) {
-        if ($value !== NULL) {
-            if ( $dest === NULL ) {
+        if (isset($value)) {
+            if ( !isset($dest) ) {
                 $this->properties [$property] = array ('odt_property' => $odt_property,
                                                        'value' => $value,
                                                        'section' => $section);
@@ -168,7 +168,7 @@ abstract class ODTStyle
                                            'section' => $section);
             }
         } else {
-            if ( $dest === NULL ) {
+            if ( !isset($dest) ) {
                 unset ($this->properties [$property]);
             } else {
                 unset ($dest [$property]);

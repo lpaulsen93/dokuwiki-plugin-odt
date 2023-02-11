@@ -122,7 +122,7 @@ class ODTTextOutlineStyle extends ODTStyle
         $text_fields = ODTTextStyle::getTextProperties ();
 
         $check = 0;
-        while ($level != NULL)
+        while (isset($level))
         {
             // We can have multiple level definitons with all the same properties.
             // So we store this in our own array. The "text:level" is the array key.

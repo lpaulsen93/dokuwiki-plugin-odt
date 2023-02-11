@@ -217,7 +217,7 @@ class ODTUnknownStyle extends ODTStyle
         // Create empty frame style.
         // Not supported yet, so we create an "unknown" style
         $object = new ODTUnknownStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         $object->setStyleContent($style);

@@ -28,7 +28,7 @@ class ODTHeading
         // Change page format if pending
         if ( $params->document->pageFormatChangeIsPending() ) {
             $pageStyle = $params->document->doPageFormatChange($style);
-            if ( $pageStyle != NULL ) {
+            if ( isset($pageStyle) ) {
                 $style = $pageStyle;
 
                 // Delete pagebreak, the format change will also introduce a pagebreak.
@@ -55,7 +55,7 @@ class ODTHeading
 
         // Do not add headings in frames
         $frame = $params->document->state->getCurrentFrame();
-        if ($frame == NULL) {
+        if (!isset($frame)) {
             $params->document->tocAddItemInternal($TOCRef, $hid, $text, $level);
         }
     }

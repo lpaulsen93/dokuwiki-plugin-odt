@@ -209,7 +209,7 @@ abstract class ODTStyleSet
             // The key for a normal style is the name.
             $name = $new->getProperty('style-name');
 
-            if ($dest_by_name [$name] == NULL) {
+            if (!array_key_exists($name,$dest_by_name) || $dest_by_name [$name] == NULL) {
                 $dest [] = $new;
                 if (!empty($name)) {
                     $dest_by_name [$name] = $new;

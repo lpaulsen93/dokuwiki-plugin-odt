@@ -106,15 +106,20 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
 
             list($info_type, $info_value, $pos) = $data;
 
-            if ($info_type == "template" && 
-            $this->config->getParam('firsttemplatedefinitionwins')) {
-                $usecounter_helper = plugin_load('helper','usecounter');
-                
-               if ($usecounter_helper && $usecounter_helper->amountOfUses('odt_template') > 0) {
-                    return true;
-                } else {
-                    if ($usecounter_helper) {
-                        $usecounter_helper->incUsageOf('odt_template');
+            // Handle config setting 'firsttemplatedefinitionwins'.
+            // It returns from render() if a template was already set,
+            // This functionality needs the usecounter plugin: https://www.dokuwiki.org/plugin:usecounter
+            $usecounter_helper = plugin_load('helper','usecounter');
+            if ($usecounter_helper && $this->config->getParam('firsttemplatedefinitionwins')) {
+                if ($info_type == "template" || $info_type == "templatepage" || $info_type == "odt_template" || $info_type == "css_template") {
+                   if ($usecounter_helper && $usecounter_helper->amountOfUses('ODT>template') > 0) {
+                        // here we leave the function, since a previous usage of the template setting has been registered before
+                        return true;
+                    } else {
+                        // here we decide to go on 
+                        if ($usecounter_helper) {
+                            $usecounter_helper->incUsageOf('ODT>template');
+                        }
                     }
                 }
             }

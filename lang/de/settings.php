@@ -9,7 +9,7 @@
  * @author Florian Lamml <info@florian-lamml.de>
  */
 $lang['tpl_dir']               = 'Unterverzeichnis für Vorlagen im Medienmanager';
-$lang['firsttemplatedefinitionwins'] = 'Bei mehreren Definitionen von template, templatepage, css_template oder odt_template auf einer Seite wird das erste verwendet. (Im Fall von false, wird das letzte verwendet.)';
+$lang['firsttemplatedefinitionwins'] = 'Bei mehreren Definitionen von template, templatepage, css_template oder odt_template auf einer Seite wird das erste verwendet. (Im Fall von false, wird das letzte verwendet.) Benötigt das usecounter plugin!';
 $lang['odt_template']          = 'Template für Style Importierung (ODT oder CSS Datei)';
 $lang['showexportbutton']      = 'Zeige ODT Export Button';
 $lang['css_usage']             = 'Importiertes CSS auf ODT-Styles anwenden?';

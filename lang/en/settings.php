@@ -11,7 +11,7 @@
  * @global array $lang['tpl_dir'] Translation for 'template directory'
  */
 $lang['tpl_dir'] = 'Sub-directory for the templates in the media manager';
-$lang['firsttemplatedefinitionwins'] = 'In case of multiple definitions of template, templatepage, css_template, or odt_template, the first will be used. (The value false will apply the last definition, instead.)';
+$lang['firsttemplatedefinitionwins'] = 'In case of multiple definitions of template, templatepage, css_template, or odt_template, the first will be used. (The value false will apply the last definition, instead.) Needs the usecounter plugin!';
 
 /** @var array $lang['tpl_dir'] Translation for 'ODT template file (ODT or CSS file)' */
 $lang['odt_template'] = 'Template for style import (ODT or CSS file)';

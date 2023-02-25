@@ -75,11 +75,7 @@ abstract class ODTStyle
      * @return string The current value of the property
      */
     public function getProperty($property) {
-        if (array_key_exists($property,$this->properties)) {
-            return $this->properties [$property]['value'];
-        } else {
-            return NULL;
-        }
+        return $this->properties [$property]['value'];
     }
 
     /**

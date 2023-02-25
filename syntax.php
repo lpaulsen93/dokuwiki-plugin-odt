@@ -106,18 +106,18 @@ class syntax_plugin_odt extends DokuWiki_Syntax_Plugin {
 
             list($info_type, $info_value, $pos) = $data;
 
-			if ($info_type == "template" && 
+            if ($info_type == "template" && 
             $this->config->getParam('firsttemplatedefinitionwins')) {
                 $usecounter_helper = plugin_load('helper','usecounter');
                 
-				if ($usecounter_helper && $usecounter_helper->amountOfUses('odt_template') > 0) {
-					return true;
+               if ($usecounter_helper && $usecounter_helper->amountOfUses('odt_template') > 0) {
+                    return true;
                 } else {
                     if ($usecounter_helper) {
                         $usecounter_helper->incUsageOf('odt_template');
                     }
-				}
-			}
+                }
+            }
             
             // If it is a config option store it in the meta data
             // and set the config parameter in the renderer.

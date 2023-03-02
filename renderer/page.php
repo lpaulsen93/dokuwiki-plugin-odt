@@ -945,19 +945,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
 
     function apostrophe() {
         global $lang;
-        $text .= $lang['apostrophe'];
+        $text = $lang['apostrophe'];
         $this->document->addPlainText($text);
     }
 
     function doublequoteopening() {
         global $lang;
-        $text .= $lang['doublequoteopening'];
+        $text = $lang['doublequoteopening'];
         $this->document->addPlainText($text);
     }
 
     function doublequoteclosing() {
         global $lang;
-        $text .= $lang['doublequoteclosing'];
+        $text = $lang['doublequoteclosing'];
         $this->document->addPlainText($text);
     }
 
@@ -1333,7 +1333,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         $name = $this->_getLinkTitle($name, $default, $isImage, $id);
 
         // build the absolute URL (keeping a hash if any)
-        list($id,$hash) = explode('#',$id,2);
+        list($id, $hash) = array_pad(explode('#', $id, 2), 2, null); // array_pad() is used to add a null value to the array returned by explode() if it has fewer than two elements.
         $url = wl($id,'',true);
         if($hash) $url .='#'.$hash;
 

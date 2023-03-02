@@ -73,7 +73,7 @@ class css_attribute_selector {
             switch ($this->operator) {
                 case '=':
                     // Attribute should have exactly the value $this->value
-                    if ($attributes [$this->attribute] == $this->value) {
+                    if (isset($attributes[$this->attribute]) && $attributes[$this->attribute] == $this->value) {
                         return true;
                     } else {
                         return false;
@@ -206,6 +206,7 @@ class css_simple_selector {
 
         $content = '';
         $first_sign = '';
+        $next_sign = '';
         $first = true;
         $pseudo_element = false;
         while ($pos < $max) {
@@ -1259,7 +1260,7 @@ class cssimportnew {
         // (MUST be done backwards!)
         $max = count ($parents);
         foreach ($parents as $parent) {
-            $properties = $parent->getProperties ();
+            $properties = $parent->getProperties() ?? [];
             foreach ($properties as $key => $value) {
                 if ($dest [$key] == 'inherit') {
                     $dest [$key] = $value;

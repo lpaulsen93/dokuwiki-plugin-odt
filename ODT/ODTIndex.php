@@ -333,9 +333,17 @@ class ODTIndex
             // Only add the heading to the TOC if its <= $max_outline_level
             if ( $params [3] <= $max_outline_level ) {
                 $level = $params [3];
-                $content .= '<text:p text:style-name="'.$p_styles [$level].'">';
+                $styleName = "";
+                if (isset($p_styles[$level])) {
+                    $styleName = $p_styles[$level];
+                }
+                $content .= '<text:p text:style-name="'.$styleName.'">';
                 if ( $links == true ) {
-                    $content .= '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" text:style-name="'.$stylesLNames [$level].'" text:visited-style-name="'.$stylesLNames [$level].'">';
+                    $styleLName = "";
+                    if (isset($stylesLNames[$level])) {
+                        $styleLName = $stylesLNames[$level];
+                    }
+                    $content .= '<text:a xlink:type="simple" xlink:href="#'.$params [0].'" text:style-name="'.$styleLName.'" text:visited-style-name="'.$styleLName.'">';
                 }
                 $content .= $params [2];
                 $content .= '<text:tab/>';

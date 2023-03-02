@@ -232,20 +232,20 @@ class ODTTextStyle extends ODTStyleStyle
      */
     public static function createTextStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
-        if ( $properties ['text-decoration'] == 'line-through' ) {
+        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'line-through') {
             $properties ['text-line-through-style'] = 'solid';
         }
-        if ( $properties ['text-decoration'] == 'underline' ) {
+        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'underline') {
             $properties ['text-underline-style'] = 'solid';
         }
-        if ( $properties ['text-decoration'] == 'overline' ) {
+        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'overline') {
             $properties ['text-overline-style'] = 'solid';
         }
 
         // If the property 'vertical-align' has the value 'sub' or 'super'
         // then for ODT it needs to be converted to the corresponding 'text-position' property.
         // Replace sub and super with text-position.
-        $valign = $properties ['vertical-align'];
+        $valign = isset($properties['vertical-align']) ? $properties['vertical-align'] : '';
         if (!empty($valign)) {
             if ( $valign == 'sub' ) {
                 $properties ['text-position'] = '-33% 100%';
@@ -257,8 +257,8 @@ class ODTTextStyle extends ODTStyleStyle
         }
 
         // Separate country from language
-        $lang = $properties ['lang'];
-        $country = $properties ['country'];
+        $lang = isset($properties['lang']) ? $properties['lang'] : '';
+        $country = isset($properties['country']) ? $properties['country'] : '';
         if ( !empty($lang) ) {
             $parts = preg_split ('/-/', $lang);
             $lang = $parts [0];
@@ -276,10 +276,10 @@ class ODTTextStyle extends ODTStyleStyle
         }
 
         // Extra handling for font-size in '%'
-        $save = $disabled_props ['font-size'];
+        $save = isset($disabled_props['font-size']) ? $disabled_props['font-size'] : '';
         $odt_fo_size = '';
         if ( empty ($disabled_props ['font-size']) ) {
-            $odt_fo_size = $properties ['font-size'];
+            $odt_fo_size = $properties['font-size'] ?? null;
         }
         $length = strlen ($odt_fo_size);
         if ( $length > 0 && $odt_fo_size [$length-1] == '%' && isset($doc)) {

@@ -178,10 +178,10 @@ class ODTTableStyle extends ODTStyleStyle
         if (empty($properties ['align'])) {
             $properties ['align'] = 'center';
         }
-        if ($properties ['margin-left'] == '0') {
+        if (isset($properties['margin-left']) && $properties['margin-left'] == '0') {
             unset($properties ['margin-left']);
         }
-        if ($properties ['margin-right'] == '0') {
+        if (isset($properties['margin-right']) && $properties['margin-right'] == '0') {
             unset($properties ['margin-right']);
         }
 
@@ -206,7 +206,10 @@ class ODTTableStyle extends ODTStyleStyle
         }
 
         // Create style name (if not given).
-        $style_name = $properties ['style-name'];
+        $style_name = null;
+        if (array_key_exists('style-name', $properties)) {
+            $style_name = $properties['style-name'];
+        }
         if ( empty($style_name) ) {
             $style_name = self::getNewStylename ('Table');
             $properties ['style-name'] = $style_name;

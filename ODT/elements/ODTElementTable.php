@@ -62,7 +62,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         if (!isset($style_name)) {
             $encoded = '<table:table>';
         } else {
-            $encoded .= '<table:table table:style-name="'.$style_name.'">';
+            $encoded = '<table:table table:style-name="'.$style_name.'">';
         }
         $maxcols = $this->getTableMaxColumns();
         $count = $this->getCount();
@@ -171,7 +171,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
      * @param array $value
      */
     public function getTableColumnStyleName($column) {
-        return $this->table_column_styles [$column];
+        return $this->table_column_styles [$column] ?? null;
     }
 
     /**
@@ -466,7 +466,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $table_column_styles = $this->getTableColumnStyles();
         $replace = true;
         for ($index = 0 ; $index < $this->getTableMaxColumns() ; $index++ ) {
-            $style_name = $table_column_styles [$index];
+            $style_name = $table_column_styles [$index] ?? null;
             $style_obj = $params->document->getStyle($style_name);
             if (isset($style_obj)) {
                 if ($style_obj->getProperty('rel-column-width') != NULL) {

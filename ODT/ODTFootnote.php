@@ -20,7 +20,7 @@ class ODTFootnote
      *
      * @author Andreas Gohr <andi@splitbrain.org>
      */
-    function footnoteOpen(ODTInternalParams $params, $element=NULL, $attributes=NULL) {
+    static function footnoteOpen(ODTInternalParams $params, $element=NULL, $attributes=NULL) {
         // $element and $attributes are actually unused
 
         // Move current content to store and record footnote
@@ -40,7 +40,7 @@ class ODTFootnote
      *
      * @author Andreas Gohr
      */
-    function footnoteClose(ODTInternalParams $params) {
+    static function footnoteClose(ODTInternalParams $params) {
         // Close any open paragraph first
         $params->document->paragraphClose();
 

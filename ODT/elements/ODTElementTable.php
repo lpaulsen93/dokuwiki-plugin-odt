@@ -331,12 +331,15 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         } else if ($cell_style->getProperty('padding') != NULL) {
             $value = $cell_style->getProperty('padding');
             $value = $params->document->toPoints($value, 'y');
-            $padding += 2 * $value;
+            if (is_numeric($value)) {
+                $padding += 2 * $value;
+            }
         }
 
         $table_column_styles = $this->getTableColumnStyles();
         $style_name = $table_column_styles [$column-1];
         $style_obj = $params->document->getStyle($style_name);
+        $width = 0;
         if (isset($style_obj)) {
             $width = $style_obj->getProperty('column-width');
             $width = trim ($width, 'pt');
@@ -425,6 +428,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $width = $this->adjustWidthInternal ($params, $max_width);
 
         $style_obj = $params->document->getStyle($table_style_name);
+        $rel_width = 0;
         if (isset($style_obj)) {
             $style_obj->setProperty('width', $width.'pt');
             if (!$this->isNested ()) {
@@ -436,7 +440,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
                 }
             } else {
                 // Calculate rel width in relation to maximum table width
-                if ($max_width != 0) {
+                if (is_numeric($max_width) && $max_width != 0) {
                     $rel_width = round(($width * 100)/$max_width);
                 }
             }

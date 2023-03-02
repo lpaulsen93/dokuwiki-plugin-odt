@@ -58,10 +58,10 @@ class ODTImport
      * @param string $cssCode The CSS code to be imported
      */
     static protected function importCSSCodeInternal (ODTInternalParams $params, $isFile, $CSSSource, $mediaSel=NULL, $lengthCallback=NULL, $URLCallback=NULL) {
-        if ($params->import == NULL) {
+        if (!isset($params->import)) {
             // No CSS imported yet. Create object.
             $params->import = new cssimportnew();
-            if ( $params->import == NULL ) {
+            if ( !isset($params->import) ) {
                 return;
             }
             $params->import->setMedia ($mediaSel);
@@ -76,13 +76,13 @@ class ODTImport
         // Call adjustLengthValues to make our callback function being called for every
         // length value imported. This gives us the chance to convert it once from
         // pixel to points.
-        if ($lengthCallback != NULL) {
+        if (isset($lengthCallback)) {
             $params->import->adjustLengthValues ($lengthCallback);
         }
 
         // Call replaceURLPrefixes to make the callers (renderer/page.php) callback
         // function being called for every URL to convert it to an absolute path.
-        if ($URLCallback != NULL) {
+        if (isset($URLCallback)) {
             $params->import->replaceURLPrefixes ($URLCallback);
         }
     }
@@ -151,7 +151,7 @@ class ODTImport
 
             $name = $params->styleset->getStyleName('table quotation'.$level);
             $style = $params->styleset->getStyle($name);
-            if ($style != NULL ) {
+            if ( isset($style) ) {
                 if ($level == 1) {
                     $style->importProperties($properties);
                 } else {
@@ -161,7 +161,7 @@ class ODTImport
 
             $name = $params->styleset->getStyleName('cell quotation'.$level);
             $style = $params->styleset->getStyle($name);
-            if ($style != NULL ) {
+            if ( isset($style) ) {
                 $style->importProperties($properties);
             }
         }
@@ -174,7 +174,7 @@ class ODTImport
     static protected function setListStyleImage (ODTInternalParams $params, $style, $level, $file) {
         $odt_file = $params->document->addFileAsPicture($file);
 
-        if ( $odt_file != NULL ) {
+        if ( isset($odt_file) ) {
             $style->setPropertyForLevel($level, 'list-level-style', 'image');
             $style->setPropertyForLevel($level, 'href', $odt_file);
             $style->setPropertyForLevel($level, 'type', 'simple');
@@ -213,7 +213,7 @@ class ODTImport
     static protected function importOrderedListStyles(ODTInternalParams $params, cssdocument $htmlStack, $listAlign='right') {
         $name = $params->styleset->getStyleName('numbering');
         $style = $params->styleset->getStyle($name);
-        if ($style == NULL ) {
+        if ( !isset($style) ) {
             return;
         }
 
@@ -250,7 +250,7 @@ class ODTImport
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
 
-            if ($properties ['list-style-type'] !== NULL) {
+            if ( isset($properties ['list-style-type']) ) {
                 $prefix = NULL;
                 $suffix = '.';
                 $numbering = trim($properties ['list-style-type'],'"');
@@ -282,7 +282,7 @@ class ODTImport
                         break;
                 }
                 $style->setPropertyForLevel($level, 'num-format', $numbering);
-                if ($prefix !== NULL ) {
+                if ( isset($prefix) ) {
                     $style->setPropertyForLevel($level, 'num-prefix', $prefix);
                 }
                 $style->setPropertyForLevel($level, 'num-suffix', $suffix);
@@ -290,20 +290,20 @@ class ODTImport
                 // Padding is not inherited so we will only get it for the list root!
                 if ($level == 1 ) {
                     $paddingLeft = 0;
-                    if ($properties ['padding-left'] !== NULL) {
+                    if ( isset($properties ['padding-left']) ) {
                         $paddingLeft = $params->units->toCentimeters($properties ['padding-left'], 'y');
                         $paddingLeft = substr($paddingLeft, 0, -2);
                     }
                 }
                 $marginLeft = 1;
-                if ($li_properties ['margin-left'] !== NULL) {
+                if ( isset($li_properties ['margin-left']) ) {
                     $marginLeft = $params->units->toCentimeters($li_properties ['margin-left'], 'y');
                     $marginLeft = substr($marginLeft, 0, -2);
                 }
                 // Set list params.
                 $params->document->setOrderedListParams($level, $listAlign, $paddingLeft, $marginLeft);
             }
-            if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
+            if ( isset($properties ['list-style-image']) && $properties ['list-style-image'] != 'none') {
                 // It is assumed that the CSS already contains absolute path values only!
                 // (see replaceURLPrefixes)
                 $file = $properties ['list-style-image'];
@@ -316,8 +316,8 @@ class ODTImport
             // So we use extra paragraph styles for the first and last
             // list items to set a margin.
             if ($level == 1 &&
-                ($properties ['margin-top'] != NULL ||
-                 $properties ['margin-bottom'] != NULL)) {
+                (isset($properties ['margin-top']) ||
+                 isset($properties ['margin-bottom']))) {
                 $set = array ();
                 $disabled = array ();
                 // Delete left and right margins as setting them
@@ -355,7 +355,7 @@ class ODTImport
     static protected function importUnorderedListStyles(ODTInternalParams $params, cssdocument $htmlStack, $listAlign='right') {
         $name = $params->styleset->getStyleName('list');
         $style = $params->styleset->getStyle($name);
-        if ($style == NULL ) {
+        if ( !isset($style) ) {
             return;
         }
 
@@ -392,7 +392,7 @@ class ODTImport
             // Adjust values for ODT
             ODTUtility::adjustValuesForODT ($properties, $params->units);
             
-            if ($properties ['list-style-type'] !== NULL) {
+            if ( isset($properties ['list-style-type']) ) {
                 switch ($properties ['list-style-type']) {
                     case 'disc':
                     case 'bullet':
@@ -431,20 +431,20 @@ class ODTImport
                 // Padding is not inherited so we will only get it for the list root!
                 if ($level == 1 ) {
                     $paddingLeft = 0;
-                    if ($properties ['padding-left'] !== NULL) {
+                    if (isset($properties ['padding-left'])) {
                         $paddingLeft = $params->units->toCentimeters($properties ['padding-left'], 'y');
                         $paddingLeft = substr($paddingLeft, 0, -2);
                     }
                 }
                 $marginLeft = 1;
-                if ($li_properties ['margin-left'] !== NULL) {
+                if (isset($li_properties ['margin-left'])) {
                     $marginLeft = $params->units->toCentimeters($li_properties ['margin-left'], 'y');
                     $marginLeft = substr($marginLeft, 0, -2);
                 }
                 // Set list params.
                 $params->document->setUnorderedListParams($level, $listAlign, $paddingLeft, $marginLeft);
             }
-            if ($properties ['list-style-image'] !== NULL && $properties ['list-style-image'] != 'none') {
+            if (isset($properties ['list-style-image']) && $properties ['list-style-image'] != 'none') {
                 // It is assumed that the CSS already contains absolute path values only!
                 // (see replaceURLPrefixes)
                 $file = $properties ['list-style-image'];
@@ -463,8 +463,8 @@ class ODTImport
             // So we use extra paragraph styles for the first and last
             // list items to set a margin.
             if ($level == 1 &&
-                ($properties ['margin-top'] != NULL ||
-                 $properties ['margin-bottom'] != NULL)) {
+                (isset($properties ['margin-top']) ||
+                 isset($properties ['margin-bottom']))) {
                 $set = array ();
                 $disabled = array ();
                 // Delete left and right margins as setting them
@@ -504,7 +504,7 @@ class ODTImport
         foreach (self::$table_styles as $style_type => $elementParams) {
             $name = $params->styleset->getStyleName($style_type);
             $style = $params->styleset->getStyle($name);
-            if ( $style != NULL ) {
+            if ( isset($style) ) {
                 $element = $elementParams ['element'];
                 $attributes = $elementParams ['attributes'];
 
@@ -530,8 +530,8 @@ class ODTImport
                 if ($style->getFamily() == 'table') {
                     // Move 'width' to 'rel-width' if it is relative
                     $width = $properties ['width'];
-                    if ($width != NULL) {
-                        if ($properties ['align'] == NULL) {
+                    if (isset($width)) {
+                        if (!isset($properties ['align'])) {
                             // If width is set but align not, changing the width
                             // will not work. So we set it here if not done by the user.
                             $properties ['align'] = 'center';
@@ -610,7 +610,7 @@ class ODTImport
         foreach (self::$link_styles as $style_type => $elementParams) {
             $name = $params->styleset->getStyleName($style_type);
             $style = $params->styleset->getStyle($name);
-            if ( $name != NULL && $style != NULL ) {
+            if ( isset($name) && isset($style) ) {
                 $element = $elementParams ['element'];
                 $attributes = $elementParams ['attributes'];
                 $pseudo_class = $elementParams ['pseudo-class'];
@@ -646,7 +646,7 @@ class ODTImport
     static protected function importStyle(ODTInternalParams $params, cssdocument $htmlStack, $style_type, $element, $attributes=NULL, array $plain=NULL) {
         $name = $params->styleset->getStyleName($style_type);
         $style = $params->styleset->getStyle($name);
-        if ( $style != NULL ) {
+        if ( isset($style) ) {
             // Push our element to import on the stack
             $htmlStack->open($element, $attributes);
             $toMatch = $htmlStack->getCurrentElement();
@@ -657,7 +657,7 @@ class ODTImport
                 // Nothing found. Return, DO NOT change existing style!
                 return;
             }
-            if ($plain != NULL)
+            if (isset($plain))
             {
                 $diff = array_diff ($properties, $plain);
                 if (count($diff) == 0) {
@@ -708,7 +708,7 @@ class ODTImport
     }
 
     static public function import_styles_from_css (ODTInternalParams $params, $media_sel=NULL, $registrations=NULL, $listAlign='right') {
-        if ( $params->import != NULL ) {
+        if ( isset($params->import) ) {
             if (!empty($media_sel)) {
                 $save = $params->import->getMedia();
                 $params->import->setMedia($media_sel);
@@ -727,7 +727,7 @@ class ODTImport
     }
 
     static public function set_page_properties(ODTInternalParams $params, ODTPageLayoutStyle $pageStyle, $media_sel=NULL) {
-        if ( $params->import != NULL ) {
+        if ( isset($params->import) ) {
             if (!empty($media_sel)) {
                 $save = $params->import->getMedia ();
                 $params->import->setMedia($media_sel);
@@ -744,7 +744,7 @@ class ODTImport
             $params->import->getPropertiesForElement($properties, $stack->getCurrentElement(), $params->units);
             ODTUtility::adjustValuesForODT ($properties, $params->units);
             if (!empty($properties ['background-color'])) {
-                if ($pageStyle != NULL) {
+                if (isset($pageStyle)) {
                     $pageStyle->setProperty('background-color', $properties ['background-color']);
                 }
             }
@@ -780,7 +780,7 @@ class ODTImport
         $disabled ['padding-left'] = 1;
         
         $default = $params->styleset->getDefaultStyle ('paragraph');
-        if ($default != NULL && $body != NULL) {
+        if (isset($default) && isset($body)) {
             ODTParagraphStyle::copyLayoutProperties ($body, $default, $disabled);
         }
     }
@@ -809,7 +809,7 @@ class ODTImport
 
         $styleName = $params->styleset->getStyleName('footnote');
         $footnote = $params->styleset->getStyle($styleName);
-        if ($footnote != NULL && $body != NULL) {
+        if (isset($footnote) && isset($body)) {
             ODTParagraphStyle::copyLayoutProperties ($body, $footnote, $disabled);
         }
     }
@@ -818,7 +818,7 @@ class ODTImport
         // Import page layout
         $name = $params->styleset->getStyleName('first page');
         $first_page = $params->styleset->getStyle($name);
-        if ($first_page != NULL) {
+        if (isset($first_page)) {
             self::set_page_properties($params, $first_page);
         }
 
@@ -867,7 +867,7 @@ class ODTImport
     }
 
     static public function importODTStyles(ODTInternalParams $params, $template=NULL, $tempDir=NULL){
-        if ($template == NULL || $tempDir == NULL) {
+        if (!isset($template) || !isset($tempDir)) {
             return;
         }
 

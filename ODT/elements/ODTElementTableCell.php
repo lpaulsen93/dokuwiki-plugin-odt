@@ -21,7 +21,7 @@ class ODTElementTableCell extends ODTStateElement
     public function __construct($style_name=NULL, $colspan = 1, $rowspan = 1) {
         parent::__construct();
         $this->setClass ('table-cell');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
         $this->setColumnSpan($colspan);
@@ -89,7 +89,7 @@ class ODTElementTableCell extends ODTStateElement
      * @param ODTStateElement $previous
      */
     public function determineParent(ODTStateElement $previous) {
-        while ($previous != NULL) {
+        while (isset($previous)) {
             if ($previous->getClass() == 'table') {
                 break;
             }

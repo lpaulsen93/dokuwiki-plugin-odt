@@ -121,13 +121,13 @@ class ODTState
      * @param string $clazz
      */
     public function enter(ODTStateElement $element, $attributes=NULL) {
-        if ($element == NULL ) {
+        if ( !isset($element) ) {
             return;
         }
         $name = $element->getElementName();
 
         // Increase the counter for that element
-        if ($this->element_counter [$name] == NULL ) {
+        if ( !isset($this->element_counter [$name]) ) {
             $this->element_counter [$name] = 1;
         } else {
             $this->element_counter [$name]++;
@@ -142,7 +142,7 @@ class ODTState
         $this->size++;
 
         // Set the elements style object
-        if ($this->document != NULL) {
+        if (isset($this->document)) {
             $styleObj = $this->document->getStyle($element->getStyleName());
             $element->setStyle($styleObj);
         }

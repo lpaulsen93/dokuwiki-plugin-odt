@@ -66,7 +66,7 @@ class css_attribute_selector {
      * @return   boolean
      */
     public function matches (array $attributes=NULL) {
-        if ($this->operator == NULL) {
+        if (!isset($this->operator)) {
             // Attribute should be present
             return isset($attributes) && array_key_exists($this->attribute, $attributes);
         } else {
@@ -329,6 +329,7 @@ class css_simple_selector {
 
         // Match id
         if (!empty($this->id) &&
+            !empty($element_attrs ['id']) && 
             $this->id != $element_attrs ['id']) {
             return false;
         }
@@ -503,7 +504,7 @@ class css_selector {
         }
 
         // First entry should be a selector
-        if ($selector [$size-1]['selector'] == NULL) {
+        if (!isset($selector [$size-1]['selector'])) {
             // No! (Error)
             return false;
         }
@@ -520,7 +521,7 @@ class css_selector {
         }
         
         // Next entry should be a combinator
-        if ($selector [$size-2]['combinator'] == NULL) {
+        if (!isset($selector [$size-2]['combinator'])) {
             // No! (Error)
             return false;
         }
@@ -540,7 +541,7 @@ class css_selector {
                         // Find any parent, parent's parent... that matches our simple selector
                         do {
                             $parent = $start_search->iECSSM_getParent();
-                            if ($parent === NULL) {
+                            if (!isset($parent)) {
                                 return false;
                             }
                             $start_search = $parent;
@@ -549,7 +550,7 @@ class css_selector {
                                 // Found match. Stop this search.
                                 break;
                             }
-                        }while ($parent !== NULL);
+                        }while (isset($parent));
                         
                         // Did we find anything?
                         if (!$is_match) {
@@ -562,7 +563,7 @@ class css_selector {
                     case '>':
                         // Check if we have a parent and if it matches our simple selector
                         $parent = $start_search->iECSSM_getParent();
-                        if ($parent === NULL) {
+                        if (!isset($parent)) {
                             return false;
                         }
                         if ($simple->matches_entry ($parent) == false) {
@@ -575,7 +576,7 @@ class css_selector {
                     case '+':
                         // Immediate preceding sibling must match our simple selector
                         $sibling = $start_search->iECSSM_getPrecedingSibling();
-                        if ($sibling === NULL) {
+                        if (!isset($sibling)) {
                             return false;
                         }
                         if ($simple->matches_entry ($sibling) == false) {
@@ -589,7 +590,7 @@ class css_selector {
                         // One of the preceding siblings must match our simple selector
                         do {
                             $sibling = $start_search->iECSSM_getPrecedingSibling();
-                            if ($sibling === NULL) {
+                            if (!isset($sibling)) {
                                 return false;
                             }
                             $start_search = $sibling;
@@ -597,10 +598,10 @@ class css_selector {
                                 // Found match. Stop this search.
                                 break;
                             }
-                        }while ($sibling !== NULL);
+                        }while (isset($sibling));
                         
                         // Did we find anything?
-                        if ($sibling === NULL) {
+                        if (!isset($sibling)) {
                             // No.
                             return false;
                         }
@@ -658,7 +659,7 @@ class css_selector {
         foreach ($this->selectors_parsed as $selector) {
             $size = count($selector);
             for ($index = 0 ; $index < $size ; $index++) {
-                if ($selector [$index]['combinator'] !== NULL ) {
+                if ( isset($selector [$index]['combinator']) ) {
                     if ($selector [$index]['combinator'] == ' ') {
                         $returnstring .= ' ';
                     } else {
@@ -1000,7 +1001,7 @@ class cssimportnew {
                 $pos = $bracket_close + 1;
             }
         }
-        if ( $processed !== NULL ) {
+        if ( isset($processed) ) {
             $processed = $pos;
         }
         return true;
@@ -1088,7 +1089,7 @@ class cssimportnew {
      * @return string|null
      */
     public function getPropertiesForElement (&$dest, iElementCSSMatchable $element, ODTUnits $units, $inherit=true) {
-        if ($element == NULL) {
+        if (!isset($element)) {
             return;
         }
 
@@ -1103,7 +1104,7 @@ class cssimportnew {
                 // Only accept a property value if the current specificity of the matched
                 // rule/selector is higher or equal than the highest one.
                 foreach ($current as $property => $value) {
-                    if ($specificity >= $highest [$property]) {
+                    if (isset($highest [$property]) && $specificity >= $highest [$property]) {
                         $highest [$property] = $specificity;
                         $temp [$property] = $value;
                     }
@@ -1139,12 +1140,12 @@ class cssimportnew {
      */
     protected function getParentsValue($key, iElementCSSMatchable $parent) {
         $properties = $parent->getProperties ();
-        if ($properties [$key] != NULL) {
+        if (isset($properties [$key])) {
             return $properties [$key];
         }
         
         $parentsParent = $parent->iECSSM_getParent();
-        if ($parentsParent != NULL) {
+        if (isset($parentsParent)) {
             return $this->getParentsValue($key, $parentsParent);
         }
 
@@ -1160,7 +1161,7 @@ class cssimportnew {
      * @param    ODTUnits             $units   ODTUnits object for conversion
      */
     protected function calculate (array &$properties, iElementCSSMatchable $element, ODTUnits $units) {
-        if ($properties ['calculated'] == '1') {
+        if (isset($properties ['calculated']) && $properties ['calculated'] == '1') {
             // Already done
             return;
         }
@@ -1170,10 +1171,10 @@ class cssimportnew {
 
         // First get absolute font-size in points for
         // conversion of relative units
-        if ($parent != NULL) {
+        if (isset($parent)) {
             $font_size = $this->getParentsValue('font-size', $parent);
         }
-        if ($font_size != NULL) {
+        if (isset($font_size)) {
             // Use the parents value
             // (It is assumed that the value is already calculated to an absolute
             //  value. That's why the loops in calculateAndInherit() must run backwards
@@ -1186,8 +1187,8 @@ class cssimportnew {
         }
 
         // Do we have font-size or line-height set?
-        if ($properties ['font-size'] != NULL || $properties ['line-height'] != NULL) {
-            if ($properties ['font-size'] != NULL) {
+        if (isset($properties ['font-size']) || isset($properties ['line-height'])) {
+            if (isset($properties ['font-size'])) {
                 $font_size_unit = $units->stripDigits($properties ['font-size']);
                 $font_size_digits = $units->getDigits($properties ['font-size']);
                 if ($font_size_unit == '%' || $font_size_unit == 'em') {
@@ -1203,7 +1204,7 @@ class cssimportnew {
             }
 
             // Convert relative line-heights to absolute
-            if ($properties ['line-height'] != NULL) {
+            if (isset($properties ['line-height'])) {
                 $line_height_unit = $units->stripDigits($properties ['line-height']);
                 $line_height_digits = $units->getDigits($properties ['line-height']);
                 if ($line_height_unit == '%') {
@@ -1332,7 +1333,7 @@ class cssimportnew {
                             // The property may not be inherited
                         break;
                         default:
-                            if ($dest [$key] == NULL || $dest [$key] == 'inherit') {
+                            if (!isset($dest [$key]) || $dest [$key] == 'inherit') {
                                 $dest [$key] = $value;
                             }
                         break;
@@ -1353,7 +1354,7 @@ class cssimportnew {
     protected function calculateAndInherit (array &$dest, iElementCSSMatchable $element, ODTUnits $units) {
         $parents = array();
         $parent = $element->iECSSM_getParent();
-        while ($parent != NULL) {
+        while (isset($parent)) {
             $parents [] = $parent;
             $parent = $parent->iECSSM_getParent();
         }
@@ -1364,12 +1365,12 @@ class cssimportnew {
         $max = count ($parents);
         for ($index = $max-1 ; $index >= 0 ; $index--) {
             $properties = $parents [$index]->getProperties ();
-            if ($properties == NULL) {
+            if (!isset($properties)) {
                 $properties = array();
                 $this->getPropertiesForElement ($properties, $parents [$index], $units, false);
                 $parents [$index]->setProperties ($properties);
             }
-            if ($properties ['calculated'] == NULL) {
+            if (!isset($properties ['calculated'])) {
                 $this->calculate($properties, $parents [$index], $units);
             }
         }

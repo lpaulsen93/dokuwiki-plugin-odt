@@ -144,7 +144,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         // FIXME: currently with setProperty there always will only be one tab-stop.
         // Maybe in the future supply a function "add tab stop" or something.
         if (array_key_exists ($property, self::$tab_stop_fields)) {
-            if ($this->tab_stops [0] == NULL) {
+            if (!isset($this->tab_stops [0])) {
                 $this->tab_stops [0] = array();
             }
             $this->setPropertyInternal
@@ -221,13 +221,13 @@ class ODTParagraphStyle extends ODTStyleStyle
 
         // Get all tab-stops.
         $tabs = XMLUtil::getElementContent('style:tab-stops', $xmlCode);
-        if ($tabs != NULL) {
+        if (isset($tabs)) {
             $max = strlen($tabs);
             $pos = 0;
             $index = 0;
             $tab = XMLUtil::getElement('style:tab-stop', $tabs, $end);
             $pos = $end;
-            while ($tab != NULL) {
+            while (isset($tab)) {
                 $style->tab_stops [$index] = array();
                 $attrs += $style->importODTStyleInternal(self::$tab_stop_fields, $tab, $style->tab_stops [$index]);
                 $index++;
@@ -381,7 +381,7 @@ class ODTParagraphStyle extends ODTStyleStyle
             $properties ['auto-text-indent'] = 'false';
         
             $length = strlen ($properties ['text-indent']);
-            if ( $length > 0 && $properties ['text-indent'] [$length-1] == '%' && $doc != NULL ) {
+            if ( $length > 0 && $properties ['text-indent'] [$length-1] == '%' && isset($doc) ) {
                 // Percentage value needs to be converted to absolute value.
                 // ODT standard says that percentage value should work if used in a common style.
                 // This did not work with LibreOffice 4.4.3.2.
@@ -398,7 +398,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         }
         $parent = '';
         $length = strlen ($odt_fo_size);
-        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && $doc != NULL) {
+        if ( $length > 0 && $odt_fo_size [$length-1] == '%' && isset($doc)) {
             // A font-size in percent is only supported in common style definitions, not in automatic
             // styles. Create a common style and set it as parent for this automatic style.
             $name = 'Size'.trim ($odt_fo_size, '%').'pc';
@@ -425,7 +425,7 @@ class ODTParagraphStyle extends ODTStyleStyle
 
         // Create empty paragraph style.
         $object = new ODTParagraphStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         
@@ -472,7 +472,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         // Copy $tab_stop_fields
         foreach (self::$tab_stop_fields as $property => $fields) {
             $value = $source->getProperty($property);
-            if ($value != NULL && $disabled [$property] == 0) {
+            if (isset($value) && $disabled [$property] == 0) {
                 $dest -> setProperty($property, $value);
             }
         }
@@ -480,7 +480,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         // Copy $paragraph_fields
         foreach (self::$paragraph_fields as $property => $fields) {
             $value = $source->getProperty($property);
-            if ($value != NULL && $disabled [$property] == 0) {
+            if (isset($value) && $disabled [$property] == 0) {
                 $dest -> setProperty($property, $value);
             }
         }
@@ -489,7 +489,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         $text_fields = ODTTextStyle::getTextProperties ();
         foreach ($text_fields as $property => $fields) {
             $value = $source->getProperty($property);
-            if ($value != NULL && $disabled [$property] == 0) {
+            if (isset($value) && $disabled [$property] == 0) {
                 $dest -> setProperty($property, $value);
             }
         }

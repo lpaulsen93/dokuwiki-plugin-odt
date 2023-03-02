@@ -214,7 +214,7 @@ class ODTTableStyle extends ODTStyleStyle
 
         // Create empty table style.
         $object = new ODTTableStyle();
-        if ($object == NULL) {
+        if (!isset($object)) {
             return NULL;
         }
         

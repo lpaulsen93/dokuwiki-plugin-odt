@@ -107,14 +107,14 @@ abstract class ODTStyleSet
         $max = strlen($style_elements);
         while ($pos < $max) {
             $xml_code = XMLUtil::getNextElement($element, substr($style_elements, $pos), $end);
-            if ($xml_code == NULL) {
+            if (!isset($xml_code)) {
                 break;
             }
             $pos += $end;
             
             // Create new ODTStyle
             $object = ODTStyle::importODTStyle($xml_code);
-            if ($object != NULL ) {
+            if ( isset($object) ) {
                 // Success, add it
                 switch ($root_element) {
                     case 'office:styles':
@@ -148,7 +148,7 @@ abstract class ODTStyleSet
                 $export = &$this->master_styles;
                 break;
         }
-        if ($export != NULL) {
+        if (isset($export)) {
             $office_styles = "<".$root_element.">\n";
             foreach ($export as $style) {
                 $office_styles .= $style->toString();
@@ -209,7 +209,7 @@ abstract class ODTStyleSet
             // The key for a normal style is the name.
             $name = $new->getProperty('style-name');
 
-            if ($dest_by_name [$name] == NULL) {
+            if (!isset($dest_by_name [$name])) {
                 $dest [] = $new;
                 if (!empty($name)) {
                     $dest_by_name [$name] = $new;
@@ -238,13 +238,13 @@ abstract class ODTStyleSet
      * @return boolean
      */
     public function styleExists ($name) {
-        if ($this->auto_styles_by_name [$name] != NULL) {
+        if (isset($this->auto_styles_by_name [$name])) {
             return true;
         }
-        if ($this->styles_by_name [$name] != NULL) {
+        if (isset($this->styles_by_name [$name])) {
             return true;
         }
-        if ($this->master_styles_by_name [$name] != NULL) {
+        if (isset($this->master_styles_by_name [$name])) {
             return true;
         }
         return false;
@@ -257,13 +257,13 @@ abstract class ODTStyleSet
      * @return ODTStyle or NULL
      */
     public function getStyle ($name) {
-        if ($this->auto_styles_by_name [$name] != NULL) {
+        if (isset($this->auto_styles_by_name [$name])) {
             return $this->auto_styles_by_name [$name];
         }
-        if ($this->styles_by_name [$name] != NULL) {
+        if (isset($this->styles_by_name [$name])) {
             return $this->styles_by_name [$name];
         }
-        if ($this->master_styles_by_name [$name] != NULL) {
+        if (isset($this->master_styles_by_name [$name])) {
             return $this->master_styles_by_name [$name];
         }
         return NULL;

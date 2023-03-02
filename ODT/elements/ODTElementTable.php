@@ -33,7 +33,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
     public function __construct($style_name=NULL, $maxcols = 0, $numrows = 0) {
         parent::__construct();
         $this->setClass ('table');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
         $this->setTableMaxColumns($maxcols);
@@ -59,7 +59,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
      */
     public function getOpeningTag () {
         $style_name = $this->getStyleName();
-        if ($style_name == NULL) {
+        if (!isset($style_name)) {
             $encoded = '<table:table>';
         } else {
             $encoded .= '<table:table table:style-name="'.$style_name.'">';
@@ -92,7 +92,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         // Generate table column definitions and replace the placeholder with it
         $count = $this->getCount();
         $max = $this->getTableMaxColumns();
-        if ($max > 0 && $content != NULL) {
+        if ($max > 0 && isset($content)) {
             $column_defs = '';
             for ($index = 0 ; $index < $max ; $index++) {
                 $styleName = $this->getTableColumnStyleName($index);
@@ -293,7 +293,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
     public function determinePositionInContainer (array &$data, ODTStateElement $current) {
         $data ['column'] = $this->getTableCurrentColumn();
         $cell = NULL;
-        while ($current != NULL) {
+        while (isset($current)) {
             if ($current->getClass() == 'table-cell') {
                 $cell = $current;
                 break;
@@ -303,13 +303,13 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
             }
             $current = $current->getParent();
         }
-        if ($cell !== NULL) {
+        if (isset($cell)) {
             $data ['cell'] = $cell;
         }
     }
 
     public function getMaxWidthOfNestedContainer (ODTInternalParams $params, array $data) {
-        if ($this->own_max_width === NULL) {
+        if (!isset($this->own_max_width)) {
             // We do not know our own width yet. Calculate it first.
             $this->own_max_width = $this->getMaxWidth($params);
         }
@@ -337,14 +337,14 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $table_column_styles = $this->getTableColumnStyles();
         $style_name = $table_column_styles [$column-1];
         $style_obj = $params->document->getStyle($style_name);
-        if ($style_obj !== NULL) {
+        if (isset($style_obj)) {
             $width = $style_obj->getProperty('column-width');
             $width = trim ($width, 'pt');
             $width -= $padding;
         }
 
         // Compare with total table width
-        if ($this->own_max_width !== NULL) {
+        if (isset($this->own_max_width)) {
             $table_width = $params->units->getDigits ($params->units->toPoints($this->own_max_width));
 
             if ($table_width < $width) {
@@ -364,7 +364,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
             // Get table left margin
             $leftMargin = $tableStyle->getProperty('margin-left');
-            if ($leftMargin === NULL) {
+            if (!isset($leftMargin)) {
                 $leftMarginPt = 0;
             } else {
                 $leftMarginPt = $params->units->getDigits ($params->units->toPoints($leftMargin));
@@ -372,7 +372,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
             // Get table right margin
             $rightMargin = $tableStyle->getProperty('margin-right');
-            if ($rightMargin === NULL) {
+            if (!isset($rightMargin)) {
                 $rightMarginPt = 0;
             } else {
                 $rightMarginPt = $params->units->getDigits ($params->units->toPoints($rightMargin));
@@ -380,11 +380,11 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
 
             // Get table width
             $width = $tableStyle->getProperty('width');
-            if ($width !== NULL) {
+            if (isset($width)) {
                 $widthPt = $params->units->getDigits ($params->units->toPoints($width));
             }
 
-            if ($width === NULL) {
+            if (!isset($width)) {
                 $width = $maxPageWidthPt - $leftMarginPt - $rightMarginPt;
             } else {
                 $width = $widthPt;
@@ -425,7 +425,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         $width = $this->adjustWidthInternal ($params, $max_width);
 
         $style_obj = $params->document->getStyle($table_style_name);
-        if ($style_obj != NULL) {
+        if (isset($style_obj)) {
             $style_obj->setProperty('width', $width.'pt');
             if (!$this->isNested ()) {
                 // Calculate rel width in relation to maximum page width
@@ -468,7 +468,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         for ($index = 0 ; $index < $this->getTableMaxColumns() ; $index++ ) {
             $style_name = $table_column_styles [$index];
             $style_obj = $params->document->getStyle($style_name);
-            if ($style_obj != NULL) {
+            if (isset($style_obj)) {
                 if ($style_obj->getProperty('rel-column-width') != NULL) {
                     $width = $style_obj->getProperty('rel-column-width');
                     $length = strlen ($width);

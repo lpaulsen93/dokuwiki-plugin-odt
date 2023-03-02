@@ -17,7 +17,7 @@ class ODTElementSpan extends ODTStateElement
     public function __construct($style_name=NULL) {
         parent::__construct();
         $this->setClass ('span');
-        if ($style_name != NULL) {
+        if (isset($style_name)) {
             $this->setStyleName ($style_name);
         }
     }
@@ -57,7 +57,7 @@ class ODTElementSpan extends ODTStateElement
      */
     public function getInParagraph() {
         $parent = $this->getParent();
-        if ($parent != NULL) {
+        if (isset($parent)) {
             return $parent->getInParagraph();
         }
         return NULL;

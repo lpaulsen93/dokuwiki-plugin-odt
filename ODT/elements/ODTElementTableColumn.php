@@ -68,7 +68,7 @@ class ODTElementTableColumn extends ODTStateElement
      */
     public function determineParent(ODTStateElement $previous) {
         $table = $previous;
-        while ($table != NULL) {
+        while (isset($table)) {
             if ($table->getClass() == 'table') {
                 break;
             }
@@ -76,7 +76,7 @@ class ODTElementTableColumn extends ODTStateElement
         }
         $this->setParent($table);
 
-        if ($table == NULL) {
+        if (!isset($table)) {
             // ??? Should not be...
             return;
         }
@@ -130,7 +130,7 @@ class ODTElementTableColumn extends ODTStateElement
     public function setStyleName($value) {
         parent::setStyleName($value);
         $table = $this->getParent();
-        if ($table != NULL) {
+        if (isset($table)) {
             $table->setTableColumnStyleName($this->columnNumber, $value);
         } else {
             // FIXME: some error logging would be nice...

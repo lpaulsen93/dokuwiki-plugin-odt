@@ -134,7 +134,7 @@ class ODTExport
         // for the temp dir
         global $ID;
 
-        if ($template == NULL || $tempDir == NULL) {
+        if (!isset($template) || !isset($tempDir)) {
             return;
         }
 
@@ -158,14 +158,14 @@ class ODTExport
 
         // Evtl. copy page format of first page to different style
         $first_master = $params->styleset->getStyleAtIndex ('office:master-styles', 0);
-        if ($first_master != NULL &&
+        if (isset($first_master) &&
             $first_master->getProperty('style-page-layout-name') != $params->document->getStyleName('first page')) {
             // The master page of the template references a different page layout style
             // then used by us for the first page. Copy the page format settings.
             $source = $params->document->getStyle($params->document->getStyleName('first page'));
             $dest = $params->document->getStyle($first_master->getProperty('style-page-layout-name'));
             
-            if ($source != NULL && $dest != NULL) {
+            if (isset($source) && isset($dest)) {
                 $dest->setProperty('width', $source->getProperty('width'));
                 $dest->setProperty('height', $source->getProperty('height'));
                 $dest->setProperty('margin-top', $source->getProperty('margin-top'));
@@ -251,7 +251,7 @@ class ODTExport
      * @return mixed
      */
     public static function buildZIPFile(ODTInternalParams $params, $meta=null, $userfields=null, $pagestyles=null, $template=NULL, $tempDir=NULL){
-        if ($template == NULL ) {
+        if ( !isset($template) ) {
             self::buildFromScratch($params, $meta, $userfields, $pagestyles);
         } else {
             self::buildFromODTTemplate($params, $meta, $userfields, $pagestyles, $template, $tempDir);

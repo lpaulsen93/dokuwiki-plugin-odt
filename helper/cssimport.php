@@ -421,6 +421,7 @@ class css_declaration {
             $border_color_set = false;
             while ( $index < 3 ) {
                 if ( $border_width_set === false ) {
+                    if (!isset($values [$index])) $values [$index] = 'medium';
                     switch ($values [$index]) {
                         case 'thin':
                         case 'medium':
@@ -446,6 +447,7 @@ class css_declaration {
                     continue;
                 }
                 if ( $border_style_set === false ) {
+                    if (!isset($values [$index])) $values [$index] = 'none';
                     switch ($values [$index]) {
                         case 'none':
                         case 'dotted':
@@ -473,6 +475,7 @@ class css_declaration {
                     continue;
                 }
                 if ( $border_color_set === false ) {
+                    if (!isset($values [$index])) $values [$index] = 'initial';
                     $decls [] = new css_declaration ('border-color', $values [$index]);
                     foreach ($border_sides as $border_side) {
                         $decls [] = new css_declaration ($border_side.'-color', $values [$index]);
@@ -890,6 +893,8 @@ class css_declaration {
             case 'border-top':
             case 'border-bottom':
                 $values = preg_split ('/\s+/', $this->value);
+                if (!isset($values [1])) $values [1] = 'none'; // border-style
+                if (!isset($values [2])) $values [2] = 'currentcolor'; // border-color
                 $width =
                     call_user_func($callback, $this->property, $values [0], CSSValueType::StrokeOrBorderWidth, $rule);
                 $this->value = $width . ' ' . $values [1] . ' ' . $values [2];
@@ -1211,7 +1216,7 @@ class helper_plugin_odt_cssimport extends DokuWiki_Plugin {
                 $pos = $bracket_close + 1;
             }
         }
-        if ( $processed !== NULL ) {
+        if ( isset($processed) ) {
             $processed = $pos;
         }
         return true;

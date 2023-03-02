@@ -149,7 +149,10 @@ class ODTTableColumnStyle extends ODTStyleStyle
         }
 
         // Convert width to ODT format
-        $table_co_width = $properties ['width'];
+        $table_co_width = null;
+        if (array_key_exists('width', $properties)) {
+            $table_co_width = $properties ['width'] ?? null;
+        }
         if ( !empty ($table_co_width) ) {
             $length = strlen ($table_co_width);
             if ( $table_co_width [$length-1] != '%' ) {

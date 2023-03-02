@@ -196,10 +196,10 @@ class ODTUtility
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
         if (file_exists($src)) {
             $info  = getimagesize($src);
-            if(!$width){
+            if(!isset($width)){
                 $width  = $info[0];
                 $height = $info[1];
-            }else{
+            } else {
                 $height = round(($width * $info[1]) / $info[0]);
             }
 
@@ -434,7 +434,7 @@ class ODTUtility
 
                 // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
                 // (ODT does not support the short form)
-                if ( $part [0] == '#' && $length == 4 ) {
+                if (isset($part[0]) && $part[0] == '#' && $length == 4 ) {
                     $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
                 } else {
                     // If it is a CSS color name, get it's real color value

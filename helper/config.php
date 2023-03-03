@@ -187,7 +187,7 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
         // firsttemplatedefinitionwins
         $this->config ['firsttemplatedefinitionwins'] =
             array('value'              => NULL,
-                  'DWGlobalName'       => 'firsttemplatedefinitionwins',
+                  'DWGlobalName'       => null,
                   'hasGlobal'          => true,
                   'hasURL'             => false,
                   'hasMeta'            => false,

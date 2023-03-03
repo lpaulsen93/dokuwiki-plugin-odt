@@ -9,6 +9,7 @@
 
 // Directory of the templates in the media manager
 $conf['tpl_dir'] = 'odt';
+$conf['firsttemplatedefinitionwins'] = 0; // added 2023-02-25. A value of 1 would probably be preferable, but a setting of 0 does not change the previous behavior of the plugin, so this is the chosen default.
 
 // Default ODT template (filename only)
 $conf['odt_template'] = '';

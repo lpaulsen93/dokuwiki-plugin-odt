@@ -184,6 +184,15 @@ class helper_plugin_odt_config extends DokuWiki_Plugin {
                   'hasMeta'            => false,
                   'addMetaAtStartOnly' => false,
                   'refresh'            => false);
+        // firsttemplatedefinitionwins
+        $this->config ['firsttemplatedefinitionwins'] =
+            array('value'              => NULL,
+                  'DWGlobalName'       => null,
+                  'hasGlobal'          => true,
+                  'hasURL'             => false,
+                  'hasMeta'            => false,
+                  'addMetaAtStartOnly' => false,
+                  'refresh'            => false);
         // ODT template.
         $this->config ['odt_template'] =
             array('value'              => NULL,

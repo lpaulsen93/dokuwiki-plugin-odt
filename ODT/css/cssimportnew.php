@@ -121,7 +121,7 @@ class css_attribute_selector {
 
                 case '*=':
                     // Attribute value should include $this->value
-                    if (strpos($attributes [$this->attribute], $this->value) !== false) {
+                    if (isset($attributes [$this->attribute]) && strpos($attributes [$this->attribute], $this->value) !== false) {
                         return true;
                     }
                     break;

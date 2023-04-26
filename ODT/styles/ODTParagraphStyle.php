@@ -183,7 +183,10 @@ class ODTParagraphStyle extends ODTStyleStyle
         }
         $text_fields = ODTTextStyle::getTextProperties ();
         if (array_key_exists ($property, $text_fields)) {
-            return $this->text_properties [$property]['value'];
+            if(isset($this->text_properties [$property]['value']))
+            {
+                return $this->text_properties [$property]['value'];
+            }
         }
         return parent::getProperty($property);
     }

@@ -217,7 +217,7 @@ abstract class ODTStyle
      */
     protected function importPropertiesInternal(array $fields, $properties, $disabled, &$dest=NULL) {
         foreach ($properties as $property => $value) {
-            if ($disabled [$property] == 0 && array_key_exists ($property, $fields)) {
+            if ($disabled[$property] == 0 && array_key_exists($property, $fields)) {
                 $this->setPropertyInternal($property, $fields[$property][0], $value, $fields[$property][1], $dest);
             }
         }

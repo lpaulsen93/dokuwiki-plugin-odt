@@ -65,7 +65,7 @@ class css_attribute_selector {
      * @param    string $attributes String containing the selector
      * @return   boolean
      */
-    public function matches(array $attributes=NULL) {
+    public function matches (array $attributes=NULL) {
         if (!isset($this->operator)) {
             // Attribute should be present
             return isset($attributes) && array_key_exists($this->attribute, $attributes);

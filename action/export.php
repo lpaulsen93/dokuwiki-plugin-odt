@@ -106,6 +106,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      */
     public function addbutton_odt_new(Doku_Event $event) {
+        global $INFO;
         if($event->data['view'] != 'page') return;
         if(!$INFO['exists']) return;
         if($this->getConf('showexportbutton')) {
@@ -119,6 +120,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      */
     public function addbutton_pdf_new(Doku_Event $event) {
+        global $INFO;
         if($event->data['view'] != 'page') return;
         if(!$INFO['exists']) return;
         if($this->getConf('showpdfexportbutton')) {

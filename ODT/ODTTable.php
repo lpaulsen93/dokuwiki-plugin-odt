@@ -589,12 +589,9 @@ class ODTTable
         }
         $curr_column = $table->getTableCurrentColumn();
         $table_column_styles = $table->getTableColumnStyles();
-        if(isset($table_column_styles [$curr_column-1]))
-        {
-            $style_name = $table_column_styles [$curr_column-1];
-            $style_obj = $params->document->getStyle($style_name);
-        }
-        
+        $style_name = $table_column_styles [$curr_column-1] ?? null;
+        $style_obj = $params->document->getStyle($style_name);
+
         if (isset($style_obj)) {
             if (!empty($properties ['width'])) {
                 $width = $properties ['width'];

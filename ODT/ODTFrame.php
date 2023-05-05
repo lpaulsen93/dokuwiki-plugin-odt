@@ -224,20 +224,17 @@ class ODTFrame
         if (!isset($element)) {
             $element = 'div';
         }
-        if(isset($params->elementObj))
-        {
-            $elementObj = $params->elementObj;
-        }
+        $elementObj = $params->elementObj;
 
         // If we are not in a paragraph then open one.
         $inParagraph = $params->document->state->getInParagraph();
         if (!$inParagraph) {
             $params->document->paragraphOpen();
         }
-        
-        $position = isset($properties ['position']) ? $properties ['position'] : 'static';
-        $picture = isset($properties ['background-image']) ? $properties ['background-image'] : '';
-        $pic_positions = isset($properties ['background-position']) ? preg_split ('/\s/', $properties ['background-position']) : array();
+
+        $position = $properties ['position'];
+        $picture = $properties ['background-image'];
+        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
         //$min_height = $properties ['min-height'];
         $width = $properties ['width'];
 
@@ -328,7 +325,7 @@ class ODTFrame
         // Create frame
         $frame = new ODTElementFrame($style_name.'_text_frame');
         self::$frameCount++;
-        /*$frame_attrs .= 'draw:name="Frame'.self::$frameCount.'"
+        /*$frame_attrs = 'draw:name="Frame'.self::$frameCount.'"
                          text:anchor-type="'.$anchor_type.'"
                          svg:width="'.$width.'" svg:min-height="'.$min_height.'"
                          draw:z-index="'.($params->document->div_z_index + 0).'"';*/

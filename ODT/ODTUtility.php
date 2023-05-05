@@ -347,7 +347,6 @@ class ODTUtility
         $adjustToMaxWidth = array('margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom');
 
         // Convert 'text-decoration'.
-        $properties['text-decoration'] = isset($properties['text-decoration']) ? $properties['text-decoration'] : null;
         if(!empty($properties['text-decoration']))
         {
             if ($properties['text-decoration'] == 'line-through') {

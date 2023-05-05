@@ -333,7 +333,6 @@ class ODTParagraphStyle extends ODTStyleStyle
      */
     public static function createParagraphStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
-        $properties['text-decoration'] = isset($properties['text-decoration']) ? $properties['text-decoration'] : null;
         if(!empty($properties['text-decoration']))
         {
             if ($properties['text-decoration'] == 'line-through') {

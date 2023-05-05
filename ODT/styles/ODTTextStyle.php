@@ -232,7 +232,6 @@ class ODTTextStyle extends ODTStyleStyle
      */
     public static function createTextStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
-        $properties['text-decoration'] = isset($properties['text-decoration']) ? $properties['text-decoration'] : '';
         if(!empty($properties['text-decoration']))
         {
             if ($properties['text-decoration'] == 'line-through') {

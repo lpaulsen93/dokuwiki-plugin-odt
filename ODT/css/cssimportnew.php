@@ -65,7 +65,7 @@ class css_attribute_selector {
      * @param    string $attributes String containing the selector
      * @return   boolean
      */
-    public function matches (array $attributes=NULL) {
+    public function matches(array $attributes=NULL) {
         if (!isset($this->operator)) {
             // Attribute should be present
             return isset($attributes) && array_key_exists($this->attribute, $attributes);
@@ -121,7 +121,7 @@ class css_attribute_selector {
 
                 case '*=':
                     // Attribute value should include $this->value
-                    if (isset($attributes [$this->attribute]) && strpos($attributes [$this->attribute], $this->value) !== false) {
+                    if (strpos($attributes [$this->attribute], $this->value) !== false) {
                         return true;
                     }
                     break;
@@ -330,7 +330,6 @@ class css_simple_selector {
 
         // Match id
         if (!empty($this->id) &&
-            !empty($element_attrs ['id']) && 
             $this->id != $element_attrs ['id']) {
             return false;
         }

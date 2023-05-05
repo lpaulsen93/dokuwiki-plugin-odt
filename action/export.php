@@ -48,11 +48,13 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      */
     public function addbutton_odt(Doku_Event $event) {
-        global $ID, $REV;
+        global $ID, $REV, $DATE_AT;
 
         if($this->getConf('showexportbutton') && $event->data['view'] == 'main') {
             $params = array('do' => 'export_odt');
-            if($REV) {
+            if($DATE_AT) {
+                $params['at'] = $DATE_AT;
+            } elseif($REV) {
                 $params['rev'] = $REV;
             }
 
@@ -75,11 +77,13 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      * @param Doku_Event $event
      */
     public function addbutton_pdf(Doku_Event $event) {
-        global $ID, $REV;
+        global $ID, $REV, $DATE_AT;
 
         if($this->getConf('showpdfexportbutton') && $event->data['view'] == 'main') {
             $params = array('do' => 'export_odt_pdf');
-            if($REV) {
+            if($DATE_AT) {
+                $params['at'] = $DATE_AT;
+            } elseif($REV) {
                 $params['rev'] = $REV;
             }
 

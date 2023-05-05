@@ -426,10 +426,7 @@ class ODTTable
      */
     public static function tableAddColumnUseProperties (ODTInternalParams $params, array $properties = NULL){
         // Add column and set/query assigned style name
-        $styleName = null;
-        if (array_key_exists('style-name', $properties)) {
-            $styleName = $properties['style-name'];
-        }
+        $styleName = $properties['style-name'] ?? null;
         $styleNameGet = '';
         self::tableAddColumn ($params, $styleName, $styleNameGet);
 

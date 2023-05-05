@@ -198,18 +198,18 @@ class ODTUtility
             $info  = getimagesize($src);
             if(!$info)
             {
-		        $svgfile = simplexml_load_file($src);
-		        if(isset($svgfile["width"]) && isset($svgfile["height"]))
-		        {
+                $svgfile = simplexml_load_file($src);
+                if(isset($svgfile["width"]) && isset($svgfile["height"]))
+                {
                     $info = array(substr($svgfile["width"],0,-2), substr($svgfile["height"],0,-2));
-		        }
-		        elseif (isset($svgfile["viewBox"]))
-		        {
-    		        /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
+                }
+                elseif (isset($svgfile["viewBox"]))
+                {
+                    /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
                     $info = array($info[1], $info[3]); */
-    		        $info = explode(' ', $svgfile["viewBox"]);
-    		        $info = array($info[2], $info[3]);
-		        }
+                    $info = explode(' ', $svgfile["viewBox"]);
+                    $info = array($info[2], $info[3]);
+                }
             }
             if(!isset($width)){
                 $width  = $info[0];
@@ -347,17 +347,15 @@ class ODTUtility
         $adjustToMaxWidth = array('margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom');
 
         // Convert 'text-decoration'.
-        if (isset($properties ['text-decoration'])) {
-            switch ($properties ['text-decoration']) {
-                case 'line-through':
-                    $properties ['text-line-through-style'] = 'solid';
-                    break;
-                case 'underline':
-                    $properties ['text-underline-style'] = 'solid';
-                    break;
-                case 'overline':
-                    $properties ['text-overline-style'] = 'solid';
-                    break;
+        $properties['text-decoration'] = isset($properties['text-decoration']) ? $properties['text-decoration'] : null;
+        if(!empty($properties['text-decoration']))
+        {
+            if ($properties['text-decoration'] == 'line-through') {
+                $properties ['text-line-through-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'underline') {
+                $properties ['text-underline-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'overline') {
+                $properties ['text-overline-style'] = 'solid';
             }
         }
 

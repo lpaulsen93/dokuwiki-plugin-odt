@@ -206,10 +206,7 @@ class ODTTableStyle extends ODTStyleStyle
         }
 
         // Create style name (if not given).
-        $style_name = null;
-        if (array_key_exists('style-name', $properties)) {
-            $style_name = $properties['style-name'];
-        }
+        $style_name = $properties['style-name'] ?? null;
         if ( empty($style_name) ) {
             $style_name = self::getNewStylename ('Table');
             $properties ['style-name'] = $style_name;

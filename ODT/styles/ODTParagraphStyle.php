@@ -183,7 +183,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         }
         $text_fields = ODTTextStyle::getTextProperties ();
         if (array_key_exists ($property, $text_fields)) {
-            return $this->text_properties [$property]['value'];
+            return $this->text_properties [$property]['value'] ?? null;
         }
         return parent::getProperty($property);
     }
@@ -333,14 +333,15 @@ class ODTParagraphStyle extends ODTStyleStyle
      */
     public static function createParagraphStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
-        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'line-through') {
-            $properties ['text-line-through-style'] = 'solid';
-        }
-        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'underline') {
-            $properties ['text-underline-style'] = 'solid';
-        }
-        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'overline') {
-            $properties ['text-overline-style'] = 'solid';
+        if(!empty($properties['text-decoration']))
+        {
+            if ($properties['text-decoration'] == 'line-through') {
+                $properties ['text-line-through-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'underline') {
+                $properties ['text-underline-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'overline') {
+                $properties ['text-overline-style'] = 'solid';
+            }
         }
 
         // If the property 'vertical-align' has the value 'sub' or 'super'
@@ -411,10 +412,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         }
 
         // Create style name (if not given).
-        $style_name = null;
-        if (array_key_exists('style-name', $properties)) {
-            $style_name = $properties ['style-name'] ?? null;
-        }
+        $style_name = $properties ['style-name'] ?? null;
         if ( empty($style_name) ) {
             $style_name = self::getNewStylename ('Paragraph');
             $properties ['style-name'] = $style_name;

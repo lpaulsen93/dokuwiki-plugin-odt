@@ -325,11 +325,11 @@ class ODTFrame
         // Create frame
         $frame = new ODTElementFrame($style_name.'_text_frame');
         self::$frameCount++;
-        /*$frame_attrs .= 'draw:name="Frame'.self::$frameCount.'"
+        /*$frame_attrs = 'draw:name="Frame'.self::$frameCount.'"
                          text:anchor-type="'.$anchor_type.'"
                          svg:width="'.$width.'" svg:min-height="'.$min_height.'"
                          draw:z-index="'.($params->document->div_z_index + 0).'"';*/
-        $frame_attrs .= 'draw:name="Frame'.self::$frameCount.'"
+        $frame_attrs = 'draw:name="Frame'.self::$frameCount.'"
                          text:anchor-type="'.$anchor_type.'"
                          svg:width="'.$width.'" 
                          draw:z-index="'.($params->document->div_z_index + 0).'"';

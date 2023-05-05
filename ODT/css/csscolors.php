@@ -302,11 +302,9 @@ class csscolors {
     public static function getColorValue ($name=NULL) {
         $value = '#000000';
         if (isset($name)) {
-            if (isset(self::$values [strtolower($name)])) {
-                $value = self::$values [strtolower($name)];
-            } else {
+            $value = self::$values [strtolower($name)] ?? null;
+            if (!isset($value))
                 $value = '#000000';
-            }
         }
         return $value;
     }

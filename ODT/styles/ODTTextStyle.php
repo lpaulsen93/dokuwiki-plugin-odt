@@ -232,14 +232,15 @@ class ODTTextStyle extends ODTStyleStyle
      */
     public static function createTextStyle(array $properties, array $disabled_props = NULL, ODTDocument $doc=NULL){
         // Convert 'text-decoration'.
-        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'line-through') {
-            $properties ['text-line-through-style'] = 'solid';
-        }
-        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'underline') {
-            $properties ['text-underline-style'] = 'solid';
-        }
-        if (isset($properties['text-decoration']) && $properties['text-decoration'] == 'overline') {
-            $properties ['text-overline-style'] = 'solid';
+        if(!empty($properties['text-decoration']))
+        {
+            if ($properties['text-decoration'] == 'line-through') {
+                $properties ['text-line-through-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'underline') {
+                $properties ['text-underline-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'overline') {
+                $properties ['text-overline-style'] = 'solid';
+            }
         }
 
         // If the property 'vertical-align' has the value 'sub' or 'super'

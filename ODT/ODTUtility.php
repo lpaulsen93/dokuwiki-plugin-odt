@@ -196,6 +196,21 @@ class ODTUtility
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
         if (file_exists($src)) {
             $info  = getimagesize($src);
+            if(!$info)
+            {
+                $svgfile = simplexml_load_file($src);
+                if(isset($svgfile["width"]) && isset($svgfile["height"]))
+                {
+                    $info = array(substr($svgfile["width"],0,-2), substr($svgfile["height"],0,-2));
+                }
+                elseif (isset($svgfile["viewBox"]))
+                {
+                    /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
+                    $info = array($info[1], $info[3]); */
+                    $info = explode(' ', $svgfile["viewBox"]);
+                    $info = array($info[2], $info[3]);
+                }
+            }
             if(!isset($width)){
                 $width  = $info[0];
                 $height = $info[1];
@@ -265,7 +280,7 @@ class ODTUtility
         $height = str_replace(',', '.', $height);
         if ($width && $height) {
             // Don't be wider than the page
-            if ($width >= 17){ // FIXME : this assumes A4 page format with 2cm margins
+            if ($width_file >= 17){ // FIXME : this assumes A4 page format with 2cm margins
                 $width = $width.'"  style:rel-width="100%';
                 $height = $height.'"  style:rel-height="scale';
             } else {
@@ -332,17 +347,14 @@ class ODTUtility
         $adjustToMaxWidth = array('margin', 'margin-left', 'margin-right', 'margin-top', 'margin-bottom');
 
         // Convert 'text-decoration'.
-        if (isset($properties ['text-decoration'])) {
-            switch ($properties ['text-decoration']) {
-                case 'line-through':
-                    $properties ['text-line-through-style'] = 'solid';
-                    break;
-                case 'underline':
-                    $properties ['text-underline-style'] = 'solid';
-                    break;
-                case 'overline':
-                    $properties ['text-overline-style'] = 'solid';
-                    break;
+        if(!empty($properties['text-decoration']))
+        {
+            if ($properties['text-decoration'] == 'line-through') {
+                $properties ['text-line-through-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'underline') {
+                $properties ['text-underline-style'] = 'solid';
+            } elseif ($properties['text-decoration'] == 'overline') {
+                $properties ['text-overline-style'] = 'solid';
             }
         }
 
@@ -1028,14 +1040,14 @@ class ODTUtility
         }
 
         // Handle newlines
-        if ($options ['linebreaks'] !== 'remove') {
+        if (isset($options ['linebreaks']) && $options ['linebreaks'] !== 'remove') {
             $content = str_replace("\n",'<text:line-break/>',$content);
         } else {
             $content = str_replace("\n",'',$content);
         }
 
         // Handle tabs
-        if ($options ['tabs'] !== 'remove') {
+        if (isset($options ['tabs']) && $options ['tabs'] !== 'remove') {
             $content = str_replace("\t",'<text:tab/>',$content);
         } else {
             $content = str_replace("\t",'',$content);

@@ -440,7 +440,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
                 }
             } else {
                 // Calculate rel width in relation to maximum table width
-                if (is_numeric($max_width) && $max_width != 0) {
+                if ($max_width != 0) {
                     $rel_width = round(($width * 100)/$max_width);
                 }
             }

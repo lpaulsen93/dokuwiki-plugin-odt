@@ -330,7 +330,6 @@ class css_simple_selector {
 
         // Match id
         if (!empty($this->id) &&
-            !empty($element_attrs ['id']) && 
             $this->id != $element_attrs ['id']) {
             return false;
         }
@@ -1105,7 +1104,7 @@ class cssimportnew {
                 // Only accept a property value if the current specificity of the matched
                 // rule/selector is higher or equal than the highest one.
                 foreach ($current as $property => $value) {
-                    if (isset($highest [$property]) && $specificity >= $highest [$property]) {
+                    if ($specificity >= $highest [$property]) {
                         $highest [$property] = $specificity;
                         $temp [$property] = $value;
                     }

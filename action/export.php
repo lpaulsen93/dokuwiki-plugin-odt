@@ -107,6 +107,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      */
     public function addbutton_odt_new(Doku_Event $event) {
         if($event->data['view'] != 'page') return;
+        if(!$INFO['exists']) return;
         if($this->getConf('showexportbutton')) {
             array_splice($event->data['items'], -1, 0, [new \dokuwiki\plugin\odt\MenuItemODT()]);
         }
@@ -119,6 +120,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
      */
     public function addbutton_pdf_new(Doku_Event $event) {
         if($event->data['view'] != 'page') return;
+        if(!$INFO['exists']) return;
         if($this->getConf('showpdfexportbutton')) {
             array_splice($event->data['items'], -1, 0, [new \dokuwiki\plugin\odt\MenuItemODTPDF()]);
         }

@@ -421,8 +421,7 @@ class css_declaration {
             $border_color_set = false;
             while ( $index < 3 ) {
                 if ( $border_width_set === false ) {
-                    if (!isset($values [$index])) $values [$index] = null;
-                    switch ($values [$index]) {
+                    switch ($values [$index] ?? null) {
                         case 'thin':
                         case 'medium':
                         case 'thick':
@@ -432,7 +431,7 @@ class css_declaration {
                             }
                         break;
                         default:
-                            if ( strpos ($values [$index], 'px') !== false ) {
+                            if ( isset($values [$index]) && strpos ($values [$index], 'px') !== false ) {
                                 $decls [] = new css_declaration ('border-width', $values [$index]);
                                 foreach ($border_sides as $border_side) {
                                     $decls [] = new css_declaration ($border_side.'-width', $values [$index]);

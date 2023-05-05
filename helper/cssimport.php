@@ -421,7 +421,7 @@ class css_declaration {
             $border_color_set = false;
             while ( $index < 3 ) {
                 if ( $border_width_set === false ) {
-                    switch ($values [$index]) {
+                    switch ($values [$index] ?? null) {
                         case 'thin':
                         case 'medium':
                         case 'thick':

@@ -219,7 +219,7 @@ class renderer_plugin_odt_page extends Doku_Renderer {
                 if (!empty($fontFize)) {
                     $fontFizeInPx = $this->document->toPixel($fontFize);
                     if (!empty($fontFizeInPx)) {
-                        $this->document->setPixelPerEm($fontFizeInPx);
+                        $this->document->setPixelPerEm(trim ($fontFizeInPx, 'px'));
                     }
                 }
             }

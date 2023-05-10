@@ -126,7 +126,7 @@ class ODTImage
      * @param  $title
      * @param  $style
      */
-    function addStringAsSVGImage(ODTInternalParams $params, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
+    public static function addStringAsSVGImage(ODTInternalParams $params, $string, $width = NULL, $height = NULL, $align = NULL, $title = NULL, $style = NULL) {
         if ( empty($string) ) { return; }
 
         $name = self::addStringAsSVGImageFile($params->document, $string);

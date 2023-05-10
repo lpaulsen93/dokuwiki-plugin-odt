@@ -1040,14 +1040,14 @@ class ODTUtility
         }
 
         // Handle newlines
-        if (isset($options ['linebreaks']) && $options ['linebreaks'] !== 'remove') {
+        if (!isset($options ['linebreaks']) || $options ['linebreaks'] !== 'remove') {
             $content = str_replace("\n",'<text:line-break/>',$content);
         } else {
             $content = str_replace("\n",'',$content);
         }
 
         // Handle tabs
-        if (isset($options ['tabs']) && $options ['tabs'] !== 'remove') {
+        if (!isset($options ['tabs']) || $options ['tabs'] !== 'remove') {
             $content = str_replace("\t",'<text:tab/>',$content);
         } else {
             $content = str_replace("\t",'',$content);

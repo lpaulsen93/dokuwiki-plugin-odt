@@ -224,7 +224,7 @@ class ODTFrame
         if (!isset($element)) {
             $element = 'div';
         }
-        $elementObj = $params->elementObj;
+        $elementObj = isset($params->elementObj) ? $params->elementObj : null;
 
         // If we are not in a paragraph then open one.
         $inParagraph = $params->document->state->getInParagraph();
@@ -232,9 +232,9 @@ class ODTFrame
             $params->document->paragraphOpen();
         }
 
-        $position = $properties ['position'];
-        $picture = $properties ['background-image'];
-        $pic_positions = preg_split ('/\s/', $properties ['background-position']);
+        $position = $properties ['position'] ?? null;
+        $picture = $properties ['background-image'] ?? null;
+        $pic_positions = isset($properties ['background-position']) ? preg_split ('/\s/', $properties ['background-position']) : [];
         //$min_height = $properties ['min-height'];
         $width = $properties ['width'];
 

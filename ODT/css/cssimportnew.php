@@ -330,7 +330,7 @@ class css_simple_selector {
 
         // Match id
         if (!empty($this->id) &&
-            $this->id != $element_attrs ['id']) {
+            $this->id != ($element_attrs ['id'] ?? null)) {
             return false;
         }
 
@@ -1104,7 +1104,7 @@ class cssimportnew {
                 // Only accept a property value if the current specificity of the matched
                 // rule/selector is higher or equal than the highest one.
                 foreach ($current as $property => $value) {
-                    if ($specificity >= $highest [$property]) {
+                    if (!isset($highest [$property]) || $specificity >= $highest [$property]) {
                         $highest [$property] = $specificity;
                         $temp [$property] = $value;
                     }
@@ -1261,7 +1261,7 @@ class cssimportnew {
         foreach ($parents as $parent) {
             $properties = $parent->getProperties() ?? [];
             foreach ($properties as $key => $value) {
-                if ($dest [$key] == 'inherit') {
+                if (!isset($dest [$key]) || $dest [$key] == 'inherit') {
                     $dest [$key] = $value;
                 } else {
                     if (strncmp($key, 'background', strlen('background')) == 0) {

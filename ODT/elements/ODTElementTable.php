@@ -424,7 +424,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
             return;
         }
 
-        $max_width = $this->getMaxWidth($params);
+        $max_width = trim ($this->getMaxWidth($params), 'pt');
         $width = $this->adjustWidthInternal ($params, $max_width);
 
         $style_obj = $params->document->getStyle($table_style_name);

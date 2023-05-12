@@ -194,47 +194,48 @@ class ODTUtility
      *                Just the integer value, no units included.
      */
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
-        if (file_exists($src)) {
-            $info  = getimagesize($src);
-            if(!$info)
+        $info  = getimagesize($src);
+        if(!$info)
+        {
+            $svgfile = simplexml_load_file($src);
+            if(isset($svgfile["width"]) && isset($svgfile["height"]))
             {
-                $svgfile = simplexml_load_file($src);
-                if(isset($svgfile["width"]) && isset($svgfile["height"]))
-                {
-                    $info = array(substr($svgfile["width"],0,-2), substr($svgfile["height"],0,-2));
-                }
-                elseif (isset($svgfile["viewBox"]))
-                {
-                    /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
-                    $info = array($info[1], $info[3]); */
-                    $info = explode(' ', $svgfile["viewBox"]);
-                    $info = array($info[2], $info[3]);
-                }
+                $info = array(substr($svgfile["width"],0,-2), substr($svgfile["height"],0,-2));
             }
-            if(!isset($width)){
-                $width  = $info[0];
-                $height = $info[1];
-            } else {
-                $height = round(($width * $info[1]) / $info[0]);
+            elseif (isset($svgfile["viewBox"]))
+            {
+                /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
+                $info = array($info[1], $info[3]); */
+                $info = explode(' ', $svgfile["viewBox"]);
+                $info = array($info[2], $info[3]);
             }
-
-            if ($maxwidth && $width > $maxwidth) {
-                $height = $height * ($maxwidth/$width);
-                $width = $maxwidth;
+            else
+            {
+                return array(0, 0);
             }
-            if ($maxheight && $height > $maxheight) {
-                $width = $width * ($maxheight/$height);
-                $height = $maxheight;
-            }
-
-            // Convert from pixel to centimeters
-            if ($width) $width = (($width/96.0)*2.54);
-            if ($height) $height = (($height/96.0)*2.54);
-
-            return array($width, $height);
+        }
+        
+        if(!isset($width)){
+            $width  = $info[0];
+            $height = $info[1];
+        } else {
+            $height = round(($width * $info[1]) / $info[0]);
         }
 
-        return array(0, 0);
+        if ($maxwidth && $width > $maxwidth) {
+            $height = $height * ($maxwidth/$width);
+            $width = $maxwidth;
+        }
+        if ($maxheight && $height > $maxheight) {
+            $width = $width * ($maxheight/$height);
+            $height = $maxheight;
+        }
+
+        // Convert from pixel to centimeters
+        if ($width) $width = (($width/96.0)*2.54);
+        if ($height) $height = (($height/96.0)*2.54);
+
+        return array($width, $height);
     }
 
     /**

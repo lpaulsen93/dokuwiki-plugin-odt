@@ -194,20 +194,26 @@ class ODTUtility
      *                Just the integer value, no units included.
      */
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
-        if(file_exists($src))
+        if(!file_exists($src))
         {
+            $fetch = (new DokuHTTPClient())->get($src);
+            if(!$fetch) {
+                return array(0, 0);
+            }
+        }
+
+        if(file_exists($src)) {
             $info = getimagesize($src);
         } else {
-            $info = getimagesizefromstring((new DokuHTTPClient())->get($src));
+            $info = getimagesizefromstring($fetch);
         }
         
         if(!$info)
         {
-            if(file_exists($src))
-            {
+            if(file_exists($src)) {
                 $svgfile = simplexml_load_file($src);
             } else {
-                $svgfile = simplexml_load_file((new DokuHTTPClient())->get($src));
+                $svgfile = @simplexml_load_file($fetch);
             }
 
             if(isset($svgfile["width"]) && isset($svgfile["height"]))

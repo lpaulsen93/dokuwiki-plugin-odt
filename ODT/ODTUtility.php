@@ -196,9 +196,9 @@ class ODTUtility
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
         if(file_exists($src))
         {
-            $info  = getimagesize($src);
+            $info = getimagesize($src);
         } else {
-            $info  = getimagesizefromstring((new DokuHTTPClient())->get($src));
+            $info = getimagesizefromstring((new DokuHTTPClient())->get($src));
         }
         
         if(!$info)

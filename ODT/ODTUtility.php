@@ -207,7 +207,7 @@ class ODTUtility
         if(!$info)
         {
             if(file_exists($src)) {
-                $svgfile = simplexml_load_file($src);
+                $svgfile = @simplexml_load_file($src);
             } else {
                 $svgfile = @simplexml_load_file($fetch);
             }

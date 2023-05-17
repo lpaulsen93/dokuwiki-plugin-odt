@@ -337,7 +337,7 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
         }
 
         $table_column_styles = $this->getTableColumnStyles();
-        $style_name = $table_column_styles [$column-1];
+        $style_name = $table_column_styles [$column-1] ?? null;
         $style_obj = $params->document->getStyle($style_name);
         $width = 0;
         if (isset($style_obj)) {

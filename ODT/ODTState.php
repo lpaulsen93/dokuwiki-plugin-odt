@@ -353,6 +353,9 @@ class ODTState
     }
 
     public function getElementCount($element) {
+        if(!isset($this->element_counter [$element])) {
+            $this->element_counter [$element] = 0;
+        }
         return $this->element_counter [$element]++;
     }
 }

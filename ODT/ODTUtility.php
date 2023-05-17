@@ -227,7 +227,7 @@ class ODTUtility
             }
         }
         
-        if(isset($width)){
+        if(!isset($width)){
             $width  = $info[0];
             $height = $info[1];
         } else {

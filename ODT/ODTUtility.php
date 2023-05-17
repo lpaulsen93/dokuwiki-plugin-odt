@@ -194,17 +194,13 @@ class ODTUtility
      *                Just the integer value, no units included.
      */
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
-        if(!file_exists($src))
-        {
+        if(file_exists($src)) {
+            $info = getimagesize($src);
+        } else {
             $fetch = (new DokuHTTPClient())->get($src);
             if(!$fetch) {
                 return array(0, 0);
             }
-        }
-
-        if(file_exists($src)) {
-            $info = getimagesize($src);
-        } else {
             $info = getimagesizefromstring($fetch);
         }
         

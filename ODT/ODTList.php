@@ -51,10 +51,10 @@ class ODTList
         self::replaceLastListParagraph($params);
 
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
+        $list = $params->document->state->getCurrentList();
         $element = $params->document->state->getCurrent();
         $params->content .= $element->getClosingTag();
 
-        $list = $params->document->state->getCurrentList();
         $position = $list->getListLastParagraphPosition();
         $params->document->state->leave();
         

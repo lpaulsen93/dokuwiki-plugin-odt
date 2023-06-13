@@ -3,12 +3,13 @@
 /**
  * @license    GPL 2 (http://www.gnu.org/licenses/gpl.html)
  *
+ * @author Schplurtz le Déboulonné <schplurtz@laposte.net>
  * @author NicolasFriedli <nicolas@theologique.ch>
- * @author Schplurtz le Déboulonné <Schplurtz@laposte.net>
  * @author Fabrice Dejaigher <fabrice@chtiland.com>
  * @author ubibene <services.m@benard.info>
  */
 $lang['tpl_dir']               = 'Sous-répertoire dédié aux modèles dans le gestionnaire de médias';
+$lang['firsttemplatedefinitionwins'] = 'En cas de multiples définitions de thème, page de thème, css_template ou odt_template, appliquer le premier de la liste. (Faux appliquera le dernier). Nécessite le greffon usecounter.';
 $lang['odt_template']          = 'Modèle pour l\'importation du style (fichier ODT ou CSS)';
 $lang['showexportbutton']      = 'Afficher le bouton d\'exportation ODT';
 $lang['css_usage']             = 'Appliquer le CSS importé aux styles ODT?';

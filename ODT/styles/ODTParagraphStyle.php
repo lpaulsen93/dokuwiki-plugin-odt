@@ -473,7 +473,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         // Copy $tab_stop_fields
         foreach (self::$tab_stop_fields as $property => $fields) {
             $value = $source->getProperty($property);
-            if (isset($value) && $disabled [$property] == 0) {
+            if (isset($value) && (!isset($disabled [$property]) || $disabled [$property] == 0)) {
                 $dest -> setProperty($property, $value);
             }
         }
@@ -481,7 +481,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         // Copy $paragraph_fields
         foreach (self::$paragraph_fields as $property => $fields) {
             $value = $source->getProperty($property);
-            if (isset($value) && $disabled [$property] == 0) {
+            if (isset($value) && (!isset($disabled [$property]) || $disabled [$property] == 0)) {
                 $dest -> setProperty($property, $value);
             }
         }
@@ -490,7 +490,7 @@ class ODTParagraphStyle extends ODTStyleStyle
         $text_fields = ODTTextStyle::getTextProperties ();
         foreach ($text_fields as $property => $fields) {
             $value = $source->getProperty($property);
-            if (isset($value) && $disabled [$property] == 0) {
+            if (isset($value) && (!isset($disabled [$property]) || $disabled [$property] == 0)) {
                 $dest -> setProperty($property, $value);
             }
         }

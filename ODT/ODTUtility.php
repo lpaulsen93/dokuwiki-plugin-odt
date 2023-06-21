@@ -458,11 +458,9 @@ class ODTUtility
             $values = preg_split ('/\s+/', $value);
             $value = '';
             foreach ($values as $part) {
-                $length = strlen ($part);
-
                 // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
                 // (ODT does not support the short form)
-                if (isset($part[0]) && $part[0] == '#' && $length == 4 ) {
+                if (isset($part[0]) && $part[0] == '#' && strlen($part) == 4 ) {
                     $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
                 } else {
                     // If it is a CSS color name, get it's real color value
@@ -472,11 +470,11 @@ class ODTUtility
                     }
                 }
 
-                if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
+                if ( strlen($part) > 2 && substr($part, -2, -1) == 'e' && substr($part, -1) == 'm' ) {
                     $part = $units->toPoints($part, 'y');
                 }
 
-                if ( $length > 2 && ($part [$length-2] != 'p' || $part [$length-1] != 't') &&
+                if ( strlen($part) > 2 && (substr($part, -2, -1) != 'p' || substr($part, -1) != 't') &&
                      strpos($property, 'border')!==false ) {
                     $part = $units->toPoints($part, 'y');
                 }

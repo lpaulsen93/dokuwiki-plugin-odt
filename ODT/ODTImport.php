@@ -529,15 +529,15 @@ class ODTImport
                 // If the style imported is a table adjust some properties
                 if ($style->getFamily() == 'table') {
                     // Move 'width' to 'rel-width' if it is relative
-                    $width = $properties ['width'];
-                    if (isset($width)) {
+                    if (isset($properties ['width'])) {
+                        $width = $properties ['width'];
                         if (!isset($properties ['align'])) {
                             // If width is set but align not, changing the width
                             // will not work. So we set it here if not done by the user.
                             $properties ['align'] = 'center';
                         }
                     }
-                    if ($width [strlen($width)-1] == '%') {
+                    if (isset($width [strlen($width)-1]) && $width [strlen($width)-1] == '%') {
                         $properties ['rel-width'] = $width;
                         unset ($properties ['width']);
                     }

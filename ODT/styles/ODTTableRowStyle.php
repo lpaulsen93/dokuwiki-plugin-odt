@@ -163,8 +163,7 @@ class ODTTableRowStyle extends ODTStyleStyle
      */
     public static function createTableRowStyle(array $properties, array $disabled_props = NULL){
         // Create style name (if not given).
-        $style_name = $properties ['style-name'];
-        if ( empty($style_name) ) {
+        if ( empty($properties ['style-name']) ) {
             $style_name = self::getNewStylename ('TableRow');
             $properties ['style-name'] = $style_name;
         }

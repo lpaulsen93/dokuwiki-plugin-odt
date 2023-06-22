@@ -194,47 +194,63 @@ class ODTUtility
      *                Just the integer value, no units included.
      */
     public static function getImageSize($src, $maxwidth=NULL, $maxheight=NULL){
-        if (file_exists($src)) {
-            $info  = getimagesize($src);
-            if(!$info)
-            {
-                $svgfile = simplexml_load_file($src);
-                if(isset($svgfile["width"]) && isset($svgfile["height"]))
-                {
-                    $info = array(substr($svgfile["width"],0,-2), substr($svgfile["height"],0,-2));
-                }
-                elseif (isset($svgfile["viewBox"]))
-                {
-                    /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
-                    $info = array($info[1], $info[3]); */
-                    $info = explode(' ', $svgfile["viewBox"]);
-                    $info = array($info[2], $info[3]);
-                }
+        if(file_exists($src)) {
+            $info = getimagesize($src);
+        } else {
+            // FIXME: Add cache support for downloaded images.
+            $fetch = (new DokuHTTPClient())->get($src);
+            if(!$fetch) {
+                return array(0, 0);
             }
-            if(!isset($width)){
-                $width  = $info[0];
-                $height = $info[1];
+            $info = getimagesizefromstring($fetch);
+        }
+        
+        if(!$info)
+        {
+            if(file_exists($src)) {
+                $svgfile = @simplexml_load_file($src);
             } else {
-                $height = round(($width * $info[1]) / $info[0]);
+                $svgfile = @simplexml_load_file($fetch);
             }
 
-            if ($maxwidth && $width > $maxwidth) {
-                $height = $height * ($maxwidth/$width);
-                $width = $maxwidth;
+            if(isset($svgfile["width"]) && isset($svgfile["height"]))
+            {
+                $info = array(substr($svgfile["width"],0,-2), substr($svgfile["height"],0,-2));
             }
-            if ($maxheight && $height > $maxheight) {
-                $width = $width * ($maxheight/$height);
-                $height = $maxheight;
+            elseif (isset($svgfile["viewBox"]))
+            {
+                /* preg_match("#viewbox=[\"']\d* \d* (\d*+(\.?+\d*)) (\d*+(\.?+\d*))#i", file_get_contents($src), $info);
+                $info = array($info[1], $info[3]); */
+                $info = explode(' ', $svgfile["viewBox"]);
+                $info = array($info[2], $info[3]);
             }
-
-            // Convert from pixel to centimeters
-            if ($width) $width = (($width/96.0)*2.54);
-            if ($height) $height = (($height/96.0)*2.54);
-
-            return array($width, $height);
+            else
+            {
+                return array(0, 0);
+            }
+        }
+        
+        if(!isset($width)){
+            $width  = $info[0];
+            $height = $info[1];
+        } else {
+            $height = round(($width * $info[1]) / $info[0]);
         }
 
-        return array(0, 0);
+        if ($maxwidth && $width > $maxwidth) {
+            $height = $height * ($maxwidth/$width);
+            $width = $maxwidth;
+        }
+        if ($maxheight && $height > $maxheight) {
+            $width = $width * ($maxheight/$height);
+            $height = $maxheight;
+        }
+
+        // Convert from pixel to centimeters
+        if ($width) $width = (($width/96.0)*2.54);
+        if ($height) $height = (($height/96.0)*2.54);
+
+        return array($width, $height);
     }
 
     /**
@@ -442,11 +458,9 @@ class ODTUtility
             $values = preg_split ('/\s+/', $value);
             $value = '';
             foreach ($values as $part) {
-                $length = strlen ($part);
-
                 // If it is a short color value (#xxx) then convert it to long value (#xxxxxx)
                 // (ODT does not support the short form)
-                if (isset($part[0]) && $part[0] == '#' && $length == 4 ) {
+                if (isset($part[0]) && $part[0] == '#' && strlen($part) == 4 ) {
                     $part = '#'.$part [1].$part [1].$part [2].$part [2].$part [3].$part [3];
                 } else {
                     // If it is a CSS color name, get it's real color value
@@ -456,11 +470,11 @@ class ODTUtility
                     }
                 }
 
-                if ( $length > 2 && $part [$length-2] == 'e' && $part [$length-1] == 'm' ) {
+                if ( strlen($part) > 2 && substr($part, -2, -1) == 'e' && substr($part, -1) == 'm' ) {
                     $part = $units->toPoints($part, 'y');
                 }
 
-                if ( $length > 2 && ($part [$length-2] != 'p' || $part [$length-1] != 't') &&
+                if ( strlen($part) > 2 && (substr($part, -2, -1) != 'p' || substr($part, -1) != 't') &&
                      strpos($property, 'border')!==false ) {
                     $part = $units->toPoints($part, 'y');
                 }

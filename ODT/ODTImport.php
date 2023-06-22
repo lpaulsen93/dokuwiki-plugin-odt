@@ -835,7 +835,7 @@ class ODTImport
 
         $toImport = array_merge (self::$internalRegs, $registrations);
         foreach ($toImport as $style => $element) {
-            if ($element ['compare']) {
+            if (isset($element ['compare']) && $element ['compare']) {
                 self::importStyle($params, $htmlStack,
                                   $style,
                                   $element ['element'],

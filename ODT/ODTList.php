@@ -52,7 +52,8 @@ class ODTList
 
         ODTUtility::closeHTMLElement ($params, $params->document->state->getHTMLElement());
         $list = $params->document->state->getCurrentList();
-        $params->content .= $list->getClosingTag();
+        $element = $params->document->state->getCurrent();
+        $params->content .= $element->getClosingTag();
 
         $position = $list->getListLastParagraphPosition();
         $params->document->state->leave();

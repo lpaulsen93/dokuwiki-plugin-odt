@@ -199,6 +199,8 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
 
         // hard work only when no cache available
         if(!$this->getConf('usecache') || !$cache->useCache($depends)) {
+            // generating the odt may take a long time for larger wikis / namespaces with many pages
+            set_time_limit(0);
             $this->generateODT($cache->cache, $title);
         }
 

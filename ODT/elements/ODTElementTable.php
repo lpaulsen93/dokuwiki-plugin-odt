@@ -324,20 +324,23 @@ class ODTElementTable extends ODTStateElement implements iContainerAccess
             $cell_style->getProperty('padding-right') != NULL) {
             $value = $cell_style->getProperty('padding-left');
             $value = $params->document->toPoints($value, 'y');
+            $value = trim ($value, 'pt');
             $padding += $value;
             $value = $cell_style->getProperty('padding-right');
             $value = $params->document->toPoints($value, 'y');
+            $value = trim ($value, 'pt');
             $padding += $value;
         } else if ($cell_style->getProperty('padding') != NULL) {
             $value = $cell_style->getProperty('padding');
             $value = $params->document->toPoints($value, 'y');
+            $value = trim ($value, 'pt');
             if (is_numeric($value)) {
                 $padding += 2 * $value;
             }
         }
 
         $table_column_styles = $this->getTableColumnStyles();
-        $style_name = $table_column_styles [$column-1];
+        $style_name = $table_column_styles [$column-1] ?? null;
         $style_obj = $params->document->getStyle($style_name);
         $width = 0;
         if (isset($style_obj)) {

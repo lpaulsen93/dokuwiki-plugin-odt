@@ -927,19 +927,19 @@ class renderer_plugin_odt_page extends Doku_Renderer {
      * @param string|int $y second value
      */
     function multiplyentity($x, $y) {
-        $text .= $x.'×'.$y;
+        $text = $x.'×'.$y;
         $this->document->addPlainText($text);
     }
 
     function singlequoteopening() {
         global $lang;
-        $text .= $lang['singlequoteopening'];
+        $text = $lang['singlequoteopening'];
         $this->document->addPlainText($text);
     }
 
     function singlequoteclosing() {
         global $lang;
-        $text .= $lang['singlequoteclosing'];
+        $text = $lang['singlequoteclosing'];
         $this->document->addPlainText($text);
     }
 

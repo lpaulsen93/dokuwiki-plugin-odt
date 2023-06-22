@@ -536,10 +536,11 @@ class ODTImport
                             // will not work. So we set it here if not done by the user.
                             $properties ['align'] = 'center';
                         }
-                    }
-                    if (isset($width [strlen($width)-1]) && $width [strlen($width)-1] == '%') {
-                        $properties ['rel-width'] = $width;
-                        unset ($properties ['width']);
+
+                        if ($width [strlen($width)-1] == '%') {
+                            $properties ['rel-width'] = $width;
+                            unset ($properties ['width']);
+                        }
                     }
 
                     // Convert property 'border-model' to ODT

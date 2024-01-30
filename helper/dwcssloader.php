@@ -61,8 +61,13 @@ class helper_plugin_odt_dwcssloader extends DokuWiki_Plugin {
             $styleini = css_styleini($template);
         } else {
             // Greebo functionality
-            $styleUtils = new \dokuwiki\StyleUtils();
-            $styleini = $styleUtils->cssStyleini($template);
+            $this->config = plugin_load('helper', 'odt_config');
+            if($this->config->getParam('css_usage') !== "off (plugins only)") {
+                $styleUtils = new \dokuwiki\StyleUtils($template);
+            } else {
+                $styleUtils = new \dokuwiki\StyleUtils();
+            }
+            $styleini = $styleUtils->cssStyleini($template); // older versions need still the template
         }
 
         $template_files = array();

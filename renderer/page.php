@@ -1174,7 +1174,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
     function internalmedia ($src, $title=NULL, $align=NULL, $width=NULL,
                             $height=NULL, $cache=NULL, $linking=NULL, $returnonly = false) {
         global $ID;
-        resolve_mediaid(getNS($ID),$src, $exists);
+        $resolver = new \dokuwiki\File\MediaResolver($ID);
+        $src = $resolver->resolveId($src);
         list(/* $ext */,$mime) = mimetype($src);
 
         if ($linking == 'linkonly') {
@@ -1324,7 +1325,8 @@ class renderer_plugin_odt_page extends Doku_Renderer {
         // default name is based on $id as given
         $default = $this->_simpleTitle($id);
         // now first resolve and clean up the $id
-        resolve_pageid(getNS($ID),$id,$exists);
+        $resolver = new \dokuwiki\File\PageResolver($ID);
+        $id = $resolver->resolveId($id);
         $name = $this->_getLinkTitle($name, $default, $isImage, $id);
 
         // build the absolute URL (keeping a hash if any)

@@ -128,7 +128,7 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
         $name = $this->_getLinkTitle($name, $default, $isImage, $id);
 
         // build the absolute URL (keeping a hash if any)
-        list($id,$hash) = explode('#',$id,2);
+        list($id,$hash) = sexplode('#',$id,2);
 
         // Is the link a link to a page included in the book?
         $pages = $this->actioninstance->getExportedPages();

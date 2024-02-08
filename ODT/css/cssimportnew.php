@@ -105,7 +105,7 @@ class css_attribute_selector {
                     // Attribute value should contain
                     // a word starting with $this->value
                     $length = strlen ($this->value);
-                    if (strncmp($attributes [$this->attribute], $this->value, $length) == 0) {
+                    if (isset($attributes[$this->attribute]) && strncmp($attributes [$this->attribute], $this->value, $length) == 0) {
                         return true;
                     }
                     break;

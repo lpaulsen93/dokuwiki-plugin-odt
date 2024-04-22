@@ -198,7 +198,13 @@ class ODTUtility
             $info = getimagesize($src);
         } else {
             // FIXME: Add cache support for downloaded images.
-            $fetch = @(new DokuHTTPClient())->get($src);
+            if (class_exists('dokuwiki\HTTP\DokuHTTPClient')) {
+                $http = new dokuwiki\HTTP\DokuHTTPClient();
+            } else {
+                $http = new DokuHTTPClient();
+            }
+            $fetch = @$http->get($src);
+            var_dump($fetch);
             if(!$fetch) {
                 return array(0, 0);
             }

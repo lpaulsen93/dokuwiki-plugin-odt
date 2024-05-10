@@ -151,7 +151,7 @@ class ODTUtility
             $length = $end - $start_open + $length_close;
             $content = substr ($docContent, $start_close + 1, $end - ($start_close + 1));
 
-            if ( empty($content) || ctype_space ($content) ) {
+            if ( strlen(ltrim($content," ")) < 1 && empty($content) && ctype_space ($content) ) {
                 // Paragraph is empty or consists of whitespace only. Check style name.
                 $style_start = strpos ($docContent, '"', $start_open);
                 if ( $style_start === false ) {
@@ -198,7 +198,12 @@ class ODTUtility
             $info = getimagesize($src);
         } else {
             // FIXME: Add cache support for downloaded images.
-            $fetch = (new DokuHTTPClient())->get($src);
+            if (class_exists('dokuwiki\HTTP\DokuHTTPClient')) {
+                $http = new dokuwiki\HTTP\DokuHTTPClient();
+            } else {
+                $http = new DokuHTTPClient();
+            }
+            $fetch = @$http->get($src);
             if(!$fetch) {
                 return array(0, 0);
             }

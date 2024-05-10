@@ -17,13 +17,16 @@ class ODTMeta
      * Constructor. Set initial meta data.
      */
     public function __construct() {
+        global $conf;
+        $dateTime = new DateTime();
+        
         $this->meta = array(
                 'meta:generator'            => 'DokuWiki '.getversion(),
                 'meta:initial-creator'      => 'Generated',
-                'meta:creation-date'        => date('Y-m-d\\TH::i:s', null), //FIXME
+                'meta:creation-date'        => $dateTime->format("Y-m-d\\TH::i:s"),
                 'dc:creator'                => 'Generated',
-                'dc:date'                   => date('Y-m-d\\TH::i:s', null),
-                'dc:language'               => 'en-US',
+                'dc:date'                   => $dateTime->format("Y-m-d\\TH::i:s"),
+                'dc:language'               => $conf['lang'],
                 'meta:editing-cycles'       => '1',
                 'meta:editing-duration'     => 'PT0S',
             );

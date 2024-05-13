@@ -292,13 +292,13 @@ class ODTImport
                     $paddingLeft = 0;
                     if ( isset($properties ['padding-left']) ) {
                         $paddingLeft = $params->units->toCentimeters($properties ['padding-left'], 'y');
-                        $paddingLeft = substr($paddingLeft, 0, -2);
+                        $paddingLeft = trim($paddingLeft, 'cm');
                     }
                 }
                 $marginLeft = 1;
                 if ( isset($li_properties ['margin-left']) ) {
                     $marginLeft = $params->units->toCentimeters($li_properties ['margin-left'], 'y');
-                    $marginLeft = substr($marginLeft, 0, -2);
+                    $marginLeft = trim($marginLeft, 'cm');
                 }
                 // Set list params.
                 $params->document->setOrderedListParams($level, $listAlign, $paddingLeft, $marginLeft);
@@ -308,7 +308,7 @@ class ODTImport
                 // (see replaceURLPrefixes)
                 $file = $properties ['list-style-image'];
                 
-                $this->setListStyleImage ($params, $style, $level, $file);
+                self::setListStyleImage ($params, $style, $level, $file);
             }
 
             // Workaround for ODT format:
@@ -433,13 +433,13 @@ class ODTImport
                     $paddingLeft = 0;
                     if (isset($properties ['padding-left'])) {
                         $paddingLeft = $params->units->toCentimeters($properties ['padding-left'], 'y');
-                        $paddingLeft = substr($paddingLeft, 0, -2);
+                        $paddingLeft = trim($paddingLeft, 'cm');
                     }
                 }
                 $marginLeft = 1;
                 if (isset($li_properties ['margin-left'])) {
                     $marginLeft = $params->units->toCentimeters($li_properties ['margin-left'], 'y');
-                    $marginLeft = substr($marginLeft, 0, -2);
+                    $marginLeft = trim($marginLeft, 'cm');
                 }
                 // Set list params.
                 $params->document->setUnorderedListParams($level, $listAlign, $paddingLeft, $marginLeft);
@@ -455,7 +455,7 @@ class ODTImport
                 }
                 $file = $media_path.$file;*/
                 
-                $this->setListStyleImage ($params, $style, $level, $file);
+                self::setListStyleImage ($params, $style, $level, $file);
             }
 
             // Workaround for ODT format:
@@ -529,17 +529,18 @@ class ODTImport
                 // If the style imported is a table adjust some properties
                 if ($style->getFamily() == 'table') {
                     // Move 'width' to 'rel-width' if it is relative
-                    $width = $properties ['width'];
-                    if (isset($width)) {
+                    if (isset($properties ['width'])) {
+                        $width = $properties ['width'];
                         if (!isset($properties ['align'])) {
                             // If width is set but align not, changing the width
                             // will not work. So we set it here if not done by the user.
                             $properties ['align'] = 'center';
                         }
-                    }
-                    if ($width [strlen($width)-1] == '%') {
-                        $properties ['rel-width'] = $width;
-                        unset ($properties ['width']);
+
+                        if ($width [strlen($width)-1] == '%') {
+                            $properties ['rel-width'] = $width;
+                            unset ($properties ['width']);
+                        }
                     }
 
                     // Convert property 'border-model' to ODT

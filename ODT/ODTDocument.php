@@ -307,7 +307,7 @@ class ODTDocument
         // Check if there is some content in the text.
         // Only insert bookmark/pagebreak/format change if text is not empty.
         // Otherwise a empty paragraph/line would be created!
-        if ( !empty($text) && !ctype_space($text) ) {
+        if ( !@blank($text) ) {
             // Insert page bookmark if requested and not done yet.
             $this->insertPendingPageBookmark();
 

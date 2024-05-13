@@ -2387,8 +2387,6 @@ class ODTDocument
                 $style->setPropertyForLevel($level, 'margin-left', $position.'cm');
             }
         } else {
-            
-            
             switch ($align) {
                 case 'left':
                 case 'start':
@@ -2406,7 +2404,6 @@ class ODTDocument
                     $style->setPropertyForLevel($setLevel, 'text-align', 'end');
                     break;
             }
-            
             $position = $paddingLeft + ($marginLeft * $setLevel) + $dist;
             $style->setPropertyForLevel($setLevel, 'list-level-position-and-space-mode', 'label-alignment');
             $style->setPropertyForLevel($setLevel, 'label-followed-by', 'listtab');

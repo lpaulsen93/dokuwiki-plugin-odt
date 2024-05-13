@@ -26,7 +26,7 @@ class ODTMeta
                 'meta:creation-date'        => $dateTime->format("Y-m-d\\TH::i:s"),
                 'dc:creator'                => 'Generated',
                 'dc:date'                   => $dateTime->format("Y-m-d\\TH::i:s"),
-                'dc:language'               => $conf['lang'],
+                'dc:language'               => 'en-US',
                 'meta:editing-cycles'       => '1',
                 'meta:editing-duration'     => 'PT0S',
             );

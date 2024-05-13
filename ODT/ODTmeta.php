@@ -17,7 +17,6 @@ class ODTMeta
      * Constructor. Set initial meta data.
      */
     public function __construct() {
-        global $conf;
         $dateTime = new DateTime();
         
         $this->meta = array(

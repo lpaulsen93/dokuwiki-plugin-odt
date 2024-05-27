@@ -70,61 +70,63 @@ class css_attribute_selector {
             // Attribute should be present
             return isset($attributes) && array_key_exists($this->attribute, $attributes);
         } else {
-            switch ($this->operator) {
-                case '=':
-                    // Attribute should have exactly the value $this->value
-                    if (isset($attributes[$this->attribute]) && $attributes[$this->attribute] == $this->value) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                    break;
-
-                case '~=':
-                    // Attribute value should contain the word $this->value
-                    $words = preg_split ('/\s/', $attributes [$this->attribute]);
-                    if (array_search($this->value, $words) !== false) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                    break;
-
-                case '|=':
-                    // Attribute value should contain the word $this->value
-                    // or a word starting with $this->value.'-'
-                    $with_hypen = $this->value.'-';
-                    $length = strlen ($with_hypen);
-                    if ($attributes [$this->attribute] == $this->value ||
-                        strncmp($attributes [$this->attribute], $with_hypen, $length) == 0) {
-                        return true;
-                    }
-                    break;
-
-                case '^=':
-                    // Attribute value should contain
-                    // a word starting with $this->value
-                    $length = strlen ($this->value);
-                    if (isset($attributes[$this->attribute]) && strncmp($attributes [$this->attribute], $this->value, $length) == 0) {
-                        return true;
-                    }
-                    break;
-
-                case '$=':
-                    // Attribute value should contain
-                    // a word ending with $this->value
-                    $length = -1 * strlen ($this->value);
-                    if (substr($attributes [$this->attribute], $length) == $this->value) {
-                        return true;
-                    }
-                    break;
-
-                case '*=':
-                    // Attribute value should include $this->value
-                    if (isset($attributes[$this->attribute]) && strpos($attributes [$this->attribute], $this->value) !== false) {
-                        return true;
-                    }
-                    break;
+            if(isset($attributes[$this->attribute])) {
+                switch ($this->operator) {
+                    case '=':
+                        // Attribute should have exactly the value $this->value
+                        if ($attributes[$this->attribute] == $this->value) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                        break;
+    
+                    case '~=':
+                        // Attribute value should contain the word $this->value
+                        $words = preg_split ('/\s/', $attributes [$this->attribute]);
+                        if (array_search($this->value, $words) !== false) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                        break;
+    
+                    case '|=':
+                        // Attribute value should contain the word $this->value
+                        // or a word starting with $this->value.'-'
+                        $with_hypen = $this->value.'-';
+                        $length = strlen ($with_hypen);
+                        if ($attributes [$this->attribute] == $this->value ||
+                            strncmp($attributes [$this->attribute], $with_hypen, $length) == 0) {
+                            return true;
+                        }
+                        break;
+    
+                    case '^=':
+                        // Attribute value should contain
+                        // a word starting with $this->value
+                        $length = strlen ($this->value);
+                        if (strncmp($attributes [$this->attribute], $this->value, $length) == 0) {
+                            return true;
+                        }
+                        break;
+    
+                    case '$=':
+                        // Attribute value should contain
+                        // a word ending with $this->value
+                        $length = -1 * strlen ($this->value);
+                        if (substr($attributes [$this->attribute], $length) == $this->value) {
+                            return true;
+                        }
+                        break;
+    
+                    case '*=':
+                        // Attribute value should include $this->value
+                        if (strpos($attributes [$this->attribute], $this->value) !== false) {
+                            return true;
+                        }
+                        break;
+                }
             }
         }
         return false;

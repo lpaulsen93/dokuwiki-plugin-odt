@@ -302,8 +302,7 @@ class action_plugin_odt_export extends DokuWiki_Action_Plugin {
 //                exit();
 //            }
 
-            $json = new JSON(JSON_LOOSE_TYPE);
-            $list = $json->decode($INPUT->post->str('selection', '', true));
+            $list = json_decode($INPUT->post->str('selection', '', true));
             if(!is_array($list) || empty($list)) {
                 http_status(400);
                 print $this->getLang('empty');

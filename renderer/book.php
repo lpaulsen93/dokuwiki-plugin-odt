@@ -123,8 +123,12 @@ class renderer_plugin_odt_book extends renderer_plugin_odt_page {
         // default name is based on $id as given
         $default = $this->_simpleTitle($id);
         // now first resolve and clean up the $id
-        $resolver = new \dokuwiki\File\PageResolver($ID);
-        $id = $resolver->resolveId($id);
+        if (class_exists('dokuwiki\File\PageResolver')) {
+            $resolver = new \dokuwiki\File\PageResolver($ID);
+            $id = $resolver->resolveId($id);
+        } else {
+            resolve_pageid(getNS($ID),$id,$exists);
+        }
         $name = $this->_getLinkTitle($name, $default, $isImage, $id);
 
         // build the absolute URL (keeping a hash if any)
